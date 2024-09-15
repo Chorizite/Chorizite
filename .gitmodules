@@ -1,0 +1,9 @@
+[submodule "ext/RmlUi.Native/ext/RmlUi"]
+	path = RmlUi.Native/ext/RmlUi
+	url = https://github.com/mikke89/RmlUi.git
+[submodule "ext/RmlUi.Native/ext/freetype"]
+	path = RmlUi.Native/ext/freetype
+	url = https://gitlab.freedesktop.org/freetype/freetype.git
+[submodule "ext/DatReaderWriter"]
+	path = ext/DatReaderWriter
+	url = git@github.com:ACClientLib/DatReaderWriter.git

@@ -1,0 +1,8 @@
+{
+  "name": "Core.Lua",
+  "author": "MagicHat",
+  "entryfile": "Core.Lua.dll",
+  "version": "0.0.1",
+  "description": "Lua backend for AC",
+  "dependencies": [ "Core.AC@0.0.1?", "Core.UI@0.0.1" ]
+}

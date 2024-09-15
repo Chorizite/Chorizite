@@ -1,0 +1,40 @@
+﻿<html>
+	<head>
+		<style>
+
+      @keyframes my-move {
+        from {
+          top: 0px;
+        }
+        to {
+          top: 200px;
+        }
+      }
+      body {
+        font-family: LatoLatin;
+        top: 0px;
+        animation: 2s cubic-in-out infinite alternate my-move;
+        overflow: hidden;
+        display: block;
+      }
+
+      div {
+        display: block;
+        width: 500px;
+        background-color: #00FF00;
+        color: black;
+        font-size: 50dp;
+      }
+    </style>
+	</head>
+	<body id="b">
+		<div id="test">
+      HELLO WORLD
+    </div>
+      <img width=128 height=128 src="test.png" />
+      <img width=128 height=128 src="0x06000160" />
+      <img width=128 height=128 src="0x06001EDD" />
+      <img width=128 height=128 src="0x06001D9C" />
+      <img width=128 height=128 src="0x06001E73" />
+	</body>
+</html>

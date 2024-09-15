@@ -1,0 +1,22 @@
+﻿<html>
+	<head>
+		<style>
+      body {
+        font-family: LatoLatin;
+        bottom: 0px;
+      }
+
+      div {
+        display: block;
+        width: 300px;
+        height: 400px;
+        background-color: #FF0000;
+        color: white;
+        font-size: 20dp;
+      }
+    </style>
+	</head>
+	<body id="b">
+		<div id="test">HELLO WORLD SCRIPT HOST</div>
+	</body>
+</html>
