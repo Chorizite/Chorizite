@@ -1,4 +1,6 @@
-﻿using MagicHat.Service.Lib.Plugins;
+﻿using ACClientLib.DatReaderWriter;
+using Core.DatService;
+using MagicHat.Service.Lib.Plugins;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using Microsoft.Extensions.Logging;
@@ -15,7 +17,7 @@ using System.Text.RegularExpressions;
 
 namespace ACUI.Lib.RmlUi {
     public unsafe class DX9RenderInterface : RenderInterface {
-        private static Regex _datFileRegex = new Regex("0x[0-9a-fA-F]{8}");
+        private static Regex _datFileRegex = new Regex("b?0x[0-9a-fA-F]{8}");
         private struct GeometryBufferRef : IDisposable {
             public VertexBuffer VertexBuffer;
             public IndexBuffer IndexBuffer;
@@ -42,6 +44,7 @@ namespace ACUI.Lib.RmlUi {
         private int _nextGeometryId = 1;
         private ILogger _log;
         private PluginManager _pluginManager;
+        private readonly DatDatabaseReader _portalDat;
 
         public Device D3Ddevice { get; }
 
@@ -52,6 +55,7 @@ namespace ACUI.Lib.RmlUi {
         public DX9RenderInterface(Device D3Ddevice, PluginManager pluginManager, ILogger? logger) : this(D3Ddevice) {
             _log = logger;
             _pluginManager = pluginManager;
+            _portalDat = _pluginManager.GetPlugin<CoreDatService>("Core.DatService").PortalDat;
         }
 
         public void BeginFrame() {
@@ -175,7 +179,10 @@ namespace ACUI.Lib.RmlUi {
                     texture = new ManagedTexture(TgaDecoder.FromFile(source));
                 }
                 else if (_datFileRegex.IsMatch(Path.GetFileName(source))) {
-                    texture = new ManagedTexture(Convert.ToUInt32(Path.GetFileName(source), 16));
+                    var hexId = Path.GetFileName(source);
+                    var border = hexId.StartsWith("b");
+                    hexId = border ? hexId.Substring(1) : hexId;
+                    texture = new ManagedTexture(Convert.ToUInt32(hexId, 16), _portalDat, border);
                 }
                 else {
                     _log.LogDebug($"Loading BITMAP texture: {source}");

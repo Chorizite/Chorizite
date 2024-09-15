@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 
 namespace ACUI.Lib.RmlUi {
@@ -13,6 +14,9 @@ namespace ACUI.Lib.RmlUi {
     /// Using this class will automatically recreate the texture as needed.
     /// </summary>
     public class ManagedTexture : IDisposable {
+        private static readonly Color BORDER_COLOR_MASK = Color.FromArgb(-1);
+        private static readonly Color BACKGROUND_COLOR_MASK = Color.FromArgb(255, 0, 0, 0);
+
         /// <summary>
         /// The bitmap this texture is using.
         /// </summary>
@@ -64,28 +68,25 @@ namespace ACUI.Lib.RmlUi {
             CreateTexture();
         }
 
-        public ManagedTexture(uint icon = 0) {
+        public ManagedTexture(uint icon, ACClientLib.DatReaderWriter.DatDatabaseReader _portalDat, bool border) {
             if (icon < 0x06000000)
                 icon += 0x06000000;
 
-            if (!UI.Instance.PortalDat.TryGetFileBytes(icon, out var bytes)) {
-                UI.Instance.Log?.LogError($"Could not load icon bytes: 0x{icon:X8}");
+            if (!_portalDat.TryReadFile<ACDatReader.FileTypes.Texture>(icon, out var iconFile)) {
+                UI.Instance.Log?.LogError($"Could not load icon from dat: 0x{icon:X8}");
                 return;
             }
 
-            var iconFile = new ACDatReader.FileTypes.Texture();
-            iconFile.Unpack(new ACClientLib.DatReaderWriter.IO.DatFileReader(bytes));
-
-            if (iconFile != null && iconFile.SourceData != null) {
-                Bitmap = GetBitmap(iconFile);
-            }
-            else {
+            if (iconFile is null || iconFile.SourceData is null) {
                 UI.Instance.Log?.LogError($"iconFile was null: 0x{icon:X8}");
+                return;
             }
+
+            Bitmap = GetBitmap(iconFile, border);
             CreateTexture();
         }
 
-        private Bitmap GetBitmap(ACDatReader.FileTypes.Texture texture) {
+        private Bitmap GetBitmap(ACDatReader.FileTypes.Texture texture, bool border) {
             Bitmap image = new Bitmap(texture.Width, texture.Height);
             var colorArray = texture.GetImageColorArray();
             switch (texture.Format) {
@@ -166,7 +167,23 @@ namespace ACUI.Lib.RmlUi {
                         }
                     break;
             }
-            return image;
+
+            return SwapColor(image, border ? Color.Magenta : Color.Transparent, Color.Transparent);
+        }
+        
+        private static Bitmap SwapColor(Bitmap bmp, Color borderColor, Color backgroundColor) {
+            for (int x = 0; x < bmp.Width; x++) {
+                for (int y = 0; y < bmp.Height; y++) {
+                    Color gotColor = bmp.GetPixel(x, y);
+                    if (gotColor == BORDER_COLOR_MASK) {
+                        bmp.SetPixel(x, y, borderColor);
+                    }
+                    else if (gotColor == BACKGROUND_COLOR_MASK) {
+                        bmp.SetPixel(x, y, backgroundColor);
+                    }
+                }
+            }
+            return bmp;
         }
 
         internal void CreateTexture() {

@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "description": "RmlUI backend for AC",
   "repo": "https://github.com/trevis/UICore",
-  "dependencies": [],
+  "dependencies": [ "Core.DatService@0.0.1" ],
   "settings": {
     "type": "object",
     "properties": {

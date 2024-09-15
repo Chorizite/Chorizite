@@ -1,6 +1,7 @@
 ﻿using ACUI.Lib;
 using ACUI.Lib.RmlUi;
 using Autofac;
+using Core.DatService;
 using MagicHat.Service.Lib;
 using MagicHat.Service.Lib.Plugins;
 using MagicHat.Service.Lib.Plugins.AssemblyLoader;

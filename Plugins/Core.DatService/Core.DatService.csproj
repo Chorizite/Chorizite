@@ -5,7 +5,7 @@
     <TargetFramework>net48</TargetFramework>
     <Nullable>enable</Nullable>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\plugins\Core.AC\</OutputPath>
+    <OutputPath>..\..\bin\plugins\Core.DatService\</OutputPath>
     <LangVersion>12</LangVersion>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <Platforms>x86</Platforms>
@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
     <ProjectReference Include="..\..\MagicHat.Service\MagicHat.Service.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>

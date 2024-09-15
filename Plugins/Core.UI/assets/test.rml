@@ -20,10 +20,33 @@
 
       div {
         display: block;
+      }
+
+      div#test {
         width: 500px;
         background-color: #00FF00;
         color: black;
         font-size: 50dp;
+      }
+
+      div.iconstack, span.iconstack {
+        display: inline-block;
+        position: relative;
+        width: 128px;
+        height: 128px;
+      }
+
+      .iconstack img, .iconstack a {
+        position: absolute;
+        width: 128px;
+        height: 128px;
+      }
+
+      .horizontal { 
+        decorator: image(0x06001975);
+        width: 650px;
+        height: 104px;
+        fill-image: 0x06001974;
       }
     </style>
 	</head>
@@ -36,5 +59,39 @@
       <img width=128 height=128 src="0x06001EDD" />
       <img width=128 height=128 src="0x06001D9C" />
       <img width=128 height=128 src="0x06001E73" />
+      <br />
+      <img width=128 height=128 src="test.png" />
+      <img width=128 height=128 src="b0x06000160" />
+      <img width=128 height=128 src="b0x06001EDD" />
+      <img width=128 height=128 src="b0x06001D9C" />
+      <img width=128 height=128 src="b0x06001E73" />
+      <br />
+      <progress class="horizontal" value="75" max="100"/>
+      <br />
+      <img width=128 height=128 src="test.png" />
+      <span class="iconstack">
+        <img width="128" height="128" src="0x06000F6E" />
+        <img width=128 height=128 src="b0x06000160" />
+        <img width=128 height=128 src="0x0600109D" />
+        <a class="h"><img width=128 height=128 src="0x060011F8" /><a>
+      </span>
+      <span class="iconstack">
+        <img width="128" height="128" src="0x06000F6E" />
+        <img width=128 height=128 src="b0x06001EDD" />
+        <img width=128 height=128 src="0x0600109E" />
+        <a class="h"><img width=128 height=128 src="0x060011F8" /><a>
+      </span>
+      <span class="iconstack">
+        <img width="128" height="128" src="0x06000F6E" />
+        <img width=128 height=128 src="0x06001D9C" />
+        <img width=128 height=128 src="0x0600109F" />
+        <a class="h"><img width=128 height=128 src="0x060011F8" /><a>
+      </span>
+      <span class="iconstack">
+        <img src="0x06000F6E" />
+        <img width=128 height=128 src="0x06001E73" />
+        <img width=128 height=128 src="0x060010A0" />
+        <a class="h"><img width=128 height=128 src="0x060011F8" /><a>
+      </span>
 	</body>
 </html>

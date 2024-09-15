@@ -61,6 +61,16 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
+    <ProjectReference Include="..\Core.DatService\Core.DatService.csproj" ExcludeAssets="runtime">
+      <Private>False</Private>
+      <ExcludeAssets>all</ExcludeAssets>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" ExcludeAssets="runtime">
+      <Private>False</Private>
+      <ExcludeAssets>all</ExcludeAssets>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Update="assets\test.png">

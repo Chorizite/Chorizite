@@ -2,6 +2,7 @@
 using ACUI.Lib;
 using ACUI.Lib.Input;
 using ACUI.Lib.RmlUi;
+using Core.DatService;
 using MagicHat.Service.Lib;
 using MagicHat.Service.Lib.Events;
 using MagicHat.Service.Lib.Plugins;
@@ -31,20 +32,15 @@ namespace ACUI {
         internal IBackendProvider Backend;
         internal ILogger? Log;
         internal int _id = new Random().Next(1000);
+        private CoreDatService? _datService;
 
         internal InputManager InputManager { get; private set; }
         public PanelManager? PanelManager { get; private set; }
 
         public static UI Instance { get; private set; }
-        public DatDatabaseReader PortalDat { get; }
 
         public UI() {
             Instance = this;
-
-            PortalDat = new DatDatabaseReader(options => {
-                options.FilePath = $"client_Portal.dat";
-                options.IndexCachingStrategy = ACClientLib.DatReaderWriter.Options.IndexCachingStrategy.Upfront;
-            });
         }
 
         internal void Init(PluginManager pluginManager, IBackendProvider backend, ILogger? logger) {
@@ -118,8 +114,6 @@ namespace ACUI {
             }
             _renderInterface?.Dispose();
             _systemInterface?.Dispose();
-
-            PortalDat?.Dispose();
 
             _didInit = false;
         }
