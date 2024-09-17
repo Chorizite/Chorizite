@@ -94,7 +94,7 @@ namespace ACUI {
         }
 
         private void Backend_OnWindowMessage(object sender, WindowMessageEventArgs e) {
-            if (_ctx is null) return;
+            if (_ctx is null) return; 
 
             e.Eat = InputManager.HandleWindowMessage(e);
         }

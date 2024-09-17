@@ -18,6 +18,16 @@ namespace MagicHat.Service.Lib.Plugins.AssemblyLoader {
 
         public AssemblyPluginInstance(AssemblyPluginManifest manifest, IContainer serviceProvider) : base(manifest, serviceProvider) {
             _serviceProvider = serviceProvider;
+
+            var fw = new FileSystemWatcher();
+            fw.Path = Path.GetDirectoryName(manifest.ManifestFile);
+            fw.NotifyFilter = NotifyFilters.LastWrite;
+            fw.Filter = manifest.EntryFile;
+            fw.Changed += (s, e) => {
+                _log?.LogDebug("Reloading plugin: {0}", Name);
+                Load();
+            };
+            fw.EnableRaisingEvents = true;
         }
 
         /// <inheritdoc cref="PluginInstance.Load()"/>

@@ -79,7 +79,7 @@ namespace ACUI.Lib.RmlUi {
             D3Ddevice.SetTextureStageState(0, TextureStageStates.ColorOperation, (int)TextureOperation.Modulate);
             D3Ddevice.SetTextureStageState(0, TextureStageStates.ColorArgument1, (int)TextureArgument.TextureColor);
             D3Ddevice.SetTextureStageState(0, TextureStageStates.ColorArgument2, (int)TextureArgument.Diffuse);
-            D3Ddevice.SetTextureStageState(0, TextureStageStates.AlphaOperation, (int)TextureOperation.SelectArg1);
+            D3Ddevice.SetTextureStageState(0, TextureStageStates.AlphaOperation, (int)TextureOperation.Modulate);
             D3Ddevice.SetTextureStageState(0, TextureStageStates.AlphaArgument1, (int)TextureArgument.TextureColor);
 
             D3Ddevice.SetSamplerState(0, SamplerStageStates.AddressU, (int)TextureAddress.Clamp);
@@ -184,6 +184,11 @@ namespace ACUI.Lib.RmlUi {
                 else {
                     _log.LogDebug($"Loading BITMAP texture: {source}");
                     texture = new ManagedTexture(source);
+                }
+
+                if (texture is null) {
+                    _log.LogError($"Failed to load texture: {source}");
+                    return IntPtr.Zero;
                 }
 
                 _log?.LogTrace($"Loaded texture: 0x{texture.TexturePtr:X8} {source}");

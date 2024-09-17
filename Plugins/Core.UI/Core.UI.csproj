@@ -12,6 +12,8 @@
     <ProjectGuid>8ad301fc-d603-44e6-964a-2f2bc3de52af</ProjectGuid>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
     <Platforms>x86</Platforms>
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
@@ -74,6 +76,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Update="assets\panel.9.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="assets\test.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

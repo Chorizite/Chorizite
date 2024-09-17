@@ -73,6 +73,22 @@ namespace ACUI.Lib.RmlUi {
         }
 
         private static Bitmap GetBitmap(ACDatReader.FileTypes.Texture texture) {
+            if (texture.Format == SurfacePixelFormat.PFID_CUSTOM_RAW_JPEG) {
+                using (var ms = new MemoryStream(texture.SourceData)) {
+                    using (var src = new Bitmap(ms)) {
+                        texture.Width = src.Width;
+                        texture.Height = src.Height;
+                        var bmp = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb);
+                        bmp.MakeTransparent();
+                        using (var gfx = Graphics.FromImage(bmp)) {
+                            gfx.DrawImage(src, 0, 0, src.Width, src.Height);
+                            gfx.Save();
+                        }
+                        return bmp;
+                    }
+                }
+            }
+
             Bitmap image = new Bitmap(texture.Width, texture.Height);
             var colorArray = texture.GetImageColorArray();
             switch (texture.Format) {
@@ -152,6 +168,9 @@ namespace ACUI.Lib.RmlUi {
                             image.SetPixel(j, i, Color.FromArgb(a, r, g, b));
                         }
                     break;
+                default:
+                    ACUI.UI.Instance?.Log?.LogError($"Unknown pixel format: {texture.Format}");
+                    break;
             }
 
             return image;
@@ -218,6 +237,10 @@ namespace ACUI.Lib.RmlUi {
             var uri = new Uri(source);
             uint id = ParseDatId(uri.Host);
             Bitmap baseBmp = GetIconBitmap(id, _portalDat);
+
+            if (baseBmp is null) return null;
+            if ((baseBmp?.Width == 32 && baseBmp?.Height == 32)) return new ManagedTexture(baseBmp);
+
             var bmp = new Bitmap(baseBmp.Width, baseBmp.Height, PixelFormat.Format32bppArgb);
             bmp.MakeTransparent();
 
