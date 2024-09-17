@@ -3,6 +3,7 @@ using ACUI.Lib;
 using ACUI.Lib.Input;
 using ACUI.Lib.RmlUi;
 using Core.DatService;
+using Core.UI.Lib.RmlUi;
 using MagicHat.Service.Lib;
 using MagicHat.Service.Lib.Events;
 using MagicHat.Service.Lib.Plugins;
@@ -22,8 +23,10 @@ namespace ACUI {
     /// </summary>
     public class UI {
         private Device? _device;
+        private TestPlugin _testPlugin;
         private DX9RenderInterface? _renderInterface;
         private ACSystemInterface? _systemInterface;
+        private TestElementInstancer _instancer;
         private bool _didInit;
         private Context? _ctx;
         private ElementDocument? _doc;
@@ -49,7 +52,7 @@ namespace ACUI {
             _device = Backend?.GetD3DDevice();
             Log = logger;
 
-            logger?.LogTrace($"Initializing UI {Rml.Test()}");
+            logger?.LogTrace($"Initializing UI");
 
             if (Backend is null) {
                 throw new Exception($"IBackendProvider is null");
@@ -58,6 +61,7 @@ namespace ACUI {
                 throw new Exception($"D3D device is null");
             }
 
+            _testPlugin = new TestPlugin(logger);
             _renderInterface = new DX9RenderInterface(_device, pluginManager, logger);
             _systemInterface = new ACSystemInterface(logger);
 
@@ -68,6 +72,8 @@ namespace ACUI {
             logger?.LogTrace($"Window size: {size.X}x{size.Y}");
 
             if (Rml.Initialise()) {
+                Rml.RegisterPlugin(_testPlugin);
+                _instancer = new TestElementInstancer(logger);
                 _didInit = true;
                 _ctx = Rml.CreateContext("viewport", new Vector2i(size.X, size.Y));
 
@@ -114,6 +120,7 @@ namespace ACUI {
             }
             _renderInterface?.Dispose();
             _systemInterface?.Dispose();
+            _testPlugin.Dispose();
 
             _didInit = false;
         }

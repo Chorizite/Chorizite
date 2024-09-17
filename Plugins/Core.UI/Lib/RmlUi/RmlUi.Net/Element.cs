@@ -62,8 +62,35 @@ namespace RmlUiNet
         /// </summary>
         public void Click();
 
-        public Box GetBox();
+        /// <summary>
+        /// The distance from this element’s top border to its offset parent’s top border.
+        /// </summary>
         float GetOffsetTop();
+
+        /// <summary>
+        /// The distance from the context’s left edge and the element’s left border.
+        /// </summary>
+        float GetAbsoluteLeft();
+
+        /// <summary>
+        /// The distance from the context’s top edge and the element’s top border.
+        /// </summary>
+        float GetAbsoluteTop();
+
+        /// <summary>
+        /// The inner width of an element.
+        /// </summary>
+        float GetClientWidth();
+
+        /// <summary>
+        /// The inner height of an element.
+        /// </summary>
+        float GetClientHeight();
+
+        /// <summary>
+        /// Get attribute string
+        /// </summary>
+        string GetAttributeString(string attributeName, string defaultValue = "");
     }
 
     public abstract class Element<T> : RmlBase<T>, Element
@@ -168,12 +195,37 @@ namespace RmlUiNet
             Native.Element.Click(NativePtr);
         }
 
-        public Box GetBox() {
-            return new Box(Native.Element.GetBox(NativePtr));
-        }
-
+        /// <inheritdoc cref="Element.GetOffsetTop"/>
         public float GetOffsetTop() {
             return Native.Element.GetOffsetTop(NativePtr);
+        }
+
+        /// <inheritdoc cref="Element.GetAbsoluteLeft"/>
+        public float GetAbsoluteLeft() {
+            return Native.Element.GetAbsoluteLeft(NativePtr);
+        }
+
+        /// <inheritdoc cref="Element.GetAbsoluteTop"/>
+        public float GetAbsoluteTop() {
+            return Native.Element.GetAbsoluteTop(NativePtr);
+        }
+
+        /// <inheritdoc cref="Element.GetClientWidth"/>
+        public float GetClientWidth() {
+            return Native.Element.GetClientWidth(NativePtr);
+        }
+
+        /// <inheritdoc cref="Element.GetClientHeight"/>
+        public float GetClientHeight() {
+            return Native.Element.GetClientHeight(NativePtr);
+        }
+
+        /// <inheritdoc cref="Element.GetAttributeString(string, string)"/>
+        public string GetAttributeString(string attributeName, string defaultValue = "") {
+            var strPtr = Native.Element.GetAttributeString(NativePtr, attributeName, defaultValue);
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue;
         }
 
         #endregion

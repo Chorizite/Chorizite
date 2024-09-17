@@ -4,7 +4,7 @@ using static RmlUiNet.Native.RenderInterface;
 
 namespace RmlUiNet
 {
-    public unsafe abstract class RenderInterface : RmlBase<RenderInterface>
+    public unsafe class RenderInterface : RmlBase<RenderInterface>
     {
         private Native.RenderInterface.OnCompileGeometry _onCompileGeometry;
         private Native.RenderInterface.OnRenderGeometry _onRenderGeometry;
@@ -14,6 +14,14 @@ namespace RmlUiNet
         private Native.RenderInterface.OnReleaseTexture _onReleaseTexture;
         private Native.RenderInterface.OnEnableScissorRegion _onEnableScissorRegion;
         private Native.RenderInterface.OnSetScissorRegion _onSetScissorRegion;
+
+        internal static RenderInterface? Create(IntPtr nativePtr) {
+            return GetOrCreateCache(nativePtr, ptr => new RenderInterface(ptr));
+        }
+
+        internal RenderInterface(IntPtr nativePtr) : base(nativePtr) {
+        
+        }
 
         public RenderInterface() : base(IntPtr.Zero)
         {
@@ -77,6 +85,10 @@ namespace RmlUiNet
         public virtual void SetScissorRegion(int x, int y, int width, int height)
         {
 
+        }
+
+        public virtual void Test() {
+            Native.RenderInterface.Test(NativePtr);
         }
     }
 }

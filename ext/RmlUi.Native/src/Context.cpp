@@ -77,7 +77,6 @@ rml_Context_RemoveEventListener(Rml::Context *context, const char *event, Rml::E
     context->RemoveEventListener(event, eventListener, inCapturePhase);
 }
 
-RMLUI_CAPI const char*
-rml_Context_GetName(Rml::Context *context) {
+RMLUI_CAPI const char* rml_Context_GetName(Rml::Context *context) {
     return context->GetName().c_str();
 }

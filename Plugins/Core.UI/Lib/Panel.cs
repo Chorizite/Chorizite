@@ -57,10 +57,10 @@ namespace ACUI.Lib {
             _didListener = false;
             _doc = _manager.Context.LoadDocument(_docFile);
             _doc?.Show();
-            var test1 = _doc?.GetElementById("test1");
-            var test = _doc?.GetElementById("test");
-            var b = _doc?.GetElementById("b"); 
 
+            if (_doc is null) {
+                throw new Exception("Unable to create RmlUi document");
+            }
             _onHover = new MyListener();
             _onHover._manager = _manager;
         }

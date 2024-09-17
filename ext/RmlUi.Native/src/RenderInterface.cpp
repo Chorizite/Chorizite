@@ -100,3 +100,7 @@ RMLUI_CAPI void *rml_RenderInterface_New(::onCompileGeometry onCompileGeometry,
                                             ::onSetScissorRegion onSetScissorRegion) {
     return new RenderInterface(onCompileGeometry, onRenderGeometry, onReleaseGeometry, onLoadTexture, onGenerateTexture, onReleaseTexture, onEnableScissorRegion, onSetScissorRegion);
 }
+
+RMLUI_CAPI void rml_RenderInterface_Test(Rml::RenderInterface* render) {
+    
+}

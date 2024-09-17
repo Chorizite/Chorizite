@@ -40,6 +40,7 @@
     <Reference Include="Microsoft.VisualC">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.0" ExcludeAssets="runtime" />

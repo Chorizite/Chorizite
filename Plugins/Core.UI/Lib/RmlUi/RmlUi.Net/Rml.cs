@@ -46,13 +46,16 @@ namespace RmlUiNet
             return Context.Create(name, dimensions, renderInterface);
         }
 
-        public static bool RemoveContext(string name)
-        {
+        public static bool RemoveContext(string name) {
             return Native.Rml.RemoveContext(name);
         }
 
-        public static int Test() {
-            return Native.Rml.Test();
+        public static void RegisterPlugin(Plugin plugin) {
+            Native.Rml.RegisterPlugin(plugin.NativePtr);
+        }
+
+        public static RenderInterface GetRenderInterface() {
+            return RenderInterface.Create(Native.Rml.GetRenderInterface());
         }
     }
 }

@@ -17,7 +17,7 @@ using System.Text.RegularExpressions;
 
 namespace ACUI.Lib.RmlUi {
     public unsafe class DX9RenderInterface : RenderInterface {
-        private static Regex _datFileRegex = new Regex("b?0x[0-9a-fA-F]{8}");
+        private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private struct GeometryBufferRef : IDisposable {
             public VertexBuffer VertexBuffer;
             public IndexBuffer IndexBuffer;
@@ -170,19 +170,16 @@ namespace ACUI.Lib.RmlUi {
             try {
                 ManagedTexture texture;
 
-                StackTrace stackTrace = new StackTrace();
-                var assembly = stackTrace.GetFrame(0).GetMethod().DeclaringType.Assembly;
-                _log?.LogDebug($"Called LoadTexture from {assembly.GetName().Name}");
+                //StackTrace stackTrace = new StackTrace();
+                //var assembly = stackTrace.GetFrame(0).GetMethod().DeclaringType.Assembly;
+                //_log?.LogDebug($"Called LoadTexture from {assembly.GetName().Name}");
 
                 if (source.EndsWith(".tga")) {
                     //UIPluginCore.Log($"Loading TGA texture: {source}");
                     texture = new ManagedTexture(TgaDecoder.FromFile(source));
                 }
-                else if (_datFileRegex.IsMatch(Path.GetFileName(source))) {
-                    var hexId = Path.GetFileName(source);
-                    var border = hexId.StartsWith("b");
-                    hexId = border ? hexId.Substring(1) : hexId;
-                    texture = new ManagedTexture(Convert.ToUInt32(hexId, 16), _portalDat, border);
+                else if (_datFileRegex.IsMatch(source)) {
+                    texture = ManagedTexture.FromDatUrl(source, _log, _portalDat);
                 }
                 else {
                     _log.LogDebug($"Loading BITMAP texture: {source}");

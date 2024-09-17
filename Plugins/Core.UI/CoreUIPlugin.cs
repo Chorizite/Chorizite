@@ -17,7 +17,7 @@ namespace ACUI {
     /// <summary>
     /// This is the main plugin class. When your plugin is loaded, Startup() is called, and when it's unloaded Shutdown() is called.
     /// </summary>
-    internal class CoreUIPlugin : IPluginCore {
+    public class CoreUIPlugin : IPluginCore {
         private string _assemblyDirectory = null;
         private PluginManager _pluginManager;
         private IBackendProvider _backendProvider;
@@ -26,7 +26,7 @@ namespace ACUI {
         [DllImport("Kernel32.dll")]
         private static extern IntPtr LoadLibrary(string path);
 
-        internal static UI UI { get; private set; }
+        public static UI UI { get; private set; }
 
         protected CoreUIPlugin(AssemblyPluginManifest manifest, PluginManager pluginManager, IBackendProvider backendProvider, ILogger<CoreUIPlugin>? log) : base(manifest) {
             _log = log;

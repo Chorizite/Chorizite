@@ -36,16 +36,21 @@ add_library(${PROJECT_NAME} SHARED
 
     "src/Element.cpp"
     "src/ElementDocument.cpp"
+    "src/ElementCustom.cpp"
+    "src/ElementInstancer.cpp"
 
     "src/Event.cpp"
     "src/EventListener.h"
 
     "src/Box.cpp"
+    "src/RenderManager.cpp"
 
     "src/RenderInterface.cpp"
     "src/SystemInterface.cpp"
     "src/FileInterface.cpp"
+    "src/Plugin.cpp"
     
+    "src/XMLAttributes.cpp"
     "src/Rml.cpp"
     "src/Debugger.cpp"
     "src/Util.h"

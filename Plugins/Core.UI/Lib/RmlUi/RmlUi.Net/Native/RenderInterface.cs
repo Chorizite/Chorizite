@@ -41,5 +41,8 @@ namespace RmlUiNet.Native
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void OnSetScissorRegion(int x, int y, int width, int height);
+    
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_RenderInterface_Test")]
+        public static extern IntPtr Test(IntPtr renderInterface);
     }
 }

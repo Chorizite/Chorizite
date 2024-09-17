@@ -32,8 +32,14 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_RemoveContext")]
         public static extern bool RemoveContext(string name);
 
-        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Test")]
-        public static extern int Test();
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_RegisterPlugin")]
+        public static extern void RegisterPlugin(IntPtr pluginPtr);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_GetRenderInterface")]
+        public static extern IntPtr GetRenderInterface();
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_GetSystemInterface")]
+        public static extern IntPtr GetSystemInterface();
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void OnProcessEvent(IntPtr eventPtr);

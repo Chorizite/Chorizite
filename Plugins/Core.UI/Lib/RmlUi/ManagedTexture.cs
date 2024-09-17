@@ -1,4 +1,5 @@
-﻿using ACClientLib.DatReaderWriter.Enums;
+﻿using ACClientLib.DatReaderWriter;
+using ACClientLib.DatReaderWriter.Enums;
 using Autofac.Core;
 using Microsoft.DirectX.Direct3D;
 using Microsoft.Extensions.Logging;
@@ -6,7 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
+using System.Security.Policy;
+using System.Web;
 
 namespace ACUI.Lib.RmlUi {
     /// <summary>
@@ -68,25 +72,7 @@ namespace ACUI.Lib.RmlUi {
             CreateTexture();
         }
 
-        public ManagedTexture(uint icon, ACClientLib.DatReaderWriter.DatDatabaseReader _portalDat, bool border) {
-            if (icon < 0x06000000)
-                icon += 0x06000000;
-
-            if (!_portalDat.TryReadFile<ACDatReader.FileTypes.Texture>(icon, out var iconFile)) {
-                UI.Instance.Log?.LogError($"Could not load icon from dat: 0x{icon:X8}");
-                return;
-            }
-
-            if (iconFile is null || iconFile.SourceData is null) {
-                UI.Instance.Log?.LogError($"iconFile was null: 0x{icon:X8}");
-                return;
-            }
-
-            Bitmap = GetBitmap(iconFile, border);
-            CreateTexture();
-        }
-
-        private Bitmap GetBitmap(ACDatReader.FileTypes.Texture texture, bool border) {
+        private static Bitmap GetBitmap(ACDatReader.FileTypes.Texture texture) {
             Bitmap image = new Bitmap(texture.Width, texture.Height);
             var colorArray = texture.GetImageColorArray();
             switch (texture.Format) {
@@ -168,7 +154,7 @@ namespace ACUI.Lib.RmlUi {
                     break;
             }
 
-            return SwapColor(image, border ? Color.Magenta : Color.Transparent, Color.Transparent);
+            return image;
         }
         
         private static Bitmap SwapColor(Bitmap bmp, Color borderColor, Color backgroundColor) {
@@ -210,6 +196,115 @@ namespace ACUI.Lib.RmlUi {
             ReleaseTexture();
             Bitmap?.Dispose();
             Bitmap = null;
+        }
+
+        private static Dictionary<string, uint> _uiEffects = new Dictionary<string, uint>() {
+            { "", 0x060011C5 },
+            { "magical", 0x060011CA },
+            { "posioned", 0x060011C6 },
+            { "boosthealth", 0x06001B05 },
+            { "boostmana", 0x060011CA },
+            { "booststamina", 0x06001B06 },
+            { "fire", 0x06001B2E },
+            { "lightning", 0x06001B2D },
+            { "frost", 0x06001B2F },
+            { "acid", 0x06001B2C },
+            { "bludgeoning", 0x060033C3 },
+            { "slashing", 0x060033C2 },
+            { "piercing", 0x060033C4 }
+        };
+
+        public static ManagedTexture FromDatUrl(string source, ILogger _log, ACClientLib.DatReaderWriter.DatDatabaseReader _portalDat) {
+            var uri = new Uri(source);
+            uint id = ParseDatId(uri.Host);
+            Bitmap baseBmp = GetIconBitmap(id, _portalDat);
+            var bmp = new Bitmap(baseBmp.Width, baseBmp.Height, PixelFormat.Format32bppArgb);
+            bmp.MakeTransparent();
+
+            Bitmap? underlay = null;
+            Bitmap? uieffect = null;
+            Bitmap? overlay1 = null;
+            Bitmap? overlay2 = null;
+
+            if (!string.IsNullOrEmpty(uri.Query)) {
+                var query = HttpUtility.ParseQueryString(uri.Query);
+                if (!string.IsNullOrEmpty(query["underlay"])) {
+                    underlay = GetIconBitmap(ParseDatId(query["underlay"]), _portalDat);
+                }
+                if (!string.IsNullOrEmpty(query["overlay1"])) {
+                    overlay1 = GetIconBitmap(ParseDatId(query["overlay1"]), _portalDat);
+                }
+                if (!string.IsNullOrEmpty(query["overlay2"])) {
+                    overlay2 = GetIconBitmap(ParseDatId(query["overlay2"]), _portalDat);
+                }
+                if (!string.IsNullOrEmpty(query["uieffect"]) && _uiEffects.TryGetValue(query["uieffect"].ToLower(), out var effectId)) {
+                    uieffect = GetIconBitmap(effectId, _portalDat);
+                }
+            }
+
+            uieffect ??= GetIconBitmap(0x060011C5, _portalDat);
+
+            using (var gfx = Graphics.FromImage(bmp)) {
+                // ui effect
+                if (baseBmp.Width == 32 && baseBmp.Height == 32) {
+                    for (int x = 0; x < baseBmp.Width; x++) {
+                        for (int y = 0; y < baseBmp.Height; y++) {
+                            Color gotColor = baseBmp.GetPixel(x, y);
+                            if (gotColor == BORDER_COLOR_MASK) {
+                                baseBmp.SetPixel(x, y, uieffect.GetPixel(x, y));
+                            }
+                            else if (gotColor == BACKGROUND_COLOR_MASK) {
+                                baseBmp.SetPixel(x, y, Color.Transparent);
+                            }
+                        }
+                    }
+                }
+
+                if (underlay is not null) gfx.DrawImageUnscaled(underlay, Point.Empty);
+                gfx.DrawImageUnscaled(baseBmp, Point.Empty);
+                if (overlay1 is not null) gfx.DrawImageUnscaled(overlay1, Point.Empty);
+                if (overlay2 is not null) gfx.DrawImageUnscaled(overlay2, Point.Empty);
+
+                gfx.Save();
+            }
+
+            baseBmp?.Dispose();
+            underlay?.Dispose();
+            uieffect?.Dispose();
+            overlay1?.Dispose();
+            overlay2?.Dispose();
+
+            return new ManagedTexture(bmp);
+        }
+
+        private static Bitmap GetIconBitmap(uint id, DatDatabaseReader portalDat) {
+            if (!portalDat.TryReadFile<ACDatReader.FileTypes.Texture>(id, out var iconFile)) {
+                UI.Instance.Log?.LogError($"Could not load icon from dat: 0x{id:X8}");
+                return null;
+            }
+
+            if (iconFile is null || iconFile.SourceData is null) {
+                UI.Instance.Log?.LogError($"iconFile was null: 0x{id:X8}");
+                return null;
+            }
+
+            return GetBitmap(iconFile);
+        }
+
+        private static uint ParseDatId(string value) {
+            uint id = 0;
+
+            if (value.StartsWith("0x")) {
+                uint.TryParse(value.Replace("0x", ""), NumberStyles.HexNumber, null, out id);
+            }
+            else if (!uint.TryParse(value, out id)) {
+                return 0;
+            }
+
+            if (id < 0x06000000)
+                id += 0x06000000;
+
+            return id;
         }
     }
 }

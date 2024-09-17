@@ -6,7 +6,7 @@ namespace RmlUiNet
     {
         #region Methods
 
-        protected ElementGeneric(IntPtr ptr, bool automaticallyRegisterInCache)
+        public ElementGeneric(IntPtr ptr, bool automaticallyRegisterInCache)
             : base(ptr, automaticallyRegisterInCache)
         {
         }

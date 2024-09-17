@@ -37,5 +37,20 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetOffsetTop")]
         public static extern float GetOffsetTop(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetAbsoluteLeft")]
+        public static extern float GetAbsoluteLeft(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetAbsoluteTop")]
+        public static extern float GetAbsoluteTop(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetClientHeight")]
+        public static extern float GetClientHeight(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetClientWidth")]
+        public static extern float GetClientWidth(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetAttributeString")]
+        public static extern IntPtr GetAttributeString(IntPtr element, string attributeName, string defaultValue);
     }
 }

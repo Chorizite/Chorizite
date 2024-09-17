@@ -26,6 +26,9 @@ namespace ACUI.Lib.RmlUi {
         }
 
         public override string JoinPath(string path, string file) {
+            if (file.Contains("://")) {
+                return file;
+            }
             path = System.IO.Path.GetDirectoryName(path);
             string newPath;
             if (System.IO.Path.DirectorySeparatorChar == '\\') {
@@ -34,7 +37,6 @@ namespace ACUI.Lib.RmlUi {
             else {
                 newPath = base.JoinPath(path, file);
             }
-            _log?.LogDebug($"JOIN PATH: {path} WITH {file} INTO {newPath}");
             return newPath;
         }
     }

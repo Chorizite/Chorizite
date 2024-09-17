@@ -40,6 +40,18 @@ RMLUI_CAPI void rml_RemoveContext(const char *name) {
     Rml::RemoveContext(name);
 }
 
+RMLUI_CAPI void rml_RegisterPlugin(Rml::Plugin *plugin) {
+    Rml::RegisterPlugin(plugin);
+}
+
+RMLUI_CAPI Rml::RenderInterface* rml_GetRenderInterface() {
+    return Rml::GetRenderInterface();
+}
+
+RMLUI_CAPI Rml::SystemInterface* rml_GetSystemInterface() {
+    return Rml::GetSystemInterface();
+}
+
 RMLUI_CAPI int rml_Test(const char *name) {
     return 123;
 }
