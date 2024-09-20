@@ -20,10 +20,6 @@ namespace ACUI.Lib {
             Log = log;
             FontManager = new FontManager(log);
             Context = ctx;
-
-            Rml.LoadFontFace(@"D:\projects\assets\LatoLatin-Regular.ttf");
-
-            LoadPanelFile(@"D:/projects/ACUI/Plugins/Core.UI/assets/test.rml");
         }
 
         public Panel LoadPanelFile(string file) {

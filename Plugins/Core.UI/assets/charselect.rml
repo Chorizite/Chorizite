@@ -9,8 +9,8 @@
 
       body {
         font-family: LatoLatin;
-        height: 200px;
-        width: 200px;
+        height: 600px;
+        width: 800px;
         color: #f5bc42;
         decorator: image( dat://0x06004d63 );
         opacity: 0.8;

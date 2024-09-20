@@ -6,6 +6,7 @@ using Core.DatService;
 using Core.UI.Lib.RmlUi;
 using MagicHat.Core.Input;
 using MagicHat.Core.Plugins;
+using MagicHat.Core.Plugins.AssemblyLoader;
 using MagicHat.Core.Render;
 using MagicHat.Service.Lib;
 using MagicHat.Service.Lib.Input;
@@ -32,6 +33,7 @@ namespace ACUI {
         private Context? _ctx;
         private RmlInputManager _rmlInput;
         private ElementDocument? _doc;
+        private readonly AssemblyPluginManifest _manifest;
 
         internal IPluginManager? PluginManager;
         private IRenderInterface _renderer;
@@ -42,7 +44,8 @@ namespace ACUI {
 
         public static UI Instance { get; private set; }
 
-        public UI() {
+        public UI(AssemblyPluginManifest manifest) {
+            _manifest = manifest;
             Instance = this;
         }
 
@@ -75,6 +78,9 @@ namespace ACUI {
                 }
 
                 PanelManager = new PanelManager(_ctx, Log);
+
+                Rml.LoadFontFace(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "LatoLatin-Regular.ttf"));
+                PanelManager.LoadPanelFile(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "charselect.rml").Replace("/", @"\"));
 
                 _renderer.OnRender2D += Renderer_OnRender2D;
             }

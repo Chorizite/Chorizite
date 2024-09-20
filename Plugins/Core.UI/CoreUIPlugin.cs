@@ -34,7 +34,7 @@ namespace ACUI {
             _pluginManager = pluginManager;
             _renderer = renderer;
             _input = input;
-            UI = new UI();
+            UI = new UI(manifest);
             try {
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
                 // fail to find it later

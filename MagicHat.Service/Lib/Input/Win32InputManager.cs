@@ -72,6 +72,7 @@ namespace MagicHat.Service.Lib.Input {
                     MouseX = LOWORD(lParam);
                     MouseY = HIWORD(lParam);
                     eatableEvent = new MouseMoveEventArgs(MouseX, MouseY);
+                    OnMouseMove?.Invoke(this, (MouseMoveEventArgs)eatableEvent);
                     break;
             }
 

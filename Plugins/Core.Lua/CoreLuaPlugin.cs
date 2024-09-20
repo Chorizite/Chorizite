@@ -1,51 +1,29 @@
-﻿using MagicHat.Service.Lib.Plugins;
-using System.IO;
+﻿using System.IO;
 using System;
 using MagicHat.Service.Lib;
 using Microsoft.Extensions.Logging;
 using WattleScript.Interpreter;
 using ScriptHost.Lib;
-using MagicHat.Service.Lib.Plugins.AssemblyLoader;
+using MagicHat.Core.Plugins;
+using MagicHat.Core.Plugins.AssemblyLoader;
+using Core.AC;
 
 namespace ScriptHost {
     public class CoreLuaPlugin : IPluginCore {
-        private string _assemblyDirectory = null;
-        private PluginManager _pluginManager;
-        private IBackendProvider _backendProvider;
+        private readonly IPluginManager _pluginManager;
         public static ILogger<CoreLuaPlugin>? Log;
 
         public Script Script { get; }
 
-        /// <summary>
-        /// Assembly directory containing the plugin dll
-        /// </summary>
-        public string AssemblyDirectory {
-            get {
-                if (_assemblyDirectory == null) {
-                    try {
-                        _assemblyDirectory = Path.GetDirectoryName(typeof(CoreLuaPlugin).Assembly.Location);
-                    }
-                    catch {
-                        _assemblyDirectory = Environment.CurrentDirectory;
-                    }
-                }
-                return _assemblyDirectory;
-            }
-            set {
-                Log?.LogTrace($"Setting AssemblyDirectory to {value}");
-                _assemblyDirectory = value;
-            }
-        }
-        public CoreLuaPlugin(PluginManager pluginManager, IBackendProvider backendProvider, ILogger<CoreLuaPlugin>? log) {
+        public CoreLuaPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, ILogger<CoreLuaPlugin> log) : base(manifest) {
             Log = log;
             _pluginManager = pluginManager;
-            _backendProvider = backendProvider;
 
-            if (_pluginManager.PluginIsLoaded("ScriptHost")) {
+            if (_pluginManager.PluginIsLoaded("Core.AC")) {
                 CallScriptHost();
             }
             else {
-                Log?.LogWarning("ScriptHost is not loaded");
+                Log?.LogWarning("Core.AC is not loaded");
             }
 
             Script = new Script();
@@ -63,7 +41,7 @@ namespace ScriptHost {
 
         private void CallScriptHost() {
             try {
-                var scriptHost = _pluginManager.GetPlugin<CoreACPlugin>("ScriptHost");
+                var scriptHost = _pluginManager.GetPlugin<CoreACPlugin>("Core.AC");
 
                 if (scriptHost is not null) {
                     Log?.LogInformation($"Lua called ScriptHost: {scriptHost?.Test()}");
@@ -87,7 +65,7 @@ namespace ScriptHost {
             }
         }
 
-        public void Dispose() {
+        protected override void Dispose() {
             
         }
     }
