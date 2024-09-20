@@ -1,19 +1,19 @@
-﻿using MagicHat.Service.Lib.Plugins;
-using System.IO;
+﻿using System.IO;
 using System;
 using MagicHat.Service.Lib;
 using Microsoft.Extensions.Logging;
-using MagicHat.Service.Lib.Plugins.AssemblyLoader;
 using ACClientLib.DatReaderWriter;
+using MagicHat.Core.Plugins;
+using MagicHat.Core.Plugins.AssemblyLoader;
 
 namespace Core.DatService {
     public class CoreDatService : IPluginCore {
-        private PluginManager _pluginManager;
+        private IPluginManager _pluginManager;
         public static ILogger<CoreDatService>? Log;
 
         public DatDatabaseReader PortalDat { get; }
 
-        protected CoreDatService(AssemblyPluginManifest manifest, PluginManager pluginManager, ILogger<CoreDatService>? log) : base(manifest) {
+        protected CoreDatService(AssemblyPluginManifest manifest, IPluginManager pluginManager, ILogger<CoreDatService>? log) : base(manifest) {
             Log = log;
             _pluginManager = pluginManager;
 

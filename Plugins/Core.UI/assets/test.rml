@@ -1,134 +1,21 @@
 ﻿<html>
 	<head>
 		<style>
-      @spritesheet panel {
-        src: panel.9.png;
-        panel: 1px 1px 64px 64px;
-        panel-inner: 6px 6px 52px 52px;
-      }
-
-      #panel {
-        display: block;
-        decorator: ninepatch(panel, panel-inner);
-        position: absolute;
-        top: 206px;
-        left: 37px;
-        width: 152px
-        height: 400px;
-        padding: 4px;
-      }
-
-      #panel li {
-        display: block;
-        height: 28px;
-        line-height: 28px;
-        padding-left: 6px;
-        font-size: 16px;
-        font-effect: outline(1px black);
-      }
 
       body {
         font-family: LatoLatin;
-        height: 100%;
-        width: 100%;
+        height: 200px;
+        width: 200px;
         color: #f5bc42;
         decorator: image( dat://0x06004d63 );
-      }
-      button {
-        position: absolute;
-        decorator: image( dat://0x06004c9e );
-        display: inline-block;
-        text-align: center;
-        width: 170px;
-        height: 99px;
-        line-height: 99px;
-        font-size: 18dp;
-        font-effect: outline(2px black);
-      }
-
-      button:hover {
-        decorator: image( dat://0x06004c9f );
-      }
-
-      button#createcharacter {
-        decorator: image( dat://0x06004CA3 );
-        top: 185px;
-        left: 215px;
-        width: 254px;
-        height: 113px;
-        line-height: 113px;
-        font-size: 21dp;
-        font-weight: bold;
-      }
-      button#createcharacter:hover {
-        decorator: image( dat://0x06004CA4 );
-      }
-
-      button#enter {
-        decorator: image( dat://0x06004CB2 );
-        top: 290px;
-        left: 240px;
-        width: 211px;
-        height: 211px;
-        line-height: 211px;
-        font-size: 32dp;
-        font-weight: bold;
-      }
-      button#enter:hover {
-        decorator: image( dat://0x06004CB3 );
-      }
-
-      button#delete {
-        top: 522px;
-        left: 36px;
-      }
-
-      button#credits {
-        top: 522px;
-        left: 465px;
-      }
-
-      button#exit {
-        top: 522px;
-        left: 615px;
-      }
-
-      span#world {
-        decorator: image( dat://0x06004D64 );
-        display: inline-block;
-        width: 193px;
-        height: 110px;
-        line-height: 110px;
-        font-size: 22px;
-        text-align: center;
-        position: absolute;
-        top: 44px;
-        left: 20px;
+        opacity: 0.8;
+        overflow: hidden;
       }
     </style>
 	</head>
 	<body id="b">
     <div id="wrapper">
-      <span id="world">Coldeve</span>
-      <button id="enter">ENTER</button>
-      <button id="createcharacter">Create Character</button>
-      <button id="credits">CREDITS</button>
-      <button id="delete">DELETE</button>
-      <button id="exit">EXIT</button>
-      <div id="panel">
-        <ul>
-          <li>A Mage</li>
-          <li>Sunnuj</li>
-          <li>Do Things Bot</li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-        </ul>
-      </div>
+    HELLO
     </div>
 	</body>
 </html>

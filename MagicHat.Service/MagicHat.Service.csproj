@@ -23,6 +23,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
+    <ProjectReference Include="..\MagicHat.Core\MagicHat.Core.csproj" />
+  </ItemGroup>
   
   <ItemGroup>
     <Reference Include="Decal.Adapter">
@@ -53,5 +58,7 @@
       <HintPath>..\deps\Microsoft.DirectX.Direct3DX.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Microsoft.VisualC" />
+    <Reference Include="System.Web" />
   </ItemGroup>
 </Project>

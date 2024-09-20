@@ -1,18 +1,18 @@
 ﻿using Autofac;
 using Decal.Adapter;
 using Decal.Interop.Core;
-using MagicHat.Service.Lib;
-using MagicHat.Service.Lib.Events;
-using MagicHat.Service.Lib.Logging;
-using MagicHat.Service.Lib.Plugins;
-using MagicHat.Service.Lib.Plugins.AssemblyLoader;
+using MagicHat.Core.Dats;
+using MagicHat.Core.Input;
+using MagicHat.Core.Logging;
+using MagicHat.Core.Render;
+using MagicHat.Service.Lib.Input;
+using MagicHat.Service.Lib.Render;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MagicHat.Service {
     [ClassInterface(ClassInterfaceType.None)]
@@ -25,37 +25,20 @@ namespace MagicHat.Service {
         private bool _hasFilters = false;
 
         internal DecalCore? IDecal;
-        private MagicHatLogger<MagicHatService> _log;
-        private BackendProvider _backendProvider;
+        private ILogger<MagicHatService>? _log;
+        private DX9RenderInterface _render;
+        private Win32InputManager _input;
         private bool didInit;
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        internal static MagicHatService Instance { get; private set; }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        internal static IContainer? Container { get; private set; }
 
         /// <summary>
         /// The absolute path to the magic hat service dll directory.
         /// </summary>
         public static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(MagicHatService)).Location);
 
+        public Core.MagicHat? MagicHatInstance { get; private set; }
+
         public MagicHatService() {
-            Instance = this;
-
-            AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(CurrentDomain_AssemblyResolve);
-        }
-
-        private Assembly? CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
-            var name = new AssemblyName(args.Name);
-            var localDllPath = Path.Combine(AssemblyDirectory, $"{name.Name}.dll");
-            if (File.Exists(localDllPath)) {
-                return Assembly.Load(File.ReadAllBytes(localDllPath));
-            }
-
-            if (Container?.Resolve<PluginManager>()?.TryResolvePluginAssembly(args, out var loadedAssembly) == true) {
-                return loadedAssembly;
-            }
-
-            return null;
+            _log = new MagicHatLogger<MagicHatService>(GetType(), AssemblyDirectory);
         }
 
         void IDecalService.Initialize(DecalCore pDecal) {
@@ -86,46 +69,23 @@ namespace MagicHat.Service {
         }
 
         private void Startup() {
-            var builder = new ContainerBuilder();
-            _log = new MagicHatLogger<MagicHatService>(typeof(MagicHatService));
-            _backendProvider = new BackendProvider();
+            try {
+                MagicHatInstance = new Core.MagicHat((builder) => {
+                    builder.Register(c => new DX9RenderInterface(c.Resolve<ILogger<DX9RenderInterface>>(), c.Resolve<IDatReaderInterface>()))
+                        .As<IRenderInterface>()
+                        .SingleInstance();
+                    builder.Register(c => new Win32InputManager(c.Resolve<ILogger<Win32InputManager>>()))
+                        .As<IInputManager>()
+                        .SingleInstance();
 
-            //builder.RegisterModule<LoggingModule>();
-            builder.RegisterInstance<IBackendProvider>(_backendProvider);
-            builder.RegisterGeneric(MakeGenericLogger).As(typeof(ILogger<>));
-            builder.RegisterInstance(new PluginManager(_backendProvider));
-
-            Container = builder.Build();
-
-            var pluginManager = Container.Resolve<PluginManager>();
-
-            pluginManager.Init(Container);
-            pluginManager.LoadPlugins();
-            pluginManager.Startup();
-        }
-
-        /// <summary>
-        /// Make a logger using either the FriendlyNameAttribute or the name of the type. If the type inherits from
-        /// IPluginCore it will use the name of the namespace since the class is likely to be named PluginCore.
-        /// Otherwise it will use the name of the type with no namespace.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="types"></param>
-        /// <returns></returns>
-        private object MakeGenericLogger(IComponentContext context, Type[] types) {
-            if (types.Length > 0) {
-                var friendlyName = types[0].Name;
-
-                if (friendlyName.EndsWith("Plugin")) {
-                    friendlyName = friendlyName.Substring(0, friendlyName.Length - 6);
-                }
-
-                return Activator.CreateInstance(typeof(MagicHatLogger<>).MakeGenericType(types), new object[] {
-                    friendlyName
+                    return new Core.MagicHatConfig(Path.Combine(AssemblyDirectory, "plugins"), AssemblyDirectory);
                 });
+
+                _render = (MagicHatInstance.Container.Resolve<IRenderInterface>() as DX9RenderInterface)!;
+                _input = (MagicHatInstance.Container.Resolve<IInputManager>() as Win32InputManager)!;
             }
-            else {
-                return _log;
+            catch (Exception ex) {
+                _log?.LogError(ex, $"Error during Startup: {ex.Message}");
             }
         }
 
@@ -135,11 +95,7 @@ namespace MagicHat.Service {
                     return false;
                 }
 
-                var args = new Lib.Events.WindowMessageEventArgs(HWND, (WindowMessageType)uMsg, wParam, lParam);
-
-                _backendProvider?.TriggerOnWindowMessage(this, args);
-
-                return args.Eat;
+                return _input?.HandleWindowMessage(HWND, (WindowMessageType)uMsg, wParam, lParam) ?? false;
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error during WindowMessage: {ex.Message}");
@@ -165,8 +121,7 @@ namespace MagicHat.Service {
 
         void IDecalService.Terminate() {
             try {
-                Container?.Resolve<PluginManager>()?.Dispose();
-                Container?.Dispose();
+                MagicHatInstance?.Dispose();
                 _log?.LogDebug("\n\n\n");
             }
             catch (Exception ex) {
@@ -196,7 +151,7 @@ namespace MagicHat.Service {
 
         public void PreReset() {
             try {
-                _backendProvider?.TriggerOnGraphicsPreReset(this, EventArgs.Empty);
+                _render?.TriggerOnGraphicsPreReset(this, EventArgs.Empty);
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error during PreReset: {ex.Message}");
@@ -205,7 +160,7 @@ namespace MagicHat.Service {
 
         public void PostReset() {
             try {
-                _backendProvider?.TriggerOnGraphicsPostReset(this, EventArgs.Empty);
+                _render?.TriggerOnGraphicsPostReset(this, EventArgs.Empty);
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error during PostReset: {ex.Message}");
@@ -214,7 +169,7 @@ namespace MagicHat.Service {
 
         public void Render2D() {
             try {
-                _backendProvider?.TriggerOnRender2D(this, EventArgs.Empty);
+                _render?.Render2D();
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error during Render2D: {ex.Message}");

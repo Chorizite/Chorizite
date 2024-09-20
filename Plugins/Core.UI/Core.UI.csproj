@@ -27,24 +27,6 @@
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.DirectX">
-      <HintPath>deps\Microsoft.DirectX.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.DirectX.Direct3D">
-      <HintPath>deps\Microsoft.DirectX.Direct3D.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.DirectX.Direct3DX">
-      <HintPath>deps\Microsoft.DirectX.Direct3DX.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.VisualC">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Web" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" ExcludeAssets="runtime" />
     <PackageReference Include="NSIS-Tool" Version="3.10.0">
@@ -54,6 +36,11 @@
     <PackageReference Include="RoyT.TrueType" Version="0.2.0" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime">
+      <Private>False</Private>
+      <ExcludeAssets>all</ExcludeAssets>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
     <ProjectReference Include="..\..\MagicHat.Service\MagicHat.Service.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>

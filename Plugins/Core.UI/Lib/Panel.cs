@@ -1,5 +1,4 @@
-﻿using MagicHat.Service.Lib.Plugins;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
