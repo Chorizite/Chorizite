@@ -42,7 +42,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     {
 		case DLL_PROCESS_ATTACH:
 			thisProcessModule = hModule;
-			load_reloaded();
+			//load_reloaded();
 			//initializeThreadHandle = CreateThread(nullptr, 0, &load_reloaded_async, 0, 0, nullptr);
 			break;
 
@@ -177,6 +177,28 @@ struct ModInfoDummy
 	char padding[256];
 };
 
+DWORD __fastcall InjectPayloadAndExecute(HANDLE hProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPCVOID lpBuffer, SIZE_T dwSize) {
+	void* pimple;
+	DWORD(__stdcall * v5)(LPVOID);
+	HANDLE RemoteThread;
+	DWORD ExitCode;
+	pimple = 0;
+	v5 = lpStartAddress;
+	if (lpBuffer && dwSize) {
+		pimple = VirtualAllocEx(hProcess, 0, dwSize, 0x3000u, 4u);
+		WriteProcessMemory(hProcess, pimple, lpBuffer, dwSize, 0);
+		v5 = lpStartAddress;
+	}
+	RemoteThread = CreateRemoteThread(hProcess, 0, 0, v5, pimple, 0, 0);
+	ExitCode = 0;
+	WaitForSingleObject(RemoteThread, 0xFFFFFFFF);
+	GetExitCodeThread(RemoteThread, &ExitCode);
+	if (pimple) {
+		VirtualFreeEx(hProcess, pimple, 0, 0x8000u);
+	}
+	return ExitCode;
+}
+
 extern "C"
 {
 	// Note: MainMemory's Mod Loaders have inconsistent entry points (some having helper functions, some not). Not exporting proper defs.
@@ -188,5 +210,63 @@ extern "C"
 		std::cout << "[Reloaded II Bootstrapper] Ultimate ASI Loader Entrypoint Hit" << std::endl;
 		entryPointParameters.flags |= LoadedExternally;
 		WaitForSingleObject(initializeThreadHandle, INFINITE);
+	}
+
+	/*
+		[DllImport("injector.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern bool Bootstrap();
+	*/
+	__declspec(dllexport) void Bootstrap() {
+		load_reloaded();
+	}
+
+	/*
+		[DllImport("injector.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+		public static extern int LaunchInjected(string command_line, string working_directory, string inject_dll_path, [MarshalAs(UnmanagedType.LPStr)] string initialize_function);
+	*/
+#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
+	__declspec(dllexport) DWORD LaunchInjected(wchar_t* Source, LPCWSTR lpCurrentDirectory, LPCWSTR lpLibFileName, LPCSTR lpProcName) {
+		size_t SourceLen;
+		wchar_t* CmdLine_s;
+		HMODULE ModuleHandleW;
+		HMODULE(__stdcall * LoadLibraryW)(LPCWSTR);
+		HMODULE LibraryW;
+		char* v10;
+		struct _STARTUPINFOW StartupInfo;
+		struct _PROCESS_INFORMATION ProcessInformation;
+		wchar_t* Sourcea;
+
+		if (!Source || !lpCurrentDirectory || !lpLibFileName || !lpProcName) {
+			return 0;
+		}
+		memset(&ProcessInformation, 0, sizeof(ProcessInformation));
+		memset(&StartupInfo, 0, sizeof(StartupInfo));
+		StartupInfo.cb = 68;
+		SourceLen = wcslen(Source);
+		CmdLine_s = (wchar_t*)operator new((unsigned __int64)(SourceLen + 1) >> 31 != 0 ? -1 : 2 * (SourceLen + 1));
+		wcsncpy(CmdLine_s, Source, SourceLen);
+		CmdLine_s[SourceLen] = 0;
+		if (!CreateProcessW(0, CmdLine_s, 0, 0, 0, 4u, 0, lpCurrentDirectory, &StartupInfo, &ProcessInformation))
+			return 0;
+		delete(CmdLine_s);
+		ModuleHandleW = GetModuleHandleW(L"kernel32.dll");
+		LoadLibraryW = (HMODULE(__stdcall*)(LPCWSTR))GetProcAddress(ModuleHandleW, "LoadLibraryW");
+		Sourcea = (wchar_t*)InjectPayloadAndExecute(
+			ProcessInformation.hProcess,
+			(LPTHREAD_START_ROUTINE)LoadLibraryW,
+			lpLibFileName,
+			2 * wcslen(lpLibFileName));
+		if (!Sourcea) {
+			TerminateProcess(ProcessInformation.hProcess, 0);
+			return 0;
+		}
+		LibraryW = ::LoadLibraryW(lpLibFileName);
+		v10 = (char*)((char*)GetProcAddress(LibraryW, lpProcName) - (char*)LibraryW);
+		FreeLibrary(LibraryW);
+		InjectPayloadAndExecute(ProcessInformation.hProcess, (LPTHREAD_START_ROUTINE)((char*)Sourcea + (DWORD)v10), 0, 0);
+		ResumeThread(ProcessInformation.hThread);
+		CloseHandle(ProcessInformation.hThread);
+		CloseHandle(ProcessInformation.hProcess);
+		return ProcessInformation.dwProcessId;
 	}
 }
