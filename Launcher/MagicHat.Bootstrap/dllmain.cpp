@@ -3,9 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include "Shlobj_core.h"
-#include "ReloadedPaths.h"
 #include "CoreCLR.hpp"
-#include "nlohmann/json.hpp"
 
 #include <locale>
 #include <codecvt>
@@ -14,23 +12,12 @@
 #include <sstream>
 #include "EntryPointParameter.h"
 
-using json = nlohmann::json;
-
 // Global Variables
 CoreCLR* CLR;
 HMODULE thisProcessModule;
-HANDLE initializeThreadHandle;
-HANDLE bootstrapperMemoryMappedFileHandle;
 EntryPointParameters entryPointParameters;
 string_t launcherPath;
 
-// Reloaded Init Functions
-DWORD WINAPI load_reloaded_async(LPVOID lpParam);
-
-bool is_reloaded_already_loaded();
-bool is_reloaded_bootstrapper_already_loaded();
-void set_reloaded_bootstrapper_already_loaded();
-std::wstring get_reloaded_bootstrapper_name();
 bool load_reloaded();
 string_t get_current_directory(HMODULE hModule);
 
@@ -42,26 +29,14 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     {
 		case DLL_PROCESS_ATTACH:
 			thisProcessModule = hModule;
-			//load_reloaded();
-			//initializeThreadHandle = CreateThread(nullptr, 0, &load_reloaded_async, 0, 0, nullptr);
 			break;
 
 		case DLL_THREAD_ATTACH:
 		case DLL_THREAD_DETACH:
-			break;
-
 		case DLL_PROCESS_DETACH:
-			// Unloading mod loader not supported.
-			CloseHandle(bootstrapperMemoryMappedFileHandle);
 			break;
     }
     return TRUE;
-}
-
-DWORD WINAPI load_reloaded_async(LPVOID lpParam)
-{
-	load_reloaded();
-	return 0;
 }
 
 /**
@@ -106,53 +81,6 @@ bool load_reloaded()
 	initialize(&entryPointParameters, sizeof(EntryPointParameters));
 	
 	return true;
-}
-
-/**
- * \brief Returns true if Reloaded is already loaded, else false.
- */
-bool is_reloaded_already_loaded()
-{
-	const std::wstring memoryMappedFileName = L"Reloaded-Mod-Loader-Server-PID-" + std::to_wstring(GetCurrentProcessId());
-	const HANDLE hMapFile = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, memoryMappedFileName.c_str());
-
-	const bool loaded = (hMapFile != nullptr);
-	if (hMapFile != nullptr)
-		CloseHandle(hMapFile);
-	
-	return loaded;
-}
-
-/**
- * \brief Returns true if Reloaded is already loaded, else false.
- */
-bool is_reloaded_bootstrapper_already_loaded()
-{
-	const std::wstring memoryMappedFileName = get_reloaded_bootstrapper_name();
-	const HANDLE hMapFile = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, memoryMappedFileName.c_str());
-
-	const bool loaded = (hMapFile != nullptr);
-	if (hMapFile != nullptr)
-		CloseHandle(hMapFile);
-
-	return loaded;
-}
-
-/**
- * \brief Returns true if Reloaded is already loaded, else false.
- */
-void set_reloaded_bootstrapper_already_loaded()
-{
-	const std::wstring memoryMappedFileName = get_reloaded_bootstrapper_name();
-	bootstrapperMemoryMappedFileHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, 4, memoryMappedFileName.c_str());
-}
-
-/**
- * \brief Returns the name of the memory mapped file for the Reloaded Bootstrapper.
- */
-std::wstring get_reloaded_bootstrapper_name()
-{
-	return L"Reloaded-Mod-Loader-Bootstrapper-PID-" + std::to_wstring(GetCurrentProcessId());
 }
 
 string_t get_current_directory(HMODULE mHandle)
@@ -209,7 +137,7 @@ extern "C"
 	{
 		std::cout << "[Reloaded II Bootstrapper] Ultimate ASI Loader Entrypoint Hit" << std::endl;
 		entryPointParameters.flags |= LoadedExternally;
-		WaitForSingleObject(initializeThreadHandle, INFINITE);
+		//WaitForSingleObject(initializeThreadHandle, INFINITE);
 	}
 
 	/*
