@@ -24,7 +24,7 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\MagicHat.Service\MagicHat.Service.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\MagicHat.Service\MagicHat.DecalService.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

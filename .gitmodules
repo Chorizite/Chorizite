@@ -7,3 +7,6 @@
 [submodule "ext/RmlUi.Native/ext/RmlUi"]
 	path = ext/RmlUi.Native/ext/RmlUi
 	url = https://github.com/mikke89/RmlUi.git
+[submodule "Launcher/ext/Reloaded.Core.Bootstrap"]
+	path = Launcher/ext/Reloaded.Core.Bootstrap
+	url = git@github.com:trevis/Reloaded.Core.Bootstrap.git

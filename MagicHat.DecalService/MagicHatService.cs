@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace MagicHat.Service {
     [ClassInterface(ClassInterfaceType.None)]
@@ -67,7 +68,9 @@ namespace MagicHat.Service {
                 _log?.LogError(ex, $"Error during IDecal_InitializeComplete: {ex.Message}");
             }
         }
-
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
+        
         private void Startup() {
             try {
                 MagicHatInstance = new Core.MagicHat((builder) => {
