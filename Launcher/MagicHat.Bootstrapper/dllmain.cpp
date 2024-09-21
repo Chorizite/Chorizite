@@ -129,17 +129,6 @@ DWORD __fastcall InjectPayloadAndExecute(HANDLE hProcess, LPTHREAD_START_ROUTINE
 
 extern "C"
 {
-	// Note: MainMemory's Mod Loaders have inconsistent entry points (some having helper functions, some not). Not exporting proper defs.
-	__declspec(dllexport) ModInfoDummy MainMemoryModInfo = { 1 };
-
-	// Entry point for Ultimate ASI Loader, to allow waiting for Reloaded II creation thread to terminate.
-	__declspec(dllexport) void InitializeASI()
-	{
-		std::cout << "[Reloaded II Bootstrapper] Ultimate ASI Loader Entrypoint Hit" << std::endl;
-		entryPointParameters.flags |= LoadedExternally;
-		//WaitForSingleObject(initializeThreadHandle, INFINITE);
-	}
-
 	/*
 		[DllImport("injector.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern bool Bootstrap();

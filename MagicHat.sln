@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Launcher", "Launcher", "{5A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Launcher", "Launcher\Launcher\Launcher.csproj", "{A4726E2C-FCC9-414E-9658-59A00236A9E0}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Reloaded.Mod.Loader.Bootstrapper", "Launcher\MagicHat.Bootstrap\Reloaded.Mod.Bootstrapper.vcxproj", "{56DFC45C-49FB-4409-823E-EE54637F58A1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MagicHat.Bootstrapper", "Launcher\MagicHat.Bootstrapper\MagicHat.Bootstrapper.vcxproj", "{56DFC45C-49FB-4409-823E-EE54637F58A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reloaded.Core.Bootstrap.ExampleDll", "Launcher\Reloaded.Core.Bootstrap.ExampleDll\Reloaded.Core.Bootstrap.ExampleDll.csproj", "{0522B14C-206D-45F8-90B8-84BDD50DA2AD}"
 EndProject

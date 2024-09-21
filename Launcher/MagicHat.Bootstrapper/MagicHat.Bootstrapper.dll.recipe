@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\projects\ACUI\Launcher\MagicHat.Bootstrap\bin\Reloaded.Mod.Bootstrapper.dll</FullPath>
+      <FullPath>D:\projects\ACUI\Launcher\MagicHat.Bootstrapper\bin\MagicHat.Bootstrapper.dll</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

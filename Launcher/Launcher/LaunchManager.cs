@@ -8,7 +8,7 @@ namespace Launcher
     {
         private readonly string ACCLIENT_EXE = @"C:\Turbine\Asheron's Call\acclient.exe";
 
-        [DllImport("Reloaded.Mod.Loader.Bootstrapper.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        [DllImport("MagicHat.Bootstrapper.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         public static extern int LaunchInjected(string command_line, string working_directory, string inject_dll_path, [MarshalAs(UnmanagedType.LPStr)] string initialize_function);
 
         public LaunchManager()
@@ -20,7 +20,7 @@ namespace Launcher
             var host = server.Split(":").First();
             var port = server.Split(":").Last();
             var args = $"-h {host} -p {port} -a {username} -v {password} -rodat";
-            var dll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), "Reloaded.Mod.Loader.Bootstrapper.dll"); 
+            var dll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), "MagicHat.Bootstrapper.dll"); 
 
             LaunchInjected($"{ACCLIENT_EXE} {args}", Path.GetDirectoryName(ACCLIENT_EXE), dll, "Bootstrap");
             //LaunchInjected($"{ACCLIENT_EXE} {args}", Path.GetDirectoryName(ACCLIENT_EXE), DecalHelpers.GetDecalLocation(), "");
