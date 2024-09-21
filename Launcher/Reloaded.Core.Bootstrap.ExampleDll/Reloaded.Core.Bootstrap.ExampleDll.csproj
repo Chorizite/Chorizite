@@ -1,28 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <Platforms>x86</Platforms>
     <PlatformTarget>x86</PlatformTarget>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Reloaded.Hooks" Version="4.3.2" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="Microsoft.DirectX">
-      <HintPath>..\..\deps\Microsoft.DirectX.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.DirectX.Direct3D">
-      <HintPath>..\..\deps\Microsoft.DirectX.Direct3D.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.DirectX.Direct3DX">
-      <HintPath>..\..\deps\Microsoft.DirectX.Direct3DX.dll</HintPath>
-    </Reference>
+    <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
   </ItemGroup>
 </Project>
