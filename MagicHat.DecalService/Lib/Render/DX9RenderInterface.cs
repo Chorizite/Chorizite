@@ -60,6 +60,7 @@ namespace MagicHat.DecalService.Lib.Render {
             object a = CoreManager.Current.Decal.Underlying.GetD3DDevice(ref IID_IDirect3DDevice9);
             Marshal.QueryInterface(Marshal.GetIUnknownForObject(a), ref IID_IDirect3DDevice9, out var unmanagedD3dPtr);
             D3Ddevice = new Device(unmanagedD3dPtr);
+            _log.LogDebug($"DX Device: {((int)unmanagedD3dPtr):X8}");
         }
 
         public void Render2D() {
