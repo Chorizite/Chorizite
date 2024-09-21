@@ -29,7 +29,7 @@ namespace Reloaded.Core.Bootstrap.ExampleDll
         [Function(Hooks.Definitions.X86.CallingConventions.Stdcall)]
         public delegate IntPtr CreateDevice(IntPtr a, uint b, DeviceType c, IntPtr d, CreateFlags e, IntPtr f, IntPtr g);
 
-        public static int SayHello(IntPtr stringPtr, int size)
+        public static int SayHello(IntPtr a, int b)
         {
             using var direct3D = new Direct3D();
             using var renderForm = new Form();
