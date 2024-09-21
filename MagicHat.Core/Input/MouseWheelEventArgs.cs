@@ -1,6 +1,6 @@
 ﻿using MagicHat.Core.Input;
 
-namespace MagicHat.Service.Lib.Input {
+namespace MagicHat.DecalService.Lib.Input {
     public class MouseWheelEventArgs : EatableEvent {
         private int Delta { get; }
 

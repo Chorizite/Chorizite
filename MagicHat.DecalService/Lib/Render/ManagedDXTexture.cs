@@ -14,7 +14,7 @@ using System.IO;
 using System.Security.Policy;
 using System.Web;
 
-namespace MagicHat.Service.Lib.Render {
+namespace MagicHat.DecalService.Lib.Render {
     /// <summary>
     /// Holds a texture (from a bitmap), maybe other things later...
     /// Using this class will automatically recreate the texture as needed.

@@ -1,4 +1,4 @@
-﻿using MagicHat.Service.Lib.Input;
+﻿using MagicHat.DecalService.Lib.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Runtime.InteropServices;
 
-namespace MagicHat.Service.Lib.Input {
+namespace MagicHat.DecalService.Lib.Input {
     internal class Win32InputManager : IInputManager {
         private readonly ILogger _log;
 

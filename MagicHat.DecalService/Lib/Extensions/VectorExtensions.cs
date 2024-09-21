@@ -7,7 +7,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.Service.Lib.Extensions {
+namespace MagicHat.DecalService.Lib.Extensions {
     internal static class VectorExtensions {
         public static int ToArgb(this ColorVec color) {
             return Color.FromArgb((int)(color.Alpha * 255), (int)(color.Red * 255), (int)(color.Green * 255), (int)(color.Blue * 255)).ToArgb();

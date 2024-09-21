@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.Service.Lib.Extensions {
+namespace MagicHat.DecalService.Lib.Extensions {
     internal static class MatrixExtensions {
         public static Matrix ToDX(this Matrix4x4 mat) {
             var dx = new Matrix();

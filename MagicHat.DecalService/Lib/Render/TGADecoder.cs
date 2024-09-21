@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.Service.Lib.Render {
+namespace MagicHat.DecalService.Lib.Render {
     public class TgaDecoder {
         protected class TgaData {
             private const int TgaHeaderSize = 18;

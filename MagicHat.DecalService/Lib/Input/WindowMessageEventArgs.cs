@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.Service.Lib.Input {
+namespace MagicHat.DecalService.Lib.Input {
 
     internal class WindowMessageEventArgs : EventArgs {
         public int HWND { get; }

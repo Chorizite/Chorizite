@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System;
-using MagicHat.Service.Lib;
+using MagicHat.DecalService.Lib;
 using Microsoft.Extensions.Logging;
 using WattleScript.Interpreter;
 using ScriptHost.Lib;

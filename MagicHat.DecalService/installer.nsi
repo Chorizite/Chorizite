@@ -1,12 +1,12 @@
 ; Define your application name
-!define APPNAME "MagicHat.Service"
+!define APPNAME "MagicHat.DecalService"
 !define SOFTWARECOMPANY "HackThePlanet"
 !define SERVICEGUID "{dcfb2961-ea07-43fa-4D61-676963486174}"
 
-!define ASSEMBLY "MagicHat.Service.dll"
-!define CLASSNAME "MagicHat.Service.MagicHatService"
+!define ASSEMBLY "MagicHat.DecalService.dll"
+!define CLASSNAME "MagicHat.DecalService.MagicHatService"
 
-!define BUILDPATH "../bin/net48"
+!define BUILDPATH "../bin"
 
 ; Main Install settings
 ; compressor goes first

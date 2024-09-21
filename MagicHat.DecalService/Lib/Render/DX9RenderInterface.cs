@@ -1,7 +1,7 @@
 ﻿using Decal.Adapter;
 using MagicHat.Core.Dats;
 using MagicHat.Core.Render;
-using MagicHat.Service.Lib.Extensions;
+using MagicHat.DecalService.Lib.Extensions;
 using Microsoft.DirectX;
 using Microsoft.DirectX.Direct3D;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
-namespace MagicHat.Service.Lib.Render {
+namespace MagicHat.DecalService.Lib.Render {
     internal unsafe class DX9RenderInterface : IRenderInterface {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private struct GeometryBufferRef : IDisposable {

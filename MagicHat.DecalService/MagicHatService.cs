@@ -5,8 +5,8 @@ using MagicHat.Core.Dats;
 using MagicHat.Core.Input;
 using MagicHat.Core.Logging;
 using MagicHat.Core.Render;
-using MagicHat.Service.Lib.Input;
-using MagicHat.Service.Lib.Render;
+using MagicHat.DecalService.Lib.Input;
+using MagicHat.DecalService.Lib.Render;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -15,7 +15,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace MagicHat.Service {
+namespace MagicHat.DecalService {
     [ClassInterface(ClassInterfaceType.None)]
     [Guid("dcfb2961-ea07-43fa-4D61-676963486174")]
     [ProgId("MagicHat.Service")]

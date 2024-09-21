@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.Service.Lib.Input {
+namespace MagicHat.DecalService.Lib.Input {
     internal enum VirtualKeyStates : int {
         VK_LBUTTON = 0x01,
         VK_RBUTTON = 0x02,

@@ -16,7 +16,7 @@ namespace Launcher
             var host = server.Split(":").First();
             var port = server.Split(":").Last();
             var args = $"-h {host} -p {port} -a {username} -v {password} -rodat";
-            var dll = "D:\\projects\\ACUI\\bin\\Reloaded.Mod.Loader.Bootstrapper.dll";
+            var dll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), "Reloaded.Mod.Loader.Bootstrapper.dll");
 
             Injector.RunSuspendedCommaInjectCommaAndResume(ACCLIENT_EXE, args, dll, "", 0);
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.Service.Lib.Extensions {
+namespace MagicHat.DecalService.Lib.Extensions {
     internal static class IEnumerableExtensions {
         public static IEnumerable<T> TakeAllButLast<T>(this IEnumerable<T> source) {
             var it = source.GetEnumerator();
