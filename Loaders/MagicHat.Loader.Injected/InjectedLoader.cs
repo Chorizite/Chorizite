@@ -22,6 +22,7 @@ namespace MagicHat.Loader.Injected {
     public static class InjectedLoader {
         private static IHook<EndScene> _endSceneHook;
         private static IHook<CreateDevice> _createDeviceHook;
+        private static IHook<WndProc> _windowProcHook;
 
         public static IVirtualFunctionTable Direct3D9VTable { get; private set; }
         public static IVirtualFunctionTable DeviceVTable { get; private set; }
@@ -29,6 +30,9 @@ namespace MagicHat.Loader.Injected {
         private static int _unmanagedD3DPtr;
 
         public static Device D3Ddevice { get; private set; }
+
+        private static nint _hwnd;
+
         public static string AssemblyDirectory => System.IO.Path.GetDirectoryName(Assembly.GetAssembly(typeof(InjectedLoader)).Location);
 
         public static Core.MagicHat MagicHatInstance { get; private set; }
@@ -39,12 +43,57 @@ namespace MagicHat.Loader.Injected {
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
+        public enum GWL {
+            GWL_WNDPROC = (-4),
+            GWL_HINSTANCE = (-6),
+            GWL_HWNDPARENT = (-8),
+            GWL_STYLE = (-16),
+            GWL_EXSTYLE = (-20),
+            GWL_USERDATA = (-21),
+            GWL_ID = (-12)
+        }
+
+        [DllImport("user32.dll")]
+        private static extern bool IsWindowUnicode(IntPtr hWnd);
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
+        private static extern IntPtr GetWindowLongPtr32(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtr")]
+        private static extern IntPtr GetWindowLongPtr64(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetWindowLongW")]
+        private static extern IntPtr GetWindowLongPtr32W(IntPtr hWnd, int nIndex);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetWindowLongPtrW")]
+        private static extern IntPtr GetWindowLongPtr64W(IntPtr hWnd, int nIndex);
+
+        public static IntPtr GetWindowLong(IntPtr hWnd, GWL nIndex) {
+            if (IsWindowUnicode(hWnd))
+                return GetWindowLongW(hWnd, nIndex);
+
+            return GetWindowLongA(hWnd, nIndex);
+        }
+
+        public static IntPtr GetWindowLongA(IntPtr hWnd, GWL nIndex) {
+            var is64Bit = Environment.Is64BitProcess;
+            return is64Bit ? GetWindowLongPtr64(hWnd, (int)nIndex) : GetWindowLongPtr32(hWnd, (int)nIndex);
+        }
+
+        public static IntPtr GetWindowLongW(IntPtr hWnd, GWL nIndex) {
+            var is64Bit = Environment.Is64BitProcess;
+            return is64Bit ? GetWindowLongPtr64W(hWnd, (int)nIndex) : GetWindowLongPtr32W(hWnd, (int)nIndex);
+        }
+
         [Function(Reloaded.Hooks.Definitions.X86.CallingConventions.Stdcall)]
         public delegate IntPtr CreateDevice(IntPtr a, uint b, DeviceType c, IntPtr d, CreateFlags e, IntPtr f, IntPtr g);
 
         [FunctionHookOptions(PreferRelativeJump = true)]
         [Function(Reloaded.Hooks.Definitions.X86.CallingConventions.Stdcall)]
         public delegate IntPtr EndScene(IntPtr a);
+
+        [Function(Reloaded.Hooks.Definitions.X86.CallingConventions.Stdcall)]
+        public delegate IntPtr WndProc(IntPtr a, uint b, IntPtr c, IntPtr d);
 
         public static ILogger _log = new MagicHatLogger("InjectedLoader", AssemblyDirectory);
 
@@ -77,15 +126,23 @@ namespace MagicHat.Loader.Injected {
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
-        private unsafe static IntPtr CreateDeviceImpl(IntPtr a, uint b, DeviceType c, IntPtr d, CreateFlags e, IntPtr f, IntPtr g) {
-            var devicePtr = _createDeviceHook.OriginalFunction.Invoke(a, b, c, d, e, f, g);
-            _unmanagedD3DPtr = *((int*)g);
+        private unsafe static IntPtr CreateDeviceImpl(IntPtr a, uint b, DeviceType c, IntPtr hwnd, CreateFlags e, IntPtr f, IntPtr d3dPtr) {
+            var devicePtr = _createDeviceHook.OriginalFunction.Invoke(a, b, c, hwnd, e, f, d3dPtr);
+            _unmanagedD3DPtr = *((int*)d3dPtr);
             D3Ddevice = new Device(_unmanagedD3DPtr);
-            //MessageBox(0, $"CreateDevice: {D3Ddevice.Viewport.Width},{D3Ddevice.Viewport.Height}", "Hello", 0);
+            _hwnd = hwnd;
+            var windowProc = GetWindowLong(hwnd, GWL.GWL_WNDPROC);
+            _windowProcHook = ReloadedHooks.Instance.CreateHook<WndProc>(typeof(InjectedLoader), nameof(WndProcImpl), windowProc).Activate();
 
             Startup();
 
             return devicePtr;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+        private static IntPtr WndProcImpl(IntPtr hwnd, uint uMsg, IntPtr wParam, IntPtr lParam) {
+            _input?.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam);
+            return _windowProcHook.OriginalFunction.Invoke(hwnd, uMsg, wParam, lParam);
         }
 
         private static void Startup() {
