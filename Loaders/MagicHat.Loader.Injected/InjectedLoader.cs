@@ -59,15 +59,16 @@ namespace MagicHat.Loader.Injected {
             var createDevicePtr = (long)Direct3D9VTable[(int)IDirect3D9.CreateDevice].FunctionPointer;
             _createDeviceHook = ReloadedHooks.Instance.CreateHook<CreateDevice>(typeof(InjectedLoader), nameof(CreateDeviceImpl), createDevicePtr).Activate();
 
-            //var endScenePtr = (long)DeviceVTable[(int)IDirect3DDevice9.EndScene].FunctionPointer;
-            //_endSceneHook = ReloadedHooks.Instance.CreateHook<EndScene>(typeof(InjectedLoader), nameof(EndSceneImpl), endScenePtr).Activate();
+            var endScenePtr = (long)DeviceVTable[(int)IDirect3DDevice9.EndScene].FunctionPointer;
+            _endSceneHook = ReloadedHooks.Instance.CreateHook<EndScene>(typeof(InjectedLoader), nameof(EndSceneImpl), endScenePtr).Activate();
 
             return 0;
         }
 
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static IntPtr EndSceneImpl(IntPtr a) {
             try {
-                //_render?.Render2D();
+                _render?.Render2D();
             }
             catch (Exception ex) {
                 _log.LogError(ex, $"EndScene Error: {ex.Message}");
