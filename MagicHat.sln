@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicHat.DecalService", "MagicHat.DecalService\MagicHat.DecalService.csproj", "{C0BCF6D4-72D4-4812-9674-4A882D7B35C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicHat.Loader.DecalService", "Loaders\MagicHat.Loader.DecalService\MagicHat.Loader.DecalService.csproj", "{C0BCF6D4-72D4-4812-9674-4A882D7B35C5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}"
 EndProject
@@ -28,6 +28,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{52AEE83B-EC3B-4515-ADD1-14F30847B5F8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatReaderWriter", "ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj", "{31721F88-7943-4723-8FA9-1B1166147AEE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Loaders", "Loaders", "{A349937F-00E9-48C7-9846-65A13C5AB718}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backends", "Backends", "{F27F9A01-6A17-4634-ACFF-36C9D227A7D1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicHat.Backends.ACBackend", "MagicHat.Backends.ACBackend\MagicHat.Backends.ACBackend.csproj", "{96EB4590-E0EA-4D79-BC25-F42BCACD167D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,11 +81,16 @@ Global
 		{31721F88-7943-4723-8FA9-1B1166147AEE}.Debug|x86.Build.0 = Debug|x86
 		{31721F88-7943-4723-8FA9-1B1166147AEE}.Release|x86.ActiveCfg = Release|x86
 		{31721F88-7943-4723-8FA9-1B1166147AEE}.Release|x86.Build.0 = Release|x86
+		{96EB4590-E0EA-4D79-BC25-F42BCACD167D}.Debug|x86.ActiveCfg = Debug|x86
+		{96EB4590-E0EA-4D79-BC25-F42BCACD167D}.Debug|x86.Build.0 = Debug|x86
+		{96EB4590-E0EA-4D79-BC25-F42BCACD167D}.Release|x86.ActiveCfg = Release|x86
+		{96EB4590-E0EA-4D79-BC25-F42BCACD167D}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{C0BCF6D4-72D4-4812-9674-4A882D7B35C5} = {A349937F-00E9-48C7-9846-65A13C5AB718}
 		{8D5EC52C-E4B5-45EF-9704-CC7E1EC4AE6B} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{3C6C394A-8D9D-43E4-9147-5E084261C38D} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{8AD301FC-D603-44E6-964A-2F2BC3DE52AF} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
@@ -88,6 +99,7 @@ Global
 		{56DFC45C-49FB-4409-823E-EE54637F58A1} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
 		{0522B14C-206D-45F8-90B8-84BDD50DA2AD} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
 		{31721F88-7943-4723-8FA9-1B1166147AEE} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
+		{96EB4590-E0EA-4D79-BC25-F42BCACD167D} = {F27F9A01-6A17-4634-ACFF-36C9D227A7D1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

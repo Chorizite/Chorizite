@@ -39,14 +39,15 @@ namespace MagicHat.Core {
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
+            builder.RegisterGeneric(MakeGenericLogger)
+                .As(typeof(ILogger<>))
+                .IfNotRegistered(typeof(ILogger<>));
+
             var config = configure?.Invoke(builder);
             var assemblyDir = Path.GetDirectoryName(Assembly.GetAssembly(GetType()).Location);
             Config = config ?? new MagicHatConfig(Path.Combine(assemblyDir, "plugins"), assemblyDir);
 
             builder.RegisterInstance(Config);
-            builder.RegisterGeneric(MakeGenericLogger)
-                .As(typeof(ILogger<>))
-                .IfNotRegistered(typeof(ILogger<>));
             builder.Register(c => {
                 var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
                 datReader.Init("");

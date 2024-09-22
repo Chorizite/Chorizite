@@ -1,5 +1,4 @@
-﻿using MagicHat.DecalService.Lib.Input;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

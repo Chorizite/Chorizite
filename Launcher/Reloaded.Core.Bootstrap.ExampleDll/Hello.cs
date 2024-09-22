@@ -49,7 +49,7 @@ namespace Reloaded.Core.Bootstrap.ExampleDll
         {
             var devicePtr = _createDeviceHook.OriginalFunction.Invoke(a, b, c, d, e, f, g);
             D3Ddevice = new Device(*((int*)g));
-            MessageBox(0, $"CreateDevice: {D3Ddevice.Viewport.Width},{D3Ddevice.Viewport.Height}", "Hello", 0);
+            //MessageBox(0, $"CreateDevice: {D3Ddevice.Viewport.Width},{D3Ddevice.Viewport.Height}", "Hello", 0);
 
             return devicePtr;
         }

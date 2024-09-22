@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System;
-using MagicHat.DecalService.Lib;
 using Microsoft.Extensions.Logging;
 using ACClientLib.DatReaderWriter;
 using MagicHat.Core.Plugins;

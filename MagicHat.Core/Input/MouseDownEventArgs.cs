@@ -1,6 +1,4 @@
-﻿using MagicHat.Core.Input;
-
-namespace MagicHat.DecalService.Lib.Input {
+﻿namespace MagicHat.Core.Input {
     public class MouseDownEventArgs : EatableEvent {
         public MouseButton Button { get; }
         public MouseDownEventArgs(MouseButton button) {

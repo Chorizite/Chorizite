@@ -118,7 +118,7 @@
       </AdditionalOptions>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy  /Y "$(ProjectDir)bin\X86\Bootstrapper\MagicHat.Bootstrapper.dll" "$(SolutionDir)bin\"</Command>
+      <Command>xcopy  /Y "$(ProjectDir)bin\X86\Bootstrapper\MagicHat.Bootstrapper.dll" "$(SolutionDir)bin\net8.0\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

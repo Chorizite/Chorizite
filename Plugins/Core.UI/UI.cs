@@ -8,8 +8,6 @@ using MagicHat.Core.Input;
 using MagicHat.Core.Plugins;
 using MagicHat.Core.Plugins.AssemblyLoader;
 using MagicHat.Core.Render;
-using MagicHat.DecalService.Lib;
-using MagicHat.DecalService.Lib.Input;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;

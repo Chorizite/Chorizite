@@ -85,9 +85,8 @@ extern "C"
 		CLR = new CoreCLR(&success);
 
 		if (!success) {
-
 			MessageBoxA(nullptr, "Failed", "Failed to load the `hostfxr` library. Did you copy nethost.dll?", MB_OK);
-			throw std::exception("Failed to load the `hostfxr` library. Did you copy nethost.dll?");
+			return;
 		}
 
 		// Load runtime and execute our method.
@@ -106,7 +105,7 @@ extern "C"
 			nullptr, nullptr, (void**)&initialize))
 		{
 			MessageBoxA(nullptr, "Failed", "Failed to load .NET assembly.", MB_OK);
-			throw std::exception("Failed to load .NET assembly.");
+			return;
 		}
 
 		// Set path to current dll

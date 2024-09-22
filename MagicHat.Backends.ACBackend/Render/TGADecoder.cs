@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.DecalService.Lib.Render {
+#if NETFRAMEWORK
+using System.Drawing;
+#else
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+#endif
+
+
+namespace MagicHat.Backends.ACBackend.Render {
     public class TgaDecoder {
         protected class TgaData {
             private const int TgaHeaderSize = 18;
@@ -129,7 +136,11 @@ namespace MagicHat.DecalService.Lib.Render {
             }
         }
 
+#if NETFRAMEWORK
         public static Bitmap FromFile(string path) {
+#else
+        public static Image<Argb32> FromFile(string path) {
+#endif
             try {
                 using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read)) {
                     int length = (int)fs.Length;
@@ -143,10 +154,15 @@ namespace MagicHat.DecalService.Lib.Render {
             }
         }
 
+#if NETFRAMEWORK
         public static Bitmap FromBinary(byte[] image) {
+#else
+        public static Image<Argb32> FromBinary(byte[] image) {
+#endif
             return decode(image);
         }
 
+#if NETFRAMEWORK
         protected static Bitmap decode(byte[] image) {
             TgaData tga = new TgaData(image);
 
@@ -158,6 +174,20 @@ namespace MagicHat.DecalService.Lib.Render {
             }
             return bitmap;
         }
+#else
+        protected static Image<Argb32> decode(byte[] image) {
+            throw new Exception("TGA decoder not implemented");
+            TgaData tga = new TgaData(image);
+
+            var bitmap = new Image<Argb32>(tga.Width, tga.Height);
+            for (int y = 0; y < tga.Height; ++y) {
+                for (int x = 0; x < tga.Width; ++x) {
+                    //bitmap[x, y] = Color.FromRgba(tga.GetPixel(x, y));
+                }
+            }
+            return bitmap;
+        }
+#endif
 
     }
 }

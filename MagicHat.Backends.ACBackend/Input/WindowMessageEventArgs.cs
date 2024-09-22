@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.DecalService.Lib.Input {
+namespace MagicHat.Backends.ACBackend.Input {
 
-    internal class WindowMessageEventArgs : EventArgs {
+    public class WindowMessageEventArgs : EventArgs {
         public int HWND { get; }
         public WindowMessageType Msg { get; }
         public int WParam { get; }
@@ -27,7 +27,7 @@ namespace MagicHat.DecalService.Lib.Input {
     /// Defined in winuser.h from Windows SDK v6.1
     /// Documentation pulled from MSDN.
     /// </summary>
-    internal enum WindowMessageType : ushort {
+    public enum WindowMessageType : ushort {
         /// <summary>
         /// The WM_NULL message performs no operation. An application sends the WM_NULL message if it wants to post a message that the recipient window will ignore.
         /// </summary>

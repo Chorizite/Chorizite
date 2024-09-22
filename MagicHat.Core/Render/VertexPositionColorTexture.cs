@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MagicHat.Core.Render {
+    [StructLayout(LayoutKind.Sequential)]
     public struct VertexPositionColorTexture {
         public Vector3 Position;
         public ColorVec Color;

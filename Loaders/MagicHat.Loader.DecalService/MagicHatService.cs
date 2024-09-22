@@ -1,13 +1,15 @@
 ﻿using Autofac;
 using Decal.Adapter;
+using Decal.Adapter.Wrappers;
 using Decal.Interop.Core;
+using MagicHat.Backends.ACBackend.Input;
+using MagicHat.Backends.ACBackend.Render;
 using MagicHat.Core.Dats;
 using MagicHat.Core.Input;
 using MagicHat.Core.Logging;
 using MagicHat.Core.Render;
-using MagicHat.DecalService.Lib.Input;
-using MagicHat.DecalService.Lib.Render;
 using Microsoft.Extensions.Logging;
+using SharpDX.Direct3D9;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,7 +17,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
-namespace MagicHat.DecalService {
+namespace MagicHat.Loader.DecalService {
     [ClassInterface(ClassInterfaceType.None)]
     [Guid("dcfb2961-ea07-43fa-4D61-676963486174")]
     [ProgId("MagicHat.Service")]
@@ -73,8 +75,14 @@ namespace MagicHat.DecalService {
         
         private void Startup() {
             try {
+                Guid IID_IDirect3DDevice9 = new Guid("{D0223B96-BF7A-43fd-92BD-A43B0D82B9EB}");
+                object a = CoreManager.Current.Decal.Underlying.GetD3DDevice(ref IID_IDirect3DDevice9);
+                Marshal.QueryInterface(Marshal.GetIUnknownForObject(a), ref IID_IDirect3DDevice9, out var unmanagedD3dPtr);
+                var D3Ddevice = new Device(unmanagedD3dPtr);
+                _log?.LogDebug($"Startup DX Device 2: {((int)unmanagedD3dPtr):X8} // {D3Ddevice.Viewport.Width}x{D3Ddevice.Viewport.Height}");
+
                 MagicHatInstance = new Core.MagicHat((builder) => {
-                    builder.Register(c => new DX9RenderInterface(c.Resolve<ILogger<DX9RenderInterface>>(), c.Resolve<IDatReaderInterface>()))
+                    builder.Register(c => new DX9RenderInterface(unmanagedD3dPtr, c.Resolve<ILogger<DX9RenderInterface>>(), c.Resolve<IDatReaderInterface>()))
                         .As<IRenderInterface>()
                         .SingleInstance();
                     builder.Register(c => new Win32InputManager(c.Resolve<ILogger<Win32InputManager>>()))
@@ -97,7 +105,6 @@ namespace MagicHat.DecalService {
                 if (uMsg == 0x20/*setcursor*/ || uMsg == 0x84/*WM_NCHITTEST*/) {
                     return false;
                 }
-
                 return _input?.HandleWindowMessage(HWND, (WindowMessageType)uMsg, wParam, lParam) ?? false;
             }
             catch (Exception ex) {
@@ -154,7 +161,7 @@ namespace MagicHat.DecalService {
 
         public void PreReset() {
             try {
-                _render?.TriggerOnGraphicsPreReset(this, EventArgs.Empty);
+                _render?.TriggerGraphicsPreReset(this, EventArgs.Empty);
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error during PreReset: {ex.Message}");
@@ -163,7 +170,7 @@ namespace MagicHat.DecalService {
 
         public void PostReset() {
             try {
-                _render?.TriggerOnGraphicsPostReset(this, EventArgs.Empty);
+                _render?.TriggerGraphicsPostReset(this, EventArgs.Empty);
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error during PostReset: {ex.Message}");
@@ -172,7 +179,7 @@ namespace MagicHat.DecalService {
 
         public void Render2D() {
             try {
-                _render?.Render2D();
+                _render.Render2D();
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error during Render2D: {ex.Message}");

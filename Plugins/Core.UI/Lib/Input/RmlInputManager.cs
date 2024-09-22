@@ -1,5 +1,4 @@
 ﻿using MagicHat.Core.Input;
-using MagicHat.DecalService.Lib.Input;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;

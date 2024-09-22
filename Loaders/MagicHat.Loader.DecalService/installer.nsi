@@ -1,10 +1,10 @@
 ; Define your application name
-!define APPNAME "MagicHat.DecalService"
+!define APPNAME "MagicHat.Loader.DecalService"
 !define SOFTWARECOMPANY "HackThePlanet"
 !define SERVICEGUID "{dcfb2961-ea07-43fa-4D61-676963486174}"
 
-!define ASSEMBLY "MagicHat.DecalService.dll"
-!define CLASSNAME "MagicHat.DecalService.MagicHatService"
+!define ASSEMBLY "MagicHat.Loader.DecalService.dll"
+!define CLASSNAME "MagicHat.Loader.DecalService.MagicHatService"
 
 !define BUILDPATH "../bin"
 

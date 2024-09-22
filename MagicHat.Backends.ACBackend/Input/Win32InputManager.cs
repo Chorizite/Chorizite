@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Runtime.InteropServices;
 
-namespace MagicHat.DecalService.Lib.Input {
-    internal class Win32InputManager : IInputManager {
+namespace MagicHat.Backends.ACBackend.Input {
+    public class Win32InputManager : IInputManager {
         private readonly ILogger _log;
 
         [DllImport("USER32.dll")]
@@ -23,7 +23,7 @@ namespace MagicHat.DecalService.Lib.Input {
             _log = logger;
         }
 
-        internal bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {
+        public bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {
             EatableEvent? eatableEvent = null;
             switch (type) {
                 case WindowMessageType.MOUSELEAVE:
