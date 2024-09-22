@@ -94,12 +94,23 @@ namespace MagicHat.Core {
 
         private Assembly? CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
             var name = new AssemblyName(args.Name);
+
+            var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in loadedAssemblies) {
+                if (assembly.GetName().Name == name.Name) {
+                    _log.LogDebug($"Resolved assembly {name.Name} from loaded assemblies");
+                    return assembly;
+                }
+            }
+
             var localDllPath = Path.Combine(AssemblyDirectory, $"{name.Name}.dll");
             if (File.Exists(localDllPath)) {
+                _log.LogDebug($"Resolved assembly {name.Name} from LOCAL {localDllPath}");
                 return Assembly.Load(File.ReadAllBytes(localDllPath));
             }
 
             if (Container?.Resolve<AssemblyPluginLoader>()?.TryResolvePluginAssembly(args, out var loadedAssembly) == true) {
+                _log.LogDebug($"Resolved assembly {name.Name} from PLUGIN assemblies");
                 return loadedAssembly;
             }
 

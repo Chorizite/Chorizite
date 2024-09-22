@@ -1,10 +1,8 @@
-﻿namespace Reloaded.Core.Bootstrap.ExampleDll.Lib
-{
+﻿namespace MagicHat.Loader.Injected.Lib {
     /// <summary>
     /// Contains the D3D9 interface.
     /// </summary>
-    public enum IDirect3D9
-    {
+    public enum IDirect3D9 {
         /*** IUnknown methods ***/
         QueryInterface,
         AddRef,
@@ -26,8 +24,7 @@
         GetAdapterMonitor,
         CreateDevice
     }
-    public unsafe struct BlittablePtr<T> where T : unmanaged
-    {
+    public unsafe struct BlittablePtr<T> where T : unmanaged {
         /// <summary>
         /// The pointer to the value.
         /// </summary>
@@ -43,8 +40,7 @@
         public static implicit operator BlittablePtr<T>(T* operand) => new BlittablePtr<T>(operand);
     }
 
-    public unsafe struct BlittablePtrPtr<T> where T : unmanaged
-    {
+    public unsafe struct BlittablePtrPtr<T> where T : unmanaged {
         /// <summary>
         /// The pointer to the value.
         /// </summary>

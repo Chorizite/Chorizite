@@ -10,7 +10,7 @@ namespace MagicHat.Core.Plugins {
         /// <summary>
         /// The manifest that was used to load this plugin.
         /// </summary>
-        public AssemblyPluginManifest Manifest { get; protected set; }
+        public AssemblyPluginManifest Manifest { get; }
 
         /// <summary>
         /// The path to the entry file assembly directory.

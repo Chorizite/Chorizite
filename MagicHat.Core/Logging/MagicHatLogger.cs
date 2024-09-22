@@ -32,7 +32,7 @@ namespace MagicHat.Core.Logging {
         }
 
         public bool IsEnabled(LogLevel logLevel) {
-            return logLevel > LogLevel.Trace;
+            return true;// logLevel > LogLevel.Trace;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {

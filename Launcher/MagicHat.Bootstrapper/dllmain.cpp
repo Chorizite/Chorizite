@@ -96,9 +96,9 @@ extern "C"
 			throw std::exception("Failed to load .NET Core Runtime");
 		}
 
-		const string_t assembly_path = launcherPath + L"Reloaded.Core.Bootstrap.ExampleDll.dll";
-		const string_t type_name = L"Reloaded.Core.Bootstrap.ExampleDll.Hello, Reloaded.Core.Bootstrap.ExampleDll";
-		const string_t method_name = L"SayHello";
+		const string_t assembly_path = launcherPath + L"MagicHat.Loader.Injected.dll";
+		const string_t type_name = L"MagicHat.Loader.Injected.InjectedLoader, MagicHat.Loader.Injected";
+		const string_t method_name = L"Init";
 		component_entry_point_fn initialize = nullptr;
 
 		if (!CLR->load_assembly_and_get_function_pointer(assembly_path.c_str(), type_name.c_str(), method_name.c_str(),

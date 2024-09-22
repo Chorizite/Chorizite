@@ -5,6 +5,7 @@
     <TargetFrameworks>net48;net8.0</TargetFrameworks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin\$(TargetFramework)\plugins\Core.Lua\</OutputPath>
+    <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
@@ -19,17 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.UI\Core.UI.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\Core.UI\Core.UI.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.AC\Core.AC.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\Core.AC\Core.AC.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

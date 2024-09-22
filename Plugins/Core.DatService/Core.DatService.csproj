@@ -5,6 +5,7 @@
     <TargetFrameworks>net48;net8.0</TargetFrameworks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin\$(TargetFramework)\plugins\Core.DatService\</OutputPath>
+    <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
@@ -21,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
-    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)" >
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

@@ -25,6 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
+    <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" SetTargetFramework="TargetFramework=netstandard2.0" />
   </ItemGroup>
 </Project>

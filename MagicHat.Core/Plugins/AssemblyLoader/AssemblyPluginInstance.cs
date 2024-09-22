@@ -82,6 +82,11 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
             _pluginType = Assembly.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(IPluginCore)));
 
             if (_pluginType == null) {
+                _log?.LogError($"Mine: {typeof(IPluginCore).AssemblyQualifiedName} FROM {typeof(IPluginCore).Assembly.Location}");
+                var thiers = Assembly.GetTypes().FirstOrDefault(t => t?.BaseType?.Name == nameof(IPluginCore));
+                _log?.LogError($"Thiers: {thiers?.AssemblyQualifiedName}");
+                _log?.LogError($"Thiers (base): {thiers?.BaseType?.AssemblyQualifiedName} FROM {thiers?.BaseType?.Assembly.Location}");
+                _log?.LogError($"Equal?: thiers?.BaseType == typeof(IPluginCore)? {thiers?.BaseType == typeof(IPluginCore)}");
                 throw new Exception($"Plugin did not contain a class that inherits from IPluginCore: {dllPath}");
             }
 

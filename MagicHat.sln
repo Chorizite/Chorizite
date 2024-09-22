@@ -23,8 +23,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Launcher", "Launcher\Launch
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MagicHat.Bootstrapper", "Launcher\MagicHat.Bootstrapper\MagicHat.Bootstrapper.vcxproj", "{56DFC45C-49FB-4409-823E-EE54637F58A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reloaded.Core.Bootstrap.ExampleDll", "Launcher\Reloaded.Core.Bootstrap.ExampleDll\Reloaded.Core.Bootstrap.ExampleDll.csproj", "{0522B14C-206D-45F8-90B8-84BDD50DA2AD}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{52AEE83B-EC3B-4515-ADD1-14F30847B5F8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatReaderWriter", "ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj", "{31721F88-7943-4723-8FA9-1B1166147AEE}"
@@ -34,6 +32,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backends", "Backends", "{F27F9A01-6A17-4634-ACFF-36C9D227A7D1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicHat.Backends.ACBackend", "MagicHat.Backends.ACBackend\MagicHat.Backends.ACBackend.csproj", "{96EB4590-E0EA-4D79-BC25-F42BCACD167D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicHat.Loader.Injected", "Loaders\MagicHat.Loader.Injected\MagicHat.Loader.Injected.csproj", "{B6E97D89-04A9-4C75-ABA6-465B27925E53}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,10 +73,6 @@ Global
 		{56DFC45C-49FB-4409-823E-EE54637F58A1}.Debug|x86.Build.0 = Debug|Win32
 		{56DFC45C-49FB-4409-823E-EE54637F58A1}.Release|x86.ActiveCfg = Release|Win32
 		{56DFC45C-49FB-4409-823E-EE54637F58A1}.Release|x86.Build.0 = Release|Win32
-		{0522B14C-206D-45F8-90B8-84BDD50DA2AD}.Debug|x86.ActiveCfg = Debug|x86
-		{0522B14C-206D-45F8-90B8-84BDD50DA2AD}.Debug|x86.Build.0 = Debug|x86
-		{0522B14C-206D-45F8-90B8-84BDD50DA2AD}.Release|x86.ActiveCfg = Release|x86
-		{0522B14C-206D-45F8-90B8-84BDD50DA2AD}.Release|x86.Build.0 = Release|x86
 		{31721F88-7943-4723-8FA9-1B1166147AEE}.Debug|x86.ActiveCfg = Debug|x86
 		{31721F88-7943-4723-8FA9-1B1166147AEE}.Debug|x86.Build.0 = Debug|x86
 		{31721F88-7943-4723-8FA9-1B1166147AEE}.Release|x86.ActiveCfg = Release|x86
@@ -85,6 +81,10 @@ Global
 		{96EB4590-E0EA-4D79-BC25-F42BCACD167D}.Debug|x86.Build.0 = Debug|x86
 		{96EB4590-E0EA-4D79-BC25-F42BCACD167D}.Release|x86.ActiveCfg = Release|x86
 		{96EB4590-E0EA-4D79-BC25-F42BCACD167D}.Release|x86.Build.0 = Release|x86
+		{B6E97D89-04A9-4C75-ABA6-465B27925E53}.Debug|x86.ActiveCfg = Debug|x86
+		{B6E97D89-04A9-4C75-ABA6-465B27925E53}.Debug|x86.Build.0 = Debug|x86
+		{B6E97D89-04A9-4C75-ABA6-465B27925E53}.Release|x86.ActiveCfg = Release|x86
+		{B6E97D89-04A9-4C75-ABA6-465B27925E53}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,9 +97,9 @@ Global
 		{26392A63-830C-4B66-A35E-23C1040125E0} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{A4726E2C-FCC9-414E-9658-59A00236A9E0} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
 		{56DFC45C-49FB-4409-823E-EE54637F58A1} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
-		{0522B14C-206D-45F8-90B8-84BDD50DA2AD} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
 		{31721F88-7943-4723-8FA9-1B1166147AEE} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
 		{96EB4590-E0EA-4D79-BC25-F42BCACD167D} = {F27F9A01-6A17-4634-ACFF-36C9D227A7D1}
+		{B6E97D89-04A9-4C75-ABA6-465B27925E53} = {A349937F-00E9-48C7-9846-65A13C5AB718}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

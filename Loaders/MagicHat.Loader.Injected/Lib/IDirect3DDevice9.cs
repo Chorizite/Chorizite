@@ -1,11 +1,9 @@
-﻿namespace Reloaded.Core.Bootstrap.ExampleDll.Lib
-{
+﻿namespace MagicHat.Loader.Injected.Lib {
     /// <summary>
     /// Contains a full list of IDirect3DDevice9 functions to be used alongside
     /// <see cref="DX9Hook"/> as an indexer into the Virtual Function Table entries.
     /// </summary>
-    public enum IDirect3DDevice9
-    {
+    public enum IDirect3DDevice9 {
         QueryInterface = 0,
         AddRef = 1,
         Release = 2,
@@ -131,8 +129,7 @@
     /// Contains a full list of IDirect3DDevice9Ex functions to be used alongside
     /// <see cref="DX9Hook"/> as an indexer into the Virtual Function Table entries.
     /// </summary>
-    public enum Direct3DDevice9Ex
-    {
+    public enum Direct3DDevice9Ex {
         SetConvolutionMonoKernel = 119,
         ComposeRects = 120,
         PresentEx = 121,

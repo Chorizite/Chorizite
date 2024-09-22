@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MagicHat.Core\MagicHat.Core.csproj" />
+    <ProjectReference Include="..\MagicHat.Core\MagicHat.Core.csproj" SetTargetFramework="TargetFramework=$(TargetFramework)" />
   </ItemGroup>
 
 </Project>

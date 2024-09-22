@@ -6,7 +6,7 @@
     <Platforms>x86</Platforms>
     <PlatformTarget>x86</PlatformTarget>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin</OutputPath>
+    <OutputPath>..\..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
@@ -14,5 +14,11 @@
   <ItemGroup>
     <PackageReference Include="Reloaded.Hooks" Version="4.3.2" />
     <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\..\MagicHat.Backends.ACBackend\MagicHat.Backends.ACBackend.csproj" SetTargetFramework="TargetFramework=net8.0" />
+    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" SetTargetFramework="TargetFramework=net8.0" />
   </ItemGroup>
 </Project>

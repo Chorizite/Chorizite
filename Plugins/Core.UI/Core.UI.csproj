@@ -4,6 +4,7 @@
     <TargetFrameworks>net48;net8.0</TargetFrameworks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin\$(TargetFramework)\plugins\Core.UI\</OutputPath>
+    <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Version>1.0.0</Version>
@@ -35,18 +36,18 @@
     <PackageReference Include="RoyT.TrueType" Version="0.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
-    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.AC\Core.AC.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\Core.AC\Core.AC.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.DatService\Core.DatService.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\Core.DatService\Core.DatService.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
