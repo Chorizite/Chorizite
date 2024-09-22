@@ -5,10 +5,7 @@
 
 enum EntryPointFlags : int
 {
-	None = 0,
-	
-	/* Reloaded was initialised by an external mod loader or DLL Hijacking method. */
-	LoadedExternally = 1,
+	None = 0
 };
 
 /**
@@ -19,7 +16,8 @@ struct EntryPointParameters
 public:
 	int version { CURRENT_VERSION };
 	EntryPointFlags flags { None };
-	LPWSTR dll_path { nullptr };
+	LPWSTR dll_path{ nullptr };
+	LPWSTR entry_point { nullptr };
 	
 	EntryPointParameters() = default;
 };

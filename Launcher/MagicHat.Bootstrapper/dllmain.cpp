@@ -39,6 +39,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     return TRUE;
 }
 
+
 /**
  * \brief Loads the Reloaded Mod Loader into the current process given a set of paths.
  * \param reloadedPaths The paths to Reloaded components.
@@ -127,22 +128,19 @@ DWORD __fastcall InjectPayloadAndExecute(HANDLE hProcess, LPTHREAD_START_ROUTINE
 	return ExitCode;
 }
 
+LPSTR ToLPCSTR(LPWSTR wstr) {
+	std::wstring ws(wstr);
+	return (LPSTR)(ws.c_str());
+}
+
 extern "C"
 {
-	/*
-		[DllImport("injector.dll", CallingConvention = CallingConvention.Cdecl)]
-		public static extern bool Bootstrap();
-	*/
 	__declspec(dllexport) void Bootstrap() {
 		load_reloaded();
 	}
 
-	/*
-		[DllImport("injector.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
-		public static extern int LaunchInjected(string command_line, string working_directory, string inject_dll_path, [MarshalAs(UnmanagedType.LPStr)] string initialize_function);
-	*/
 #pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
-	__declspec(dllexport) DWORD LaunchInjected(wchar_t* Source, LPCWSTR lpCurrentDirectory, LPCWSTR lpLibFileName, LPCSTR lpProcName) {
+	__declspec(dllexport) DWORD LaunchInjected(wchar_t* Source, LPCWSTR lpCurrentDirectory, EntryPointParameters* entryPointParameters, int numParams) {
 		size_t SourceLen;
 		wchar_t* CmdLine_s;
 		HMODULE ModuleHandleW;
@@ -153,7 +151,7 @@ extern "C"
 		struct _PROCESS_INFORMATION ProcessInformation;
 		wchar_t* Sourcea;
 
-		if (!Source || !lpCurrentDirectory || !lpLibFileName || !lpProcName) {
+		if (!Source || !lpCurrentDirectory) {
 			return 0;
 		}
 		memset(&ProcessInformation, 0, sizeof(ProcessInformation));
@@ -163,24 +161,33 @@ extern "C"
 		CmdLine_s = (wchar_t*)operator new((unsigned __int64)(SourceLen + 1) >> 31 != 0 ? -1 : 2 * (SourceLen + 1));
 		wcsncpy(CmdLine_s, Source, SourceLen);
 		CmdLine_s[SourceLen] = 0;
-		if (!CreateProcessW(0, CmdLine_s, 0, 0, 0, 4u, 0, lpCurrentDirectory, &StartupInfo, &ProcessInformation))
+		if (!CreateProcessW(0, CmdLine_s, 0, 0, 0, 4u, 0, lpCurrentDirectory, &StartupInfo, &ProcessInformation)) {
 			return 0;
+		}
 		delete(CmdLine_s);
 		ModuleHandleW = GetModuleHandleW(L"kernel32.dll");
 		LoadLibraryW = (HMODULE(__stdcall*)(LPCWSTR))GetProcAddress(ModuleHandleW, "LoadLibraryW");
-		Sourcea = (wchar_t*)InjectPayloadAndExecute(
-			ProcessInformation.hProcess,
-			(LPTHREAD_START_ROUTINE)LoadLibraryW,
-			lpLibFileName,
-			2 * wcslen(lpLibFileName));
-		if (!Sourcea) {
-			TerminateProcess(ProcessInformation.hProcess, 0);
-			return 0;
+
+		for (int i = 0; i < numParams; i++) {
+			LPCWSTR lpLibFileName = entryPointParameters[i].dll_path;
+			char aText[200] = { 0 };
+			sprintf(aText, "%S", entryPointParameters[i].entry_point);
+			LPCSTR lpProcName = aText;
+			Sourcea = (wchar_t*)InjectPayloadAndExecute(
+				ProcessInformation.hProcess,
+				(LPTHREAD_START_ROUTINE)LoadLibraryW,
+				lpLibFileName,
+				2 * wcslen(lpLibFileName));
+			if (!Sourcea) {
+				TerminateProcess(ProcessInformation.hProcess, 0);
+				return 0;
+			}
+			LibraryW = ::LoadLibraryW(lpLibFileName);
+			v10 = (char*)((char*)GetProcAddress(LibraryW, lpProcName) - (char*)LibraryW);
+			FreeLibrary(LibraryW);
+			InjectPayloadAndExecute(ProcessInformation.hProcess, (LPTHREAD_START_ROUTINE)((char*)Sourcea + (DWORD)v10), 0, 0);
 		}
-		LibraryW = ::LoadLibraryW(lpLibFileName);
-		v10 = (char*)((char*)GetProcAddress(LibraryW, lpProcName) - (char*)LibraryW);
-		FreeLibrary(LibraryW);
-		InjectPayloadAndExecute(ProcessInformation.hProcess, (LPTHREAD_START_ROUTINE)((char*)Sourcea + (DWORD)v10), 0, 0);
+
 		ResumeThread(ProcessInformation.hThread);
 		CloseHandle(ProcessInformation.hThread);
 		CloseHandle(ProcessInformation.hProcess);
