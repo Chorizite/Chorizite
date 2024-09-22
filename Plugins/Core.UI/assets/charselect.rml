@@ -13,6 +13,7 @@
         width: 800px;
         color: #fff;
         decorator: image( dat://0x06004d63 );
+        opacity: 1;
       }
 
       #panel {

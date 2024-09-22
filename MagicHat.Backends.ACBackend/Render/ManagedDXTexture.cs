@@ -15,12 +15,12 @@ using System.Security.Policy;
 using System.Web;
 using SharpDX.Multimedia;
 using System.Xml.Linq;
-
-
+using SharpDX;
 #if NETFRAMEWORK
 using System.Drawing;
 using System.Drawing.Imaging;
 #else
+using System.Runtime.InteropServices;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
@@ -337,22 +337,42 @@ namespace MagicHat.Backends.ACBackend.Render {
         }
 #else
         internal unsafe void CreateTexture() {
-            // avoid creating a new texture and losing reference to the old one,
-            // if lost and not released, DX will crash later when resetting the device
+            // Avoid creating a new texture and losing reference to the old one.
             if (Texture != null)
                 return;
 
             if (Bitmap != null) {
+                // Create the texture
                 Texture = new Texture(DX9RenderInterface.D3Ddevice, Bitmap.Width, Bitmap.Height, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
-                var r = Texture.LockRectangle(0, LockFlags.None);
-                var size = Bitmap.Width * Bitmap.Height * 4;
-                var bytes = new byte[size];
-                Bitmap.CopyPixelDataTo(bytes);
-                fixed (byte* p = bytes) {
-                    Buffer.MemoryCopy(p, (void*)r.DataPointer, size, size);
+
+                // Lock the texture to get access to the data
+                DataRectangle dataRectangle = Texture.LockRectangle(0, LockFlags.None);
+
+                // Get the pixel data from the ImageSharp bitmap
+                byte[] pixelData = new byte[Bitmap.Width * Bitmap.Height * 4]; // RGBA has 4 bytes per pixel
+                Bitmap.CopyPixelDataTo(pixelData);
+
+                // Swap ARGB to BGRA format
+                for (int i = 0; i < pixelData.Length; i += 4) {
+                    byte a = pixelData[i + 1];
+                    byte r = pixelData[i + 2];
+                    byte g = pixelData[i + 3];
+                    byte b = pixelData[i];
+
+                    pixelData[i] = g;
+                    pixelData[i + 1] = r;
+                    pixelData[i + 2] = a;
+                    pixelData[i + 3] = b;
                 }
+
+                // Copy the swapped pixel data into the texture
+                Marshal.Copy(pixelData, 0, dataRectangle.DataPointer, pixelData.Length);
+
+                // Unlock the texture
+                Texture.UnlockRectangle(0);
             }
         }
+
 #endif
 
         internal void ReleaseTexture() {
@@ -456,6 +476,18 @@ namespace MagicHat.Backends.ACBackend.Render {
             var uri = new Uri(source);
             uint id = ParseDatId(uri.Host);
             Image<Argb32> baseBmp = GetIconBitmap(id, _portalDat).CloneAs<Argb32>();
+            var bmp2 = new Image<Argb32>(baseBmp.Width, baseBmp.Height);
+            for (int x = 0; x < baseBmp.Width; x++) {
+                for (int y = 0; y < baseBmp.Height; y++) {
+                    Color gotColor = baseBmp[x, y];
+                    if (gotColor == BACKGROUND_COLOR_MASK) {
+                        baseBmp[x, y] = Color.Transparent;
+                    }
+                }
+            }
+            bmp2.Mutate(x => x.Fill(Color.Transparent));
+            bmp2.Mutate(x => x.DrawImage(baseBmp, 1));
+            return new ManagedDXTexture(bmp2);
 
             if (baseBmp is null) return null;
             if (baseBmp.Width == 32 && baseBmp.Height == 32) return new ManagedDXTexture(baseBmp);
