@@ -18,7 +18,6 @@ HMODULE thisProcessModule;
 EntryPointParameters entryPointParameters;
 string_t launcherPath;
 
-bool load_reloaded();
 string_t get_current_directory(HMODULE hModule);
 
 /* Entry point */
@@ -39,51 +38,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     return TRUE;
 }
 
-
-/**
- * \brief Loads the Reloaded Mod Loader into the current process given a set of paths.
- * \param reloadedPaths The paths to Reloaded components.
- * \return false if failed to load Reloaded, true otherwise./
- */
-bool load_reloaded()
-{
-	int success = 0;
-	CLR = new CoreCLR(&success);
-
-	if (!success) {
-
-		MessageBoxA(nullptr, "Failed", "Failed to load the `hostfxr` library. Did you copy nethost.dll?", MB_OK);
-		throw std::exception("Failed to load the `hostfxr` library. Did you copy nethost.dll?");
-	}
-
-	// Load runtime and execute our method.
-	if (!CLR->load_runtime(launcherPath + L"Launcher.runtimeconfig.json")) {
-
-		MessageBoxA(nullptr, "Failed", "Failed to load .NET Core Runtime", MB_OK);
-		throw std::exception("Failed to load .NET Core Runtime");
-	}
-
-	const string_t assembly_path = launcherPath + L"Reloaded.Core.Bootstrap.ExampleDll.dll";
-	const string_t type_name = L"Reloaded.Core.Bootstrap.ExampleDll.Hello, Reloaded.Core.Bootstrap.ExampleDll";
-	const string_t method_name = L"SayHello";
-	component_entry_point_fn initialize = nullptr;
-
-	if (!CLR->load_assembly_and_get_function_pointer(assembly_path.c_str(), type_name.c_str(), method_name.c_str(),
-		nullptr, nullptr, (void**) &initialize))
-	{
-		MessageBoxA(nullptr, "Failed", "Failed to load .NET assembly.", MB_OK);
-		throw std::exception("Failed to load .NET assembly.");
-	}
-
-	// Set path to current dll
-	// Using GetModuleFileNameW
-	entryPointParameters.dll_path = new wchar_t[MAX_PATH];
-	GetModuleFileNameW(thisProcessModule, entryPointParameters.dll_path, MAX_PATH);
-	initialize(&entryPointParameters, sizeof(EntryPointParameters));
-	
-	return true;
-}
-
 string_t get_current_directory(HMODULE mHandle)
 {
 	char_t host_path[MAX_PATH];
@@ -96,15 +50,6 @@ string_t get_current_directory(HMODULE mHandle)
 
 	return root_path;
 }
-
-
-
-/* Exports for different mod loaders. */
-struct ModInfoDummy
-{
-	int version;
-	char padding[256];
-};
 
 DWORD __fastcall InjectPayloadAndExecute(HANDLE hProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPCVOID lpBuffer, SIZE_T dwSize) {
 	void* pimple;
@@ -136,7 +81,39 @@ LPSTR ToLPCSTR(LPWSTR wstr) {
 extern "C"
 {
 	__declspec(dllexport) void Bootstrap() {
-		load_reloaded();
+		int success = 0;
+		CLR = new CoreCLR(&success);
+
+		if (!success) {
+
+			MessageBoxA(nullptr, "Failed", "Failed to load the `hostfxr` library. Did you copy nethost.dll?", MB_OK);
+			throw std::exception("Failed to load the `hostfxr` library. Did you copy nethost.dll?");
+		}
+
+		// Load runtime and execute our method.
+		if (!CLR->load_runtime(launcherPath + L"Launcher.runtimeconfig.json")) {
+
+			MessageBoxA(nullptr, "Failed", "Failed to load .NET Core Runtime", MB_OK);
+			throw std::exception("Failed to load .NET Core Runtime");
+		}
+
+		const string_t assembly_path = launcherPath + L"Reloaded.Core.Bootstrap.ExampleDll.dll";
+		const string_t type_name = L"Reloaded.Core.Bootstrap.ExampleDll.Hello, Reloaded.Core.Bootstrap.ExampleDll";
+		const string_t method_name = L"SayHello";
+		component_entry_point_fn initialize = nullptr;
+
+		if (!CLR->load_assembly_and_get_function_pointer(assembly_path.c_str(), type_name.c_str(), method_name.c_str(),
+			nullptr, nullptr, (void**)&initialize))
+		{
+			MessageBoxA(nullptr, "Failed", "Failed to load .NET assembly.", MB_OK);
+			throw std::exception("Failed to load .NET assembly.");
+		}
+
+		// Set path to current dll
+		// Using GetModuleFileNameW
+		entryPointParameters.dll_path = new wchar_t[MAX_PATH];
+		GetModuleFileNameW(thisProcessModule, entryPointParameters.dll_path, MAX_PATH);
+		initialize(&entryPointParameters, sizeof(EntryPointParameters));
 	}
 
 #pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
