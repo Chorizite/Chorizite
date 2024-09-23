@@ -56,10 +56,11 @@ namespace MagicHat.Backends.ACBackend.Render {
         public void Render2D() {
             using (var stateBlock = new StateBlock(D3Ddevice, StateBlockType.All)) {
                 stateBlock.Capture();
+                var hp = 0.5f;
 #if NETFRAMEWORK
-                var projection = Matrix4x4.CreateOrthographicOffCenter(0, D3Ddevice.Viewport.Width, D3Ddevice.Viewport.Height, 0, -1000, 1000).ToDX();
+                var projection = Matrix4x4.CreateOrthographicOffCenter(hp, D3Ddevice.Viewport.Width + hp, D3Ddevice.Viewport.Height + hp, hp, -1000, 1000).ToDX();
 #else
-                var projection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(0, D3Ddevice.Viewport.Width, D3Ddevice.Viewport.Height, 0, -1, 1).ToDX();
+                var projection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(hp, D3Ddevice.Viewport.Width + hp, D3Ddevice.Viewport.Height + hp, hp, -1, 1).ToDX();
 #endif
                 var view = Matrix4x4.Identity.ToDX();
 

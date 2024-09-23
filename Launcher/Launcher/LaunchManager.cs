@@ -48,7 +48,7 @@ namespace Launcher
 
             var entryPointParams = new EntryPointParameters[] {
                 new EntryPointParameters(8, EntryPointFlags.None, dll, "Bootstrap"),
-                new EntryPointParameters(8, EntryPointFlags.None, DecalHelpers.GetDecalLocation(), "DecalStartup"),
+                //new EntryPointParameters(8, EntryPointFlags.None, DecalHelpers.GetDecalLocation(), "DecalStartup"),
             };
 
             var cbase = Marshal.AllocHGlobal(entryPointParams.Length * sizeof(EntryPointParameters));
