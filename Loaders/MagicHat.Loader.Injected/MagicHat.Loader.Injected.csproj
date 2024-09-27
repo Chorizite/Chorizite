@@ -21,4 +21,12 @@
     <ProjectReference Include="..\..\MagicHat.Backends.ACBackend\MagicHat.Backends.ACBackend.csproj" SetTargetFramework="TargetFramework=net8.0" />
     <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" SetTargetFramework="TargetFramework=net8.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="NetHooks.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="ACCLientHooks.cs" />
+  </ItemGroup>
 </Project>

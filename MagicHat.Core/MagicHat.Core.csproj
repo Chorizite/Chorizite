@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ext\ACProtocol\MagicHat.ACProtocol\MagicHat.ACProtocol.csproj" />
     <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" SetTargetFramework="TargetFramework=netstandard2.0" />
   </ItemGroup>
 </Project>

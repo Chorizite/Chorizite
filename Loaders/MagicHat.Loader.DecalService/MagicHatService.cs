@@ -79,7 +79,6 @@ namespace MagicHat.Loader.DecalService {
                 object a = CoreManager.Current.Decal.Underlying.GetD3DDevice(ref IID_IDirect3DDevice9);
                 Marshal.QueryInterface(Marshal.GetIUnknownForObject(a), ref IID_IDirect3DDevice9, out var unmanagedD3dPtr);
                 var D3Ddevice = new Device(unmanagedD3dPtr);
-                _log?.LogDebug($"Startup DX Device 2: {((int)unmanagedD3dPtr):X8} // {D3Ddevice.Viewport.Width}x{D3Ddevice.Viewport.Height}");
 
                 MagicHatInstance = new Core.MagicHat((builder) => {
                     builder.Register(c => new DX9RenderInterface(unmanagedD3dPtr, c.Resolve<ILogger<DX9RenderInterface>>(), c.Resolve<IDatReaderInterface>()))
@@ -131,7 +130,7 @@ namespace MagicHat.Loader.DecalService {
 
         void IDecalService.Terminate() {
             try {
-                MagicHatInstance?.Dispose();
+                _input.HandleShutdown();
                 _log?.LogDebug("\n\n\n");
             }
             catch (Exception ex) {

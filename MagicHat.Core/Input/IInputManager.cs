@@ -13,5 +13,8 @@ namespace MagicHat.Core.Input {
         event EventHandler<MouseMoveEventArgs>? OnMouseMove;
         event EventHandler<MouseDownEventArgs>? OnMouseDown;
         event EventHandler<MouseUpEventArgs>? OnMouseUp;
+        event EventHandler<EventArgs>? OnShutdown;
+
+        void HandleShutdown();
     }
 }

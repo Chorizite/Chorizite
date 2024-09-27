@@ -2,6 +2,7 @@
 using MagicHat.Core.Dats;
 using MagicHat.Core.Input;
 using MagicHat.Core.Logging;
+using MagicHat.Core.Net;
 using MagicHat.Core.Plugins;
 using MagicHat.Core.Plugins.AssemblyLoader;
 using MagicHat.Core.Render;
@@ -21,6 +22,8 @@ namespace MagicHat.Core {
     public class MagicHat : IDisposable {
         private IPluginManager _pluginManager;
         private ILogger<MagicHat> _log;
+        private IRenderInterface _renderInterface;
+        private readonly IInputManager _inputManager;
 
         /// <summary>
         /// The absolute path to the magic hat dll directory.
@@ -56,6 +59,8 @@ namespace MagicHat.Core {
                 .As<IDatReaderInterface>()
                 .SingleInstance()
                 .IfNotRegistered(typeof(IDatReaderInterface));
+            builder.RegisterType<NetworkParser>()
+                .SingleInstance();
             builder.RegisterType<NullRenderInterface>()
                 .As<IRenderInterface>()
                 .SingleInstance()
@@ -74,15 +79,19 @@ namespace MagicHat.Core {
 
             _log = Container.Resolve<ILogger<MagicHat>>();
 
-            var renderInterface = Container.Resolve<IRenderInterface>();
-            if (renderInterface is null) {
+            var networkParser = Container.Resolve<NetworkParser>();
+            networkParser.Init();
+
+            _renderInterface = Container.Resolve<IRenderInterface>();
+            if (_renderInterface is null) {
                 throw new Exception("Failed to resolve IRenderInterface");
             }
 
-            var inputManager = Container.Resolve<IInputManager>();
-            if (inputManager is null) {
+            _inputManager = Container.Resolve<IInputManager>();
+            if (_inputManager is null) {
                 throw new Exception("Failed to resolve IInputManager");
             }
+            _inputManager.OnShutdown += InputManager_OnShutdown;
 
             _pluginManager = Container.Resolve<IPluginManager>();
 
@@ -138,10 +147,16 @@ namespace MagicHat.Core {
             }
         }
 
+        private void InputManager_OnShutdown(object? sender, EventArgs e) {
+            Dispose();
+        }
+
 
         public void Dispose() {
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             _pluginManager?.Dispose();
+            _renderInterface?.Dispose();
+            _inputManager?.Dispose();
         }
     }
 }

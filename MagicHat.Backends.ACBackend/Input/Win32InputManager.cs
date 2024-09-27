@@ -18,9 +18,14 @@ namespace MagicHat.Backends.ACBackend.Input {
         public event EventHandler<MouseDownEventArgs>? OnMouseDown;
         public event EventHandler<MouseUpEventArgs>? OnMouseUp;
         public event EventHandler<MouseWheelEventArgs>? OnMouseWheel;
+        public event EventHandler<EventArgs>? OnShutdown;
 
         public Win32InputManager(ILogger logger) {
             _log = logger;
+        }
+
+        public void HandleShutdown() {
+            OnShutdown?.Invoke(this, EventArgs.Empty);
         }
 
         public bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {
