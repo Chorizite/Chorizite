@@ -1,4 +1,5 @@
 ﻿using AcClient;
+using MagicHat.Core.Render;
 using MagicHat.Loader.Injected.Lib;
 using Microsoft.Extensions.Logging;
 using Reloaded.Hooks;
@@ -34,8 +35,9 @@ namespace MagicHat.Loader.Injected.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static uint UIFlow_UseNewModeImpl(UIFlow* uiFlow) {
+            var mode = uiFlow->_nextMode;
             var ret = _uiFlowUseNewModeHook.OriginalFunction(uiFlow);
-            InjectedLoader.Log.LogDebug($"Show UI: {(UIMode)uiFlow->_curMode}");
+            InjectedLoader.Render.ShowGameScreen((GameScreen)mode);
 
             return ret;
         }

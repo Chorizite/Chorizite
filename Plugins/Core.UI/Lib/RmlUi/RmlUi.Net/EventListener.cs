@@ -109,26 +109,26 @@ namespace RmlUiNet
         }
 
         internal void ProcessEventInternal(IntPtr eventPtr) {
-            CoreUIPlugin.UI.Log?.LogTrace($"ProcessEventInternal: {eventPtr}");
+            //CoreUIPlugin.UI.Log?.LogTrace($"ProcessEventInternal: {eventPtr}");
             ProcessEvent(
                 Event.GetOrCreateCache(eventPtr, ptr => new Event(ptr))
             );
         }
 
         internal void AttachEventInternal(IntPtr elementPtr, string elementType) {
-            CoreUIPlugin.UI.Log?.LogTrace($"AttachEventInternal: {elementPtr}");
+            //CoreUIPlugin.UI.Log?.LogTrace($"AttachEventInternal: {elementPtr}");
             try {
                 OnAttach(
                     Util.GetOrThrowElementByTypeName(elementPtr, elementType)
                 );
             }
             catch (Exception ex) {
-                CoreUIPlugin.UI.Log?.LogTrace($"AttachEvent: {ex}");
+                //CoreUIPlugin.UI.Log?.LogTrace($"AttachEvent: {ex}");
             }
         }
 
         internal void DetachEventInternal(IntPtr elementPtr, string elementType) {
-            CoreUIPlugin.UI.Log?.LogTrace($"DetachEventInternal: {elementPtr}");
+            //CoreUIPlugin.UI.Log?.LogTrace($"DetachEventInternal: {elementPtr}");
             OnDetach(
                 Util.GetOrThrowElementByTypeName(elementPtr, elementType)
             );

@@ -26,8 +26,7 @@
         ///  Required method for Designer support - do not modify
         ///  the contents of this method with the code editor.
         /// </summary>
-        private void InitializeComponent()
-        {
+        private void InitializeComponent() {
             ServerTextBox = new TextBox();
             ServerLabel = new Label();
             UsernameLabel = new Label();
@@ -68,6 +67,7 @@
             // 
             UsernameTextBox.Location = new Point(75, 61);
             UsernameTextBox.Name = "UsernameTextBox";
+            UsernameTextBox.PasswordChar = '*';
             UsernameTextBox.Size = new Size(208, 23);
             UsernameTextBox.TabIndex = 3;
             // 

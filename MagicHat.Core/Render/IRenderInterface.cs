@@ -1,15 +1,40 @@
 ﻿using ACClientLib.DatReaderWriter.Enums;
+using MagicHat.Backends.ACBackend.Render;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
 
 namespace MagicHat.Core.Render {
     public interface IRenderInterface : IDisposable {
+        /// <summary>
+        /// The size of the viewport (game window)
+        /// </summary>
         public Vector2 ViewportSize { get; }
 
+        /// <summary>
+        /// The current game screen
+        /// </summary>
+        GameScreen Screen { get; set; }
+
+        /// <summary>
+        /// Callback for 2D rendering
+        /// </summary>
         event EventHandler<EventArgs>? OnRender2D;
+
+        /// <summary>
+        /// Callback for graphics reset
+        /// </summary>
         event EventHandler<EventArgs>? OnGraphicsPreReset;
+
+        /// <summary>
+        /// Callback for graphics reset
+        /// </summary>
         event EventHandler<EventArgs>? OnGraphicsPostReset;
+
+        /// <summary>
+        /// Callback for screen change
+        /// </summary>
+        event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
         /// <summary>
         /// Compile the specified geometry and return a pointer to the compiled geometry
@@ -70,5 +95,11 @@ namespace MagicHat.Core.Render {
         /// <param name="width"></param>
         /// <param name="height"></param>
         public void SetScissorRegion(int x, int y, int width, int height);
+
+        /// <summary>
+        /// Show a game screen
+        /// </summary>
+        /// <param name="screen"></param>
+        public void ShowGameScreen(GameScreen screen);
     }
 }

@@ -1,0 +1,28 @@
+﻿<html>
+	<head>
+		<style>
+          body {
+            display: block;
+            font-family: LatoLatin;
+            height: 600px;
+            width: 800px;
+            color: #fff;
+            opacity: 1;
+            font-size: 36px;
+          }
+          div#wrapper {
+            text-align: center;
+            margin: auto;
+            display: block;
+            width: 800px;
+            height: 440px;
+            decorator: image( dat://0x06006E20 );
+          }
+        </style>
+	</head>
+	<body id="b">
+        <div id="wrapper">
+            This is my custom connecting screen....
+        </div>
+	</body>
+</html>

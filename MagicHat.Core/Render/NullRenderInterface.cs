@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MagicHat.Backends.ACBackend.Render;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -20,12 +21,25 @@ namespace MagicHat.Core.Render {
 
         private uint _nextGeometryId = 1;
         private uint _nextTextureId = 1;
+        private GameScreen _currentScreen = GameScreen.None;
 
         public Vector2 ViewportSize => Vector2.Zero;
+
+        public GameScreen Screen {
+            get => _currentScreen;
+            set {
+                if (_currentScreen != value) {
+                    var oldScreen = _currentScreen;
+                    _currentScreen = value;
+                    OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
+                }
+            }
+        }
 
         public event EventHandler<EventArgs>? OnRender2D;
         public event EventHandler<EventArgs>? OnGraphicsPreReset;
         public event EventHandler<EventArgs>? OnGraphicsPostReset;
+        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
         public IntPtr CompileGeometry(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices) {
             return (IntPtr)_nextGeometryId++;
@@ -66,6 +80,10 @@ namespace MagicHat.Core.Render {
         }
 
         public void Dispose() {
+        }
+
+        public void ShowGameScreen(GameScreen screen) {
+            Screen = screen;
         }
     }
 }

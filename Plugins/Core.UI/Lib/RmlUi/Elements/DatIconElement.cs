@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Core.UI.Lib.RmlUi.Elements {
     public class DatIconElement : ElementCustom {
         public DatIconElement() : base("daticon") {
-            ACUI.UI.Instance?.Log?.LogDebug($"HELLO FROM DatImgElement::DatImgElement() 0x{NativePtr:X8} // {Rml.GetRenderInterface()} // {Rml.GetRenderInterface()?.NativePtr:X8}");
+            //ACUI.UI.Instance?.Log?.LogDebug($"HELLO FROM DatImgElement::DatImgElement() 0x{NativePtr:X8} // {Rml.GetRenderInterface()} // {Rml.GetRenderInterface()?.NativePtr:X8}");
             //Rml.GetRenderInterface()?.Test();
         }
 

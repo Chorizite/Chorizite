@@ -37,14 +37,27 @@ namespace MagicHat.Backends.ACBackend.Render {
         private int _nextGeometryId = 1;
         private ILogger _log;
         private readonly IDatReaderInterface _datReader;
+        private GameScreen _currentScreen = GameScreen.None;
 
         public event EventHandler<EventArgs>? OnRender2D;
         public event EventHandler<EventArgs>? OnGraphicsPreReset;
         public event EventHandler<EventArgs>? OnGraphicsPostReset;
+        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
         public static Device D3Ddevice { get; private set; }
 
         public System.Numerics.Vector2 ViewportSize => new(D3Ddevice.Viewport.Width, D3Ddevice.Viewport.Height);
+
+        public GameScreen Screen {
+            get => _currentScreen;
+            set {
+                if (_currentScreen != value) {
+                    var oldScreen = _currentScreen;
+                    _currentScreen = value;
+                    OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
+                }
+            }
+        }
 
         public DX9RenderInterface(IntPtr unmanagedD3dPtr, ILogger logger, IDatReaderInterface datReader) {
             _log = logger;
@@ -226,6 +239,10 @@ namespace MagicHat.Backends.ACBackend.Render {
         public void SetScissorRegion(int x, int y, int width, int height) {
             _log?.LogTrace($"EnableScissorRegion: {x},{y} {width}x{height}");
             D3Ddevice.ScissorRect = new RawRectangle(x, y, x + width, y + height);
+        }
+
+        public void ShowGameScreen(GameScreen screen) {
+            Screen = screen;
         }
 
         public void TriggerGraphicsPreReset(object sender, EventArgs e) {

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net48;net8.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <OutputType>Library</OutputType>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <NoWarn>1591</NoWarn>
@@ -26,6 +26,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ext\ACProtocol\MagicHat.ACProtocol\MagicHat.ACProtocol.csproj" />
-    <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" SetTargetFramework="TargetFramework=netstandard2.0" />
+    <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
   </ItemGroup>
 </Project>

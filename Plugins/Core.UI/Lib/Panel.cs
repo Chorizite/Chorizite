@@ -16,11 +16,11 @@ namespace ACUI.Lib {
         private bool _needsReload;
         private DateTime _requestedReloadTime = DateTime.MinValue;
         private MyListener _onHover;
-
-        public bool LiveReload { get; private set; } = true;
-
         private DateTime _start = DateTime.UtcNow;
         private bool _didListener;
+
+        public bool LiveReload { get; private set; } = true;
+        public string File => _docFile;
 
         public Panel(PanelManager manager, string filename) {
             _manager = manager;

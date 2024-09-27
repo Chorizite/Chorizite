@@ -40,11 +40,8 @@ namespace ACUI {
 
         public PanelManager? PanelManager { get; private set; }
 
-        public static UI Instance { get; private set; }
-
         public UI(AssemblyPluginManifest manifest) {
             _manifest = manifest;
-            Instance = this;
         }
 
         internal void Init(IPluginManager pluginManager, IRenderInterface renderer, IInputManager input, ILogger? logger) {

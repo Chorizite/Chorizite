@@ -8,8 +8,8 @@ namespace AcClient {
         public NoticeHandler a1;
         public UIListener a2;
         public Turbine_RefCount m_cTurbineRefCount;
-        public UInt32 _curMode;
-        public UInt32 _nextMode;
+        public UIMode _curMode;
+        public UIMode _nextMode;
         public UIMainFramework* _curUI;
         public UIPersistantData* _data;
         public StringInfo _nextText;

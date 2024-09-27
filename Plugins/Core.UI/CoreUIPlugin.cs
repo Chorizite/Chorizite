@@ -2,6 +2,7 @@
 using ACUI.Lib.RmlUi;
 using Autofac;
 using Core.DatService;
+using MagicHat.Backends.ACBackend.Render;
 using MagicHat.Core.Input;
 using MagicHat.Core.Plugins;
 using MagicHat.Core.Plugins.AssemblyLoader;
@@ -9,6 +10,7 @@ using MagicHat.Core.Render;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -22,11 +24,17 @@ namespace ACUI {
         private readonly IRenderInterface _renderer;
         private readonly IInputManager _input;
         private readonly ILogger<CoreUIPlugin>? _log;
+        private Panel? _activePanel;
 
         [DllImport("Kernel32.dll")]
         private static extern IntPtr LoadLibrary(string path);
 
-        public static UI UI { get; private set; }
+        public UI UI { get; private set; }
+
+        /// <summary>
+        /// Called when the game screen changes.
+        /// </summary>
+        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
         protected CoreUIPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, IRenderInterface renderer, IInputManager input, ILogger<CoreUIPlugin>? log) : base(manifest) {
             _log = log;
@@ -44,6 +52,7 @@ namespace ACUI {
 
                 _renderer.OnGraphicsPreReset += PluginManager_OnGraphicsPreReset;
                 _renderer.OnGraphicsPostReset += PluginManager_OnGraphicsPostReset;
+                _renderer.OnScreenChanged += PluginManager_OnScreenChanged;
             }
             catch (Exception ex) {
                 _log?.LogError(ex, "Error during initialization ");
@@ -51,6 +60,19 @@ namespace ACUI {
         }
 
         public CoreUIPlugin(AssemblyPluginManifest manifest) : base(manifest) {
+
+        }
+
+        private void PluginManager_OnScreenChanged(object? sender, ScreenChangedEventArgs e) {
+            if (_activePanel is not null) {
+                UI.PanelManager?.UnloadPanel(_activePanel);
+            }
+            var screenFile = Path.Combine(AssemblyDirectory, "assets", $"{e.NewScreen}.rml");
+            if (File.Exists(screenFile)) {
+                _log?.LogDebug($"Loading {screenFile}");
+                _activePanel = UI.PanelManager?.LoadPanelFile(screenFile);
+            }
+            OnScreenChanged?.Invoke(this, e);
         }
 
         private void PluginManager_OnGraphicsPreReset(object sender, EventArgs e) {

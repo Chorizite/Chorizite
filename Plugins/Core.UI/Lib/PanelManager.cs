@@ -27,9 +27,16 @@ namespace ACUI.Lib {
                 panel.Dispose();
                 _panels.Remove(file);
             }
-            
+
             panel = new Panel(this, file);
             _panels.Add(file, panel);
+
+            return panel;
+        }
+
+        public Panel UnloadPanel(Panel panel) {
+            panel.Dispose();
+            _panels.Remove(panel.File);
 
             return panel;
         }
