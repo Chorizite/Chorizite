@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using MagicHat.Core.Dats;
 using MagicHat.Core.Plugins.AssemblyLoader;
+using MagicHat.Core.Render;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,9 @@ namespace MagicHat.Core.Plugins {
         private readonly List<IPluginLoader> _pluginLoaders = [];
         private readonly IMagicHatConfig _config;
         private readonly ILogger _log;
+        private readonly IRenderInterface _render;
+        private DateTime _wantsReloadAt = DateTime.MinValue;
+        private bool _wantsReload;
 
         /// <inheritdoc />
         public string PluginDirectory => _config.PluginDirectory;
@@ -28,10 +32,12 @@ namespace MagicHat.Core.Plugins {
         /// <inheritdoc />
         public IReadOnlyList<IPluginLoader> PluginLoaders => _pluginLoaders;
 
-        public PluginManager(IMagicHatConfig config, ILogger<PluginManager> log) {
+        public PluginManager(IMagicHatConfig config, IRenderInterface render, ILogger<PluginManager> log) {
             _config = config;
             _log = log;
-            _log?.LogInformation($"Finished with PluginManager::startup, {_config.PluginDirectory}");
+            _render = render;
+
+            _render.OnRender2D += Render_OnRender2D;
         }
 
         /// <inheritdoc />
@@ -81,6 +87,45 @@ namespace MagicHat.Core.Plugins {
             foreach (var plugin in plugins) {
                 StartPlugin(plugin, ref startedPlugins);
             }
+        }
+
+        private void Render_OnRender2D(object sender, EventArgs e) {
+            if (!_wantsReload && Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
+                _wantsReloadAt = DateTime.Now + TimeSpan.FromSeconds(1);
+                _wantsReload = true;
+            }
+
+            if (_wantsReload && DateTime.Now > _wantsReloadAt) {
+                ReloadPlugins();
+            }
+        }
+
+        private void ReloadPlugins() {
+            try {
+                var pluginsToReload = _loadedPlugins.Values.Where(p => p.WantsReload).ToArray();
+                var unloadedPlugins = new List<PluginInstance>();
+                foreach (var plugin in pluginsToReload) {
+                    UnloadPluginAndDependents(plugin, ref unloadedPlugins);
+                }
+
+                foreach (var plugin in unloadedPlugins) {
+                    var startedPlugins = new List<string>();
+                    StartPlugin(plugin, ref startedPlugins);
+                }
+            }
+            catch (Exception ex) {
+                _log?.LogError(ex, "Error reloading plugins: {0}", ex.Message);
+            }
+        }
+
+        private void UnloadPluginAndDependents(PluginInstance plugin, ref List<PluginInstance> unloadedPlugins) {
+            foreach (var depPlugin in _loadedPlugins.Values.Where(p => p.Manifest.Dependencies.Select(d => d.Split('@').First()).Contains(plugin.Name))) {
+                if (!unloadedPlugins.Contains(depPlugin)) {
+                    UnloadPluginAndDependents(depPlugin, ref unloadedPlugins);
+                }
+            }
+            unloadedPlugins.Add(plugin);
+            plugin.Unload();
         }
 
         private bool LoadPluginManifest(string manifestFile, out PluginInstance? plugin) {
@@ -133,11 +178,11 @@ namespace MagicHat.Core.Plugins {
         }
 
         private bool StartPlugin(PluginInstance plugin, ref List<string> startedPlugins) {
-            if (startedPlugins.Contains(plugin.Name.ToLower())) {
+            if (plugin.IsLoaded || startedPlugins.Contains(plugin.Name.ToLower())) {
                 return true;
             }
 
-            _log?.LogTrace($"Starting plugin: {plugin.Name}");
+            _log?.LogDebug($"Starting plugin: {plugin.Name}");
 
             foreach (var dep in plugin.Manifest.Dependencies) {
                 var parts = dep.Split('@');
@@ -182,6 +227,8 @@ namespace MagicHat.Core.Plugins {
         }
 
         public void Dispose() {
+            _render.OnRender2D -= Render_OnRender2D;
+
             foreach (var plugin in Plugins) {
                 plugin.Dispose();
             }

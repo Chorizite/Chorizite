@@ -103,14 +103,19 @@ namespace MagicHat.Core {
 
         private Assembly? CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
             var name = new AssemblyName(args.Name);
+            Assembly assembly = null;
             _log?.LogTrace($"CurrentDomain_AssemblyResolve {name.Name}");
 
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in loadedAssemblies) {
-                if (assembly.GetName().Name == name.Name) {
-                    _log?.LogTrace($"Resolved assembly {name.Name} from loaded assemblies");
-                    return assembly;
+            foreach (var loadedAssembly in loadedAssemblies) {
+                if (loadedAssembly.GetName().Name == name.Name) {
+                    assembly = loadedAssembly;
                 }
+            }
+
+            if (assembly is not null) {
+                _log?.LogTrace($"Resolved assembly {name.Name} from LOADED {assembly.Location}");
+                return assembly;
             }
 
             var localDllPath = Path.Combine(AssemblyDirectory, $"{name.Name}.dll");
@@ -119,9 +124,9 @@ namespace MagicHat.Core {
                 return Assembly.Load(File.ReadAllBytes(localDllPath));
             }
 
-            if (Container?.Resolve<AssemblyPluginLoader>()?.TryResolvePluginAssembly(args, out var loadedAssembly) == true) {
+            if (Container?.Resolve<AssemblyPluginLoader>()?.TryResolvePluginAssembly(args, out var pluginAssembly) == true) {
                 _log?.LogDebug($"Resolved assembly {name.Name} from PLUGIN assemblies");
-                return loadedAssembly;
+                return pluginAssembly;
             }
 
             _log?.LogError($"Failed to resolve assembly {name.Name} @ {localDllPath}");

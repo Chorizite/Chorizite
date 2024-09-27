@@ -30,7 +30,6 @@ namespace MagicHat.ACProtocol.Packets {
 		public EchoRequestHeader? EchoRequest;
 		public EchoResponseHeader? EchoResponse;
 		public FlowHeader? Flow;
-        public BlobFragments? BlobFragments;
 
         public ACPacketHeader() {
 		
@@ -90,10 +89,6 @@ namespace MagicHat.ACProtocol.Packets {
             }
             if (Flags.HasFlag(PacketHeaderFlags.Flow)) {
                 Flow = new FlowHeader(reader);
-            }
-            if (Flags.HasFlag(PacketHeaderFlags.BlobFragments)) {
-                BlobFragments = new BlobFragments();
-                BlobFragments.Read(reader);
             }
         }
     }

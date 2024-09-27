@@ -85,10 +85,12 @@ namespace MagicHat.ACProtocol {
                 frag.AddChunk(bytes, fragmentHeader.Index, fragLength);
 
                 if (frag.Count == frag.Received) {
+                    var count = 0;
                     ACMessage? msg = null;
-                    _pendingFragments.Remove(fragmentHeader.Sequence);
                     using var messageStream = new MemoryStream(frag.Data);
                     using var messageReader = new BinaryReader(messageStream);
+                    _pendingFragments.Remove(fragmentHeader.Sequence);
+
                     if (direction == MessageDirection.ClientToServer) {
                         msg = Messages.ProcessC2SMessage(messageReader);
                     }
@@ -100,7 +102,7 @@ namespace MagicHat.ACProtocol {
                         messages.Add(msg);
                     }
                     else {
-                        _log?.LogError($"Failed to process message: {FormatBytes(frag.Data)}");
+                        _log?.LogError($"Failed to process message: {FormatBytes(frag.Data.Skip((int)messageReader.BaseStream.Position).ToArray())}");
                     }
                 }
                 return frag;
@@ -112,7 +114,7 @@ namespace MagicHat.ACProtocol {
         }
 
         private string FormatBytes(byte[] bytes) {
-            return string.Join(" ", bytes.Select(b => $"{b}:X2"));
+            return string.Join(" ", bytes.Select(b => $"{b:X2}"));
         }
     }
 }

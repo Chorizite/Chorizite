@@ -6,6 +6,7 @@ using ScriptHost.Lib;
 using MagicHat.Core.Plugins;
 using MagicHat.Core.Plugins.AssemblyLoader;
 using Core.AC;
+using System.Linq;
 
 namespace ScriptHost {
     public class CoreLuaPlugin : IPluginCore {
@@ -41,16 +42,24 @@ namespace ScriptHost {
         private void CallScriptHost() {
             try {
                 var scriptHost = _pluginManager.GetPlugin<CoreACPlugin>("Core.AC");
+                if (scriptHost is null) throw new Exception("Core.AC is not loaded");
+
+                scriptHost.Game.OnStateChanged += (s, e) => {
+                    Log?.LogInformation($"Detected state change: {e.NewState}");
+                    if (e.NewState == Core.AC.Lib.Enums.GameState.CharacterSelect) {
+                        Log?.LogInformation($"Characters: {string.Join(", ", scriptHost.Game.Characters.Select(c => c.Name))}");
+                    }
+                };
 
                 if (scriptHost is not null) {
-                    Log?.LogInformation($"Lua called ScriptHost: {scriptHost?.Test()}");
+                    Log?.LogInformation($"Lua called ScriptHost: {scriptHost.Game.State} // {scriptHost.Test()}");
                 }
                 else {
                     Log?.LogInformation("Lua called ScriptHost: null");
                 }
             }
             catch (Exception ex) {
-                Log?.LogInformation("Lua called ScriptHost: null ex");
+                Log?.LogInformation($"Error calling ScriptHost: {ex.Message}");
             }
 
         }

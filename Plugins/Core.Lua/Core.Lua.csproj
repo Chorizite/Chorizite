@@ -20,6 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\ext\ACProtocol\MagicHat.ACProtocol\MagicHat.ACProtocol.csproj" ExcludeAssets="runtime">
+      <Private>False</Private>
+      <ExcludeAssets>all</ExcludeAssets>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
     <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>

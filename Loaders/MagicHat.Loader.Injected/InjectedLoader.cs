@@ -31,6 +31,9 @@ namespace MagicHat.Loader.Injected {
 
         public static int Init(IntPtr a, int b) {
             DirectXHooks.Init(a, b);
+
+            NetHooks.Init();
+            ACClientHooks.Init();
             return 0;
         }
 
@@ -50,9 +53,6 @@ namespace MagicHat.Loader.Injected {
                 Render = (MagicHatInstance.Container.Resolve<IRenderInterface>() as DX9RenderInterface)!;
                 Input = (MagicHatInstance.Container.Resolve<IInputManager>() as Win32InputManager)!;
                 Net = MagicHatInstance.Container.Resolve<NetworkParser>();
-
-                NetHooks.Init();
-                ACClientHooks.Init();
             }
             catch (Exception ex) {
                 Log?.LogError(ex, $"Error during Startup: {ex.Message}");

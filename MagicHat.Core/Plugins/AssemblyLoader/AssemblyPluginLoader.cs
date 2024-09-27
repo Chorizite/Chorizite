@@ -31,7 +31,7 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
         /// <inheritdoc cref="IPluginLoader.LoadPluginInstance(PluginManifest, out PluginInstance?)"/>
         public bool LoadPluginInstance(PluginManifest manifest, out PluginInstance? instance) {
             if (PluginManifest.TryLoadManifest<AssemblyPluginManifest>(manifest.ManifestFile, out var assemblyManifest, out string? errors)) {
-                instance = new AssemblyPluginInstance(assemblyManifest, _serviceProvider);
+                instance = new AssemblyPluginInstance(_pluginManager, assemblyManifest, _serviceProvider);
                 return true;
             }
             _log?.LogError(errors);

@@ -41,6 +41,11 @@ namespace MagicHat.Core.Plugins {
         public bool IsLoaded { get; protected set; }
 
         /// <summary>
+        /// Wether the plugin wants to be reloaded. It is up to the PluginManager to reload it and all dependent plugins.
+        /// </summary>
+        public bool WantsReload { get; protected set; }
+
+        /// <summary>
         /// The plugin manifest.
         /// </summary>
         public PluginManifest Manifest { get; }
@@ -76,6 +81,11 @@ namespace MagicHat.Core.Plugins {
         public event EventHandler<EventArgs>? OnUnload;
 
         /// <summary>
+        /// Fired when the plugin requests a reload.
+        /// </summary>
+        public event EventHandler<EventArgs>? OnRequestReload;
+
+        /// <summary>
         /// Create a new plugin instance from a manifest
         /// </summary>
         /// <param name="manifest">The plugin manigest</param>
@@ -94,6 +104,7 @@ namespace MagicHat.Core.Plugins {
         /// </summary>
         /// <returns></returns>
         public virtual bool Load() {
+            WantsReload = false;
             return true;
         }
 

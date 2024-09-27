@@ -12,22 +12,24 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
     public class AssemblyPluginInstance : PluginInstance<AssemblyPluginManifest> {
         private Type? _pluginType;
         private object? _pluginInstance;
+        private readonly IPluginManager _manager;
+        private readonly FileSystemWatcher _fw;
 
         public Assembly? Assembly { get; private set; }
         public IPluginCore? PluginInstance => (IPluginCore?)_pluginInstance;
 
-        public AssemblyPluginInstance(AssemblyPluginManifest manifest, IContainer serviceProvider) : base(manifest, serviceProvider) {
+        public AssemblyPluginInstance(IPluginManager manager, AssemblyPluginManifest manifest, IContainer serviceProvider) : base(manifest, serviceProvider) {
             _serviceProvider = serviceProvider;
+            _manager = manager;
 
-            var fw = new FileSystemWatcher();
-            fw.Path = Path.GetDirectoryName(manifest.ManifestFile);
-            fw.NotifyFilter = NotifyFilters.LastWrite;
-            fw.Filter = manifest.EntryFile;
-            fw.Changed += (s, e) => {
-                _log?.LogDebug("Reloading plugin: {0}", Name);
-                Load();
+            _fw = new FileSystemWatcher();
+            _fw.Path = Path.GetDirectoryName(manifest.ManifestFile);
+            _fw.NotifyFilter = NotifyFilters.LastWrite;
+            _fw.Filter = manifest.EntryFile;
+            _fw.Changed += (s, e) => {
+                WantsReload = true;
             };
-            fw.EnableRaisingEvents = true;
+            _fw.EnableRaisingEvents = true;
         }
 
         /// <inheritdoc cref="PluginInstance.Load()"/>
@@ -68,7 +70,7 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
 
             var dllPath = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
 
-            _log?.LogTrace($"Loading plugin assembly: {Name} from {dllPath}");
+            _log?.LogDebug($"Loading plugin assembly: {Name} from {dllPath}");
 
             var symbolPath = dllPath.Replace(".dll", ".pdb");
             if (File.Exists(symbolPath)) {
@@ -82,11 +84,7 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
             _pluginType = Assembly.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(IPluginCore)));
 
             if (_pluginType == null) {
-                _log?.LogError($"Mine: {typeof(IPluginCore).AssemblyQualifiedName} FROM {typeof(IPluginCore).Assembly.Location}");
                 var thiers = Assembly.GetTypes().FirstOrDefault(t => t?.BaseType?.Name == nameof(IPluginCore));
-                _log?.LogError($"Thiers: {thiers?.AssemblyQualifiedName}");
-                _log?.LogError($"Thiers (base): {thiers?.BaseType?.AssemblyQualifiedName} FROM {thiers?.BaseType?.Assembly.Location}");
-                _log?.LogError($"Equal?: thiers?.BaseType == typeof(IPluginCore)? {thiers?.BaseType == typeof(IPluginCore)}");
                 throw new Exception($"Plugin did not contain a class that inherits from IPluginCore: {dllPath}");
             }
 
@@ -144,6 +142,7 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
 
         private void UnloadPluginAssembly() {
             if (_pluginInstance != null && _pluginType != null) {
+                _log?.LogDebug($"Unloading plugin assembly: {Name}");
                 TriggerOnBeforeUnload(this, EventArgs.Empty);
 
                 MethodInfo shutdownMethod = _pluginType.GetMethod("Dispose", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -159,6 +158,7 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
         }
 
         public override void Dispose() {
+            _fw?.Dispose();
             base.Dispose();
         }
     }
