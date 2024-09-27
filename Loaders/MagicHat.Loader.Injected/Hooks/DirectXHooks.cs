@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace MagicHat.Loader.Injected.Hooks {
-    internal static class DirectXHooks {
+    internal class DirectXHooks : HookBase {
         private static IHook<EndScene> _endSceneHook;
         private static IHook<CreateDevice> _createDeviceHook;
         private static IHook<WndProc> _windowProcHook;
@@ -57,8 +57,8 @@ namespace MagicHat.Loader.Injected.Hooks {
             D3Ddevice = new Device(_unmanagedD3DPtr);
             _hwnd = hwnd;
 
-            var windowProc = Native.GetWindowLong(hwnd, Native.GWL.GWL_WNDPROC);
-            _windowProcHook = ReloadedHooks.Instance.CreateHook<WndProc>(typeof(DirectXHooks), nameof(WndProcImpl), windowProc).Activate();
+            var windowProc = (int)Native.GetWindowLong(hwnd, Native.GWL.GWL_WNDPROC);
+            _windowProcHook = CreateHook<WndProc>(typeof(DirectXHooks), nameof(WndProcImpl), windowProc);
 
             InjectedLoader.Startup(_unmanagedD3DPtr);
 
@@ -79,11 +79,11 @@ namespace MagicHat.Loader.Injected.Hooks {
             Direct3D9VTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(direct3D.NativePointer, Enum.GetNames(typeof(IDirect3D9)).Length);
             DeviceVTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(device.NativePointer, Enum.GetNames(typeof(IDirect3DDevice9)).Length);
 
-            var createDevicePtr = (long)Direct3D9VTable[(int)IDirect3D9.CreateDevice].FunctionPointer;
-            _createDeviceHook = ReloadedHooks.Instance.CreateHook<CreateDevice>(typeof(DirectXHooks), nameof(CreateDeviceImpl), createDevicePtr).Activate();
+            var createDevicePtr = (int)Direct3D9VTable[(int)IDirect3D9.CreateDevice].FunctionPointer;
+            _createDeviceHook = CreateHook<CreateDevice>(typeof(DirectXHooks), nameof(CreateDeviceImpl), createDevicePtr);
 
-            var endScenePtr = (long)DeviceVTable[(int)IDirect3DDevice9.EndScene].FunctionPointer;
-            _endSceneHook = ReloadedHooks.Instance.CreateHook<EndScene>(typeof(DirectXHooks), nameof(EndSceneImpl), endScenePtr).Activate();
+            var endScenePtr = (int)DeviceVTable[(int)IDirect3DDevice9.EndScene].FunctionPointer;
+            _endSceneHook = CreateHook<EndScene>(typeof(DirectXHooks), nameof(EndSceneImpl), endScenePtr);
 
             return 0;
         }

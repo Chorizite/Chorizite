@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace MagicHat.Loader.Injected.Hooks {
-    internal unsafe static class NetHooks {
+    internal unsafe class NetHooks : HookBase {
         private static IHook<SendTo> _sendtoHook;
         private static IHook<RecvFrom> _recvfromHook;
 
@@ -19,8 +19,8 @@ namespace MagicHat.Loader.Injected.Hooks {
         internal delegate int RecvFrom(nint s, byte* buf, int len, int flags, byte* from, int fromlen);
 
         internal static void Init() {
-            _sendtoHook = ReloadedHooks.Instance.CreateHook<SendTo>(typeof(NetHooks), nameof(SendToImpl), *(int*)0x007935A4).Activate();
-            _recvfromHook = ReloadedHooks.Instance.CreateHook<RecvFrom>(typeof(NetHooks), nameof(RecvFromImpl), *(int*)0x007935AC).Activate();
+            _sendtoHook = CreateHook<SendTo>(typeof(NetHooks), nameof(SendToImpl), *(int*)0x007935A4);
+            _recvfromHook = CreateHook<RecvFrom>(typeof(NetHooks), nameof(RecvFromImpl), *(int*)0x007935AC);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]

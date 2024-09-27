@@ -78,7 +78,7 @@ namespace ACUI {
                 PanelManager = new PanelManager(_ctx, Log);
 
                 Rml.LoadFontFace(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "LatoLatin-Regular.ttf"));
-                PanelManager.LoadPanelFile(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "charselect.rml").Replace("/", @"\"));
+                //PanelManager.LoadPanelFile(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "charselect.rml").Replace("/", @"\"));
 
                 _renderer.OnRender2D += Renderer_OnRender2D;
             }
