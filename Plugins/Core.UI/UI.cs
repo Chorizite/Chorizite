@@ -72,7 +72,7 @@ namespace ACUI {
                     throw new Exception("Unable to create RmlUi context");
                 }
 
-                PanelManager = new PanelManager(_ctx, Log);
+                PanelManager = new PanelManager(_ctx, _renderer, Log);
 
                 Rml.LoadFontFace(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "LatoLatin-Regular.ttf"));
                 //PanelManager.LoadPanelFile(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "charselect.rml").Replace("/", @"\"));

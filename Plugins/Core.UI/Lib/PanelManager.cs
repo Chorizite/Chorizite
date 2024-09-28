@@ -1,4 +1,5 @@
 ﻿using ACUI.Lib.Fonts;
+using MagicHat.Core.Render;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -14,12 +15,14 @@ namespace ACUI.Lib {
 
         internal readonly Context Context;
 
+        public IRenderInterface Render { get; }
         public FontManager FontManager { get; }
 
-        public PanelManager(Context ctx, ILogger? log) {
+        public PanelManager(Context ctx, IRenderInterface render, ILogger? log) {
             Log = log;
             FontManager = new FontManager(log);
             Context = ctx;
+            Render = render;
         }
 
         public Panel LoadPanelFile(string file) {

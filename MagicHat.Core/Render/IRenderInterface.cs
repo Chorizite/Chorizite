@@ -16,6 +16,8 @@ namespace MagicHat.Core.Render {
         /// </summary>
         GameScreen Screen { get; set; }
 
+        unsafe IntPtr DataPatchUI { get; }
+
         /// <summary>
         /// Callback for 2D rendering
         /// </summary>

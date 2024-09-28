@@ -36,6 +36,8 @@ namespace MagicHat.Core.Render {
             }
         }
 
+        public unsafe IntPtr DataPatchUI { get; set; }
+
         public event EventHandler<EventArgs>? OnRender2D;
         public event EventHandler<EventArgs>? OnGraphicsPreReset;
         public event EventHandler<EventArgs>? OnGraphicsPostReset;

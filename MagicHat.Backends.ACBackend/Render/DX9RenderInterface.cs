@@ -10,6 +10,7 @@ using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using AcClient;
 
 namespace MagicHat.Backends.ACBackend.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
@@ -58,6 +59,8 @@ namespace MagicHat.Backends.ACBackend.Render {
                 }
             }
         }
+
+        public IntPtr DataPatchUI { get; private set; }
 
         public DX9RenderInterface(IntPtr unmanagedD3dPtr, ILogger logger, IDatReaderInterface datReader) {
             _log = logger;
@@ -265,6 +268,10 @@ namespace MagicHat.Backends.ACBackend.Render {
                 ReleaseGeometry(geom);
             }
             _geometryBuffers.Clear();
+        }
+
+        public void SetDataPatchData(gmDataPatchUI* dataPatchUI) {
+            DataPatchUI = (IntPtr)dataPatchUI;
         }
     }
 }

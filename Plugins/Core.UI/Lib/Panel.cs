@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AcClient;
+using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
@@ -79,10 +80,26 @@ namespace ACUI.Lib {
             }
         }
 
-        internal void Update() {
+        internal unsafe void Update() {
             if (_needsReload && _requestedReloadTime + TimeSpan.FromMilliseconds(200) < DateTime.UtcNow) {
                 _needsReload = false;
                 LoadDoc();
+            }
+
+            if (_docFile.EndsWith("Connecting.rml")) {
+                try {
+                    gmDataPatchUI* ui = (gmDataPatchUI*)_manager.Render.DataPatchUI;
+                    _manager.Log?.LogInformation($"Connecting: {ui->m_fConnectLevel} // Patching: {ui->m_fPatchLevel}");
+                    var connect = _doc?.GetElementById("connect");
+                    var patch = _doc?.GetElementById("patch");
+
+                    connect?.SetInnerRml($"{(ui->m_fConnectLevel * 100f):N2}%");
+                    patch?.SetInnerRml($"{(ui->m_fPatchLevel * 100f):N2}%");
+                }
+                catch (Exception ex) {
+                    _manager.Log?.LogError(ex, "Error in Connecting.rml");
+                }
+                return;
             }
 
             var test = _doc?.GetElementById("test");

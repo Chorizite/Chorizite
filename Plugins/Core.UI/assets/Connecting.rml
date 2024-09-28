@@ -20,9 +20,10 @@
           }
         </style>
 	</head>
-	<body id="b">
+	<body id="b" data-model="DatPatchUI">
         <div id="wrapper">
-            This is my custom connecting screen....
+            Connect: <span id="connect">{{ connectPercentage }}</span>
+            Patch: <span id="patch">{{ patchPercentage }}</span>
         </div>
 	</body>
 </html>
