@@ -18,7 +18,7 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
         public Assembly? Assembly { get; private set; }
         public IPluginCore? PluginInstance => (IPluginCore?)_pluginInstance;
 
-        public AssemblyPluginInstance(IPluginManager manager, AssemblyPluginManifest manifest, IContainer serviceProvider) : base(manifest, serviceProvider) {
+        public AssemblyPluginInstance(IPluginManager manager, AssemblyPluginManifest manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             _serviceProvider = serviceProvider;
             _manager = manager;
 

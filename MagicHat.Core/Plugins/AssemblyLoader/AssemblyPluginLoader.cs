@@ -13,11 +13,11 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
     /// A plugin loader that can load plugins from dotnet assemblies.
     /// </summary>
     public class AssemblyPluginLoader : IPluginLoader {
-        private readonly IContainer _serviceProvider;
+        private readonly ILifetimeScope _serviceProvider;
         private readonly ILogger _log;
         private readonly IPluginManager _pluginManager;
 
-        public AssemblyPluginLoader(IContainer serviceProvider, IPluginManager pluginManager, ILogger<AssemblyPluginLoader> log) {
+        public AssemblyPluginLoader(ILifetimeScope serviceProvider, IPluginManager pluginManager, ILogger<AssemblyPluginLoader> log) {
             _log = log;
             _pluginManager = pluginManager;
             _serviceProvider = serviceProvider;

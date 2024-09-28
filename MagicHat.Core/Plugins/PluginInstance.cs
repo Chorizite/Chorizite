@@ -13,7 +13,7 @@ namespace MagicHat.Core.Plugins {
     public class PluginInstance<T> : PluginInstance where T : PluginManifest {
         public new T Manifest { get; }
 
-        public PluginInstance(T manifest, IContainer serviceProvider) : base(manifest, serviceProvider) {
+        public PluginInstance(T manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             Manifest = manifest;
         }
     }
@@ -91,7 +91,7 @@ namespace MagicHat.Core.Plugins {
         /// <param name="manifest">The plugin manigest</param>
         /// <param name="serviceProvider"></param>
         /// <param name="configure">A configuration callback that allows you to configure advanced options</param>
-        public PluginInstance(PluginManifest manifest, IContainer serviceProvider, Action<PluginInstance>? configure = null) {
+        public PluginInstance(PluginManifest manifest, ILifetimeScope serviceProvider, Action<PluginInstance>? configure = null) {
             _serviceProvider = serviceProvider;
             Manifest = manifest;
 

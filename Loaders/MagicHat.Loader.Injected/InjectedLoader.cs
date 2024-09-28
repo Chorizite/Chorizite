@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using MagicHat.Backends.ACBackend.Input;
 using MagicHat.Backends.ACBackend.Render;
+using MagicHat.Core;
 using MagicHat.Core.Dats;
 using MagicHat.Core.Input;
 using MagicHat.Core.Logging;
@@ -23,7 +24,9 @@ namespace MagicHat.Loader.Injected {
     public static class InjectedLoader {
         public static string AssemblyDirectory => System.IO.Path.GetDirectoryName(Assembly.GetAssembly(typeof(InjectedLoader)).Location);
 
-        public static Core.MagicHat MagicHatInstance { get; private set; }
+        public static int UnmanagedD3DPtr { get; private set; }
+        public static MagicHatConfig Config { get; private set; }
+        public static Core.MagicHat<ACMagicHatBackend> MagicHatInstance { get; private set; }
         public static DX9RenderInterface Render { get; private set; }
         public static Win32InputManager Input { get; private set; }
         public static NetworkParser Net { get; private set; }
@@ -39,20 +42,13 @@ namespace MagicHat.Loader.Injected {
 
         internal static void Startup(int _unmanagedD3DPtr) {
             try {
-                MagicHatInstance = new Core.MagicHat((builder) => {
-                    builder.Register(c => new DX9RenderInterface(_unmanagedD3DPtr, c.Resolve<ILogger<DX9RenderInterface>>(), c.Resolve<IDatReaderInterface>()))
-                        .As<IRenderInterface>()
-                        .SingleInstance();
-                    builder.Register(c => new Win32InputManager(c.Resolve<ILogger<Win32InputManager>>()))
-                        .As<IInputManager>()
-                        .SingleInstance();
+                UnmanagedD3DPtr = _unmanagedD3DPtr;
+                Config = new MagicHatConfig(System.IO.Path.Combine(AssemblyDirectory, "plugins"), AssemblyDirectory);
+                MagicHatInstance = new MagicHat<ACMagicHatBackend>(Config);
 
-                    return new Core.MagicHatConfig(System.IO.Path.Combine(AssemblyDirectory, "plugins"), AssemblyDirectory);
-                });
-
-                Render = (MagicHatInstance.Container.Resolve<IRenderInterface>() as DX9RenderInterface)!;
-                Input = (MagicHatInstance.Container.Resolve<IInputManager>() as Win32InputManager)!;
-                Net = MagicHatInstance.Container.Resolve<NetworkParser>();
+                Render = (MagicHatInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface)!;
+                Input = (MagicHatInstance.Scope.Resolve<IInputManager>() as Win32InputManager)!;
+                Net = MagicHatInstance.Scope.Resolve<NetworkParser>();
             }
             catch (Exception ex) {
                 Log?.LogError(ex, $"Error during Startup: {ex.Message}");

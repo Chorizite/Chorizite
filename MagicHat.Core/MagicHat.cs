@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using MagicHat.Core.Backend;
 using MagicHat.Core.Dats;
 using MagicHat.Core.Input;
 using MagicHat.Core.Logging;
@@ -19,25 +20,27 @@ namespace MagicHat.Core {
     /// <summary>
     /// MagicHat
     /// </summary>
-    public class MagicHat : IDisposable {
+    public class MagicHat<TBackend> : IDisposable where TBackend : IMagicHatBackend {
         private IPluginManager _pluginManager;
-        private ILogger<MagicHat> _log;
+        private readonly IContainer _container;
+        private ILogger _log;
         private IRenderInterface _renderInterface;
         private readonly IInputManager _inputManager;
 
         /// <summary>
         /// The absolute path to the magic hat dll directory.
         /// </summary>
-        public static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(MagicHat)).Location);
-        public IContainer Container { get; }
+        public static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(MagicHat<>))!.Location)!;
         public IMagicHatConfig Config { get; }
-
+        public ILifetimeScope Scope { get; }
+        public IMagicHatBackend Backend { get; }
 
         /// <summary>
         /// Create a new MagicHat instance and configure it.
         /// </summary>
         /// <param name="configure">A configuration callback that allows you to configure advanced options</param>
-        public MagicHat(Func<ContainerBuilder, IMagicHatConfig?>? configure = null) {
+        public MagicHat(IMagicHatConfig config) {
+            Config = config;
             var builder = new ContainerBuilder();
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
@@ -46,11 +49,7 @@ namespace MagicHat.Core {
                 .As(typeof(ILogger<>))
                 .IfNotRegistered(typeof(ILogger<>));
 
-            var config = configure?.Invoke(builder);
-            var assemblyDir = Path.GetDirectoryName(Assembly.GetAssembly(GetType()).Location);
-            Config = config ?? new MagicHatConfig(Path.Combine(assemblyDir, "plugins"), assemblyDir);
-
-            builder.RegisterInstance(Config);
+            var assemblyDir = Path.GetDirectoryName(Assembly.GetAssembly(GetType())!.Location);
             builder.Register(c => {
                 var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
                 datReader.Init("");
@@ -59,43 +58,52 @@ namespace MagicHat.Core {
                 .As<IDatReaderInterface>()
                 .SingleInstance()
                 .IfNotRegistered(typeof(IDatReaderInterface));
-            builder.RegisterType<NetworkParser>()
-                .SingleInstance();
-            builder.RegisterType<NullRenderInterface>()
-                .As<IRenderInterface>()
-                .SingleInstance()
-                .IfNotRegistered(typeof(IRenderInterface));
-            builder.RegisterType<PluginManager>()
-                .As<IPluginManager>()
-                .SingleInstance()
-                .IfNotRegistered(typeof(IPluginManager));
-            builder.RegisterType<AssemblyPluginLoader>()
-                .SingleInstance();
-            builder.Register(c => Container!)
-                .As<IContainer>()
+            builder.RegisterInstance(Config)
+                .As<IMagicHatConfig>()
                 .SingleInstance();
 
-            Container = builder.Build();
+            _container = builder.Build();
+            Backend = TBackend.Create(_container);
+            _log = new MagicHatLogger("MagicHat", Config.LogDirectory);
 
-            _log = Container.Resolve<ILogger<MagicHat>>();
+            Scope = _container.BeginLifetimeScope(builder => {
+                builder.RegisterInstance(Backend);
+                builder.RegisterInstance(Backend.Renderer)
+                    .As<IRenderInterface>()
+                    .SingleInstance();
+                builder.RegisterInstance(Backend.Input)
+                    .As<IInputManager>()
+                    .SingleInstance();
+                builder.Register(c => Scope!)
+                    .As<ILifetimeScope>()
+                    .SingleInstance();
+                builder.RegisterType<NetworkParser>()
+                    .SingleInstance();
+                builder.RegisterType<PluginManager>()
+                    .As<IPluginManager>()
+                    .SingleInstance()
+                    .IfNotRegistered(typeof(IPluginManager));
+                builder.RegisterType<AssemblyPluginLoader>()
+                    .SingleInstance();
+            });
 
-            var networkParser = Container.Resolve<NetworkParser>();
+            var networkParser = Scope.Resolve<NetworkParser>();
             networkParser.Init();
 
-            _renderInterface = Container.Resolve<IRenderInterface>();
+            _renderInterface = Scope.Resolve<IRenderInterface>();
             if (_renderInterface is null) {
                 throw new Exception("Failed to resolve IRenderInterface");
             }
 
-            _inputManager = Container.Resolve<IInputManager>();
+            _inputManager = Scope.Resolve<IInputManager>();
             if (_inputManager is null) {
                 throw new Exception("Failed to resolve IInputManager");
             }
             _inputManager.OnShutdown += InputManager_OnShutdown;
 
-            _pluginManager = Container.Resolve<IPluginManager>();
+            _pluginManager = Scope.Resolve<IPluginManager>();
 
-            _pluginManager.RegisterPluginLoader(Container.Resolve<AssemblyPluginLoader>());
+            _pluginManager.RegisterPluginLoader(Scope.Resolve<AssemblyPluginLoader>());
             _pluginManager.LoadPluginManifests();
 
             _pluginManager.StartPlugins();
@@ -124,7 +132,7 @@ namespace MagicHat.Core {
                 return Assembly.Load(File.ReadAllBytes(localDllPath));
             }
 
-            if (Container?.Resolve<AssemblyPluginLoader>()?.TryResolvePluginAssembly(args, out var pluginAssembly) == true) {
+            if (Scope?.Resolve<AssemblyPluginLoader>()?.TryResolvePluginAssembly(args, out var pluginAssembly) == true) {
                 _log?.LogDebug($"Resolved assembly {name.Name} from PLUGIN assemblies");
                 return pluginAssembly;
             }
@@ -162,6 +170,8 @@ namespace MagicHat.Core {
             _pluginManager?.Dispose();
             _renderInterface?.Dispose();
             _inputManager?.Dispose();
+            Scope?.Dispose();
+            _container?.Dispose();
         }
     }
 }
