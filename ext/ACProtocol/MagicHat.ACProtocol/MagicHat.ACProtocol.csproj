@@ -86,10 +86,4 @@
   <ItemGroup>
     <Folder Include="Messages\S2C\Events\" />
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="powershell &quot;$configFiles = Get-ChildItem ./_generated/ *.cs -rec; foreach ($file in $configFiles) { (Get-Content $file.PSPath) | Foreach-Object { $_ -replace '.GENXXX', '' } | Set-Content $file.PSPath }&quot;" />
-    <Exec Command="powershell &quot;$limit = (Get-Date).AddSeconds(-15); Get-ChildItem ./_generated/ *.cs -rec -Force | Where-Object {$_.LastWriteTime -lt $limit} | Remove-Item&quot;" />
-  </Target>
-
 </Project>
