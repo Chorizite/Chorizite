@@ -148,7 +148,6 @@
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <AdditionalOptions>
       </AdditionalOptions>
-      <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -183,7 +182,6 @@
       <ProgramDatabaseFile>$(OutDir)\X86\Bootstrapper\$(TargetName).pdb</ProgramDatabaseFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <AdditionalOptions>/brepro %(AdditionalOptions)</AdditionalOptions>
-      <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -220,7 +218,6 @@
       <ProgramDatabaseFile>$(OutDir)\X64\Bootstrapper\$(TargetName).pdb</ProgramDatabaseFile>
       <DelayLoadDLLs>%(DelayLoadDLLs)</DelayLoadDLLs>
       <AdditionalOptions>/brepro %(AdditionalOptions)</AdditionalOptions>
-      <ModuleDefinitionFile>exports.def</ModuleDefinitionFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
