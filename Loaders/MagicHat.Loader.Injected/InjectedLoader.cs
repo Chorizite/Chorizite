@@ -22,11 +22,12 @@ using System.Windows.Forms;
 
 namespace MagicHat.Loader.Injected {
     public static class InjectedLoader {
-        public static string AssemblyDirectory => System.IO.Path.GetDirectoryName(Assembly.GetAssembly(typeof(InjectedLoader)).Location);
+        public static string AssemblyDirectory => System.IO.Path.GetDirectoryName(Assembly.GetAssembly(typeof(InjectedLoader))!.Location)!;
 
         public static int UnmanagedD3DPtr { get; private set; }
         public static MagicHatConfig Config { get; private set; }
         public static Core.MagicHat<ACMagicHatBackend> MagicHatInstance { get; private set; }
+        public static ACMagicHatBackend Backend { get; private set; }
         public static DX9RenderInterface Render { get; private set; }
         public static Win32InputManager Input { get; private set; }
         public static NetworkParser Net { get; private set; }
@@ -46,6 +47,7 @@ namespace MagicHat.Loader.Injected {
                 Config = new MagicHatConfig(System.IO.Path.Combine(AssemblyDirectory, "plugins"), AssemblyDirectory);
                 MagicHatInstance = new MagicHat<ACMagicHatBackend>(Config);
 
+                Backend = (MagicHatInstance.Backend as ACMagicHatBackend)!;
                 Render = (MagicHatInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface)!;
                 Input = (MagicHatInstance.Scope.Resolve<IInputManager>() as Win32InputManager)!;
                 Net = MagicHatInstance.Scope.Resolve<NetworkParser>();

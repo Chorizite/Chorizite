@@ -89,7 +89,6 @@ namespace ACUI.Lib {
             if (_docFile.EndsWith("Connecting.rml")) {
                 try {
                     gmDataPatchUI* ui = (gmDataPatchUI*)_manager.Render.DataPatchUI;
-                    _manager.Log?.LogInformation($"Connecting: {ui->m_fConnectLevel} // Patching: {ui->m_fPatchLevel}");
                     var connect = _doc?.GetElementById("connect");
                     var patch = _doc?.GetElementById("patch");
 

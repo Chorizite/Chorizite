@@ -9,6 +9,7 @@
     <OutputPath>..\..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

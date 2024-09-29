@@ -28,7 +28,7 @@ namespace MagicHat.Loader.Injected.Hooks {
             try {
                 var bytes = new byte[len];
                 Marshal.Copy((nint)buf, bytes, 0, len);
-                InjectedLoader.Net.HandleC2SPacket(bytes);
+                InjectedLoader.Backend.HandleC2SPacketData(bytes);
             }
             catch (Exception ex) {
                 InjectedLoader.Log.LogError(ex, $"SendTo Error: {ex.Message}");
@@ -43,7 +43,7 @@ namespace MagicHat.Loader.Injected.Hooks {
                 try {
                     var bytes = new byte[bytesRead];
                     Marshal.Copy((nint)buf, bytes, 0, bytesRead);
-                    InjectedLoader.Net.HandleS2CPacket(bytes);
+                    InjectedLoader.Backend.HandleS2CPacketData(bytes);
                 }
                 catch (Exception ex) {
                     InjectedLoader.Log.LogError(ex, $"RecvFrom Error: {ex.Message}");
