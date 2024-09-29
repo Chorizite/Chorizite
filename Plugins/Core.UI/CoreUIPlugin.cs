@@ -9,6 +9,7 @@ using Core.UI.Models;
 using MagicHat.Backends.ACBackend.Render;
 using MagicHat.Core.Backend;
 using MagicHat.Core.Input;
+using MagicHat.Core.Net;
 using MagicHat.Core.Plugins;
 using MagicHat.Core.Plugins.AssemblyLoader;
 using MagicHat.Core.Render;
@@ -20,14 +21,15 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace ACUI {
+namespace Core.UI {
     /// <summary>
     /// This is the main plugin class. When your plugin is loaded, Startup() is called, and when it's unloaded Shutdown() is called.
     /// </summary>
     public class CoreUIPlugin : IPluginCore {
         private readonly IPluginManager _pluginManager;
         private readonly IMagicHatBackend _backend;
-        private readonly ILogger<CoreUIPlugin>? _log;
+        private readonly ILogger<CoreUIPlugin> _log;
+        private readonly NetworkParser _net;
         private readonly Dictionary<GameScreen, UIDataModel> _models = [];
         private Panel? _activePanel;
         private TestPlugin? _testPlugin;
@@ -47,9 +49,10 @@ namespace ACUI {
         /// </summary>
         public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, IMagicHatBackend backend, ILogger<CoreUIPlugin>? log) : base(manifest) {
-            Log = _log;
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, IMagicHatBackend backend, NetworkParser net, ILogger<CoreUIPlugin> log) : base(manifest) {
+            _net = net;
             _log = log;
+            Log = _log;
             _pluginManager = pluginManager;
             _backend = backend;
             InitRmlUI();
@@ -84,7 +87,7 @@ namespace ACUI {
                         throw new Exception("Unable to create RmlUi context");
                     }
 
-                    _models.Add(GameScreen.Connecting, new DatPatchModel(_ctx, _backend));
+                    _models.Add(GameScreen.Connecting, new DatPatchModel(_ctx, _backend, _net));
 
                     _rmlInput = new RmlInputManager(_backend.Input, _ctx, _log);
                     PanelManager = new PanelManager(_ctx, _backend.Renderer, _log);

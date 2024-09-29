@@ -25,47 +25,53 @@ namespace MagicHat.ACProtocol {
             Messages = reader;
         }
 
-        public ACPacket? HandleS2CPacket(byte[] data) {
+        public IEnumerable<ACPacket> HandleS2CPacket(byte[] data) {
             return HandlePacket(data, MessageDirection.ServerToClient);
         }
 
-        public ACPacket? HandleC2SPacket(byte[] data) {
+        public IEnumerable<ACPacket> HandleC2SPacket(byte[] data) {
             return HandlePacket(data, MessageDirection.ClientToServer);
         }
 
-        private ACPacket? HandlePacket(byte[] data, MessageDirection direction) {
+        private IEnumerable<ACPacket> HandlePacket(byte[] data, MessageDirection direction) {
+            var packets = new List<ACPacket>();
             try {
                 using var reader = new BinaryReader(new MemoryStream(data));
                 var startOffset = reader.BaseStream.Position;
+                while (reader.BaseStream.Position < reader.BaseStream.Length) {
+                    var acPacket = new ACPacket(reader);
 
-                var acPacket = new ACPacket(reader);
-
-                if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.Retransmission)) {
-                    // TODO...
-                    _ = reader.ReadBytes((int)(reader.BaseStream.Position - startOffset + data.Length));
-                }
-                else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.RequestRetransmit)) {
-                    // TODO...
-                    _ = reader.ReadBytes((int)(reader.BaseStream.Position - startOffset + data.Length));
-                }
-                else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.RejectRetransmit)) {
-                    // TODO...
-                    _ = reader.ReadBytes((int)(reader.BaseStream.Position - startOffset + data.Length));
-                }
-                else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.BlobFragments)) {
-                    while (reader.BaseStream.Position < startOffset + acPacket.Header.Size) {
-                        var frag = ParseFragment(reader, direction, out var messages);
-                        acPacket.Fragment = frag;
-                        acPacket.Messages.AddRange(messages);
+                    if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.Retransmission)) {
+                        // TODO...
                     }
+                    else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.RequestRetransmit)) {
+                        // TODO...
+                    }
+                    else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.RejectRetransmit)) {
+                        // TODO...
+                    }
+                    else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.BlobFragments)) {
+                        while (reader.BaseStream.Position < startOffset + acPacket.Header.Size) {
+                            var frag = ParseFragment(reader, direction, out var messages);
+                            acPacket.Fragment = frag;
+                            acPacket.Messages.AddRange(messages);
+                        }
+                    }
+
+                    if (direction == MessageDirection.ClientToServer) {
+                        OnC2SPacket?.Invoke(this, new PacketEventArgs(acPacket, direction));
+                    }
+                    else if (direction == MessageDirection.ServerToClient) {
+                        OnS2CPacket?.Invoke(this, new PacketEventArgs(acPacket, direction));
+                    }
+                    packets.Add(acPacket);
                 }
-                return acPacket;
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Failed to process packet: {FormatBytes(data)}");
             }
 
-            return null;
+            return packets;
         }
 
         private ACFragment? ParseFragment(BinaryReader reader, MessageDirection direction, out List<ACMessage> messages) {

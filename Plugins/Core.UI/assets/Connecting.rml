@@ -20,9 +20,8 @@
           }
         </style>
 	</head>
-	<body id="b" data-model="DatPatchScreen">
+	<body data-model="DatPatchScreen">
         <div id="wrapper">
-            {{ Test }} // 
             Connect: {{ ConnectPercentage }}
             Patch: {{ PatchPercentage }}
         </div>
