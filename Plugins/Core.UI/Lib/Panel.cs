@@ -85,6 +85,7 @@ namespace ACUI.Lib {
                 _needsReload = false;
                 LoadDoc();
             }
+            return;
 
             if (_docFile.EndsWith("Connecting.rml")) {
                 try {

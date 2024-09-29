@@ -1,8 +1,12 @@
-﻿using ACUI.Lib;
+﻿using AcClient;
+using ACUI.Lib;
+using ACUI.Lib.Input;
 using ACUI.Lib.RmlUi;
 using Autofac;
 using Core.DatService;
+using Core.UI.Lib.RmlUi;
 using MagicHat.Backends.ACBackend.Render;
+using MagicHat.Core.Backend;
 using MagicHat.Core.Input;
 using MagicHat.Core.Plugins;
 using MagicHat.Core.Plugins.AssemblyLoader;
@@ -21,66 +25,128 @@ namespace ACUI {
     /// </summary>
     public class CoreUIPlugin : IPluginCore {
         private readonly IPluginManager _pluginManager;
-        private readonly IRenderInterface _renderer;
-        private readonly IInputManager _input;
+        private readonly IMagicHatBackend _backend;
         private readonly ILogger<CoreUIPlugin>? _log;
         private Panel? _activePanel;
+        private TestPlugin? _testPlugin;
+        private RmlUIRenderInterface? _rmlRenderInterface;
+        private ACSystemInterface? _rmlSystemInterface;
+        private RmlInputManager? _rmlInput;
+        private TestElementInstancer? _rmlElementInstancer;
+        private Context? _ctx;
+        private bool _didInitRml;
+
+        public PanelManager PanelManager { get; private set; }
 
         [DllImport("Kernel32.dll")]
         private static extern IntPtr LoadLibrary(string path);
-
-        public UI UI { get; private set; }
 
         /// <summary>
         /// Called when the game screen changes.
         /// </summary>
         public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, IRenderInterface renderer, IInputManager input, ILogger<CoreUIPlugin>? log) : base(manifest) {
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, IMagicHatBackend backend, ILogger<CoreUIPlugin>? log) : base(manifest) {
             _log = log;
             _pluginManager = pluginManager;
-            _renderer = renderer;
-            _input = input;
-            UI = new UI(manifest);
+            _backend = backend;
+            InitRmlUI();
+        }
+
+        private void InitRmlUI() {
+            if (_didInitRml) return;
+            _log?.LogTrace($"Initializing UI");
+
             try {
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
                 // fail to find it later
                 _log?.LogDebug($"Manually pre-loading {Path.Combine(AssemblyDirectory, "RmlUiNative.dll")}");
                 LoadLibrary(Path.Combine(AssemblyDirectory, "RmlUiNative.dll"));
 
-                UI.Init(_pluginManager, _renderer, _input, _log);
+                _testPlugin = new TestPlugin(_log);
+                _rmlRenderInterface = new RmlUIRenderInterface(_backend.Renderer);
+                _rmlSystemInterface = new ACSystemInterface(_log);
 
-                _renderer.OnGraphicsPreReset += PluginManager_OnGraphicsPreReset;
-                _renderer.OnGraphicsPostReset += PluginManager_OnGraphicsPostReset;
-                _renderer.OnScreenChanged += PluginManager_OnScreenChanged;
+                Rml.SetSystemInterface(_rmlSystemInterface);
+                Rml.SetRenderInterface(_rmlRenderInterface);
+
+                var size = new Vector2i((int)_backend.Renderer.ViewportSize.X, (int)_backend.Renderer.ViewportSize.Y);
+                _log?.LogTrace($"Window size: {size.X}x{size.Y}");
+
+                if (Rml.Initialise()) {
+                    Rml.RegisterPlugin(_testPlugin);
+                    _rmlElementInstancer = new TestElementInstancer(_log);
+                    _ctx = Rml.CreateContext("viewport", size);
+
+                    if (_ctx is null) {
+                        throw new Exception("Unable to create RmlUi context");
+                    }
+
+                    _rmlInput = new RmlInputManager(_backend.Input, _ctx, _log);
+                    PanelManager = new PanelManager(_ctx, _backend.Renderer, _log);
+
+                    Rml.LoadFontFace(Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile)!, "assets", "LatoLatin-Regular.ttf"));
+                    //PanelManager.LoadPanelFile(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "charselect.rml").Replace("/", @"\"));
+
+                    _backend.Renderer.OnRender2D += Renderer_OnRender2D;
+
+                    _backend.Renderer.OnGraphicsPreReset += PluginManager_OnGraphicsPreReset;
+                    _backend.Renderer.OnGraphicsPostReset += PluginManager_OnGraphicsPostReset;
+                    _backend.Renderer.OnScreenChanged += PluginManager_OnScreenChanged;
+
+                    _didInitRml = true;
+                }
+                else {
+                    throw new Exception("Unable to initialize RmlUi");
+                }
             }
             catch (Exception ex) {
-                _log?.LogError(ex, "Error during initialization ");
+                _log?.LogError(ex, "Error during initialization");
             }
         }
 
-        public CoreUIPlugin(AssemblyPluginManifest manifest) : base(manifest) {
+        private void Renderer_OnRender2D(object? sender, EventArgs e) {
+            PanelManager?.Update();
+            _ctx?.Update();
+            _ctx?.Render();
+        }
 
+        private void ShutdownRmlUI() {
+            if (_backend.Renderer is not null) {
+                _backend.Renderer.OnRender2D -= Renderer_OnRender2D;
+            }
+
+            PanelManager?.Dispose();
+
+            if (_didInitRml) {
+                Rml.Shutdown();
+            }
+
+            _rmlRenderInterface?.Dispose();
+            _rmlSystemInterface?.Dispose();
+            _testPlugin?.Dispose();
+
+            _didInitRml = false;
         }
 
         private void PluginManager_OnScreenChanged(object? sender, ScreenChangedEventArgs e) {
             if (_activePanel is not null) {
-                UI.PanelManager?.UnloadPanel(_activePanel);
+                PanelManager?.UnloadPanel(_activePanel);
             }
             var screenFile = Path.Combine(AssemblyDirectory, "assets", $"{e.NewScreen}.rml");
             if (File.Exists(screenFile)) {
                 _log?.LogDebug($"Loading {screenFile}");
-                _activePanel = UI.PanelManager?.LoadPanelFile(screenFile);
+                _activePanel = PanelManager?.LoadPanelFile(screenFile);
             }
             OnScreenChanged?.Invoke(this, e);
         }
 
-        private void PluginManager_OnGraphicsPreReset(object sender, EventArgs e) {
-            UI.Dispose();
+        private void PluginManager_OnGraphicsPreReset(object? sender, EventArgs e) {
+            ShutdownRmlUI();
         }
 
-        private void PluginManager_OnGraphicsPostReset(object sender, EventArgs e) {
-            UI.Init(_pluginManager, _renderer, _input, _log);
+        private void PluginManager_OnGraphicsPostReset(object? sender, EventArgs e) {
+            InitRmlUI();
         }
         
         /// <summary>
@@ -89,7 +155,7 @@ namespace ACUI {
         protected override void Dispose() {
             try {
                 _log?.LogTrace($"Shutting down");
-                UI.Dispose();
+                ShutdownRmlUI();
             }
             catch (Exception ex) {
                 _log?.LogError(ex, "Error during shutdown");

@@ -24,8 +24,7 @@ RMLUI_CAPI void *rml_Context_LoadDocument(Rml::Context *context, const char *doc
     return context->LoadDocument(documentPath);
 }
 
-RMLUI_CAPI void *
-rml_Context_LoadDocumentFromMemory(Rml::Context *context, const char *documentRml, const char *sourceUrl) {
+RMLUI_CAPI void *rml_Context_LoadDocumentFromMemory(Rml::Context *context, const char *documentRml, const char *sourceUrl) {
     return context->LoadDocumentFromMemory(documentRml, sourceUrl);
 }
 
@@ -65,18 +64,30 @@ RMLUI_CAPI bool rml_Context_ProcessTextInput(Rml::Context* context, const char* 
     return context->ProcessTextInput(input);
 }
 
-RMLUI_CAPI void
-rml_Context_AddEventListener(Rml::Context *context, const char *event, Rml::EventListener *eventListener,
+RMLUI_CAPI void rml_Context_AddEventListener(Rml::Context *context, const char *event, Rml::EventListener *eventListener,
                              bool inCapturePhase) {
     context->AddEventListener(event, eventListener, inCapturePhase);
 }
 
-RMLUI_CAPI void
-rml_Context_RemoveEventListener(Rml::Context *context, const char *event, Rml::EventListener *eventListener,
+RMLUI_CAPI void rml_Context_RemoveEventListener(Rml::Context *context, const char *event, Rml::EventListener *eventListener,
                                 bool inCapturePhase) {
     context->RemoveEventListener(event, eventListener, inCapturePhase);
 }
 
 RMLUI_CAPI const char* rml_Context_GetName(Rml::Context *context) {
     return context->GetName().c_str();
+}
+
+RMLUI_CAPI Rml::DataModelConstructor* rml_Context_CreateDataModel(Rml::Context *context, const char *name) {
+    auto data_model = context->CreateDataModel(name);
+    return &(data_model);
+}
+
+RMLUI_CAPI Rml::DataModelConstructor* rml_Context_GetDataModel(Rml::Context *context, const char *name) {
+    auto data_model = context->GetDataModel(name);
+    return &(data_model);
+}
+
+RMLUI_CAPI bool rml_Context_RemoveDataModel(Rml::Context *context, const char *name) {
+    return context->RemoveDataModel(name);
 }

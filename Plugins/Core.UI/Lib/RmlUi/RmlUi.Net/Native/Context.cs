@@ -58,5 +58,14 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_GetName")]
         public static extern IntPtr GetName(IntPtr context);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_CreateDataModel")]
+        public static extern IntPtr CreateDataModel(IntPtr context, string name);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_GetDataModel")]
+        public static extern IntPtr GetDataModel(IntPtr context, string name);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_RemoveDataModel")]
+        public static extern bool RemoveDataModel(IntPtr context, string name);
     }
 }

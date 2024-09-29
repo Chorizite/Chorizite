@@ -51,7 +51,3 @@ RMLUI_CAPI Rml::RenderInterface* rml_GetRenderInterface() {
 RMLUI_CAPI Rml::SystemInterface* rml_GetSystemInterface() {
     return Rml::GetSystemInterface();
 }
-
-RMLUI_CAPI int rml_Test(const char *name) {
-    return 123;
-}

@@ -18,11 +18,6 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="deps\**" />
-    <EmbeddedResource Remove="deps\**" />
-    <None Remove="deps\**" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="CoreUIPlugin.cs" />
     <Content Include="README.md" />
   </ItemGroup>
