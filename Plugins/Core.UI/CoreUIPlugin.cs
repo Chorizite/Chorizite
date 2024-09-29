@@ -5,6 +5,7 @@ using ACUI.Lib.RmlUi;
 using Autofac;
 using Core.DatService;
 using Core.UI.Lib.RmlUi;
+using Core.UI.Models;
 using MagicHat.Backends.ACBackend.Render;
 using MagicHat.Core.Backend;
 using MagicHat.Core.Input;
@@ -27,6 +28,7 @@ namespace ACUI {
         private readonly IPluginManager _pluginManager;
         private readonly IMagicHatBackend _backend;
         private readonly ILogger<CoreUIPlugin>? _log;
+        private readonly Dictionary<GameScreen, UIDataModel> _models = [];
         private Panel? _activePanel;
         private TestPlugin? _testPlugin;
         private RmlUIRenderInterface? _rmlRenderInterface;
@@ -36,10 +38,9 @@ namespace ACUI {
         private Context? _ctx;
         private bool _didInitRml;
 
-        public PanelManager PanelManager { get; private set; }
+        public static ILogger Log;
 
-        [DllImport("Kernel32.dll")]
-        private static extern IntPtr LoadLibrary(string path);
+        public PanelManager PanelManager { get; private set; }
 
         /// <summary>
         /// Called when the game screen changes.
@@ -47,6 +48,7 @@ namespace ACUI {
         public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
         protected CoreUIPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, IMagicHatBackend backend, ILogger<CoreUIPlugin>? log) : base(manifest) {
+            Log = _log;
             _log = log;
             _pluginManager = pluginManager;
             _backend = backend;
@@ -61,7 +63,7 @@ namespace ACUI {
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
                 // fail to find it later
                 _log?.LogDebug($"Manually pre-loading {Path.Combine(AssemblyDirectory, "RmlUiNative.dll")}");
-                LoadLibrary(Path.Combine(AssemblyDirectory, "RmlUiNative.dll"));
+                Native.LoadLibrary(Path.Combine(AssemblyDirectory, "RmlUiNative.dll"));
 
                 _testPlugin = new TestPlugin(_log);
                 _rmlRenderInterface = new RmlUIRenderInterface(_backend.Renderer);
@@ -81,6 +83,8 @@ namespace ACUI {
                     if (_ctx is null) {
                         throw new Exception("Unable to create RmlUi context");
                     }
+
+                    _models.Add(GameScreen.Connecting, new DatPatchModel(_ctx, _backend));
 
                     _rmlInput = new RmlInputManager(_backend.Input, _ctx, _log);
                     PanelManager = new PanelManager(_ctx, _backend.Renderer, _log);

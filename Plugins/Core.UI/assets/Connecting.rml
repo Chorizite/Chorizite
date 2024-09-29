@@ -20,10 +20,11 @@
           }
         </style>
 	</head>
-	<body id="b" data-model="DatPatchUI">
+	<body id="b" data-model="DatPatchScreen">
         <div id="wrapper">
-            Connect: <span id="connect">{{ connectPercentage }}</span>
-            Patch: <span id="patch">{{ patchPercentage }}</span>
+            {{ Test }} // 
+            Connect: {{ ConnectPercentage }}
+            Patch: {{ PatchPercentage }}
         </div>
 	</body>
 </html>

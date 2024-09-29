@@ -39,6 +39,7 @@ add_library(${PROJECT_NAME} SHARED
     "src/ElementCustom.cpp"
     "src/ElementInstancer.cpp"
 
+    "src/DataModelHandle.cpp"
     "src/DataModelConstructor.cpp"
     "src/Event.cpp"
     "src/EventListener.h"

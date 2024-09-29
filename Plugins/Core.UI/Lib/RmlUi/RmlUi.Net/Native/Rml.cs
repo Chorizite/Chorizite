@@ -41,6 +41,15 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_GetSystemInterface")]
         public static extern IntPtr GetSystemInterface();
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_CreateString")]
+        public static extern IntPtr CreateString(string str);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_UpdateString")]
+        public static extern void UpdateString(IntPtr str, string newContent);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_FreeString")]
+        public static extern void FreeString(IntPtr str);
+
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void OnProcessEvent(IntPtr eventPtr);
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
