@@ -12,20 +12,56 @@
           }
           div#wrapper {
             text-align: center;
-            margin: auto;
+            margin-left: auto;
+            margin-right: auto;
             display: block;
             width: 800px;
-            height: 440px;
+            height: 400px;
             decorator: image( dat://0x06006E20 );
+          }
+
+          @keyframes loader {
+            from { decorator: image( dat://0x06001966 ); fill-image: dat://0x0600195C; }
+            7% { decorator: image( dat://0x06001967 ); fill-image: dat://0x0600195D; }
+            14% { decorator: image( dat://0x06001968 ); fill-image: dat://0x0600195E; }
+            21% { decorator: image( dat://0x06001969 ); fill-image: dat://0x0600195F; }
+            28% { decorator: image( dat://0x0600196A ); fill-image: dat://0x06001960; }
+            35% { decorator: image( dat://0x0600196B ); fill-image: dat://0x06001961; }
+            42% { decorator: image( dat://0x0600196C ); fill-image: dat://0x06001962; }
+            49% { decorator: image( dat://0x0600196D ); fill-image: dat://0x06001963; }
+            56% { decorator: image( dat://0x0600196E ); fill-image: dat://0x06001964; }
+            63% { decorator: image( dat://0x0600196F ); fill-image: dat://0x06001965; }
+            70% { decorator: image( dat://0x06001975 ); fill-image: dat://0x06001971; }
+            77% { decorator: image( dat://0x06001976 ); fill-image: dat://0x06001972; }
+            84% { decorator: image( dat://0x06001977 ); fill-image: dat://0x06001973; }
+            91% { decorator: image( dat://0x06001978 ); fill-image: dat://0x06001974; }
+            to { decorator: image( dat://0x06001979 ); fill-image: dat://0x06001974; }
+          }
+
+          div#patchprogress {
+            display: block;
+          }
+
+          div#patchprogress progress.horizontal {
+            width: 650px;
+            height: 104px;
+            fill-image: dat://0x06001974;
+            decorator: image( dat://0x06001979 );
+            animation: loader 1s infinite;
           }
         </style>
 	</head>
 	<body data-model="DatPatchScreen">
-        <div id="wrapper">
-            Connect: {{ ConnectPercentage * 100 | format(2) }}%
-            Patch: {{ PatchPercentage * 100 | format(2) }}%
-            <br />
-            Bytes: {{ ReceivedBytes }} / {{ ExpectedBytes }}
+    <div id="patchprogress">
+      <progress class="horizontal" data-value="PatchPercentage * 100" max="100"/>
+    </div>
+    <div id="wrapper">
+      <div id="text">
+          Connect: {{ ConnectPercentage * 100 | format(2) }}%
+          Patch: {{ PatchPercentage * 100 | format(2) }}%
+          <br />
+          Bytes: {{ ReceivedBytes }} / {{ ExpectedBytes }}
         </div>
+    </div>
 	</body>
 </html>

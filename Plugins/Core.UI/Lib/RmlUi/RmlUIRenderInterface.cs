@@ -26,7 +26,7 @@ namespace ACUI.Lib.RmlUi {
             var verts = new VertexPositionColorTexture[vertexCount];
             for (int i = 0; i < vertexCount; i++) {
                 var v = vertices[i];
-                verts[i] = new VertexPositionColorTexture(new Vector3(v.Position.X, v.Position.Y, 0), new ColorVec(v.Colour.Alpha / 255f, v.Colour.Red / 255f, v.Colour.Green / 255f, v.Colour.Blue / 255f), new Vector2(v.TextureCoordinates.X, v.TextureCoordinates.Y));
+                verts[i] = new VertexPositionColorTexture(new Vector3(v.Position.X, v.Position.Y, 0), new ColorVec(v.Colour.Red / 255f, v.Colour.Green / 255f, v.Colour.Blue / 255f, v.Colour.Alpha / 255f), new Vector2(v.TextureCoordinates.X, v.TextureCoordinates.Y));
             }
             var inds = new int[indexCount];
             for (int i = 0; i < indexCount; i++) {
