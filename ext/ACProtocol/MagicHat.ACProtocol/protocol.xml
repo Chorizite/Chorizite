@@ -8396,7 +8396,7 @@
       <type name="DDD_DataMessage" queue="CLCache" text="Add or update a dat file Resource." type="0xF7E2" lastUpdater="zegeger" lastUpdate="20170913">
         <field type="DatFileType" name="DatFile" text="which dat file should store this resource" />
         <field type="uint" name="ResourceType" text="the resource type" />
-        <field type="DataId" name="ResourceId" text="the resource Id number" />
+        <field type="uint" name="ResourceId" text="the resource Id number" />
         <field type="uint" name="Iteration" text="the file version number" />
         <field type="CompressionType" name="Compression" text="the type of compression used" />
         <field type="uint" name="Version" text="version of some sort" />

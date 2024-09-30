@@ -27,15 +27,28 @@ namespace Core.UI.Models {
         private void BuildBindings() {
             var propsToBind = GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
             foreach (var p in propsToBind) {
-                if (p.PropertyType == typeof(string) && p.GetValue(this) is string stringValue) {
-                    _modelConstructor.BindString(p.Name, stringValue);
-                }
-                else if (p.PropertyType == typeof(float) && p.GetValue(this) is float floatValue) {
-                    _modelConstructor.BindFloat(p.Name, floatValue);
-                }
-                else {
-                   throw new Exception($"Unsupported bound property type: {p.PropertyType}");
-                }
+                BindProperty(p);
+            }
+        }
+
+        private void BindProperty(PropertyInfo p) {
+            if (p.PropertyType == typeof(string) && p.GetValue(this) is string stringValue) {
+                _modelConstructor.BindString(p.Name, stringValue);
+            }
+            else if (p.PropertyType == typeof(float) && p.GetValue(this) is float floatValue) {
+                _modelConstructor.BindFloat(p.Name, floatValue);
+            }
+            else if (p.PropertyType == typeof(uint) && p.GetValue(this) is uint uintValue) {
+                _modelConstructor.BindUInt(p.Name, uintValue);
+            }
+            else if (p.PropertyType == typeof(int) && p.GetValue(this) is int intValue) {
+                _modelConstructor.BindInt(p.Name, intValue);
+            }
+            else if (p.PropertyType == typeof(bool) && p.GetValue(this) is bool boolValue) {
+                _modelConstructor.BindBool(p.Name, boolValue);
+            }
+            else {
+                throw new Exception($"Unsupported bound property type: {p.PropertyType}");
             }
         }
 
@@ -46,13 +59,7 @@ namespace Core.UI.Models {
             else {
                 var p = GetType().GetProperty(e.PropertyName);
                 if (p is null) return;
-
-                if (p.PropertyType == typeof(string) && p.GetValue(this) is string stringValue) {
-                    _modelConstructor.BindString(p.Name, stringValue);
-                }
-                else if (p.PropertyType == typeof(float) && p.GetValue(this) is float floatValue) {
-                    _modelConstructor.BindFloat(p.Name, floatValue);
-                }
+                BindProperty(p);
                 _modelConstructor.Handle.DirtyVariable(e.PropertyName);
             }
         }

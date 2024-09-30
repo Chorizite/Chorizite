@@ -12,7 +12,10 @@ namespace RmlUiNet {
     public unsafe class DataModelConstructor : RmlBase<DataModelConstructor>, IDisposable {
         private enum BindingType {
             Float,
-            String
+            String,
+            UInt,
+            Int,
+            Bool
         }
 
         private struct Binding {
@@ -49,6 +52,48 @@ namespace RmlUiNet {
             return true;
         }
 
+        public bool BindUInt(string name, uint value) {
+            if (_bindings.TryGetValue(name, out var binding)) {
+                *(uint*)binding.Ptr = value;
+                return true;
+            }
+
+            var ptr = Marshal.AllocHGlobal(sizeof(uint));
+            Buffer.MemoryCopy(&value, (void*)ptr, sizeof(uint), sizeof(uint));
+            Native.DataModelConstructor.BindUInt(NativePtr, name, ptr);
+
+            _bindings.Add(name, new(name, ptr, BindingType.UInt));
+            return true;
+        }
+
+        public bool BindInt(string name, int value) {
+            if (_bindings.TryGetValue(name, out var binding)) {
+                *(int*)binding.Ptr = value;
+                return true;
+            }
+
+            var ptr = Marshal.AllocHGlobal(sizeof(int));
+            Buffer.MemoryCopy(&value, (void*)ptr, sizeof(int), sizeof(int));
+            Native.DataModelConstructor.BindInt(NativePtr, name, ptr);
+
+            _bindings.Add(name, new(name, ptr, BindingType.Int));
+            return true;
+        }
+
+        public bool BindBool(string name, bool value) {
+            if (_bindings.TryGetValue(name, out var binding)) {
+                *(bool*)binding.Ptr = value;
+                return true;
+            }
+
+            var ptr = Marshal.AllocHGlobal(sizeof(bool));
+            Buffer.MemoryCopy(&value, (void*)ptr, sizeof(bool), sizeof(bool));
+            Native.DataModelConstructor.BindBool(NativePtr, name, ptr);
+
+            _bindings.Add(name, new(name, ptr, BindingType.Bool));
+            return true;
+        }
+
         public bool BindString(string name, string value) {
             if (_bindings.TryGetValue(name, out var binding)) {
                 Native.Rml.UpdateString(binding.Ptr, value);
@@ -64,6 +109,9 @@ namespace RmlUiNet {
         private void TryRemoveExistingBinding(string name) {
             if (_bindings.Remove(name, out var binding)) {
                 switch (binding.Type) {
+                    case BindingType.UInt:
+                    case BindingType.Int:
+                    case BindingType.Bool:
                     case BindingType.Float:
                         Marshal.FreeHGlobal(binding.Ptr);
                         break;

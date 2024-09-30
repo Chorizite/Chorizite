@@ -66,20 +66,20 @@ namespace MagicHat.ACProtocol.Messages.S2C {
             base.Read(reader);
             DatFile = (DatFileType)reader.ReadInt64();
             ResourceType = reader.ReadUInt32();
-            ResourceId = reader.ReadPackedDWORD();
+            ResourceId = reader.ReadUInt32();
             Iteration = reader.ReadUInt32();
             Compression = (CompressionType)reader.ReadByte();
             Version = reader.ReadUInt32();
             DataSize = reader.ReadUInt32();
             switch((int)Compression) {
                 case 0x00:
-                    for (var i=0; i < DataSize; i++) {
+                    for (var i=0; i < DataSize - 4; i++) {
                         Data.Add(reader.ReadItem<byte>());
                     }
                     break;
                 case 0x01:
                     FileSize = reader.ReadUInt32();
-                    for (var i=0; i < DataSize; i++) {
+                    for (var i=0; i < DataSize - 8; i++) {
                         Data.Add(reader.ReadItem<byte>());
                     }
                     break;
@@ -100,12 +100,12 @@ namespace MagicHat.ACProtocol.Messages.S2C {
             writer.Write(DataSize);
             switch((int)Compression) {
                 case 0x00:
-                    for (var i=0; i < DataSize; i++) {
+                    for (var i=0; i < DataSize - 4; i++) {
                     }
                     break;
                 case 0x01:
                     writer.Write(FileSize);
-                    for (var i=0; i < DataSize; i++) {
+                    for (var i=0; i < DataSize - 8; i++) {
                     }
                     break;
             }

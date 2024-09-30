@@ -25,7 +25,7 @@ namespace MagicHat.ACProtocol.Lib {
 
 		public void Read(BinaryReader reader) {
 			Sequence = reader.ReadUInt32();
-			Id = reader.ReadUInt32();
+            Id = reader.ReadUInt32();
 			Count = reader.ReadUInt16();
 			Size = reader.ReadUInt16();
 			Index = reader.ReadUInt16();

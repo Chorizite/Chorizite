@@ -10,6 +10,18 @@ RMLUI_CAPI bool rml_DataModelConstructor_BindFloat(Rml::DataModelConstructor* da
   return data_model->Bind(name, data);
 }
 
+RMLUI_CAPI bool rml_DataModelConstructor_BindUInt(Rml::DataModelConstructor* data_model, const char* name, unsigned int* data) {
+  return data_model->Bind(name, data);
+}
+
+RMLUI_CAPI bool rml_DataModelConstructor_BindInt(Rml::DataModelConstructor* data_model, const char* name, int* data) {
+  return data_model->Bind(name, data);
+}
+
+RMLUI_CAPI bool rml_DataModelConstructor_BindBool(Rml::DataModelConstructor* data_model, const char* name, bool* data) {
+  return data_model->Bind(name, data);
+}
+
 RMLUI_CAPI bool rml_DataModelConstructor_BindString(Rml::DataModelConstructor* data_model, const char* name, Rml::String* data) {
   return data_model->Bind(name, data);
 }

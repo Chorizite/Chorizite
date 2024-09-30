@@ -37,21 +37,12 @@ namespace MagicHat.ACProtocol {
             var packets = new List<ACPacket>();
             try {
                 using var reader = new BinaryReader(new MemoryStream(data));
-                var startOffset = reader.BaseStream.Position;
                 while (reader.BaseStream.Position < reader.BaseStream.Length) {
+                    var startOffset = reader.BaseStream.Position;
                     var acPacket = new ACPacket(reader);
 
-                    if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.Retransmission)) {
-                        // TODO...
-                    }
-                    else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.RequestRetransmit)) {
-                        // TODO...
-                    }
-                    else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.RejectRetransmit)) {
-                        // TODO...
-                    }
-                    else if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.BlobFragments)) {
-                        while (reader.BaseStream.Position < startOffset + acPacket.Header.Size) {
+                    if (acPacket.Header.Flags.HasFlag(PacketHeaderFlags.BlobFragments)) {
+                        while (reader.BaseStream.Position < startOffset + ACPacketHeader.HEADER_SIZE + acPacket.Header.Size) {
                             var frag = ParseFragment(reader, direction, out var messages);
                             acPacket.Fragment = frag;
                             acPacket.Messages.AddRange(messages);
@@ -65,6 +56,11 @@ namespace MagicHat.ACProtocol {
                         OnS2CPacket?.Invoke(this, new PacketEventArgs(acPacket, direction));
                     }
                     packets.Add(acPacket);
+
+                    if (reader.BaseStream.Position != startOffset + ACPacketHeader.HEADER_SIZE + acPacket.Header.Size) {
+                        _log.LogWarning($"Skipped reading {startOffset + ACPacketHeader.HEADER_SIZE + acPacket.Header.Size - reader.BaseStream.Position} bytes? {FormatBytes(data)}");
+                        reader.BaseStream.Position = startOffset + ACPacketHeader.HEADER_SIZE + acPacket.Header.Size;
+                    }
                 }
             }
             catch (Exception ex) {

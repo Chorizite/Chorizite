@@ -7,6 +7,8 @@ using MagicHat.ACProtocol.Types;
 
 namespace MagicHat.ACProtocol.Packets {
 	public class ACPacketHeader {
+        public static readonly int HEADER_SIZE = 20;
+
 		public uint Sequence;
 		public PacketHeaderFlags Flags;
 		public uint Checksum;

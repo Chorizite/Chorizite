@@ -43,7 +43,7 @@ namespace Launcher
         {
             var host = server.Split(":").First();
             var port = server.Split(":").Last();
-            var args = $"-h {host} -p {port} -a {username} -v {password} -rodat";
+            var args = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
             var dll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), "MagicHat.Bootstrapper.dll");
 
             var entryPointParams = new EntryPointParameters[] {

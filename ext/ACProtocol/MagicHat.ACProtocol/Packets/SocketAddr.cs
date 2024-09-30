@@ -15,7 +15,7 @@ namespace MagicHat.ACProtocol.Packets {
 			Family = reader.ReadInt16();
 			Port = reader.ReadUInt16();
 			Address = new IPAddress(reader.ReadBytes(4));
-			_ = reader.ReadChars(8); // char sin_zero[8]
+			_ = reader.ReadBytes(8); // char sin_zero[8]
 		}
 	}
 }

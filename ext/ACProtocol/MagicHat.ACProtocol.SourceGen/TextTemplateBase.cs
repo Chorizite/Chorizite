@@ -413,7 +413,12 @@ namespace MagicHat.ACProtocol.SourceGen {
         }
         public string WriteForLoopStart2(ACVector vector, string pre, int depth) {
             var indexVar = new string[] { "i", "x", "y", "z", "q", "p", "t", "r", "f", "g", "h", "k", "u", "v" }[depth];
-            WriteLine($"for (var {indexVar}=0; {indexVar} < {pre}{vector.Length}; {indexVar}++) {{");
+            if (!string.IsNullOrEmpty(vector.Skip)) {
+                WriteLine($"for (var {indexVar}=0; {indexVar} < {pre}{vector.Length} - {vector.Skip}; {indexVar}++) {{");
+            }
+            else {
+                WriteLine($"for (var {indexVar}=0; {indexVar} < {pre}{vector.Length}; {indexVar}++) {{");
+            }
             Indent();
             return indexVar;
         }

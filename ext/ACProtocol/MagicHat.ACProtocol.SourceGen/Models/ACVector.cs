@@ -11,6 +11,7 @@ namespace MagicHat.ACProtocol.SourceGen.Models {
         public string Text { get; set; }
         public string Type { get; set; }
         public string Length { get; set; }
+        public string Skip { get; set; }
 
         public string TypeDeclaration {
             get {
@@ -54,7 +55,8 @@ namespace MagicHat.ACProtocol.SourceGen.Models {
                 Name = ACDataMember.FirstCharToUpper((string)element.Attribute("name")),
                 Type = (string)element.Attribute("type"),
                 Length = ACDataMember.FirstCharToUpper((string)element.Attribute("length")),
-                Text = (string)element.Attribute("text")
+                Text = (string)element.Attribute("text"),
+                Skip = (string)element.Attribute("skip")
             };
         }
     }

@@ -22,8 +22,10 @@
 	</head>
 	<body data-model="DatPatchScreen">
         <div id="wrapper">
-            Connect: {{ ConnectPercentage }}
-            Patch: {{ PatchPercentage }}
+            Connect: {{ ConnectPercentage * 100 | format(2) }}%
+            Patch: {{ PatchPercentage * 100 | format(2) }}%
+            <br />
+            Bytes: {{ ReceivedBytes }} / {{ ExpectedBytes }}
         </div>
 	</body>
 </html>

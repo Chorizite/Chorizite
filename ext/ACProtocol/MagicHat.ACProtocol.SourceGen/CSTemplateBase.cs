@@ -300,7 +300,13 @@ namespace MagicHat.ACProtocol.SourceGen {
         /// <param name="depth"></param>
         public override void WriteForLoopStart(ACVector vector, int depth) {
             var indexVar = new string[] { "i", "x", "y", "z", "q", "p", "t", "r", "f", "g", "h", "k", "u", "v" }[depth];
-            WriteLine($"for (var {indexVar}=0; {indexVar} < {vector.Length}; {indexVar}++) {{");
+
+            if (!string.IsNullOrEmpty(vector.Skip)) {
+                WriteLine($"for (var {indexVar}=0; {indexVar} < {vector.Length} - {vector.Skip}; {indexVar}++) {{");
+            }
+            else {
+                WriteLine($"for (var {indexVar}=0; {indexVar} < {vector.Length}; {indexVar}++) {{");
+            }
             Indent();
         }
 

@@ -1,16 +1,11 @@
 ﻿using MagicHat.ACProtocol;
+using MagicHat.ACProtocol.Enums;
 using MagicHat.ACProtocol.Messages.S2C;
 using MagicHat.Core.Backend;
 using MagicHat.Core.Net;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Core.UI.Models {
     public class DatPatchModel : UIDataModel {
@@ -18,6 +13,8 @@ namespace Core.UI.Models {
 
         private float _connectPercentage = 0f;
         private float _patchPercentage = 0f;
+        private uint _expectedBytes = 0;
+        private uint _receivedBytes = 0;
 
         public float ConnectPercentage {
             get => _connectPercentage;
@@ -39,37 +36,62 @@ namespace Core.UI.Models {
             }
         }
 
+        public uint ExpectedBytes {
+            get => _expectedBytes;
+            set {
+                if (value != _expectedBytes) {
+                    _expectedBytes = value;
+                    InvokePropertyChange();
+                }
+            }
+        }
+
+        public uint ReceivedBytes {
+            get => _receivedBytes;
+            set {
+                if (value != _receivedBytes) {
+                    _receivedBytes = value;
+                    InvokePropertyChange();
+                }
+            }
+        }
+
         public DatPatchModel(Context context, IMagicHatBackend backend, NetworkParser net) : base("DatPatchScreen", context) {
             _net = net;
 
             _net.OnS2CPacket += Net_OnS2CPacket;
             _net.OnC2SPacket += Net_OnC2SPacket;
 
-            _net.Messages.S2C.OnDDD_InterrogationMessage += Messages_S2C_OnDDD_InterrogationMessage;
+            _net.Messages.S2C.OnDDD_BeginDDDMessage += Messages_S2C_OnDDD_BeginDDDMessage;
+            _net.Messages.S2C.OnDDD_DataMessage += Messages_S2C_OnDDD_DataMessage;
             _net.Messages.S2C.OnDDD_OnEndDDD += Messages_S2C_OnDDD_OnEndDDD;
-
-            // TODO: percentage based on actual patching progress
         }
 
-        private void Messages_S2C_OnDDD_InterrogationMessage(object? sender, DDD_InterrogationMessage e) {
-            PatchPercentage = 0.1f;
-            _net.Messages.S2C.OnDDD_InterrogationMessage -= Messages_S2C_OnDDD_InterrogationMessage;
+        private void Messages_S2C_OnDDD_BeginDDDMessage(object? sender, DDD_BeginDDDMessage e) {
+            ExpectedBytes = e.DataExpected;
+            _net.Messages.S2C.OnDDD_BeginDDDMessage -= Messages_S2C_OnDDD_BeginDDDMessage;
+        }
+
+        private void Messages_S2C_OnDDD_DataMessage(object? sender, DDD_DataMessage e) {
+            ReceivedBytes += e.DataSize;
+            PatchPercentage = (float)ReceivedBytes / (float)ExpectedBytes;
         }
 
         private void Messages_S2C_OnDDD_OnEndDDD(object? sender, DDD_OnEndDDD e) {
             PatchPercentage = 1f;
             _net.Messages.S2C.OnDDD_OnEndDDD -= Messages_S2C_OnDDD_OnEndDDD;
+            _net.Messages.S2C.OnDDD_DataMessage -= Messages_S2C_OnDDD_DataMessage;
         }
 
         private void Net_OnS2CPacket(object? sender, PacketEventArgs e) {
-            if (e.Packet.Header.Flags.HasFlag(MagicHat.ACProtocol.Enums.PacketHeaderFlags.ConnectRequest)) {
+            if (e.Packet.Header.Flags.HasFlag(PacketHeaderFlags.ConnectRequest)) {
                 ConnectPercentage = 1f;
                 _net.OnS2CPacket -= Net_OnS2CPacket;
             }
         }
 
         private void Net_OnC2SPacket(object? sender, PacketEventArgs e) {
-            if (e.Packet.Header.Flags.HasFlag(MagicHat.ACProtocol.Enums.PacketHeaderFlags.LoginRequest)) {
+            if (e.Packet.Header.Flags.HasFlag(PacketHeaderFlags.LoginRequest)) {
                 ConnectPercentage = 0.5f;
                 _net.OnC2SPacket -= Net_OnC2SPacket;
             }
@@ -78,7 +100,8 @@ namespace Core.UI.Models {
         public override void Dispose() {
             _net.OnS2CPacket -= Net_OnS2CPacket;
             _net.OnC2SPacket -= Net_OnC2SPacket;
-            _net.Messages.S2C.OnDDD_InterrogationMessage -= Messages_S2C_OnDDD_InterrogationMessage;
+            _net.Messages.S2C.OnDDD_BeginDDDMessage -= Messages_S2C_OnDDD_BeginDDDMessage;
+            _net.Messages.S2C.OnDDD_DataMessage -= Messages_S2C_OnDDD_DataMessage;
             _net.Messages.S2C.OnDDD_OnEndDDD -= Messages_S2C_OnDDD_OnEndDDD;
         }
     }
