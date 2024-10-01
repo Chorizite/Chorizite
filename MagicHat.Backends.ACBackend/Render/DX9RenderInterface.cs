@@ -97,19 +97,6 @@ namespace MagicHat.Backends.ACBackend.Render {
                 D3Ddevice.SetSamplerState(0, SamplerState.AddressV, TextureAddress.Clamp);
 
                 D3Ddevice.SetRenderState(RenderState.ColorVertex, true);
-                /*
-                D3Ddevice.SetRenderState(RenderState.ColorVertex, true);
-
-                D3Ddevice.SetTextureStageState(0, TextureStage.ColorOperation, TextureOperation.Modulate);
-                D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg1, TextureArgument.Texture);
-                D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg2, TextureArgument.Diffuse);
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaOperation, TextureOperation.Modulate);
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg1, TextureArgument.Diffuse);
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg2, TextureArgument.Texture);
-
-                D3Ddevice.SetSamplerState(0, SamplerState.AddressU, TextureAddress.Border);
-                D3Ddevice.SetSamplerState(0, SamplerState.AddressV, TextureAddress.Border);
-                */
 
                 D3Ddevice.SetTransform(TransformState.View, view);
                 D3Ddevice.SetTransform(TransformState.Projection, projection);
