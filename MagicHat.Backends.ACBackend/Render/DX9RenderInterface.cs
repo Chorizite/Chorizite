@@ -89,7 +89,7 @@ namespace MagicHat.Backends.ACBackend.Render {
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorOperation, TextureOperation.Modulate);
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg1, TextureArgument.Texture);
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg2, TextureArgument.Diffuse);
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaOperation, TextureOperation.SelectArg1);
+                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaOperation, TextureOperation.Modulate);
                 D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg1, TextureArgument.Texture);
                 D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg2, TextureArgument.Diffuse);
 

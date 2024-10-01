@@ -239,17 +239,19 @@ namespace MagicHat.Backends.ACBackend.Render {
         public static ManagedDXTexture FromDatUrl(string source, ILogger _log, IDatReaderInterface _portalDat) {
             var uri = new Uri(source);
             uint id = ParseDatId(uri.Host);
-            Image<Argb32> baseBmp = GetIconBitmap(id, _portalDat).CloneAs<Argb32>();
+            Image<Argb32> baseBmp = GetIconBitmap(id, _portalDat, out var file).CloneAs<Argb32>();
+
+            if (file?.Format == SurfacePixelFormat.PFID_CUSTOM_RAW_JPEG) {
+                return new ManagedDXTexture(baseBmp);
+            }
+
             var bmp2 = new Image<Argb32>(baseBmp.Width, baseBmp.Height);
 
-            // TODO: this is probably the wrong way to detect icons that need masking
-            if (bmp2.Width <= 32 && bmp2.Height <= 32) {
-                for (int x = 0; x < baseBmp.Width; x++) {
-                    for (int y = 0; y < baseBmp.Height; y++) {
-                        Color gotColor = baseBmp[x, y];
-                        if (gotColor == BACKGROUND_COLOR_MASK) {
-                            baseBmp[x, y] = Color.Transparent;
-                        }
+            for (int x = 0; x < baseBmp.Width; x++) {
+                for (int y = 0; y < baseBmp.Height; y++) {
+                    Color gotColor = baseBmp[x, y];
+                    if (gotColor == BACKGROUND_COLOR_MASK) {
+                        baseBmp[x, y] = Color.Transparent;
                     }
                 }
             }
@@ -272,20 +274,20 @@ namespace MagicHat.Backends.ACBackend.Render {
             if (!string.IsNullOrEmpty(uri.Query)) {
                 var query = HttpHelpers.ParseQueryString(uri.Query);
                 if (query.ContainsKey("underlay") && !string.IsNullOrEmpty(query["underlay"])) {
-                    underlay = GetIconBitmap(ParseDatId(query["underlay"]), _portalDat);
+                    underlay = GetIconBitmap(ParseDatId(query["underlay"]), _portalDat, out var _);
                 }
                 if (query.ContainsKey("overlay1") && !string.IsNullOrEmpty(query["overlay1"])) {
-                    overlay1 = GetIconBitmap(ParseDatId(query["overlay1"]), _portalDat);
+                    overlay1 = GetIconBitmap(ParseDatId(query["overlay1"]), _portalDat, out var _);
                 }
                 if (query.ContainsKey("overlay2") && !string.IsNullOrEmpty(query["overlay2"])) {
-                    overlay2 = GetIconBitmap(ParseDatId(query["overlay2"]), _portalDat);
+                    overlay2 = GetIconBitmap(ParseDatId(query["overlay2"]), _portalDat, out var _);
                 }
                 if (query.ContainsKey("uieffect") && !string.IsNullOrEmpty(query["uieffect"]) && _uiEffects.TryGetValue(query["uieffect"].ToLower(), out var effectId)) {
-                    uieffect = GetIconBitmap(effectId, _portalDat);
+                    uieffect = GetIconBitmap(effectId, _portalDat, out var _);
                 }
             }
 
-            uieffect ??= GetIconBitmap(0x060011C5, _portalDat);
+            uieffect ??= GetIconBitmap(0x060011C5, _portalDat, out var _);
             // ui effect
             if (baseBmp.Width <= 32 && baseBmp.Height <= 32) {
                 for (int x = 0; x < baseBmp.Width; x++) {
@@ -315,8 +317,8 @@ namespace MagicHat.Backends.ACBackend.Render {
             return new ManagedDXTexture(bmp);
         }
 
-        private static Image<Argb32> GetIconBitmap(uint id, IDatReaderInterface portalDat) {
-            if (!portalDat.TryGet<ACDatReader.FileTypes.Texture>(id, out var iconFile)) {
+        private static Image<Argb32> GetIconBitmap(uint id, IDatReaderInterface portalDat, out ACDatReader.FileTypes.Texture? iconFile) {
+            if (!portalDat.TryGet<ACDatReader.FileTypes.Texture>(id, out iconFile)) {
                 throw new Exception($"Could not load icon from dat: 0x{id:X8}");
             }
 

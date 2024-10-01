@@ -20,25 +20,19 @@ namespace ACUI.Lib.Input {
             _input.OnMouseUp += InputManager_OnMouseUp;
         }
 
-        private void InputManager_OnMouseUp(object sender, MouseUpEventArgs e) {
+        private void InputManager_OnMouseUp(object? sender, MouseUpEventArgs e) {
             var eat = !_ctx.ProcessMouseButtonUp((int)e.Button, 0);
-            if (eat) {
-                e.Eat = true;
-            }
+            e.Eat = _ctx.IsMouseInteracting;
         }
 
-        private void InputManager_OnMouseDown(object sender, MouseDownEventArgs e) {
+        private void InputManager_OnMouseDown(object? sender, MouseDownEventArgs e) {
             var eat = !_ctx.ProcessMouseButtonDown((int)e.Button, 0);
-            if (eat) {
-                e.Eat = true;
-            }
+            e.Eat = _ctx.IsMouseInteracting;
         }
 
-        private void InputManager_OnMouseMove(object sender, MouseMoveEventArgs e) {
+        private void InputManager_OnMouseMove(object? sender, MouseMoveEventArgs e) {
             var eat = !_ctx.ProcessMouseMove(e.X, e.Y, 0);
-            if (eat) {
-                e.Eat = true;
-            }
+            e.Eat = _ctx.IsMouseInteracting;
         }
 
         public void Dispose() {

@@ -67,7 +67,9 @@ namespace MagicHat.Loader.Injected.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static nint WndProcImpl(nint hwnd, uint uMsg, nint wParam, nint lParam) {
-            InjectedLoader.Input?.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam);
+            if (InjectedLoader.Input.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam)) {
+                return nint.Zero;
+            }
             return _windowProcHook.OriginalFunction.Invoke(hwnd, uMsg, wParam, lParam);
         }
 

@@ -29,14 +29,26 @@ namespace MagicHat.Backends.ACBackend.Input {
         }
 
         public bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {
-            EatableEvent? eatableEvent = null;
             switch (type) {
-                case WindowMessageType.MOUSELEAVE:
-                    MouseIsOverWindow = false;
-                    break;
                 case WindowMessageType.MOUSEHOVER:
                     MouseIsOverWindow = true;
                     break;
+                case WindowMessageType.MOUSELEAVE:
+                    MouseIsOverWindow = false;
+                    break;
+                case WindowMessageType.MOUSEMOVE:
+                    var mouseX = LOWORD(lParam);
+                    var mouseY = HIWORD(lParam);
+                    MouseIsOverWindow = mouseX > 0 && mouseY > 0;
+                    break;
+            }
+
+            if (!MouseIsOverWindow) {
+                return false;
+            }
+
+            EatableEvent? eatableEvent = null;
+            switch (type) {
                 case WindowMessageType.LBUTTONDOWN:
                     eatableEvent = new MouseDownEventArgs(MouseButton.Left);
                     OnMouseDown?.Invoke(this, (MouseDownEventArgs)eatableEvent);
@@ -78,10 +90,11 @@ namespace MagicHat.Backends.ACBackend.Input {
                     MouseY = HIWORD(lParam);
                     eatableEvent = new MouseMoveEventArgs(MouseX, MouseY);
                     OnMouseMove?.Invoke(this, (MouseMoveEventArgs)eatableEvent);
+                    eatableEvent.Eat = false;
                     break;
             }
 
-            return MouseIsOverWindow && (eatableEvent is not null && eatableEvent.Eat);
+            return eatableEvent?.Eat == true;
         }
 
         private short LOWORD(int n) => (short)(n & 0xffff);
