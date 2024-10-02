@@ -7,9 +7,11 @@ using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MagicHat.Loader.Injected.Hooks {
@@ -31,6 +33,23 @@ namespace MagicHat.Loader.Injected.Hooks {
             _clientCleanupHook = CreateHook<Client_Cleanup>(typeof(ACClientHooks), nameof(Client_Cleanup_Impl), 0x004118D0);
             _uiFlowUseNewModeHook = CreateHook<UIFlow_UseNewMode>(typeof(ACClientHooks), nameof(UIFlow_UseNewMode_Impl), 0x00479AA0);
             _gmDataPatchUICreateHook = CreateHook<gmDataPatchUI_Create>(typeof(ACClientHooks), nameof(gmDataPatchUI_Create_Impl), 0x004EF0C0);
+        }
+        static string AddSpaceEveryTwoChars(string input) {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            StringBuilder spacedString = new StringBuilder();
+
+            for (int i = 0; i < input.Length; i++) {
+                spacedString.Append(input[i]);
+
+                // Add a space every 2 characters, but not at the end of the string
+                if ((i + 1) % 2 == 0 && i != input.Length - 1) {
+                    spacedString.Append(' ');
+                }
+            }
+
+            return spacedString.ToString();
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvThiscall) })]

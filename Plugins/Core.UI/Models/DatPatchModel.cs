@@ -56,7 +56,7 @@ namespace Core.UI.Models {
             }
         }
 
-        public DatPatchModel(Context context, IMagicHatBackend backend, NetworkParser net) : base("DatPatchScreen", context) {
+        public DatPatchModel(Context context, IMagicHatBackend backend, NetworkParser net, CoreUIPlugin plugin) : base("DatPatchScreen", context, plugin) {
             _net = net;
 
             _net.OnS2CPacket += Net_OnS2CPacket;

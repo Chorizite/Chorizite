@@ -13,7 +13,7 @@
         width: 800px;
         color: #fff;
         decorator: image( dat://0x06004d63 );
-        opacity: 0.4;
+        opacity: 1;
       }
 
       #panel {
@@ -101,7 +101,7 @@
         width: 193px;
         height: 110px;
         line-height: 110px;
-        font-size: 22px;
+        font-size: 18px;
         text-align: center;
         position: absolute;
         top: 44px;
@@ -110,13 +110,13 @@
     </style>
 	</head>
 	<body id="b">
-    <div id="wrapper">
-      <span id="world">Coldeve</span>
+    <div id="wrapper" data-model="CharSelectScreen">
+      <span id="world">{{WorldName}} {{CurrentWorldConnections}}/{{MaxWorldConnections}}</span>
       <button id="enter">ENTER</button>
       <button id="createcharacter">Create Character</button>
       <button id="credits">CREDITS</button>
       <button id="delete">DELETE</button>
-      <button id="exit">EXIT</button>
+      <button id="exit" data-event-click="exit(123, 'this is a test')">EXIT</button>
       <div id="panel">
         <ul>
           <li>A Mage</li>

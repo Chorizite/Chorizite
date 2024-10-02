@@ -3,6 +3,8 @@
 #include "EventListener.h"
 #include <string>
 
+static std::unordered_map<Rml::String*, Rml::String> dataModelPool;
+
 RMLUI_CAPI bool rml_Initialise() {
     return Rml::Initialise();
 }
@@ -50,8 +52,6 @@ RMLUI_CAPI Rml::RenderInterface* rml_GetRenderInterface() {
 RMLUI_CAPI Rml::SystemInterface* rml_GetSystemInterface() {
     return Rml::GetSystemInterface();
 }
-
-static std::unordered_map<Rml::String*, Rml::String> dataModelPool;
 
 RMLUI_CAPI std::string* rml_CreateString(const char* value) {
     auto str = new Rml::String(value);

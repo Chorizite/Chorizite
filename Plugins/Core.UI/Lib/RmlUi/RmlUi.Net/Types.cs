@@ -30,6 +30,35 @@ namespace RmlUiNet
         Auto
     }
 
+    public enum VariantType {
+        NONE = '-',
+        BOOL = 'B',
+        BYTE = 'b',
+        CHAR = 'c',
+        FLOAT = 'f',
+        DOUBLE = 'd',
+        INT = 'i',
+        INT64 = 'I',
+        UINT = 'u',
+        UINT64 = 'U',
+        STRING = 's',
+        VECTOR2 = '2',
+        VECTOR3 = '3',
+        VECTOR4 = '4',
+        COLOURF = 'g',
+        COLOURB = 'h',
+        SCRIPTINTERFACE = 'p',
+        TRANSFORMPTR = 't',
+        TRANSITIONLIST = 'T',
+        ANIMATIONLIST = 'A',
+        DECORATORSPTR = 'D',
+        FILTERSPTR = 'F',
+        FONTEFFECTSPTR = 'E',
+        COLORSTOPLIST = 'C',
+        BOXSHADOWLIST = 'S',
+        VOIDPTR = '*',
+    };
+
     public enum FontWeight
     {
         Auto,

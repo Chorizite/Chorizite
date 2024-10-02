@@ -12,7 +12,7 @@ namespace ACUI.Lib {
     public class PanelManager : IDisposable {
         private Dictionary<string, Panel> _panels = []; // <filename, panel>
         internal ILogger? Log;
-
+        private ElementDocument? _modalPanel;
         internal readonly Context Context;
 
         public IRenderInterface Render { get; }
@@ -60,6 +60,73 @@ namespace ACUI.Lib {
             _panels.Clear();
 
             FontManager.Dispose();
+        }
+
+        internal void ShowModalConfirmation(string text, IEnumerable<string> buttons, Action<string> callback) {
+            var buttonsStr = new StringBuilder();
+            foreach (var button in buttons) {
+                buttonsStr.Append($"""<button data-event-click="exit('{button}')">{button}</button>""");
+            }
+            _modalPanel = Context.LoadDocumentFromMemory($$$"""
+<rml>
+    <head>
+        <title>{{{text}}}</title>
+        <style>
+            body {
+                display: block;
+                width: 100%;
+                height: 100%;
+                background-color: #00000088;
+                font-family: LatoLatin;
+            }
+            div {
+                display: block;
+            }
+            p {
+                display: inline-block;
+                padding: 20px;
+            }
+            button {
+                display: inline-block;
+                font-size: 30px;
+                padding: 10px;
+                margin: 10px;
+                color: white;
+                background-color: #093754;
+                border-color: white;
+                border-width: 1px;
+            }
+            .modal {
+                display: block;
+                margin: auto;
+                width: 300px;
+                height: 200px;
+                color: white;
+                background-color: #001421;
+                border-color: white;
+                border-width: 3px;
+                text-align: center;
+                font-size: 22px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="modal" data-model="CharSelectScreen">
+            <p id="message">{{{text}}}</p>
+            <div class="buttons">
+                {{{buttonsStr}}}
+            </div>
+        </div>
+    </body>
+</rml>
+""");
+            
+            _modalPanel.Show();
+        }
+
+        internal void HideModal() {
+            _modalPanel?.Close();
+            _modalPanel = null;
         }
     }
 }

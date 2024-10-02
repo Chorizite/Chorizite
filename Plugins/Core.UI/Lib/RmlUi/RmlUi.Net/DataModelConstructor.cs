@@ -31,11 +31,33 @@ namespace RmlUiNet {
         }
 
         private Dictionary<string, Binding> _bindings = [];
+        private Dictionary<string, Native.DataModelConstructor.DataEventFunc> _eventBindings = [];
 
         public DataModelHandle Handle { get; }
 
         internal DataModelConstructor(IntPtr ptr) : base(ptr) {
             Handle = new DataModelHandle(Native.DataModelConstructor.GetModelHandle(NativePtr));
+        }
+
+        public bool BindEventCallback(string name, Action<Event, IEnumerable<Variant>> callback) {
+            Native.DataModelConstructor.DataEventFunc cb = (instance, evt, variants, numVariants) => {
+                var variantInstances = new Variant[numVariants];
+                for (int i = 0; i < numVariants; i++) {
+                    variantInstances[i] = new Variant(variants[i]);
+                }
+                callback(new Event(evt), variantInstances);
+            };
+
+            if (_eventBindings.ContainsKey(name)) {
+                _eventBindings[name] = cb;
+            }
+            else {
+                _eventBindings.Add(name, cb);
+            }
+            
+            Native.DataModelConstructor.BindEventCallback(NativePtr, name, _eventBindings[name]);
+
+            return true;
         }
 
         public bool BindFloat(string name, float value) {

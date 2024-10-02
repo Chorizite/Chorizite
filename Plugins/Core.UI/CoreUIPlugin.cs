@@ -87,7 +87,8 @@ namespace Core.UI {
                         throw new Exception("Unable to create RmlUi context");
                     }
 
-                    _models.Add(GameScreen.Connecting, new DatPatchModel(_ctx, _backend, _net));
+                    _models.Add(GameScreen.Connecting, new DatPatchModel(_ctx, _backend, _net, this));
+                    _models.Add(GameScreen.CharSelect, new CharSelectModel(_ctx, _backend, _net, this));
 
                     _rmlInput = new RmlInputManager(_backend.Input, _ctx, _log);
                     PanelManager = new PanelManager(_ctx, _backend.Renderer, _log);

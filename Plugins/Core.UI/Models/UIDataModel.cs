@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace Core.UI.Models {
@@ -17,11 +18,27 @@ namespace Core.UI.Models {
             }
         }
 
-        public UIDataModel(string name, Context ctx) {
+        public UIDataModel(string name, Context ctx, CoreUIPlugin plugin) {
             _modelConstructor = ctx.CreateDataModel(name);
 
             PropertyChanged += HandlePropertyChanged;
             BuildBindings();
+
+            _modelConstructor.BindEventCallback("exit", (evt, variants) => {
+                if (variants.FirstOrDefault()?.Value is string action && action == "OK") {
+                    System.Environment.Exit(0);
+                }
+                else if (variants.FirstOrDefault()?.Value is string action2 && action2 == "Cancel") {
+                    plugin.PanelManager.HideModal();
+                    return;
+                }
+                plugin.PanelManager.ShowModalConfirmation("Are you sure you want to exit?", ["OK", "Cancel"], (button) => {
+                    CoreUIPlugin.Log.LogDebug($"Clicked {button}");
+                    if (button == "OK") {
+
+                    }
+                });
+            });
         }
 
         private void BuildBindings() {

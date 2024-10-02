@@ -9,16 +9,9 @@ using MagicHat.Core.Net;
 using MagicHat.Core.Render;
 using MagicHat.Loader.Injected.Hooks;
 using Microsoft.Extensions.Logging;
-using Reloaded.Hooks;
-using Reloaded.Hooks.Definitions;
-using Reloaded.Hooks.Definitions.Structs;
-using Reloaded.Hooks.Definitions.X86;
-using SharpDX.Direct3D9;
 using System;
+using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
 
 namespace MagicHat.Loader.Injected {
     public static class InjectedLoader {
@@ -33,11 +26,33 @@ namespace MagicHat.Loader.Injected {
         public static NetworkParser Net { get; private set; }
         public static ILogger Log { get; } = new MagicHatLogger("InjectedLoader", AssemblyDirectory);
 
-        public static int Init(IntPtr a, int b) {
-            DirectXHooks.Init(a, b);
+        public static unsafe int Init(IntPtr a, int b) {
+            try {
 
-            NetHooks.Init();
-            ACClientHooks.Init();
+                /*
+                // Initialize the scanner.
+                var thisProcess = Process.GetCurrentProcess();
+                var baseAddress = thisProcess.MainModule.BaseAddress;
+                var exeSize = thisProcess.MainModule.ModuleMemorySize;
+                using var scanner = new Scanner((byte*)baseAddress, exeSize);
+                InjectedLoader.Log?.LogError($"bad {baseAddress:X8} {exeSize:X8}");
+
+                // Search for a given pattern
+                // Note: If created signature using SigMaker, replace ? with ??.v
+                var sig = "56 8B F1 8B 06 FF 50 08 8B 4C 24 0C 3B C8 72 29 83 F9 04 72 24 8B 44 24 08 8B 10 57 8B 7E 04 89";
+                var result = scanner.FindPattern(sig);
+                if (!result.Found)
+                    InjectedLoader.Log?.LogError($"Failed to find signature: {sig}");
+
+                // Address of `mov levelId, edx`
+                var codeAddress = baseAddress + result.Offset;
+                InjectedLoader.Log?.LogError($"OFFSET: {codeAddress:X8} vs 0x004117B0");
+                */
+                DirectXHooks.Init(a, b);
+                NetHooks.Init();
+                ACClientHooks.Init();
+            }
+            catch (Exception ex) { Log?.LogError(ex.ToString()); }
             return 0;
         }
 
