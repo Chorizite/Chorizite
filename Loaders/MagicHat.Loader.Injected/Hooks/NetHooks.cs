@@ -13,10 +13,10 @@ namespace MagicHat.Loader.Injected.Hooks {
         private static IHook<RecvFrom> _recvfromHook;
 
         [Function(CallingConventions.Stdcall)]
-        internal delegate nint SendTo(nint s, byte* buf, int len, int flags, byte* to, int tolen);
+        private delegate nint SendTo(nint s, byte* buf, int len, int flags, byte* to, int tolen);
 
         [Function(CallingConventions.Stdcall)]
-        internal delegate int RecvFrom(nint s, byte* buf, int len, int flags, byte* from, int fromlen);
+        private delegate int RecvFrom(nint s, byte* buf, int len, int flags, byte* from, int fromlen);
 
         internal static void Init() {
             _sendtoHook = CreateHook<SendTo>(typeof(NetHooks), nameof(SendToImpl), *(int*)0x007935A4);

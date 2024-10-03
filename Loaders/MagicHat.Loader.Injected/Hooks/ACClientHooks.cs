@@ -20,10 +20,10 @@ namespace MagicHat.Loader.Injected.Hooks {
         private static IHook<UIFlow_UseNewMode> _uiFlowUseNewModeHook;
 
         [Function(CallingConventions.MicrosoftThiscall)]
-        internal delegate uint UIFlow_UseNewMode(UIFlow* uiFlow);
+        private delegate uint UIFlow_UseNewMode(UIFlow* uiFlow);
 
         [Function(CallingConventions.MicrosoftThiscall)]
-        internal delegate void Client_Cleanup(IntPtr client);
+        private delegate void Client_Cleanup(IntPtr client);
 
         internal static void Init() {
             _clientCleanupHook = CreateHook<Client_Cleanup>(typeof(ACClientHooks), nameof(Client_Cleanup_Impl), 0x004118D0);

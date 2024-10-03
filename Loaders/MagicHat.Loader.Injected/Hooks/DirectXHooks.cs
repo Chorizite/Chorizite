@@ -20,8 +20,8 @@ namespace MagicHat.Loader.Injected.Hooks {
         private static IHook<CreateDevice> _createDeviceHook;
         private static IHook<WndProc> _windowProcHook;
 
-        public static IVirtualFunctionTable Direct3D9VTable { get; private set; }
-        public static IVirtualFunctionTable DeviceVTable { get; private set; }
+        private static IVirtualFunctionTable Direct3D9VTable { get; set; }
+        private static IVirtualFunctionTable DeviceVTable { get; set; }
 
         private static int _unmanagedD3DPtr;
 
@@ -30,14 +30,14 @@ namespace MagicHat.Loader.Injected.Hooks {
         private static nint _hwnd;
 
         [Function(CallingConventions.Stdcall)]
-        public delegate nint WndProc(nint a, uint b, nint c, nint d);
+        private delegate nint WndProc(nint a, uint b, nint c, nint d);
 
         [Function(CallingConventions.Stdcall)]
-        public delegate nint CreateDevice(nint a, uint b, DeviceType c, nint d, CreateFlags e, nint f, nint g);
+        private delegate nint CreateDevice(nint a, uint b, DeviceType c, nint d, CreateFlags e, nint f, nint g);
 
         [FunctionHookOptions(PreferRelativeJump = true)]
         [Function(CallingConventions.Stdcall)]
-        public delegate nint EndScene(nint a);
+        private delegate nint EndScene(nint a);
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static nint EndSceneImpl(nint a) {
