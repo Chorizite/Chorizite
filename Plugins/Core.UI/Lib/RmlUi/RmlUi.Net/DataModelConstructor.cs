@@ -1,6 +1,8 @@
 ﻿using AcClient;
+using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -15,11 +17,13 @@ namespace RmlUiNet {
             String,
             UInt,
             Int,
-            Bool
+            Bool,
+            StringArray
         }
 
         private struct Binding {
             public IntPtr Ptr;
+            public List<Binding> Children = [];
             public string Name;
             public BindingType Type;
 
@@ -28,6 +32,7 @@ namespace RmlUiNet {
                 Ptr = ptr;
                 Type = type;
             }
+
         }
 
         private Dictionary<string, Binding> _bindings = [];
@@ -37,6 +42,10 @@ namespace RmlUiNet {
 
         internal DataModelConstructor(IntPtr ptr) : base(ptr) {
             Handle = new DataModelHandle(Native.DataModelConstructor.GetModelHandle(NativePtr));
+        }
+
+        public bool BindVariable(string name, DataVariable variable) {
+            return Native.DataModelConstructor.BindVariable(NativePtr, name, variable.NativePtr);
         }
 
         public bool BindEventCallback(string name, Action<Event, IEnumerable<Variant>> callback) {
@@ -128,6 +137,10 @@ namespace RmlUiNet {
             return Native.DataModelConstructor.BindString(NativePtr, name, ptr);
         }
 
+        public int RegisterStruct(string name) {
+            return (int)Native.DataModelConstructor.RegisterStruct(NativePtr, name);
+        }
+
         private void TryRemoveExistingBinding(string name) {
             if (_bindings.Remove(name, out var binding)) {
                 switch (binding.Type) {
@@ -135,6 +148,13 @@ namespace RmlUiNet {
                     case BindingType.Int:
                     case BindingType.Bool:
                     case BindingType.Float:
+                        Marshal.FreeHGlobal(binding.Ptr);
+                        Native.DataModelConstructor.UnbindStringArray(NativePtr, name);
+                        break;
+                    case BindingType.StringArray:
+                        foreach (var child in binding.Children) {
+                            Native.Rml.FreeString(child.Ptr);
+                        }
                         Marshal.FreeHGlobal(binding.Ptr);
                         break;
                     case BindingType.String:

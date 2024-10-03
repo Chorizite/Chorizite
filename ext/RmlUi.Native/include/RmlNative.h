@@ -1,5 +1,10 @@
 #pragma once
 
+struct FakeStruct {
+  public:
+    int FakeField;
+};
+
 #if defined(_MSC_VER)
 #    define _RMLUI_EXPORT __declspec(dllexport)
 #elif defined(__GNUC__)

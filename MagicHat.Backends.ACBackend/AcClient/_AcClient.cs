@@ -934,7 +934,7 @@ namespace AcClient {
     }
 
 
-    public enum UIMode {
+    public enum UIMode : int {
         None = 0,
         IntroUI = 0x10000001,
         DisconnectedUI = 0x10000002,

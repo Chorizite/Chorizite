@@ -54,7 +54,7 @@
     <None Update="assets\CharSelect.rml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="assets\Connecting.rml">
+    <None Update="assets\DatPatch.rml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="assets\LatoLatin-Regular.ttf">

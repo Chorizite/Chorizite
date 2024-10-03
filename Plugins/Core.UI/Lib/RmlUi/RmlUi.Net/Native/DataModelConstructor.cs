@@ -18,8 +18,20 @@ namespace RmlUiNet.Native {
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_DataModelConstructor_BindString")]
         public static extern bool BindString(IntPtr instance, string name, IntPtr data);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_DataModelConstructor_BindStringArray")]
+        public static extern bool BindStringArray(IntPtr instance, string name, IntPtr data, int count);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_DataModelConstructor_UnbindStringArray")]
+        public static extern bool UnbindStringArray(IntPtr instance, string name);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_DataModelConstructor_GetModelHandle")]
         public static extern IntPtr GetModelHandle(IntPtr instance);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_DataModelConstructor_RegisterStruct")]
+        public static extern IntPtr RegisterStruct(IntPtr instance, string name);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_DataModelConstructor_BindVariable")]
+        public static extern bool BindVariable(IntPtr instance, string name, IntPtr variable);
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_DataModelHandle_Free")]
         public static extern void Free(IntPtr instance);

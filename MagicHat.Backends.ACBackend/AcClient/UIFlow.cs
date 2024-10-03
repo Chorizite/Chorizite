@@ -33,7 +33,7 @@ namespace AcClient {
         public TResult* QueryInterface(TResult* result, Turbine_GUID* i_rcInterface, void** o_ppObject) => ((delegate* unmanaged[Thiscall]<ref UIFlow, TResult*, Turbine_GUID*, void**, TResult*>)0x004798E0)(ref this, result, i_rcInterface, o_ppObject); // .text:004794E0 ; TResult *__thiscall UIFlow::QueryInterface(UIFlow *this, TResult *result, Turbine_GUID *i_rcInterface, void **o_ppObject) .text:004794E0 ?QueryInterface@UIFlow@@UAE?AVTResult@@ABUTurbine_GUID@@PAPAX@Z
 
         // UIFlow.QueueUIMode:
-        public void QueueUIMode(UInt32 newMode) => ((delegate* unmanaged[Thiscall]<ref UIFlow, UInt32, void>)0x004797C0)(ref this, newMode); // .text:004793C0 ; void __thiscall UIFlow::QueueUIMode(UIFlow *this, const unsigned int newMode) .text:004793C0 ?QueueUIMode@UIFlow@@UAEXK@Z
+        public void QueueUIMode(UIMode newMode) => ((delegate* unmanaged[Thiscall]<ref UIFlow, UIMode, void>)0x004797C0)(ref this, newMode); // .text:004793C0 ; void __thiscall UIFlow::QueueUIMode(UIFlow *this, const unsigned int newMode) .text:004793C0 ?QueueUIMode@UIFlow@@UAEXK@Z
 
         // UIFlow.QueueUIModeWithError:
         public void QueueUIModeWithError(UInt32 newMode, StringInfo* newText) => ((delegate* unmanaged[Thiscall]<ref UIFlow, UInt32, StringInfo*, void>)0x004797F0)(ref this, newMode, newText); // .text:004793F0 ; void __thiscall UIFlow::QueueUIModeWithError(UIFlow *this, const unsigned int newMode, StringInfo *newText) .text:004793F0 ?QueueUIModeWithError@UIFlow@@UAEXKABVStringInfo@@@Z

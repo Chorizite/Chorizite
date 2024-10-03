@@ -27,7 +27,6 @@ namespace Core.UI {
     /// </summary>
     public class CoreUIPlugin : IPluginCore {
         private readonly IPluginManager _pluginManager;
-        private readonly IMagicHatBackend _backend;
         private readonly ILogger<CoreUIPlugin> _log;
         private readonly NetworkParser _net;
         private readonly Dictionary<GameScreen, UIDataModel> _models = [];
@@ -41,6 +40,7 @@ namespace Core.UI {
         private bool _didInitRml;
 
         public static ILogger Log;
+        internal readonly IMagicHatBackend Backend;
 
         public PanelManager PanelManager { get; private set; }
 
@@ -54,7 +54,7 @@ namespace Core.UI {
             _log = log;
             Log = _log;
             _pluginManager = pluginManager;
-            _backend = backend;
+            Backend = backend;
             InitRmlUI();
         }
 
@@ -69,13 +69,13 @@ namespace Core.UI {
                 Native.LoadLibrary(Path.Combine(AssemblyDirectory, "RmlUiNative.dll"));
 
                 _testPlugin = new TestPlugin(_log);
-                _rmlRenderInterface = new RmlUIRenderInterface(_backend.Renderer);
+                _rmlRenderInterface = new RmlUIRenderInterface(Backend.Renderer);
                 _rmlSystemInterface = new ACSystemInterface(_log);
 
                 Rml.SetSystemInterface(_rmlSystemInterface);
                 Rml.SetRenderInterface(_rmlRenderInterface);
 
-                var size = new Vector2i((int)_backend.Renderer.ViewportSize.X, (int)_backend.Renderer.ViewportSize.Y);
+                var size = new Vector2i((int)Backend.Renderer.ViewportSize.X, (int)Backend.Renderer.ViewportSize.Y);
                 _log?.LogTrace($"Window size: {size.X}x{size.Y}");
 
                 if (Rml.Initialise()) {
@@ -87,20 +87,22 @@ namespace Core.UI {
                         throw new Exception("Unable to create RmlUi context");
                     }
 
-                    _models.Add(GameScreen.Connecting, new DatPatchModel(_ctx, _backend, _net, this));
-                    _models.Add(GameScreen.CharSelect, new CharSelectModel(_ctx, _backend, _net, this));
+                    _models.Add(GameScreen.DatPatch, new DatPatchScreenModel("DatPatchScreen", _ctx, _net, this));
+                    _models.Add(GameScreen.CharSelect, new CharSelectScreenModel("CharSelectScreen", _ctx, _net, this));
 
-                    _rmlInput = new RmlInputManager(_backend.Input, _ctx, _log);
-                    PanelManager = new PanelManager(_ctx, _backend.Renderer, _log);
+                    _rmlInput = new RmlInputManager(Backend.Input, _ctx, _log);
+                    PanelManager = new PanelManager(_ctx, Backend.Renderer, _log);
 
-                    Rml.LoadFontFace(Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile)!, "assets", "LatoLatin-Regular.ttf"));
-                    //PanelManager.LoadPanelFile(Path.Combine(Path.GetDirectoryName(_manifest.ManifestFile), "assets", "charselect.rml").Replace("/", @"\"));
+                    var fontFiles = Directory.GetFiles(Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile)!, "assets"), "*.ttf");
+                    foreach (var fontFile in fontFiles) {
+                        Rml.LoadFontFace(fontFile);
+                    }
 
-                    _backend.Renderer.OnRender2D += Renderer_OnRender2D;
+                    Backend.Renderer.OnRender2D += Renderer_OnRender2D;
 
-                    _backend.Renderer.OnGraphicsPreReset += PluginManager_OnGraphicsPreReset;
-                    _backend.Renderer.OnGraphicsPostReset += PluginManager_OnGraphicsPostReset;
-                    _backend.Renderer.OnScreenChanged += PluginManager_OnScreenChanged;
+                    Backend.Renderer.OnGraphicsPreReset += PluginManager_OnGraphicsPreReset;
+                    Backend.Renderer.OnGraphicsPostReset += PluginManager_OnGraphicsPostReset;
+                    Backend.Renderer.OnScreenChanged += PluginManager_OnScreenChanged;
 
                     _didInitRml = true;
                 }
@@ -120,8 +122,8 @@ namespace Core.UI {
         }
 
         private void ShutdownRmlUI() {
-            if (_backend.Renderer is not null) {
-                _backend.Renderer.OnRender2D -= Renderer_OnRender2D;
+            if (Backend.Renderer is not null) {
+                Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
             }
 
             PanelManager?.Dispose();
@@ -162,6 +164,10 @@ namespace Core.UI {
         /// </summary>
         protected override void Dispose() {
             try {
+                foreach (var model in _models.Values) {
+                    model.Dispose();
+                }
+                _models.Clear();
                 _log?.LogTrace($"Shutting down");
                 ShutdownRmlUI();
             }

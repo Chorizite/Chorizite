@@ -40,6 +40,9 @@ add_library(${PROJECT_NAME} SHARED
     "src/ElementInstancer.cpp"
 
     "src/Variant.cpp"
+    "src/VariableDefinition.cpp"
+    "src/StructHandle.cpp"
+    "src/DataVariable.cpp"
     "src/DataModelHandle.cpp"
     "src/DataModelConstructor.cpp"
     "src/Event.cpp"

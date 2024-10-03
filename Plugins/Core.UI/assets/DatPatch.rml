@@ -1,0 +1,88 @@
+﻿<html>
+	<head>
+		<style>
+          body {
+            display: block;
+            font-family: LatoLatin;
+            height: 600px;
+            width: 800px;
+            color: #fff;
+            opacity: 1;
+            font-size: 36px;
+          }
+          div#wrapper {
+            text-align: center;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
+            width: 800px;
+            height: 400px;
+            decorator: image( dat://0x06006E20 );
+          }
+
+          @keyframes loader {
+            from { decorator: image( dat://0x06001966 ); }
+            7% { decorator: image( dat://0x06001967 ); }
+            14% { decorator: image( dat://0x06001968 ); }
+            21% { decorator: image( dat://0x06001969 ); }
+            28% { decorator: image( dat://0x0600196A ); }
+            35% { decorator: image( dat://0x0600196B ); }
+            42% { decorator: image( dat://0x0600196C ); }
+            49% { decorator: image( dat://0x0600196D ); }
+            56% { decorator: image( dat://0x0600196E ); }
+            63% { decorator: image( dat://0x0600196F ); }
+            70% { decorator: image( dat://0x06001975 ); }
+            77% { decorator: image( dat://0x06001976 ); }
+            84% { decorator: image( dat://0x06001977 ); }
+            91% { decorator: image( dat://0x06001978 ); }
+            to { decorator: image( dat://0x06001979 ); }
+          }
+
+          @keyframes loader-fill {
+            from { decorator: image( dat://0x0600195C cover left ); }
+            7% { decorator: image( dat://0x0600195D cover left ); }
+            14% { decorator: image( dat://0x0600195E cover left ); }
+            21% { decorator: image( dat://0x0600195F cover left ); }
+            28% { decorator: image( dat://0x06001960 cover left ); }
+            35% { decorator: image( dat://0x06001961 cover left ); }
+            42% { decorator: image( dat://0x06001962 cover left ); }
+            49% { decorator: image( dat://0x06001963 cover left ); }
+            56% { decorator: image( dat://0x06001964 cover left ); }
+            63% { decorator: image( dat://0x06001965 cover left ); }
+            70% { decorator: image( dat://0x06001971 cover left ); }
+            77% { decorator: image( dat://0x06001972 cover left ); }
+            84% { decorator: image( dat://0x06001973 cover left ); }
+            91% { decorator: image( dat://0x06001974 cover left ); }
+            to { decorator: image( dat://0x06001974 cover left ); }
+          }
+
+          div#patchprogress {
+            display: block;
+          }
+
+          div#patchprogress progress.horizontal {
+            width: 650px;
+            height: 104px;
+            decorator: image( dat://0x06001979 );
+            animation: loader 1s infinite;
+          }
+
+          div#patchprogress progress.horizontal fill {
+            animation: loader-fill 1s infinite;
+          }
+        </style>
+	</head>
+	<body data-model="DatPatchScreen">
+    <div id="patchprogress">
+      <progress class="horizontal" data-value="PatchPercentage * 100" max="100"/>
+    </div>
+    <div id="wrapper">
+      <div id="text">
+          Connect: {{ ConnectPercentage * 100 | format(2) }}%
+          Patch: {{ PatchPercentage * 100 | format(2) }}%
+          <br />
+          Bytes: {{ ReceivedBytes }} / {{ ExpectedBytes }}
+        </div>
+    </div>
+	</body>
+</html>

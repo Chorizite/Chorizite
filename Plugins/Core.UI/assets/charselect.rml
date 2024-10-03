@@ -1,129 +1,159 @@
 ﻿<html>
-	<head>
-		<style>
-      @spritesheet panel {
-        src: panel.9.png;
-        panel: 1px 1px 64px 64px;
-        panel-inner: 6px 6px 52px 52px;
-      }
+  <head>
+    <style>
+            @spritesheet panel {
+              src: panel.9.png;
+              panel: 1px 1px 64px 64px;
+              panel-inner: 6px 6px 52px 52px;
+            }
 
-      body {
-        font-family: LatoLatin;
-        height: 600px;
-        width: 800px;
-        color: #fff;
-        decorator: image( dat://0x06004d63 );
-        opacity: 1;
-      }
+            body {
+              font-family: LatoLatin;
+              height: 600px;
+              width: 800px;
+              color: #fff;
+              decorator: image( dat://0x06004d63 );
+              opacity: 1;
+            }
 
-      #panel {
-        display: block;
-        decorator: ninepatch(panel, panel-inner);
-        position: absolute;
-        top: 206px;
-        left: 37px;
-        width: 152px
-        padding: 4px;
-        height: 300px;
-      }
+            #panel {
+              display: block;
+              decorator: ninepatch(panel, panel-inner);
+              position: absolute;
+              top: 206px;
+              left: 37px;
+              width: 252px
+              padding: 4px;
+              height: 300px;
+            }
 
-      #panel li {
-        display: block;
-        height: 28px;
-        line-height: 28px;
-        padding-left: 6px;
-        font-size: 16px;
-        font-effect: outline(1px black);
-      }
+            #panel li {
+              display: block;
+              height: 28px;
+              line-height: 28px;
+              padding-left: 6px;
+              font-size: 14px;
+              font-effect: outline(1px black);
+            }
 
-      button {
-        position: absolute;
-        decorator: image( dat://0x06004c9e );
-        display: inline-block;
-        text-align: center;
-        width: 170px;
-        height: 99px;
-        line-height: 99px;
-        font-size: 18dp;
-        font-effect: outline(2px black);
-      }
+            button {
+              position: absolute;
+              decorator: image( dat://0x06004c9e );
+              display: inline-block;
+              text-align: center;
+              width: 170px;
+              height: 99px;
+              line-height: 99px;
+              font-size: 18dp;
+              font-effect: outline(2px black);
+            }
 
-      button:hover {
-        decorator: image( dat://0x06004c9f );
-      }
+            button:hover {
+              decorator: image( dat://0x06004c9f );
+            }
 
-      button#createcharacter {
-        decorator: image( dat://0x06004CA3 );
-        top: 185px;
-        left: 215px;
-        width: 254px;
-        height: 113px;
-        line-height: 113px;
-        font-size: 21dp;
-        font-weight: bold;
-      }
-      button#createcharacter:hover {
-        decorator: image( dat://0x06004CA4 );
-      }
+            button#createcharacter {
+              decorator: image( dat://0x06004CA3 );
+              top: 185px;
+              left: 315px;
+              width: 254px;
+              height: 113px;
+              line-height: 113px;
+              font-size: 21dp;
+              font-weight: bold;
+            }
+            button#createcharacter:hover {
+              decorator: image( dat://0x06004CA4 );
+            }
 
-      button#enter {
-        decorator: image( dat://0x06004CB2 );
-        top: 290px;
-        left: 240px;
-        width: 211px;
-        height: 211px;
-        line-height: 211px;
-        font-size: 32dp;
-        font-weight: bold;
-      }
-      button#enter:hover {
-        decorator: image( dat://0x06004CB3 );
-      }
+            button#enter {
+      				display: block;
+              decorator: image( dat://0x06004CB2 );
+              top: 290px;
+              left: 340px;
+              width: 211px;
+              height: 211px;
+              line-height: 20px;
+              font-size: 32dp;
+              font-weight: bold;
+            }
 
-      button#delete {
-        top: 522px;
-        left: 36px;
-      }
+      	  button#enter span {
+      			margin-top: 80px;
+      			display: block;
+      	  }
 
-      button#credits {
-        top: 522px;
-        left: 465px;
-      }
+      	  button#enter span.as {
+      			margin-top: 5px;
+      			display: block;
+      			font-size: 14px;
+      	  }
 
-      button#exit {
-        top: 522px;
-        left: 615px;
-      }
+            button#enter:hover {
+              decorator: image( dat://0x06004CB3 );
+            }
 
-      span#world {
-        decorator: image( dat://0x06004D64 );
-        display: inline-block;
-        width: 193px;
-        height: 110px;
-        line-height: 110px;
-        font-size: 18px;
-        text-align: center;
-        position: absolute;
-        top: 44px;
-        left: 20px;
-      }
+            button#delete {
+              top: 522px;
+              left: 36px;
+            }
+
+            button#credits {
+              top: 522px;
+              left: 465px;
+            }
+
+            button#exit {
+              top: 522px;
+              left: 615px;
+            }
+
+            span#world {
+              decorator: image( dat://0x06004D64 );
+              display: inline-block;
+              width: 250px;
+              height: 110px;
+              line-height: 110px;
+              font-size: 18px;
+              text-align: center;
+              position: absolute;
+              top: 44px;
+              left: 0px;
+            }
+      	  li:hover {
+      		background-color: #ffff0099;
+      	  }
+      	  li.selected {
+      		background-color: yellow;
+      	  }
+      	  li:active {
+      		background-color: red;
+      	  }
     </style>
-	</head>
-	<body id="b">
+  </head>
+  <body id="b">
     <div id="wrapper" data-model="CharSelectScreen">
-      <span id="world">{{WorldName}} {{CurrentWorldConnections}}/{{MaxWorldConnections}}</span>
-      <button id="enter">ENTER</button>
-      <button id="createcharacter">Create Character</button>
-      <button id="credits">CREDITS</button>
-      <button id="delete">DELETE</button>
-      <button id="exit" data-event-click="exit(123, 'this is a test')">EXIT</button>
+      <span id="world">
+        {{ WorldName }} {{ CurrentConnections }}/{{ MaxConnections }}
+      </span>
+      <button id="exit" data-event-click="exit()">EXIT</button>
+      <button id="enter" data-event-click="enter_game(SelectedCharacter.Id)">
+        <span>ENTER</span>
+        <span data-if="SelectedCharacter.Id != 0" class="as">
+          (as {{ SelectedCharacter.Id }} {{ SelectedCharacter.Name }})
+        </span>
+      </button>
       <div id="panel">
         <ul>
-          <li>A Mage</li>
-          <li>Sunnuj</li>
-          <li>Do Things Bot</li>
+          <li data-for="Character : Characters" data-event-click="select(Character.Id)" data-class-selected="Character.Id == SelectedCharacter.Id">
+            <span style="color: red">{{ Character.Id }}</span>
+            {{ Character.Name }}
+          </li>
         </ul>
       </div>
+      <button id="createcharacter" data-event-click="create_character">Create Character</button>
+      <button id="credits" data-event-click="show_credits">CREDITS</button>
+      <button id="delete">DELETE</button>
     </div>
-	</body>
+  </body>
 </html>

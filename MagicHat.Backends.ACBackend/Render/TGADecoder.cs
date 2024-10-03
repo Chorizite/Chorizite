@@ -136,11 +136,7 @@ namespace MagicHat.Backends.ACBackend.Render {
             }
         }
 
-#if NETFRAMEWORK
-        public static Bitmap FromFile(string path) {
-#else
         public static Image<Argb32> FromFile(string path) {
-#endif
             try {
                 using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read)) {
                     int length = (int)fs.Length;
@@ -154,40 +150,26 @@ namespace MagicHat.Backends.ACBackend.Render {
             }
         }
 
-#if NETFRAMEWORK
-        public static Bitmap FromBinary(byte[] image) {
-#else
         public static Image<Argb32> FromBinary(byte[] image) {
-#endif
             return decode(image);
         }
 
-#if NETFRAMEWORK
-        protected static Bitmap decode(byte[] image) {
-            TgaData tga = new TgaData(image);
-
-            Bitmap bitmap = new Bitmap(tga.Width, tga.Height);
-            for (int y = 0; y < tga.Height; ++y) {
-                for (int x = 0; x < tga.Width; ++x) {
-                    bitmap.SetPixel(x, y, Color.FromArgb(tga.GetPixel(x, y)));
-                }
-            }
-            return bitmap;
-        }
-#else
         protected static Image<Argb32> decode(byte[] image) {
-            throw new Exception("TGA decoder not implemented");
             TgaData tga = new TgaData(image);
 
             var bitmap = new Image<Argb32>(tga.Width, tga.Height);
             for (int y = 0; y < tga.Height; ++y) {
                 for (int x = 0; x < tga.Width; ++x) {
-                    //bitmap[x, y] = Color.FromRgba(tga.GetPixel(x, y));
+                    int c = tga.GetPixel(x, y);
+                    byte r = (byte)((c >> 16) & 0xFF);
+                    byte g = (byte)((c >> 8) & 0xFF);
+                    byte b = (byte)(c & 0xFF);
+                    byte a = (byte)((c >> 24) & 0xFF);
+                    bitmap[x, y] = Color.FromRgba(r, g, b, a);
                 }
             }
             return bitmap;
         }
-#endif
 
     }
 }

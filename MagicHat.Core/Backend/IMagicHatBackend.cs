@@ -25,5 +25,8 @@ namespace MagicHat.Core.Backend {
         public event EventHandler<PacketDataEventArgs>? OnS2CData;
 
         public virtual static IMagicHatBackend Create(IContainer container) => throw new NotImplementedException("You must implement IMagicHatBackend.Create static method.");
+        void Exit();
+        bool EnterGame(uint characterId);
+        bool ShowScreen(GameScreen screen);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using AcClient;
+using Autofac;
 using MagicHat.ACProtocol;
 using MagicHat.ACProtocol.Enums;
 using MagicHat.Backends.ACBackend.Input;
@@ -13,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using System;
 
 namespace MagicHat.Loader.Injected {
-    public class ACMagicHatBackend : IMagicHatBackend {
+    public unsafe class ACMagicHatBackend : IMagicHatBackend {
         public IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
 
@@ -43,6 +44,24 @@ namespace MagicHat.Loader.Injected {
 
         internal void HandleS2CPacketData(byte[] bytes) {
             OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
+        }
+
+        public bool ShowScreen(GameScreen screen) {
+            // Todo: check that we are able to switch to this next state...
+            (*UIFlow.m_instance)->QueueUIMode((UIMode)screen);
+            return true;
+        }
+
+        public bool EnterGame(uint characterId) {
+            // Todo: check that it is a valid character id
+            if ((*UIFlow.m_instance)->_curMode != UIMode.CharacterManagementUI) {
+                return false;
+            }
+            return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
+        }
+
+        public void Exit() {
+            Client.Cleanup();
         }
 
         public void Dispose() {

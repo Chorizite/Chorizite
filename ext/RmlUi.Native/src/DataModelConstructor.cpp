@@ -1,6 +1,7 @@
 #include "RmlNative.h"
 #include "RmlUi/Core.h"
 #include <string>
+#include <sstream>
 #include <unordered_map>
 
 typedef void (*dataEventFunc)(Rml::DataModelHandle* model_handle, Rml::Event& evt, Rml::Variant** variants, int num_variants);
@@ -27,21 +28,27 @@ RMLUI_CAPI bool rml_DataModelConstructor_BindString(Rml::DataModelConstructor* d
   return data_model->Bind(name, data);
 }
 
+RMLUI_CAPI bool rml_DataModelConstructor_BindVariable(Rml::DataModelConstructor* data_model, const char* name, Rml::DataVariable* data) {
+  return data_model->BindCustomDataVariable(name, *data);
+}
+
+std::string GenerateKey(Rml::DataModelConstructor* data_model, const char* name) {
+    std::stringstream key;
+    key << data_model << "_" << name;
+    return key.str();
+}
+
 Rml::DataEventFunc MakeEventCallbackWrapper(::dataEventFunc func) {
   return [func](Rml::DataModelHandle model_handle, Rml::Event &event, const Rml::VariantList &variants) {
-    // Allocate an array of pointers to the original Variant elements
     int size = static_cast<int>(variants.size());
     Rml::Variant** pointer_array = new Rml::Variant*[size];
 
-    // Populate the pointer array with addresses of elements in `variants`
     for (int i = 0; i < size; ++i) {
       pointer_array[i] = const_cast<Rml::Variant*>(&variants[i]);
     }
 
-    // Call `func` with the new array of pointers
     func(&model_handle, event, pointer_array, size);
 
-    // Free the allocated array of pointers
     delete[] pointer_array;
   };
 }

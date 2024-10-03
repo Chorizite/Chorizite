@@ -96,6 +96,12 @@ namespace ACUI.Lib {
                 border-color: white;
                 border-width: 1px;
             }
+            button:hover {
+                background-color: orange;
+            }
+            button:active {
+                background-color: red;
+            }
             .modal {
                 display: block;
                 margin: auto;

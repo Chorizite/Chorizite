@@ -27,7 +27,7 @@ namespace MagicHat.Core.Render {
         /// <summary>
         /// Dat patching / connecting
         /// </summary>
-        Connecting = 0x10000003,
+        DatPatch = 0x10000003,
 
         /// <summary>
         /// Credits
