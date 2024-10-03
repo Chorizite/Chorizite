@@ -60,8 +60,10 @@ namespace MagicHat.Loader.Injected {
             return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
         }
 
+        private delegate* unmanaged[Thiscall]<gmClient*, int> Cleanup = (delegate* unmanaged[Thiscall]<gmClient*, int>)0x00401EC0;
+
         public void Exit() {
-            Client.Cleanup();
+            Cleanup((gmClient*)*Client.m_instance);
         }
 
         public void Dispose() {
