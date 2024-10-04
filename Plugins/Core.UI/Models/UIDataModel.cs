@@ -30,11 +30,14 @@ namespace Core.UI.Models {
             BuildBindings();
         }
 
-        private void BuildBindings() {
-            var propsToBind = GetType()
+        internal IEnumerable<PropertyInfo> GetPropsToBind() {
+            return GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => p.PropertyType.IsAssignableTo(typeof(DataVariable)));
+        }
 
+        private void BuildBindings() {
+            var propsToBind = GetPropsToBind();
             foreach (var p in propsToBind) {
                 if (p.GetValue(this) is DataVariable dv) {
                     _modelConstructor.BindVariable(p.Name, dv);

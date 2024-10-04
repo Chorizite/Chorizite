@@ -17,14 +17,18 @@ namespace Core.UI.Models {
         private readonly NetworkParser _net;
 
         public class CharacterInfo : UIDataSubModel {
-            public DataVariable<uint> Id { get; }
-            public DataVariable<string> Name { get; }
-            public DataVariable<uint> TimeToDeletion { get; }
+            public DataVariable<uint> Id { get; } = new(0);
+            public DataVariable<string> Name { get; } = new("");
+            public DataVariable<uint> TimeToDeletion { get; } = new(0);
+
+            public CharacterInfo() : base() {
+
+            }
 
             public CharacterInfo(uint id, string name, uint timeToDeletion = 0) : base() {
-                Id = new(id);
-                Name = new(name);
-                TimeToDeletion = new(timeToDeletion);
+                Id.Value = id;
+                Name.Value = name;
+                TimeToDeletion.Value = timeToDeletion;
             }
         }
 
@@ -36,8 +40,8 @@ namespace Core.UI.Models {
 
         private bool _showingModal = false;
 
-        public CharSelectScreenModel(string name, Context context, NetworkParser net, CoreUIPlugin plugin) : base(name, context) {
-            _net = net;
+        public CharSelectScreenModel(string name, CoreUIPlugin plugin) : base(name, plugin.RmlContext) {
+            _net = plugin.Net;
 
             _modelConstructor.BindEventCallback("create_character", (evt, variants) => {
                 plugin.Backend.ShowScreen(MagicHat.Core.Render.GameScreen.CharCreate);

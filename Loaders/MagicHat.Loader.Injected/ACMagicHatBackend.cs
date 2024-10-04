@@ -53,7 +53,7 @@ namespace MagicHat.Loader.Injected {
         }
 
         public GameScreen GetScreen() {
-            return (GameScreen)(*UIFlow.m_instance)->_curMode;
+            return (*UIFlow.m_instance is null) ? GameScreen.None : (GameScreen)(*UIFlow.m_instance)->_curMode;
         }
 
         public bool EnterGame(uint characterId) {

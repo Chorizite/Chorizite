@@ -17,6 +17,11 @@ namespace MagicHat.Core.Plugins {
         /// </summary>
         public string AssemblyDirectory => System.IO.Path.GetDirectoryName(Manifest.ManifestFile);
 
+        /// <summary>
+        /// The path to where this plugin should store data
+        /// </summary>
+        public string DataDirectory => System.IO.Path.Combine(System.IO.Path.GetDirectoryName(Manifest.ManifestFile), "..", "..", "data", "plugins", Manifest.Name);
+
         protected IPluginCore(AssemblyPluginManifest manifest) {
             Manifest = manifest;
         }

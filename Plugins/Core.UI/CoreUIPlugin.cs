@@ -5,6 +5,7 @@ using ACUI.Lib.RmlUi;
 using Autofac;
 using Core.DatService;
 using Core.UI.Lib.RmlUi;
+using Core.UI.Lib.Serialization;
 using Core.UI.Models;
 using MagicHat.Backends.ACBackend.Render;
 using MagicHat.Core.Backend;
@@ -20,15 +21,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 
 namespace Core.UI {
     /// <summary>
     /// This is the main plugin class. When your plugin is loaded, Startup() is called, and when it's unloaded Shutdown() is called.
     /// </summary>
     public class CoreUIPlugin : IPluginCore {
-        private readonly IPluginManager _pluginManager;
         private readonly ILogger<CoreUIPlugin> _log;
-        private readonly NetworkParser _net;
         private readonly Dictionary<GameScreen, UIDataModel> _models = [];
         private Panel? _activePanel;
         private TestPlugin? _testPlugin;
@@ -36,11 +36,15 @@ namespace Core.UI {
         private ACSystemInterface? _rmlSystemInterface;
         private RmlInputManager? _rmlInput;
         private TestElementInstancer? _rmlElementInstancer;
-        private Context? _ctx;
         private bool _didInitRml;
 
-        public static ILogger Log;
+        internal static ILogger Log;
         internal readonly IMagicHatBackend Backend;
+        internal readonly NetworkParser Net;
+        internal readonly IPluginManager PluginManager;
+        internal Context? RmlContext;
+
+        internal bool IsHotReload { get; }
 
         public PanelManager PanelManager { get; private set; }
 
@@ -50,11 +54,15 @@ namespace Core.UI {
         public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
         protected CoreUIPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, IMagicHatBackend backend, NetworkParser net, ILogger<CoreUIPlugin> log) : base(manifest) {
-            _net = net;
+            Net = net;
             _log = log;
             Log = _log;
-            _pluginManager = pluginManager;
+            PluginManager = pluginManager;
             Backend = backend;
+            IsHotReload = Backend.GetScreen() != GameScreen.None;
+            if (!Directory.Exists(DataDirectory)) {
+                Directory.CreateDirectory(DataDirectory);
+            }
             InitRmlUI();
         }
 
@@ -67,7 +75,6 @@ namespace Core.UI {
                 // fail to find it later
                 _log?.LogDebug($"Manually pre-loading {Path.Combine(AssemblyDirectory, "RmlUiNative.dll")}");
                 Native.LoadLibrary(Path.Combine(AssemblyDirectory, "RmlUiNative.dll"));
-
 
                 //_testPlugin = new TestPlugin(_log);
                 _rmlRenderInterface = new RmlUIRenderInterface(Backend.Renderer);
@@ -82,17 +89,38 @@ namespace Core.UI {
                 if (Rml.Initialise()) {
                     //Rml.RegisterPlugin(_testPlugin);
                     //_rmlElementInstancer = new TestElementInstancer(_log);
-                    _ctx = Rml.CreateContext("viewport", size);
-                     
-                    if (_ctx is null) {
-                        throw new Exception("Unable to create RmlUi context"); 
+                    RmlContext = Rml.CreateContext("viewport", size);
+
+                    if (RmlContext is null) {
+                        throw new Exception("Unable to create RmlUi context");
                     }
 
-                    _models.Add(GameScreen.DatPatch, new DatPatchScreenModel("DatPatchScreen", _ctx, _net, this));
-                    _models.Add(GameScreen.CharSelect, new CharSelectScreenModel("CharSelectScreen", _ctx, _net, this));
+                    if (!IsHotReload) {
+                        _models.Add(GameScreen.DatPatch, new DatPatchScreenModel("DatPatchScreen", this));
+                        _models.Add(GameScreen.CharSelect, new CharSelectScreenModel("CharSelectScreen", this));
+                    }
+                    else if (File.Exists(Path.Combine(DataDirectory, "models.json"))) {
+                        var serializeOptions = new JsonSerializerOptions {
+                            WriteIndented = true,
+                            Converters = {
+                                    new UIDataModelJsonConverter(this)
+                                }
+                        };
+                        try {
+                            var models = JsonSerializer.Deserialize<Dictionary<GameScreen, UIDataModel>>(File.ReadAllText(Path.Combine(DataDirectory, "models.json")), serializeOptions);
+                            foreach (var model in models) {
+                                _models.Add(model.Key, model.Value);
+                            }
+                        }
+                        catch (Exception ex) {
+                            _log?.LogError(ex, "Error deserializing models.json"); 
+                        }
+                        string jsonString = JsonSerializer.Serialize(_models, serializeOptions);
+                        File.WriteAllText(Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile)!, "models2.json"), jsonString);
+                    }
 
-                    _rmlInput = new RmlInputManager(Backend.Input, _ctx, _log);
-                    PanelManager = new PanelManager(_ctx, Backend.Renderer, _log);
+                    _rmlInput = new RmlInputManager(Backend.Input, RmlContext, _log);
+                    PanelManager = new PanelManager(RmlContext, Backend.Renderer, _log);
 
                     var fontFiles = Directory.GetFiles(Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile)!, "assets"), "*.ttf");
                     foreach (var fontFile in fontFiles) {
@@ -121,8 +149,8 @@ namespace Core.UI {
             try {
                 PanelManager?.Update();
                 if (!_didInitRml) return;
-                _ctx?.Update();
-                _ctx?.Render();
+                RmlContext?.Update();
+                RmlContext?.Render();
             }
             catch (Exception ex) {
                 _log?.LogError(ex, "Error during render");
@@ -131,6 +159,14 @@ namespace Core.UI {
 
         private void ShutdownRmlUI() {
             _log?.LogDebug($"ShutdownRmlUI");
+            var serializeOptions = new JsonSerializerOptions {
+                WriteIndented = true,
+                Converters = {
+                    new UIDataModelJsonConverter(this)
+                }
+            };
+            string jsonString = JsonSerializer.Serialize(_models, serializeOptions);
+            File.WriteAllText(Path.Combine(DataDirectory, "models.json"), jsonString);
 
             Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
             Backend.Renderer.OnGraphicsPreReset -= PluginManager_OnGraphicsPreReset;
@@ -141,18 +177,18 @@ namespace Core.UI {
             PanelManager?.Dispose();
 
             foreach (var model in _models.Values) {
-                _ctx?.RemoveDataModel(model.Name);
+                RmlContext?.RemoveDataModel(model.Name);
                 model.Dispose();
             }
             _models.Clear();
 
-            _ctx?.Dispose(); 
+            RmlContext?.Dispose();
 
             if (_didInitRml) {
-                Rml.Shutdown(); 
+                Rml.Shutdown();
             }
 
-            _rmlRenderInterface?.Dispose(); 
+            _rmlRenderInterface?.Dispose();
             _rmlSystemInterface?.Dispose();
             _testPlugin?.Dispose();
 
@@ -178,13 +214,13 @@ namespace Core.UI {
         private void PluginManager_OnGraphicsPostReset(object? sender, EventArgs e) {
             InitRmlUI();
         }
-        
+
         /// <summary>
         /// Called when your plugin is unloaded. Either when logging out, closing the client, or hot reloading.
         /// </summary>
         protected override void Dispose() {
             try {
-                _log?.LogDebug($"Shutting down"); 
+                _log?.LogDebug($"Shutting down");
                 ShutdownRmlUI();
             }
             catch (Exception ex) {

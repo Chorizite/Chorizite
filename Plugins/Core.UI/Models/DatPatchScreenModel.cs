@@ -21,8 +21,8 @@ namespace Core.UI.Models {
         public DataVariable<uint> ExpectedBytes { get; } = new(0);
         public DataVariable<uint> ReceivedBytes { get; } = new(0);
 
-        public DatPatchScreenModel(string name, Context context, NetworkParser net, CoreUIPlugin plugin) : base(name, context) {
-            _net = net;
+        public DatPatchScreenModel(string name, CoreUIPlugin plugin) : base(name, plugin.RmlContext) {
+            _net = plugin.Net;
             _net.OnS2CPacket += Net_OnS2CPacket;
             _net.OnC2SPacket += Net_OnC2SPacket;
 
