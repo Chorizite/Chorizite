@@ -31,7 +31,7 @@ namespace MagicHat.Core.Logging {
             return null;
         }
 
-        public bool IsEnabled(LogLevel logLevel) {
+        public bool IsEnabled(LogLevel logLevel) { 
             return logLevel > LogLevel.Trace;
         }
 

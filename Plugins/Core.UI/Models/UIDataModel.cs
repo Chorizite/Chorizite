@@ -12,6 +12,8 @@ namespace Core.UI.Models {
     public abstract class UIDataModel : IDisposable {
         protected readonly DataModelConstructor _modelConstructor;
 
+        public string Name { get; }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void InvokePropertyChange([System.Runtime.CompilerServices.CallerMemberName] string memberName = "") {
@@ -21,6 +23,7 @@ namespace Core.UI.Models {
         }
 
         public UIDataModel(string name, Context ctx) {
+            Name = name;
             _modelConstructor = ctx.CreateDataModel(name);
 
             PropertyChanged += HandlePropertyChanged;

@@ -52,6 +52,10 @@ namespace MagicHat.Loader.Injected {
             return true;
         }
 
+        public GameScreen GetScreen() {
+            return (GameScreen)(*UIFlow.m_instance)->_curMode;
+        }
+
         public bool EnterGame(uint characterId) {
             // Todo: check that it is a valid character id
             if ((*UIFlow.m_instance)->_curMode != UIMode.CharacterManagementUI) {
@@ -61,8 +65,10 @@ namespace MagicHat.Loader.Injected {
         }
 
         private delegate* unmanaged[Thiscall]<gmClient*, int> Cleanup = (delegate* unmanaged[Thiscall]<gmClient*, int>)0x00401EC0;
+        public static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
 
         public void Exit() {
+            CleanupNet(*Client.m_instance);
             Cleanup((gmClient*)*Client.m_instance);
         }
 

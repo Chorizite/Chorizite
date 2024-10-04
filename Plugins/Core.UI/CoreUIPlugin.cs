@@ -60,7 +60,7 @@ namespace Core.UI {
 
         private void InitRmlUI() {
             if (_didInitRml) return;
-            _log?.LogTrace($"Initializing UI");
+            _log?.LogDebug($"Initializing UI");
 
             try {
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
@@ -68,7 +68,8 @@ namespace Core.UI {
                 _log?.LogDebug($"Manually pre-loading {Path.Combine(AssemblyDirectory, "RmlUiNative.dll")}");
                 Native.LoadLibrary(Path.Combine(AssemblyDirectory, "RmlUiNative.dll"));
 
-                _testPlugin = new TestPlugin(_log);
+
+                //_testPlugin = new TestPlugin(_log);
                 _rmlRenderInterface = new RmlUIRenderInterface(Backend.Renderer);
                 _rmlSystemInterface = new ACSystemInterface(_log);
 
@@ -76,15 +77,15 @@ namespace Core.UI {
                 Rml.SetRenderInterface(_rmlRenderInterface);
 
                 var size = new Vector2i((int)Backend.Renderer.ViewportSize.X, (int)Backend.Renderer.ViewportSize.Y);
-                _log?.LogTrace($"Window size: {size.X}x{size.Y}");
+                _log?.LogDebug($"Window size: {size.X}x{size.Y}");
 
                 if (Rml.Initialise()) {
-                    Rml.RegisterPlugin(_testPlugin);
-                    _rmlElementInstancer = new TestElementInstancer(_log);
+                    //Rml.RegisterPlugin(_testPlugin);
+                    //_rmlElementInstancer = new TestElementInstancer(_log);
                     _ctx = Rml.CreateContext("viewport", size);
-
+                     
                     if (_ctx is null) {
-                        throw new Exception("Unable to create RmlUi context");
+                        throw new Exception("Unable to create RmlUi context"); 
                     }
 
                     _models.Add(GameScreen.DatPatch, new DatPatchScreenModel("DatPatchScreen", _ctx, _net, this));
@@ -99,12 +100,13 @@ namespace Core.UI {
                     }
 
                     Backend.Renderer.OnRender2D += Renderer_OnRender2D;
-
                     Backend.Renderer.OnGraphicsPreReset += PluginManager_OnGraphicsPreReset;
                     Backend.Renderer.OnGraphicsPostReset += PluginManager_OnGraphicsPostReset;
                     Backend.Renderer.OnScreenChanged += PluginManager_OnScreenChanged;
 
                     _didInitRml = true;
+
+                    PluginManager_OnScreenChanged(this, new ScreenChangedEventArgs(GameScreen.None, Backend.GetScreen()));
                 }
                 else {
                     throw new Exception("Unable to initialize RmlUi");
@@ -116,23 +118,41 @@ namespace Core.UI {
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {
-            PanelManager?.Update();
-            _ctx?.Update();
-            _ctx?.Render();
+            try {
+                PanelManager?.Update();
+                if (!_didInitRml) return;
+                _ctx?.Update();
+                _ctx?.Render();
+            }
+            catch (Exception ex) {
+                _log?.LogError(ex, "Error during render");
+            }
         }
 
         private void ShutdownRmlUI() {
-            if (Backend.Renderer is not null) {
-                Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
-            }
+            _log?.LogDebug($"ShutdownRmlUI");
 
+            Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
+            Backend.Renderer.OnGraphicsPreReset -= PluginManager_OnGraphicsPreReset;
+            Backend.Renderer.OnGraphicsPostReset -= PluginManager_OnGraphicsPostReset;
+            Backend.Renderer.OnScreenChanged -= PluginManager_OnScreenChanged;
+
+            _rmlInput?.Dispose();
             PanelManager?.Dispose();
 
+            foreach (var model in _models.Values) {
+                _ctx?.RemoveDataModel(model.Name);
+                model.Dispose();
+            }
+            _models.Clear();
+
+            _ctx?.Dispose(); 
+
             if (_didInitRml) {
-                Rml.Shutdown();
+                Rml.Shutdown(); 
             }
 
-            _rmlRenderInterface?.Dispose();
+            _rmlRenderInterface?.Dispose(); 
             _rmlSystemInterface?.Dispose();
             _testPlugin?.Dispose();
 
@@ -164,11 +184,7 @@ namespace Core.UI {
         /// </summary>
         protected override void Dispose() {
             try {
-                foreach (var model in _models.Values) {
-                    model.Dispose();
-                }
-                _models.Clear();
-                _log?.LogTrace($"Shutting down");
+                _log?.LogDebug($"Shutting down"); 
                 ShutdownRmlUI();
             }
             catch (Exception ex) {

@@ -28,5 +28,6 @@ namespace MagicHat.Core.Backend {
         void Exit();
         bool EnterGame(uint characterId);
         bool ShowScreen(GameScreen screen);
+        GameScreen GetScreen();
     }
 }

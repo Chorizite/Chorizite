@@ -58,7 +58,7 @@ namespace ACUI.Lib {
             }
 
             _panels.Clear();
-
+            _modalPanel?.Dispose();
             FontManager.Dispose();
         }
 

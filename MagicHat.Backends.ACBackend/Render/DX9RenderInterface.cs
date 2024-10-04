@@ -66,7 +66,7 @@ namespace MagicHat.Backends.ACBackend.Render {
             _log = logger;
             _datReader = datReader;
             D3Ddevice = new Device(unmanagedD3dPtr);
-            _log.LogDebug($"DX Device 2: {((int)unmanagedD3dPtr):X8} // {D3Ddevice.Viewport.Width}x{D3Ddevice.Viewport.Height}");
+            _log.LogTrace($"DX Device 2: {((int)unmanagedD3dPtr):X8} // {D3Ddevice.Viewport.Width}x{D3Ddevice.Viewport.Height}");
         }
 
         public void Render2D() {
@@ -144,7 +144,6 @@ namespace MagicHat.Backends.ACBackend.Render {
 
 
         public void RenderGeometry(IntPtr geometry, Matrix4x4 transform, ITexture? texture) {
-            _log?.LogTrace($"RenderGeometry: 0x{geometry:X8}");
             var geom = _geometryBuffers[geometry];
 
 
@@ -232,12 +231,10 @@ namespace MagicHat.Backends.ACBackend.Render {
         }
 
         public void EnableScissorRegion(bool enable) {
-            _log?.LogTrace($"EnableScissorRegion: {enable}");
             D3Ddevice.SetRenderState(RenderState.ScissorTestEnable, enable);
         }
 
         public void SetScissorRegion(int x, int y, int width, int height) {
-            _log?.LogTrace($"EnableScissorRegion: {x},{y} {width}x{height}");
             D3Ddevice.ScissorRect = new RawRectangle(x, y, x + width, y + height);
         }
 
@@ -265,10 +262,6 @@ namespace MagicHat.Backends.ACBackend.Render {
                 ReleaseGeometry(geom);
             }
             _geometryBuffers.Clear();
-        }
-
-        public void SetDataPatchData(gmDataPatchUI* dataPatchUI) {
-            DataPatchUI = (IntPtr)dataPatchUI;
         }
     }
 }

@@ -258,6 +258,7 @@ namespace MagicHat.Backends.ACBackend.Render {
 
             bmp2.Mutate(x => x.Fill(Color.Transparent));
             bmp2.Mutate(x => x.DrawImage(baseBmp, 1));
+            baseBmp.Dispose();
             return new ManagedDXTexture(bmp2);
 
             if (baseBmp is null) return null;
