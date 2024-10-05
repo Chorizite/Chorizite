@@ -74,7 +74,7 @@
 	</head>
 	<body data-model="DatPatchScreen">
     <div id="patchprogress">
-      <progress class="horizontal" data-value="PatchPercentage * 100" max="100"/>
+      <progress class="horizontal" data-value="PatchPercentage" max="1"/>
     </div>
     <div id="wrapper">
       <div id="text">

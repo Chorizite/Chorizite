@@ -32,6 +32,7 @@ namespace MagicHat.ACProtocol.Packets {
 		public EchoRequestHeader? EchoRequest;
 		public EchoResponseHeader? EchoResponse;
 		public FlowHeader? Flow;
+        public RequestRetransmitHeader RequestRetransmit;
 
         public ACPacketHeader() {
 		
@@ -53,6 +54,9 @@ namespace MagicHat.ACProtocol.Packets {
 			if (Flags.HasFlag(PacketHeaderFlags.LogonServerAddr)) {
 				LogonServerAddr = new LogonServerAddrHeader(reader);
 			}
+            if (Flags.HasFlag(PacketHeaderFlags.RequestRetransmit)) {
+                RequestRetransmit = new RequestRetransmitHeader(reader);
+            }
 			if (Flags.HasFlag(PacketHeaderFlags.Referral)) {
 				Referral = new ReferralHeader(reader);
 			}
