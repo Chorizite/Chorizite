@@ -43,6 +43,7 @@ namespace Core.UI {
         internal readonly NetworkParser Net;
         internal readonly IPluginManager PluginManager;
         internal Context? RmlContext;
+        private bool _isDebugging;
 
         internal bool IsHotReload { get; }
 
@@ -64,11 +65,34 @@ namespace Core.UI {
                 Directory.CreateDirectory(DataDirectory);
             }
             InitRmlUI();
+
+            Backend.Input.OnKeyPress += Input_OnKeyPress;
+        }
+
+        private void Input_OnKeyPress(object? sender, KeyPressEventArgs e) {
+            if (e.Key == Key.F7) {
+                ToggleDebugger();
+            }
+        }
+
+        private void ToggleDebugger() {
+            if (!_didInitRml || RmlContext is null) return;
+
+            if (_isDebugging) {
+                Debugger.SetVisible(false);
+                Debugger.Shutdown();
+                _isDebugging = false;
+            }
+            else {
+                Debugger.Initialise(RmlContext);
+                Debugger.SetVisible(true);
+                _isDebugging = true;
+            }
         }
 
         private void InitRmlUI() {
             if (_didInitRml) return;
-            _log?.LogDebug($"Initializing UI 123 43"); 
+            _log?.LogDebug($"Initializing UI"); 
 
             try {
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
@@ -221,6 +245,7 @@ namespace Core.UI {
         public override void Dispose() {
             try {
                 _log?.LogDebug($"Shutting down");
+                Backend.Input.OnKeyPress -= Input_OnKeyPress;
                 ShutdownRmlUI();
             }
             catch (Exception ex) {

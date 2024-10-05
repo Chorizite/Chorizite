@@ -18,6 +18,7 @@ namespace MagicHat.Backends.ACBackend.Input {
         public event EventHandler<MouseDownEventArgs>? OnMouseDown;
         public event EventHandler<MouseUpEventArgs>? OnMouseUp;
         public event EventHandler<MouseWheelEventArgs>? OnMouseWheel;
+        public event EventHandler<KeyPressEventArgs>? OnKeyPress;
         public event EventHandler<EventArgs>? OnShutdown;
 
         public Win32InputManager(ILogger logger) {
@@ -40,6 +41,9 @@ namespace MagicHat.Backends.ACBackend.Input {
                     var mouseX = LOWORD(lParam);
                     var mouseY = HIWORD(lParam);
                     MouseIsOverWindow = mouseX > 0 && mouseY > 0;
+                    break;
+                case WindowMessageType.KEYUP:
+                    OnKeyPress?.Invoke(this, new KeyPressEventArgs((Key)wParam));
                     break;
             }
 
