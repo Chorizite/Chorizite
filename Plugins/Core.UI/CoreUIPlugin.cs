@@ -1,5 +1,4 @@
-﻿using AcClient;
-using ACUI.Lib;
+﻿using ACUI.Lib;
 using ACUI.Lib.Input;
 using ACUI.Lib.RmlUi;
 using Autofac;
@@ -70,7 +69,7 @@ namespace Core.UI {
         }
 
         private void Input_OnKeyPress(object? sender, KeyPressEventArgs e) {
-            if (e.Key == Key.F7) {
+            if (e.Key == Key.F7 || e.Key == Key.KEY_P) {
                 ToggleDebugger();
             }
         }

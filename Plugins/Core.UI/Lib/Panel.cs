@@ -1,5 +1,4 @@
-﻿using AcClient;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
@@ -84,48 +83,6 @@ namespace ACUI.Lib {
             if (_needsReload && _requestedReloadTime + TimeSpan.FromMilliseconds(200) < DateTime.UtcNow) {
                 _needsReload = false;
                 LoadDoc();
-            }
-            return;
-
-            if (_docFile.EndsWith("Connecting.rml")) {
-                try {
-                    gmDataPatchUI* ui = (gmDataPatchUI*)_manager.Render.DataPatchUI;
-                    var connect = _doc?.GetElementById("connect");
-                    var patch = _doc?.GetElementById("patch");
-
-                    connect?.SetInnerRml($"{(ui->m_fConnectLevel * 100f):N2}%");
-                    patch?.SetInnerRml($"{(ui->m_fPatchLevel * 100f):N2}%");
-                }
-                catch (Exception ex) {
-                    _manager.Log?.LogError(ex, "Error in Connecting.rml");
-                }
-                return;
-            }
-
-            var test = _doc?.GetElementById("test");
-            var test1 = _doc?.GetElementById("test1");
-            var b = _doc?.GetElementById("b");
-            var str = new StringBuilder();
-            str.AppendLine($"IsInteracting(ctx):{_manager.Context.IsMouseInteracting}");
-
-            try {
-                str.AppendLine($"YPos: {b?.GetOffsetTop():N0}");
-            }
-            catch (Exception ex) {
-                str.AppendLine(ex.Message);
-            }
-
-            test?.SetInnerRml(str.ToString().Replace("\n", "<br />")); 
-            test1?.SetInnerRml($"Last Events: {string.Join(" ", _onHover.last.Take(20)).ToString()}");
-
-            if (DateTime.UtcNow - _start > TimeSpan.FromSeconds(1) && !_didListener) {
-                _didListener = true;
-
-                _manager.Log?.LogTrace($"ADDING EVENT LISTENER");
-
-                foreach (var e in Enum.GetValues(typeof(RmlUiNet.EventId))) {
-                    test1?.AddEventListener(e.ToString().ToLower(), _onHover);
-                }
             }
         }
 
