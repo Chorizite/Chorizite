@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace ACUI.Lib.RmlUi {
@@ -24,7 +25,10 @@ namespace ACUI.Lib.RmlUi {
         }
 
         private void InputManager_OnKeyPress(object? sender, KeyPressEventArgs e) {
-            _ctx.ProcessTextInput(e.Text);
+            var textParts = e.Text.Select(t => t).Where(c => (c >= 32 || c == '\n') && c != 127);
+            foreach (var character in textParts) {
+                _ctx.ProcessTextInput(character.ToString());
+            }
         }
 
         private void InputManager_OnKeyUp(object? sender, KeyUpEventArgs e) {
