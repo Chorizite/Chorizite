@@ -17,6 +17,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MagicHat.Core {
+    internal class MagicHatStatics {
+        internal static ILogger Log { get; set; }
+    }
+
     /// <summary>
     /// MagicHat
     /// </summary>
@@ -65,6 +69,7 @@ namespace MagicHat.Core {
             _container = builder.Build();
             Backend = TBackend.Create(_container);
             _log = new MagicHatLogger("MagicHat", Config.LogDirectory);
+            MagicHatStatics.Log = _log;
 
             Scope = _container.BeginLifetimeScope(builder => {
                 builder.RegisterInstance(Backend);

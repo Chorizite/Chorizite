@@ -15,7 +15,10 @@ namespace MagicHat.Core.Input {
         event EventHandler<MouseUpEventArgs>? OnMouseUp;
         event EventHandler<KeyPressEventArgs>? OnKeyPress;
         event EventHandler<EventArgs>? OnShutdown;
+        event EventHandler<KeyDownEventArgs>? OnKeyDown;
+        event EventHandler<KeyUpEventArgs>? OnKeyUp;
 
         void HandleShutdown();
+        bool IsKeyPressed(Key key);
     }
 }

@@ -1,16 +1,14 @@
 ﻿using System;
 
 namespace MagicHat.Core.Input {
-    public class KeyPressEventArgs : EventArgs {
+    public class KeyDownEventArgs : EventArgs {
         /// <summary>
         /// The key that was pressed
         /// </summary>
         public Key Key { get; }
-        public string Text { get; }
 
-        public KeyPressEventArgs(Key key, string text) {
+        public KeyDownEventArgs(Key key) {
             Key = key;
-            Text = text;
         }
     }
 }

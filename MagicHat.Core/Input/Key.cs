@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MagicHat.Core.Input {
-    public enum Key {
+    public enum Key : int {
         ///<summary>
         ///Left mouse button
         ///</summary>
