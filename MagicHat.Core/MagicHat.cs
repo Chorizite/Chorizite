@@ -132,11 +132,6 @@ namespace MagicHat.Core {
                 return Assembly.Load(File.ReadAllBytes(localDllPath));
             }
 
-            if (Scope?.Resolve<AssemblyPluginLoader>()?.TryResolvePluginAssembly(args, out var pluginAssembly) == true) {
-                _log?.LogDebug($"Resolved assembly {name.Name} from PLUGIN assemblies");
-                return pluginAssembly;
-            }
-
             _log?.LogError($"Failed to resolve assembly {name.Name} @ {localDllPath}");
 
             return null;

@@ -24,7 +24,7 @@ namespace Core.DatService {
             });
         }
 
-        protected override void Dispose() {
+        public override void Dispose() {
             PortalDat?.Dispose();
         }
     }

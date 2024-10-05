@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace MagicHat.Core.Plugins {
-    public abstract class IPluginCore {
+    public abstract class IPluginCore : IDisposable {
         /// <summary>
         /// The manifest that was used to load this plugin.
         /// </summary>
@@ -26,6 +26,6 @@ namespace MagicHat.Core.Plugins {
             Manifest = manifest;
         }
 
-        protected abstract void Dispose();
+        public abstract void Dispose();
     }
 }

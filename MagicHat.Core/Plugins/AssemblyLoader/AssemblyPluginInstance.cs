@@ -1,4 +1,6 @@
 ﻿using Autofac;
+using McMaster.NETCore.Plugins;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -10,26 +12,15 @@ using System.Threading.Tasks;
 
 namespace MagicHat.Core.Plugins.AssemblyLoader {
     public class AssemblyPluginInstance : PluginInstance<AssemblyPluginManifest> {
-        private Type? _pluginType;
         private object? _pluginInstance;
+        private PluginLoader _pluginLoader;
         private readonly IPluginManager _manager;
-        private readonly FileSystemWatcher _fw;
 
-        public Assembly? Assembly { get; private set; }
         public IPluginCore? PluginInstance => (IPluginCore?)_pluginInstance;
 
         public AssemblyPluginInstance(IPluginManager manager, AssemblyPluginManifest manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             _serviceProvider = serviceProvider;
             _manager = manager;
-
-            _fw = new FileSystemWatcher();
-            _fw.Path = Path.GetDirectoryName(manifest.ManifestFile);
-            _fw.NotifyFilter = NotifyFilters.LastWrite;
-            _fw.Filter = manifest.EntryFile;
-            _fw.Changed += (s, e) => {
-                WantsReload = true;
-            };
-            _fw.EnableRaisingEvents = true;
         }
 
         /// <inheritdoc cref="PluginInstance.Load()"/>
@@ -68,45 +59,46 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
 
             TriggerOnBeforeLoad(this, EventArgs.Empty);
 
-            var dllPath = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
+            var dllFile = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
 
-            _log?.LogDebug($"Loading plugin assembly: {Name} from {dllPath}");
+            _pluginLoader = PluginLoader.CreateFromAssemblyFile(dllFile, true, [], (cfg) => {
+                cfg.EnableHotReload = true;
+                cfg.LoadInMemory = true;
+                cfg.PreferSharedTypes = true;
+            });
 
-            var symbolPath = dllPath.Replace(".dll", ".pdb");
-            if (File.Exists(symbolPath)) {
-                _log?.LogTrace($"Loading symbol file: {symbolPath}");
-                Assembly = Assembly.Load(File.ReadAllBytes(dllPath), File.ReadAllBytes(symbolPath));
-            }
-            else {
-                _log?.LogTrace($"NO symbol file: {symbolPath}");
-                Assembly = Assembly.Load(File.ReadAllBytes(dllPath));
-            }
-            _pluginType = Assembly.GetTypes().FirstOrDefault(t => t.IsSubclassOf(typeof(IPluginCore)));
+            _pluginLoader.Reloaded += (s, e) => {
+                WantsReload = true;
+            };
 
-            if (_pluginType == null) {
-                var thiers = Assembly.GetTypes().FirstOrDefault(t => t?.BaseType?.Name == nameof(IPluginCore));
-                throw new Exception($"Plugin did not contain a class that inherits from IPluginCore: {dllPath}");
-            }
-
-            _pluginInstance = InstantiatePlugin();
-
-            if (_pluginInstance == null) {
-                throw new Exception($"Unable to create plugin instance: {_pluginType.Namespace}.{_pluginType.Name} in assembly {dllPath}");
-            }
+            InitPlugin();
 
             IsLoaded = true;
             TriggerOnLoad(this, EventArgs.Empty);
         }
 
-        private object? InstantiatePlugin() {
-            var constructors = _pluginType?.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).ToList();
+        private void InitPlugin() {
+            var pluginType = _pluginLoader.LoadDefaultAssembly().GetTypes().Where(t => {
+                return typeof(IPluginCore).IsAssignableFrom(t) && !t.IsAbstract;
+            }).FirstOrDefault();
+
+            if (pluginType is null) {
+                _log?.LogError($"Unable to find plugin type in assembly: {Name}");
+                return;
+            }
+
+            _pluginInstance = InstantiatePlugin(pluginType);
+        }
+
+        private object? InstantiatePlugin(Type type) {
+            var constructors = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).ToList();
             constructors ??= [];
-            constructors.AddRange(_pluginType?.GetConstructors(BindingFlags.Public | BindingFlags.Instance).ToList());
+            constructors.AddRange(type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).ToList());
 
             constructors.Sort((a, b) => b.GetParameters().Length.CompareTo(a.GetParameters().Length));
 
             if (constructors.Count == 0) {
-                _log?.LogError($"Unable to find any constructors for plugin: {_pluginType?.Namespace}.{_pluginType?.Name} in assembly {_pluginType?.Assembly?.GetName().Name}");
+                _log?.LogError($"Unable to find any constructors for plugin: {type.Namespace}.{type.Name} in assembly {type.Assembly?.GetName().Name}");
                 return null;
             }
 
@@ -141,24 +133,21 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
         }
 
         private void UnloadPluginAssembly() {
-            if (_pluginInstance != null && _pluginType != null) {
+            if (IsLoaded) {
                 _log?.LogDebug($"Unloading plugin assembly: {Name}");
                 TriggerOnBeforeUnload(this, EventArgs.Empty);
 
-                MethodInfo shutdownMethod = _pluginType.GetMethod("Dispose", BindingFlags.NonPublic | BindingFlags.Instance);
-                shutdownMethod ??= _pluginType.GetMethod("Dispose", BindingFlags.Public | BindingFlags.Instance);
-
-                shutdownMethod?.Invoke(_pluginInstance, null);
+                PluginInstance?.Dispose();
                 _pluginInstance = null;
-                _pluginType = null;
-                Assembly = null;
+                _pluginLoader.Dispose();
+
                 IsLoaded = false;
                 TriggerOnLoad(this, EventArgs.Empty);
             }
         }
 
         public override void Dispose() {
-            _fw?.Dispose();
+            UnloadPluginAssembly();
             base.Dispose();
         }
     }

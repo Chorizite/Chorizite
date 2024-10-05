@@ -47,28 +47,5 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
 
             return null;
         }
-
-        internal bool TryResolvePluginAssembly(ResolveEventArgs args, out Assembly? loadedAssembly) {
-            var name = new AssemblyName(args.Name);
-            loadedAssembly = null;
-            var plugins = _pluginManager.Plugins.Where(p => p is AssemblyPluginInstance).Cast<AssemblyPluginInstance>().ToArray();
-
-            foreach (var plugin in plugins) {
-                if (plugin.Assembly is not null && plugin.Assembly?.GetName()?.Name == args.RequestingAssembly?.GetName()?.Name) {
-                    var localDllPath = Path.Combine(Path.GetDirectoryName(plugin.Manifest.ManifestFile), $"{name.Name}.dll");
-                    if (File.Exists(localDllPath)) {
-                        _log?.LogTrace($"Resolved assembly {name.Name} for {plugin.Name} at {localDllPath}");
-                        loadedAssembly = Assembly.Load(File.ReadAllBytes(localDllPath));
-                        return true;
-                    }
-                    else {
-                        _log?.LogWarning($"Failed to resolve assembly for plugin {plugin.Name}: {localDllPath}");
-                    }
-                    break;
-                }
-            }
-
-            return false;
-        }
     }
 }

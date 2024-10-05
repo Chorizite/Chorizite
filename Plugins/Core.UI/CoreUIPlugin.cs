@@ -68,7 +68,7 @@ namespace Core.UI {
 
         private void InitRmlUI() {
             if (_didInitRml) return;
-            _log?.LogDebug($"Initializing UI");
+            _log?.LogDebug($"Initializing UI 123 43"); 
 
             try {
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
@@ -218,7 +218,7 @@ namespace Core.UI {
         /// <summary>
         /// Called when your plugin is unloaded. Either when logging out, closing the client, or hot reloading.
         /// </summary>
-        protected override void Dispose() {
+        public override void Dispose() {
             try {
                 _log?.LogDebug($"Shutting down");
                 ShutdownRmlUI();
