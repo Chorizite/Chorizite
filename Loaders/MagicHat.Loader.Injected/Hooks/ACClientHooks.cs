@@ -43,7 +43,7 @@ namespace MagicHat.Loader.Injected.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static byte Client_IsAlreadyRunning_Impl(IntPtr client) {
-            _clientIsAlreadyRunningHook.OriginalFunction(client);
+            //_clientIsAlreadyRunningHook.OriginalFunction(client);
             return 0;
         }
 
