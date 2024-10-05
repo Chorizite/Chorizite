@@ -76,7 +76,6 @@ namespace ACUI.Lib.RmlUi {
         }
 
         private RmlUiNet.Input.KeyIdentifier ConvertKey(int win32_key_code) {
-            // clang-format off
             switch (win32_key_code) {
                 case 'A': return RmlUiNet.Input.KeyIdentifier.KI_A;
                 case 'B': return RmlUiNet.Input.KeyIdentifier.KI_B;
