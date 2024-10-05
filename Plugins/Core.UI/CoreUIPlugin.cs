@@ -139,8 +139,6 @@ namespace Core.UI {
                         catch (Exception ex) {
                             _log?.LogError(ex, "Error deserializing models.json"); 
                         }
-                        string jsonString = JsonSerializer.Serialize(_models, serializeOptions);
-                        File.WriteAllText(Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile)!, "models2.json"), jsonString);
                     }
 
                     _rmlInput = new RmlInputManager(Backend.Input, RmlContext, _log);
