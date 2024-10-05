@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace MagicHat.Core.Input {
-    public class KeyUpEventArgs : EventArgs {
+    public class KeyUpEventArgs : EatableEvent {
         /// <summary>
         /// The key that was released
         /// </summary>

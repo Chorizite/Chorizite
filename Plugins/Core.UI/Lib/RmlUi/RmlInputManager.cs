@@ -27,16 +27,16 @@ namespace ACUI.Lib.RmlUi {
         private void InputManager_OnKeyPress(object? sender, KeyPressEventArgs e) {
             var textParts = e.Text.Select(t => t).Where(c => (c >= 32 || c == '\n') && c != 127);
             foreach (var character in textParts) {
-                _ctx.ProcessTextInput(character.ToString());
+                e.Eat = !_ctx.ProcessTextInput(character.ToString()) || e.Eat;
             }
         }
 
         private void InputManager_OnKeyUp(object? sender, KeyUpEventArgs e) {
-            _ctx.ProcessKeyUp(ConvertKey((int)e.Key), GetKeyModifierState());
+            e.Eat = !_ctx.ProcessKeyUp(ConvertKey((int)e.Key), GetKeyModifierState());
         }
 
         private void InputManager_OnKeyDown(object? sender, KeyDownEventArgs e) {
-            _ctx.ProcessKeyDown(ConvertKey((int)e.Key), GetKeyModifierState());
+            e.Eat = !_ctx.ProcessKeyDown(ConvertKey((int)e.Key), GetKeyModifierState());
         }
 
         private void InputManager_OnMouseUp(object? sender, MouseUpEventArgs e) {

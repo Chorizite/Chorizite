@@ -43,6 +43,8 @@ namespace MagicHat.Backends.ACBackend.Input {
         }
 
         public bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {
+            EatableEvent? eatableEvent = null;
+
             switch (type) {
                 case WindowMessageType.MOUSEHOVER:
                     MouseIsOverWindow = true;
@@ -56,14 +58,17 @@ namespace MagicHat.Backends.ACBackend.Input {
                     MouseIsOverWindow = mouseX > 0 && mouseY > 0;
                     break;
                 case WindowMessageType.KEYUP:
-                    OnKeyUp?.InvokeSafely(this, new KeyUpEventArgs((Key)wParam));
+                    eatableEvent = new KeyUpEventArgs((Key)wParam);
+                    OnKeyUp?.InvokeSafely(this, (KeyUpEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.KEYDOWN:
-                    OnKeyDown?.InvokeSafely(this, new KeyDownEventArgs((Key)wParam));
+                    eatableEvent = new KeyDownEventArgs((Key)wParam);
+                    OnKeyDown?.InvokeSafely(this, (KeyDownEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.CHAR:
                     var key = VkKeyScanA((byte)wParam) & 0xFF;
-                    OnKeyPress?.InvokeSafely(this, new KeyPressEventArgs((Key)key, ((char)wParam).ToString()));
+                    eatableEvent = new KeyPressEventArgs((Key)key, ((char)wParam).ToString());
+                    OnKeyPress?.InvokeSafely(this, (KeyPressEventArgs)eatableEvent);
                     break;
             }
 
@@ -71,7 +76,6 @@ namespace MagicHat.Backends.ACBackend.Input {
                 return false;
             }
 
-            EatableEvent? eatableEvent = null;
             switch (type) {
                 case WindowMessageType.LBUTTONDOWN:
                     eatableEvent = new MouseDownEventArgs(MouseButton.Left);
