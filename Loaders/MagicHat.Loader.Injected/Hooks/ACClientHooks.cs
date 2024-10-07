@@ -19,6 +19,7 @@ namespace MagicHat.Loader.Injected.Hooks {
         private static IHook<Client_Cleanup> _clientCleanupHook;
         private static IHook<Client_IsAlreadyRunning> _clientIsAlreadyRunningHook;
         private static IHook<UIFlow_UseNewMode> _uiFlowUseNewModeHook;
+        private static IHook<CLBlockAllocator_OpenDataFile> _clBlockAllocatorOpenDataFileHook;
 
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate void Client_Cleanup(IntPtr client);
@@ -29,10 +30,14 @@ namespace MagicHat.Loader.Injected.Hooks {
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate uint UIFlow_UseNewMode(UIFlow* uiFlow);
 
+        [Function(CallingConventions.MicrosoftThiscall)]
+        private delegate uint CLBlockAllocator_OpenDataFile(CLBlockAllocator* allocator, IntPtr pFileInfo, PStringBase<byte>* pFileName, PStringBase<ushort>* pcPathToUse, uint open_flags_l, IntPtr* pTranInfo);
+
         internal static void Init() {
             _clientCleanupHook = CreateHook<Client_Cleanup>(typeof(ACClientHooks), nameof(Client_Cleanup_Impl), 0x004118D0);
             _clientIsAlreadyRunningHook = CreateHook<Client_IsAlreadyRunning>(typeof(ACClientHooks), nameof(Client_IsAlreadyRunning_Impl), 0x004122A0);
             _uiFlowUseNewModeHook = CreateHook<UIFlow_UseNewMode>(typeof(ACClientHooks), nameof(UIFlow_UseNewMode_Impl), 0x00479AA0);
+            _clBlockAllocatorOpenDataFileHook = CreateHook<CLBlockAllocator_OpenDataFile>(typeof(ACClientHooks), nameof(CLBlockAllocator_OpenDataFile_Impl), 0x00675920);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvThiscall) })]
@@ -43,7 +48,6 @@ namespace MagicHat.Loader.Injected.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static byte Client_IsAlreadyRunning_Impl(IntPtr client) {
-            //_clientIsAlreadyRunningHook.OriginalFunction(client);
             return 0;
         }
 
@@ -54,6 +58,12 @@ namespace MagicHat.Loader.Injected.Hooks {
             InjectedLoader.Render?.ShowGameScreen((GameScreen)mode);
 
             return ret;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
+        private static uint CLBlockAllocator_OpenDataFile_Impl(CLBlockAllocator* allocator, IntPtr pFileInfo, PStringBase<byte>* pFileName, PStringBase<ushort>* pcPathToUse, uint open_flags_l, IntPtr* pTranInfo) {
+            open_flags_l |= 4;
+            return _clBlockAllocatorOpenDataFileHook.OriginalFunction(allocator, pFileInfo, pFileName, pcPathToUse, open_flags_l, pTranInfo);
         }
     }
 }
