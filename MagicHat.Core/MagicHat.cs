@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 namespace MagicHat.Core {
     internal class MagicHatStatics {
         internal static ILogger Log { get; set; }
+        internal static IMagicHatConfig Config { get; set; }
     }
 
     /// <summary>
@@ -44,6 +45,7 @@ namespace MagicHat.Core {
         /// </summary>
         /// <param name="configure">A configuration callback that allows you to configure advanced options</param>
         public MagicHat(IMagicHatConfig config) {
+            MagicHatStatics.Config = config;
             Config = config;
             var builder = new ContainerBuilder();
 

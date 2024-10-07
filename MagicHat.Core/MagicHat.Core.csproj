@@ -10,8 +10,8 @@
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <AssemblyVersion>1.3.3.7</AssemblyVersion>
     <LangVersion>12</LangVersion>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\bin\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\bin\net8.0\MagicHat.Core</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <Platforms>x86</Platforms>

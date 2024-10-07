@@ -6,6 +6,11 @@
         string PluginDirectory { get; }
 
         /// <summary>
+        /// The directory where data is stored.
+        /// </summary>
+        string DataDirectory { get; }
+
+        /// <summary>
         /// The directory where log files are stored.
         /// </summary>
         string LogDirectory { get; }

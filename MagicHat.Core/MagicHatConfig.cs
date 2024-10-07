@@ -13,6 +13,9 @@ namespace MagicHat.Core {
         public string PluginDirectory { get; }
 
         /// <inheritdoc/>
+        public string DataDirectory { get; }
+
+        /// <inheritdoc/>
         public string LogDirectory { get; }
 
         /// <summary>
@@ -20,8 +23,9 @@ namespace MagicHat.Core {
         /// </summary>
         /// <param name="pluginDirectory">The directory where plugins are stored.</param>
         /// <param name="logDirectory">The directory where log files are stored.</param>
-        public MagicHatConfig(string pluginDirectory, string logDirectory) {
+        public MagicHatConfig(string pluginDirectory, string dataDirectory, string logDirectory) {
             PluginDirectory = pluginDirectory;
+            DataDirectory = dataDirectory;
             LogDirectory = logDirectory;
         }
     }

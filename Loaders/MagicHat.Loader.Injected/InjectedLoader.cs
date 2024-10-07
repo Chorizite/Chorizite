@@ -41,7 +41,9 @@ namespace MagicHat.Loader.Injected {
         internal static void Startup(int _unmanagedD3DPtr) {
             try {
                 UnmanagedD3DPtr = _unmanagedD3DPtr;
-                Config = new MagicHatConfig(System.IO.Path.Combine(AssemblyDirectory, "plugins"), AssemblyDirectory);
+                var pluginDirectory = System.IO.Path.Combine(AssemblyDirectory, "..", "plugins");
+                var dataDirectory = System.IO.Path.Combine(AssemblyDirectory, "..", "data");
+                Config = new MagicHatConfig(pluginDirectory, dataDirectory, AssemblyDirectory);
                 MagicHatInstance = new MagicHat<ACMagicHatBackend>(Config);
 
                 Backend = (MagicHatInstance.Backend as ACMagicHatBackend)!;

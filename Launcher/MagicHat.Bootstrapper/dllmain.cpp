@@ -96,7 +96,7 @@ extern "C"
 			throw std::exception("Failed to load .NET Core Runtime");
 		}
 
-		const string_t assembly_path = launcherPath + L"MagicHat.Loader.Injected.dll";
+		const string_t assembly_path = launcherPath + L"MagicHat.Core\\MagicHat.Loader.Injected.dll";
 		const string_t type_name = L"MagicHat.Loader.Injected.InjectedLoader, MagicHat.Loader.Injected";
 		const string_t method_name = L"Init";
 		component_entry_point_fn initialize = nullptr;
