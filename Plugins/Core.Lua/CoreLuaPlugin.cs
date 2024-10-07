@@ -37,7 +37,7 @@ namespace ScriptHost {
             }
         }
 
-        protected override void Dispose() {
+        public override void Dispose() {
             
         }
     }

@@ -28,7 +28,7 @@ namespace Core.AC {
             return 123;
         }
 
-        protected override void Dispose() {
+        public override void Dispose() {
             
         }
     }
