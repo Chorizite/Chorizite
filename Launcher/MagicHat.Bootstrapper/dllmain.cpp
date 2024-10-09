@@ -20,22 +20,25 @@ string_t launcherPath;
 
 string_t get_current_directory(HMODULE hModule);
 
-/* Entry point */
+int main() {
+	return 0;
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
 	launcherPath = get_current_directory(hModule);
-    switch (ul_reason_for_call)
-    {
-		case DLL_PROCESS_ATTACH:
-			thisProcessModule = hModule;
-			break;
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH:
+		thisProcessModule = hModule;
+		break;
 
-		case DLL_THREAD_ATTACH:
-		case DLL_THREAD_DETACH:
-		case DLL_PROCESS_DETACH:
-			break;
-    }
-    return TRUE;
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
+	return TRUE;
 }
 
 string_t get_current_directory(HMODULE mHandle)
@@ -51,31 +54,45 @@ string_t get_current_directory(HMODULE mHandle)
 	return root_path;
 }
 
-DWORD __fastcall InjectPayloadAndExecute(HANDLE hProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPCVOID lpBuffer, SIZE_T dwSize) {
-	void* pimple;
-	DWORD(__stdcall * v5)(LPVOID);
-	HANDLE RemoteThread;
-	DWORD ExitCode;
-	pimple = 0;
-	v5 = lpStartAddress;
-	if (lpBuffer && dwSize) {
-		pimple = VirtualAllocEx(hProcess, 0, dwSize, 0x3000u, 4u);
-		WriteProcessMemory(hProcess, pimple, lpBuffer, dwSize, 0);
-		v5 = lpStartAddress;
-	}
-	RemoteThread = CreateRemoteThread(hProcess, 0, 0, v5, pimple, 0, 0);
-	ExitCode = 0;
-	WaitForSingleObject(RemoteThread, 0xFFFFFFFF);
-	GetExitCodeThread(RemoteThread, &ExitCode);
-	if (pimple) {
-		VirtualFreeEx(hProcess, pimple, 0, 0x8000u);
-	}
-	return ExitCode;
-}
+DWORD InjectPayloadAndExecute(HANDLE hProcess, LPTHREAD_START_ROUTINE lpStartAddress, LPCVOID lpBuffer, SIZE_T dwSize) {
+	void* remoteMemory = nullptr;
+	HANDLE remoteThread;
+	DWORD exitCode = 0;
 
-LPSTR ToLPCSTR(LPWSTR wstr) {
-	std::wstring ws(wstr);
-	return (LPSTR)(ws.c_str());
+	// Allocate memory in the remote process if buffer and size are valid
+	if (lpBuffer && dwSize) {
+		remoteMemory = VirtualAllocEx(hProcess, nullptr, dwSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+		if (!remoteMemory) {
+			return 0; // Failed to allocate memory
+		}
+
+		if (!WriteProcessMemory(hProcess, remoteMemory, lpBuffer, dwSize, nullptr)) {
+			VirtualFreeEx(hProcess, remoteMemory, 0, MEM_RELEASE);
+			return 0; // Failed to write memory
+		}
+	}
+
+	// Create a remote thread to execute the injected code
+	remoteThread = CreateRemoteThread(hProcess, nullptr, 0, lpStartAddress, remoteMemory, 0, nullptr);
+	if (!remoteThread) {
+		if (remoteMemory) {
+			VirtualFreeEx(hProcess, remoteMemory, 0, MEM_RELEASE);
+		}
+		return 0; // Failed to create the remote thread
+	}
+
+	// Wait for the remote thread to complete
+	WaitForSingleObject(remoteThread, INFINITE);
+	GetExitCodeThread(remoteThread, &exitCode);
+
+	// Clean up the allocated memory in the remote process
+	if (remoteMemory) {
+		VirtualFreeEx(hProcess, remoteMemory, 0, MEM_RELEASE);
+	}
+
+	// Close the handle to the remote thread
+	CloseHandle(remoteThread);
+	return exitCode;
 }
 
 extern "C"
@@ -93,7 +110,7 @@ extern "C"
 		if (!CLR->load_runtime(launcherPath + L"Launcher.runtimeconfig.json")) {
 
 			MessageBoxA(nullptr, "Failed", "Failed to load .NET Core Runtime", MB_OK);
-			throw std::exception("Failed to load .NET Core Runtime");
+			return;
 		}
 
 		const string_t assembly_path = launcherPath + L"MagicHat.Core\\MagicHat.Loader.Injected.dll";
@@ -114,8 +131,6 @@ extern "C"
 		GetModuleFileNameW(thisProcessModule, entryPointParameters.dll_path, MAX_PATH);
 		initialize(&entryPointParameters, sizeof(EntryPointParameters));
 	}
-
-#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
 	__declspec(dllexport) DWORD LaunchInjected(wchar_t* Source, LPCWSTR lpCurrentDirectory, EntryPointParameters* entryPointParameters, int numParams) {
 		size_t SourceLen;
 		wchar_t* CmdLine_s;

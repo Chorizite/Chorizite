@@ -9,9 +9,9 @@
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <DebugSymbols>true</DebugSymbols>
     <Platforms>x86</Platforms>
     <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
 
