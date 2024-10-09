@@ -94,7 +94,7 @@ DWORD InjectPayloadAndExecute(HANDLE hProcess, LPTHREAD_START_ROUTINE lpStartAdd
 	CloseHandle(remoteThread);
 	return exitCode;
 }
-
+#pragma warning(disable : 4996) //_CRT_SECURE_NO_WARNINGS
 extern "C"
 {
 	__declspec(dllexport) void Bootstrap() {

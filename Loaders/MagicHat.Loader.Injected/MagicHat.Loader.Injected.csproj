@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
-    <Platforms>x86</Platforms>
-    <PlatformTarget>x86</PlatformTarget>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin\net8.0\MagicHat.Core\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
