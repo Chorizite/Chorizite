@@ -51,7 +51,6 @@ namespace Core.Launcher.UIModels {
             if (!Directory.Exists(dataDirectory)) {
                 Directory.CreateDirectory(dataDirectory);
             }
-            log?.LogDebug(jsonString);
             File.WriteAllText(Path.Combine(dataDirectory, "simplelogin.json"), jsonString);
         }
 
