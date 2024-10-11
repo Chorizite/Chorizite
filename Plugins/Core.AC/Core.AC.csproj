@@ -26,7 +26,7 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\MagicHat.Backends.ACBackend\MagicHat.Backends.ACBackend.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\Launcher\MagicHat.Loader.Standalone\MagicHat.Loader.Standalone.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

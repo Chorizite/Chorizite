@@ -2,18 +2,18 @@
 using Autofac;
 using MagicHat.ACProtocol;
 using MagicHat.ACProtocol.Enums;
-using MagicHat.Backends.ACBackend.Input;
-using MagicHat.Backends.ACBackend.Render;
 using MagicHat.Core;
 using MagicHat.Core.Backend;
 using MagicHat.Core.Dats;
 using MagicHat.Core.Input;
 using MagicHat.Core.Net;
 using MagicHat.Core.Render;
+using MagicHat.Loader.Standalone.Input;
+using MagicHat.Loader.Standalone.Render;
 using Microsoft.Extensions.Logging;
 using System;
 
-namespace MagicHat.Loader.Injected {
+namespace MagicHat.Loader.Standalone {
     public unsafe class ACMagicHatBackend : IClientBackend, IMagicHatBackend {
         public IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
@@ -25,7 +25,7 @@ namespace MagicHat.Loader.Injected {
         public event EventHandler<PacketDataEventArgs>? OnS2CData;
 
         public static IMagicHatBackend Create(IContainer container) {
-            var renderer = new DX9RenderInterface(InjectedLoader.UnmanagedD3DPtr, container.Resolve<ILogger<DX9RenderInterface>>(), container.Resolve<IDatReaderInterface>());
+            var renderer = new DX9RenderInterface(StandaloneLoader.UnmanagedD3DPtr, container.Resolve<ILogger<DX9RenderInterface>>(), container.Resolve<IDatReaderInterface>());
             var input = new Win32InputManager(container.Resolve<ILogger<Win32InputManager>>());
 
             return new ACMagicHatBackend(renderer, input);

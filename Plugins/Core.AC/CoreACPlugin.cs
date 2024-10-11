@@ -9,7 +9,6 @@ using MagicHat.ACProtocol;
 using Core.UI;
 using Core.AC.UIModels;
 using MagicHat.Core.Render;
-using AcClient;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using Core.UI.Lib;

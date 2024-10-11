@@ -1,4 +1,4 @@
-﻿namespace MagicHat.Loader.Injected.Lib {
+﻿namespace MagicHat.Loader.Standalone.Lib {
     /// <summary>
     /// Contains a full list of IDirect3DDevice9 functions to be used alongside
     /// <see cref="DX9Hook"/> as an indexer into the Virtual Function Table entries.

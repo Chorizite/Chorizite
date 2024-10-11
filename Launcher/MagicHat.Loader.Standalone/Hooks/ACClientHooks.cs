@@ -1,7 +1,7 @@
 ﻿using AcClient;
 using Iced.Intel;
 using MagicHat.Core.Render;
-using MagicHat.Loader.Injected.Lib;
+using MagicHat.Loader.Standalone.Lib;
 using Microsoft.Extensions.Logging;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace MagicHat.Loader.Injected.Hooks {
+namespace MagicHat.Loader.Standalone.Hooks {
     internal unsafe class ACClientHooks : HookBase {
         private static IHook<Client_Cleanup> _clientCleanupHook;
         private static IHook<Client_IsAlreadyRunning> _clientIsAlreadyRunningHook;
@@ -37,7 +37,7 @@ namespace MagicHat.Loader.Injected.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvThiscall) })]
         private static void Client_Cleanup_Impl(IntPtr client) {
-            InjectedLoader.Input?.HandleShutdown();
+            StandaloneLoader.Input?.HandleShutdown();
             _clientCleanupHook.OriginalFunction(client);
         }
 

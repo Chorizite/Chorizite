@@ -3,9 +3,10 @@ using MagicHat.Core.Input;
 using Microsoft.Extensions.Logging;
 using SharpDX;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace MagicHat.Backends.ACBackend.Input {
+namespace MagicHat.Loader.Standalone.Input {
     public class Win32InputManager : IInputManager {
         private readonly ILogger _log;
         private readonly Dictionary<Key, bool> _keyStates = new();
@@ -39,7 +40,7 @@ namespace MagicHat.Backends.ACBackend.Input {
 
         public bool IsKeyPressed(Key key) {
             var state = GetKeyState((VirtualKeyStates)key);
-            return (state & 0xFF) > 0 || ((state >> 4) & 0xFF) > 0;
+            return (state & 0xFF) > 0 || (state >> 4 & 0xFF) > 0;
         }
 
         public bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {

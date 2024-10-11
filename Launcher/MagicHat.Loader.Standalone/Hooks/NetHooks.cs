@@ -7,7 +7,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace MagicHat.Loader.Injected.Hooks {
+namespace MagicHat.Loader.Standalone.Hooks {
     internal unsafe class NetHooks : HookBase {
         private static IHook<SendTo> _sendtoHook;
         private static IHook<RecvFrom> _recvfromHook;
@@ -28,10 +28,10 @@ namespace MagicHat.Loader.Injected.Hooks {
             try {
                 var bytes = new byte[len];
                 Marshal.Copy((nint)buf, bytes, 0, len);
-                InjectedLoader.Backend.HandleC2SPacketData(bytes);
+                StandaloneLoader.Backend.HandleC2SPacketData(bytes);
             }
             catch (Exception ex) {
-                InjectedLoader.Log.LogError(ex, $"SendTo Error: {ex.Message}");
+                StandaloneLoader.Log.LogError(ex, $"SendTo Error: {ex.Message}");
             }
             return _sendtoHook.OriginalFunction(s, buf, len, flags, to, tolen);
         }
@@ -43,10 +43,10 @@ namespace MagicHat.Loader.Injected.Hooks {
                 try {
                     var bytes = new byte[bytesRead];
                     Marshal.Copy((nint)buf, bytes, 0, bytesRead);
-                    InjectedLoader.Backend.HandleS2CPacketData(bytes);
+                    StandaloneLoader.Backend.HandleS2CPacketData(bytes);
                 }
                 catch (Exception ex) {
-                    InjectedLoader.Log.LogError(ex, $"RecvFrom Error: {ex.Message}");
+                    StandaloneLoader.Log.LogError(ex, $"RecvFrom Error: {ex.Message}");
                 }
             }
             return bytesRead;

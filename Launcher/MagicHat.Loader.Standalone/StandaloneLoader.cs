@@ -1,26 +1,26 @@
 ﻿using AcClient;
 using Autofac;
-using MagicHat.Backends.ACBackend.Input;
-using MagicHat.Backends.ACBackend.Render;
 using MagicHat.Core;
 using MagicHat.Core.Dats;
 using MagicHat.Core.Input;
 using MagicHat.Core.Logging;
 using MagicHat.Core.Net;
 using MagicHat.Core.Render;
-using MagicHat.Loader.Injected.Hooks;
+using MagicHat.Loader.Standalone.Hooks;
+using MagicHat.Loader.Standalone.Input;
+using MagicHat.Loader.Standalone.Render;
 using Microsoft.Extensions.Logging;
 using Reloaded.Memory.Pointers;
 using System;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace MagicHat.Loader.Injected {
-    public static class InjectedLoader {
-        public static string AssemblyDirectory => System.IO.Path.GetDirectoryName(Assembly.GetAssembly(typeof(InjectedLoader))!.Location)!;
+namespace MagicHat.Loader.Standalone {
+    public static class StandaloneLoader {
+        public static string AssemblyDirectory => System.IO.Path.GetDirectoryName(Assembly.GetAssembly(typeof(StandaloneLoader))!.Location)!;
 
-        private static readonly string _pluginDirectory = System.IO.Path.Combine(AssemblyDirectory, "..", "plugins");
-        private static readonly string _dataDirectory = System.IO.Path.Combine(AssemblyDirectory, "..", "data");
+        private static readonly string _pluginDirectory = System.IO.Path.Combine(AssemblyDirectory, "plugins");
+        private static readonly string _dataDirectory = System.IO.Path.Combine(AssemblyDirectory, "data");
         private static readonly string _logDirectory = System.IO.Path.Combine(_dataDirectory, "logs");
 
         public static int UnmanagedD3DPtr { get; private set; }
@@ -30,7 +30,7 @@ namespace MagicHat.Loader.Injected {
         public static DX9RenderInterface Render { get; private set; }
         public static Win32InputManager Input { get; private set; }
         public static NetworkParser Net { get; private set; }
-        public static ILogger Log { get; } = new MagicHatLogger("InjectedLoader", _logDirectory);
+        public static ILogger Log { get; } = new MagicHatLogger("StandaloneLoader", _logDirectory);
 
         public static unsafe int Init(IntPtr a, int b) {
             try {

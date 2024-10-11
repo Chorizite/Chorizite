@@ -1,5 +1,6 @@
-﻿
-namespace MagicHat.Backends.ACBackend.Render {
+﻿using System.Collections.Generic;
+
+namespace MagicHat.Loader.Standalone.Render {
     internal class HttpHelpers {
         internal static Dictionary<string, string> ParseQueryString(string query) {
             var q = query.Substring(0);
@@ -10,7 +11,7 @@ namespace MagicHat.Backends.ACBackend.Render {
             var pairs = q.Split('&');
             var dict = new Dictionary<string, string>();
 
-            foreach ( var pair in pairs ) {
+            foreach (var pair in pairs) {
                 var parts = pair.Split('=');
                 if (parts.Length == 2) {
                     dict[parts[0]] = parts[1];

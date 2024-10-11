@@ -1,23 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\net8.0\MagicHat.Core\</OutputPath>
+    <OutputPath>..\..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Reloaded.Hooks" Version="4.3.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+    <PackageReference Include="SharpDX" Version="4.2.0" />
     <PackageReference Include="SharpDX.Direct3D9" Version="4.2.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
-    <ProjectReference Include="..\..\MagicHat.Backends.ACBackend\MagicHat.Backends.ACBackend.csproj" />
     <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" />
   </ItemGroup>
 
@@ -31,5 +32,9 @@
 
   <ItemGroup>
     <NativeLibs Remove="ACMagicHatBackend.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="StandaloneLoader.cs" />
   </ItemGroup>
 </Project>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MagicHat.Backends.ACBackend.Input {
+namespace MagicHat.Loader.Standalone.Input {
 
     public class WindowMessageEventArgs : EventArgs {
         public int HWND { get; }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 #if NETFRAMEWORK
 using System.Drawing;
 #else
@@ -13,7 +14,7 @@ using SixLabors.ImageSharp.PixelFormats;
 #endif
 
 
-namespace MagicHat.Backends.ACBackend.Render {
+namespace MagicHat.Loader.Standalone.Render {
     public class TgaDecoder {
         protected class TgaData {
             private const int TgaHeaderSize = 18;
@@ -161,10 +162,10 @@ namespace MagicHat.Backends.ACBackend.Render {
             for (int y = 0; y < tga.Height; ++y) {
                 for (int x = 0; x < tga.Width; ++x) {
                     int c = tga.GetPixel(x, y);
-                    byte r = (byte)((c >> 16) & 0xFF);
-                    byte g = (byte)((c >> 8) & 0xFF);
+                    byte r = (byte)(c >> 16 & 0xFF);
+                    byte g = (byte)(c >> 8 & 0xFF);
                     byte b = (byte)(c & 0xFF);
-                    byte a = (byte)((c >> 24) & 0xFF);
+                    byte a = (byte)(c >> 24 & 0xFF);
                     bitmap[x, y] = Color.FromRgba(r, g, b, a);
                 }
             }

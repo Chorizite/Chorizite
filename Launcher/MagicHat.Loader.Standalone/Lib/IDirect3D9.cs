@@ -1,4 +1,4 @@
-﻿namespace MagicHat.Loader.Injected.Lib {
+﻿namespace MagicHat.Loader.Standalone.Lib {
     /// <summary>
     /// Contains the D3D9 interface.
     /// </summary>

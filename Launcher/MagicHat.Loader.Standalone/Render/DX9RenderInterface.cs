@@ -11,8 +11,11 @@ using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using AcClient;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace MagicHat.Backends.ACBackend.Render {
+namespace MagicHat.Loader.Standalone.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private struct GeometryBufferRef : IDisposable {
@@ -45,7 +48,7 @@ namespace MagicHat.Backends.ACBackend.Render {
 
         public static Device D3Ddevice { get; private set; }
 
-        public System.Numerics.Vector2 ViewportSize => new(D3Ddevice.Viewport.Width, D3Ddevice.Viewport.Height);
+        public Vector2 ViewportSize => new(D3Ddevice.Viewport.Width, D3Ddevice.Viewport.Height);
 
         public IntPtr DataPatchUI { get; private set; }
 
@@ -53,7 +56,7 @@ namespace MagicHat.Backends.ACBackend.Render {
             _log = logger;
             _datReader = datReader;
             D3Ddevice = new Device(unmanagedD3dPtr);
-            _log.LogTrace($"DX Device 2: {((int)unmanagedD3dPtr):X8} // {D3Ddevice.Viewport.Width}x{D3Ddevice.Viewport.Height}");
+            _log.LogTrace($"DX Device 2: {(int)unmanagedD3dPtr:X8} // {D3Ddevice.Viewport.Width}x{D3Ddevice.Viewport.Height}");
         }
 
         public void Render2D() {
@@ -157,7 +160,7 @@ namespace MagicHat.Backends.ACBackend.Render {
         }
 
         private static int iii = 0;
-        public ITexture GenerateTexture(byte[] source, System.Numerics.Vector2 dimensions) {
+        public ITexture GenerateTexture(byte[] source, Vector2 dimensions) {
             _log?.LogTrace($"Generate texture: {dimensions.X}x{dimensions.Y}");
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
@@ -166,7 +169,7 @@ namespace MagicHat.Backends.ACBackend.Render {
             var s = d3d9_texture.LockRectangle(0, LockFlags.None);
             Marshal.Copy(source, 0, s.DataPointer, source.Length);
             d3d9_texture.UnlockRectangle(0);
-            
+
             var mTexture = new ManagedDXTexture(d3d9_texture);
             _textures.Add(mTexture);
             return mTexture;
@@ -174,7 +177,7 @@ namespace MagicHat.Backends.ACBackend.Render {
 
 
 
-        public ITexture? LoadTexture(string source, out System.Numerics.Vector2 textureDimensions) {
+        public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
                 _log?.LogTrace($"LoadTexture: {source}");
                 ManagedDXTexture texture;
@@ -195,19 +198,19 @@ namespace MagicHat.Backends.ACBackend.Render {
 
                 if (texture is null) {
                     _log.LogError($"Failed to load texture: {source}");
-                    textureDimensions = System.Numerics.Vector2.Zero;
+                    textureDimensions = Vector2.Zero;
                     return default;
                 }
 
                 _log?.LogTrace($"Loaded texture: 0x{texture.TexturePtr:X8} {source}");
 
-                textureDimensions = new System.Numerics.Vector2(texture.Bitmap.Width, texture.Bitmap.Height);
+                textureDimensions = new Vector2(texture.Bitmap.Width, texture.Bitmap.Height);
                 _textures.Add(texture);
                 return texture;
             }
             catch (Exception ex) {
                 _log?.LogError($"Error loading texture ({source}): {ex}");
-                textureDimensions = System.Numerics.Vector2.Zero;
+                textureDimensions = Vector2.Zero;
                 return default;
             }
         }

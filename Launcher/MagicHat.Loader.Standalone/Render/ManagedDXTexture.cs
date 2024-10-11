@@ -22,7 +22,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Drawing.Processing;
 
-namespace MagicHat.Backends.ACBackend.Render {
+namespace MagicHat.Loader.Standalone.Render {
     /// <summary>
     /// Holds a texture (from a bitmap), maybe other things later...
     /// Using this class will automatically recreate the texture as needed.
@@ -44,7 +44,7 @@ namespace MagicHat.Backends.ACBackend.Render {
         /// <summary>
         /// Pointer to the unmanaged texture
         /// </summary>
-        public unsafe IntPtr TexturePtr => Texture == null ? IntPtr.Zero : Texture.NativePointer;
+        public unsafe nint TexturePtr => Texture == null ? nint.Zero : Texture.NativePointer;
 
         /// <summary>
         /// Create a new managed texture from a DX Texture.
@@ -260,7 +260,7 @@ namespace MagicHat.Backends.ACBackend.Render {
             bmp2.Mutate(x => x.DrawImage(baseBmp, 1));
             baseBmp.Dispose();
             return new ManagedDXTexture(bmp2);
-
+            /*
             if (baseBmp is null) return null;
             if (baseBmp.Width == 32 && baseBmp.Height == 32) return new ManagedDXTexture(baseBmp);
 
@@ -316,10 +316,11 @@ namespace MagicHat.Backends.ACBackend.Render {
             overlay2?.Dispose();
 
             return new ManagedDXTexture(bmp);
+            */
         }
 
         private static Image<Argb32> GetIconBitmap(uint id, IDatReaderInterface portalDat, out ACDatReader.FileTypes.Texture? iconFile) {
-            if (!portalDat.TryGet<ACDatReader.FileTypes.Texture>(id, out iconFile)) {
+            if (!portalDat.TryGet(id, out iconFile)) {
                 throw new Exception($"Could not load icon from dat: 0x{id:X8}");
             }
 

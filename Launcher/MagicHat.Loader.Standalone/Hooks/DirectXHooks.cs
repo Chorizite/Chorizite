@@ -1,5 +1,5 @@
-﻿using MagicHat.Backends.ACBackend.Input;
-using MagicHat.Loader.Injected.Lib;
+﻿using MagicHat.Loader.Standalone.Input;
+using MagicHat.Loader.Standalone.Lib;
 using Microsoft.Extensions.Logging;
 using Reloaded.Hooks;
 using Reloaded.Hooks.Definitions;
@@ -12,9 +12,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
-namespace MagicHat.Loader.Injected.Hooks {
+namespace MagicHat.Loader.Standalone.Hooks {
     internal class DirectXHooks : HookBase {
         private static IHook<EndScene> _endSceneHook;
         private static IHook<CreateDevice> _createDeviceHook;
@@ -42,10 +41,10 @@ namespace MagicHat.Loader.Injected.Hooks {
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static nint EndSceneImpl(nint a) {
             try {
-                InjectedLoader.Render?.Render2D();
+                StandaloneLoader.Render?.Render2D();
             }
             catch (Exception ex) {
-                InjectedLoader.Log.LogError(ex, $"EndScene Error: {ex.Message}");
+                StandaloneLoader.Log.LogError(ex, $"EndScene Error: {ex.Message}");
             }
             return _endSceneHook.OriginalFunction.Invoke(a);
         }
@@ -60,14 +59,14 @@ namespace MagicHat.Loader.Injected.Hooks {
             var windowProc = (int)Native.GetWindowLong(hwnd, Native.GWL.GWL_WNDPROC);
             _windowProcHook = CreateHook<WndProc>(typeof(DirectXHooks), nameof(WndProcImpl), windowProc);
 
-            InjectedLoader.Startup(_unmanagedD3DPtr);
+            StandaloneLoader.Startup(_unmanagedD3DPtr);
 
             return devicePtr;
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static nint WndProcImpl(nint hwnd, uint uMsg, nint wParam, nint lParam) {
-            if (InjectedLoader.Input.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam)) {
+            if (StandaloneLoader.Input.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam)) {
                 return nint.Zero;
             }
             return _windowProcHook.OriginalFunction.Invoke(hwnd, uMsg, wParam, lParam);
@@ -75,8 +74,7 @@ namespace MagicHat.Loader.Injected.Hooks {
 
         public static int Init(nint a, int b) {
             using var direct3D = new Direct3D();
-            using var renderForm = new Form();
-            using var device = new Device(direct3D, 0, DeviceType.Hardware, nint.Zero, CreateFlags.HardwareVertexProcessing, GetParameters(direct3D, renderForm.Handle));
+            using var device = new Device(direct3D, 0, DeviceType.Hardware, nint.Zero, CreateFlags.HardwareVertexProcessing, GetParameters(direct3D, 0));
 
             Direct3D9VTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(direct3D.NativePointer, Enum.GetNames(typeof(IDirect3D9)).Length);
             DeviceVTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(device.NativePointer, Enum.GetNames(typeof(IDirect3DDevice9)).Length);
