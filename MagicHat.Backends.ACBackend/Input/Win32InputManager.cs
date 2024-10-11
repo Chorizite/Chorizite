@@ -67,7 +67,7 @@ namespace MagicHat.Backends.ACBackend.Input {
                     break;
                 case WindowMessageType.CHAR:
                     var key = VkKeyScanA((byte)wParam) & 0xFF;
-                    eatableEvent = new KeyPressEventArgs((Key)key, ((char)wParam).ToString());
+                    eatableEvent = new KeyPressEventArgs(((char)wParam).ToString());
                     OnKeyPress?.InvokeSafely(this, (KeyPressEventArgs)eatableEvent);
                     break;
             }

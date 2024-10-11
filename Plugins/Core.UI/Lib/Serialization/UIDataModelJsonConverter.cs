@@ -18,8 +18,12 @@ namespace Core.UI.Lib.Serialization {
     public class UIDataModelJsonConverter : JsonConverter<UIDataModel> {
         private readonly CoreUIPlugin _plugin;
 
-        public UIDataModelJsonConverter(CoreUIPlugin plugin) {
-            _plugin = plugin;
+        public UIDataModelJsonConverter() {
+            _plugin = CoreUIPlugin.Instance;
+        }
+
+        public override bool CanConvert(Type typeToConvert) {
+            return typeof(UIDataModel).IsAssignableFrom(typeToConvert) || base.CanConvert(typeToConvert);
         }
 
         public override UIDataModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
@@ -32,7 +36,13 @@ namespace Core.UI.Lib.Serialization {
             reader.GetString(); // type prop
             reader.Read();
             var modelTypeName = reader.GetString();
-            var type = GetType().Assembly.GetType(modelTypeName);
+            Type? type = null;
+
+            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies()) {
+                type = a.GetType(modelTypeName);
+                if (type is not null) break;
+            }
+
             reader.Read();
 
             object obj = null;
@@ -40,7 +50,7 @@ namespace Core.UI.Lib.Serialization {
                 reader.Read();
                 var modelName = reader.GetString();
                 reader.Read();
-                obj = Activator.CreateInstance(type, new object[] { modelName, _plugin });
+                obj = Activator.CreateInstance(type);
             }
             else {
                 obj = Activator.CreateInstance(type);
@@ -147,11 +157,11 @@ namespace Core.UI.Lib.Serialization {
         private void WriteProps(Type type, Utf8JsonWriter writer, object model, JsonSerializerOptions options) {
             writer.WriteStartObject("props"); // start props
             var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.PropertyType.IsAssignableTo(typeof(DataVariable)));
+                .Where(p => p.PropertyType.IsAssignableTo(typeof(Models.DataVariable)));
 
 
             foreach (var prop in props) {
-                if (prop.PropertyType.IsAssignableTo(typeof(DataVariable))) {
+                if (prop.PropertyType.IsAssignableTo(typeof(Models.DataVariable))) {
                     WriteDataVariable(prop.PropertyType, prop.Name, model, prop.GetValue(model), writer, options);
                 }
                 else if (prop.PropertyType.IsGenericType && prop.PropertyType.GetGenericTypeDefinition() == typeof(DataVariableList<>)) {

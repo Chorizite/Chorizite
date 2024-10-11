@@ -58,7 +58,7 @@ namespace MagicHat.Core {
             var assemblyDir = Path.GetDirectoryName(Assembly.GetAssembly(GetType())!.Location);
             builder.Register(c => {
                 var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
-                datReader.Init("");
+                datReader.Init(Config.DatDirectory);
                 return datReader;
             })
                 .As<IDatReaderInterface>()
@@ -84,8 +84,34 @@ namespace MagicHat.Core {
                 builder.Register(c => Scope!)
                     .As<ILifetimeScope>()
                     .SingleInstance();
-                builder.RegisterType<NetworkParser>()
-                    .SingleInstance();
+
+                if (Config.Environment.HasFlag(MagicHatEnvironment.Client)) {
+                    IClientBackend clientBackend;
+                    if (Backend.GetType().IsAssignableTo(typeof(IClientBackend))) {
+                        clientBackend = (IClientBackend)Backend;
+                    }
+                    else {
+                        throw new Exception("Client environments must provide an IACBackend");
+                    }
+
+                    builder.RegisterInstance(clientBackend)
+                        .As<IClientBackend>();
+                    builder.RegisterType<NetworkParser>()
+                        .SingleInstance();
+                }
+                if (Config.Environment.HasFlag(MagicHatEnvironment.Launcher)) {
+                    ILauncherBackend launcherBackend;
+                    if (Backend.GetType().IsAssignableTo(typeof(ILauncherBackend))) {
+                        launcherBackend = (ILauncherBackend)Backend;
+                    }
+                    else {
+                        throw new Exception("Launcher environments must provide an ILauncherBackend");
+                    }
+
+                    builder.RegisterInstance(launcherBackend)
+                        .As<ILauncherBackend>();
+                }
+
                 builder.RegisterType<PluginManager>()
                     .As<IPluginManager>()
                     .SingleInstance()
@@ -94,8 +120,10 @@ namespace MagicHat.Core {
                     .SingleInstance();
             });
 
-            var networkParser = Scope.Resolve<NetworkParser>();
-            networkParser.Init();
+            if (Config.Environment.HasFlag(MagicHatEnvironment.Client)) {
+                var networkParser = Scope.Resolve<NetworkParser>();
+                networkParser.Init();
+            }
 
             _renderInterface = Scope.Resolve<IRenderInterface>();
             if (_renderInterface is null) {

@@ -21,7 +21,7 @@ namespace MagicHat.Core.Plugins {
     /// <summary>
     /// Represents an instance of a plugin.
     /// </summary>
-    public class PluginInstance {
+    public abstract class PluginInstance {
         protected ILifetimeScope _serviceProvider;
         protected ILogger _log;
 

@@ -13,7 +13,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Core.AC.Lib {
-
     public class GameInterface : IDisposable {
         private readonly ILogger _log;
         private GameState _gameState = GameState.Initial;

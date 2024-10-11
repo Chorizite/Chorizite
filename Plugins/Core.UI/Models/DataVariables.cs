@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using ACUI.Lib;
+using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,87 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Core.UI.Models {
+
+    public abstract class VariableDefinition : IDisposable {
+        private RmlUiNet.Native.VariableDefinition.OnGet _onGet;
+        private RmlUiNet.Native.VariableDefinition.OnSet _onSet;
+        private RmlUiNet.Native.VariableDefinition.OnSize _onSize;
+        private RmlUiNet.Native.VariableDefinition.OnChild _onChild;
+
+        public IntPtr NativePtr { get; }
+
+        public VariableDefinition(DataVariableType type) {
+            _onGet = OnGet;
+            _onSet = OnSet;
+            _onSize = OnSize;
+            _onChild = OnChild;
+
+            NativePtr = RmlUiNet.Native.VariableDefinition.Create(
+                (RmlUiNet.DataVariableType)type,
+                _onGet,
+                _onSet,
+                _onSize,
+                _onChild
+            );
+        }
+
+        private bool OnGet(IntPtr ptr, ref IntPtr variantPtr) {
+            var res = Get(ptr, out var variant);
+            variantPtr = variant.NativePtr;
+            return res;
+        }
+
+        private bool OnSet(IntPtr ptr, IntPtr variantPtr) {
+            var variant = new Variant(variantPtr);
+            return Set(ptr, variant);
+        }
+
+        private int OnSize(IntPtr ptr) {
+            return Size(ptr);
+        }
+
+        private IntPtr OnChild(IntPtr ptr, string name, int index) {
+            return Child(ptr, name, index).NativePtr;
+        }
+
+        public abstract DataVariable Child(IntPtr ptr, string name, int index);
+        public abstract int Size(IntPtr ptr);
+        public abstract bool Set(IntPtr ptr, Variant variant);
+        public abstract bool Get(IntPtr ptr, out Variant variant);
+
+        public void Dispose() {
+            RmlUiNet.Native.VariableDefinition.Free(NativePtr);
+        }
+    }
+
+    public enum DataVariableType : int {
+        Scalar = 0,
+        Array,
+        Struct
+    }
+
+    public unsafe class DataVariable : IDisposable {
+        public VariableDefinition Definition { get; protected set; }
+        public IntPtr NativePtr { get; private set; }
+
+        public DataVariable() {
+        }
+
+        public DataVariable(VariableDefinition definition, IntPtr data = 0) {
+            Definition = definition;
+            NativePtr = RmlUiNet.Native.DataVariable.Create(Definition.NativePtr, data);
+        }
+
+        protected void CreateNative(VariableDefinition definition) {
+            Definition = definition;
+            NativePtr = RmlUiNet.Native.DataVariable.Create(Definition.NativePtr, IntPtr.Zero);
+        }
+
+        public void Dispose() {
+            RmlUiNet.Native.DataVariable.Free(NativePtr);
+        }
+    }
+
     public class DataVariableList<T> : DataVariable, INotifyCollectionChanged, INotifyPropertyChanged where T : DataVariable {
         public new VariableListDefinition<T> Definition { get; }
         public ObservableCollection<T> Value => Definition.Value;
@@ -37,20 +119,20 @@ namespace Core.UI.Models {
             _value = value;
         }
 
-        internal override bool Get(nint ptr, out Variant variant) {
+        public override bool Get(IntPtr ptr, out Variant variant) {
             variant = null;
             return false;
         }
 
-        internal override bool Set(nint ptr, Variant variant) {
+        public override bool Set(IntPtr ptr, Variant variant) {
             return false;
         }
 
-        internal override int Size(nint ptr) {
+        public override int Size(IntPtr ptr) {
             return Value.Count;
         }
 
-        internal override DataVariable Child(nint ptr, string name, int index) {
+        public override DataVariable Child(IntPtr ptr, string name, int index) {
             return Value.ElementAt(index);
         }
     }
@@ -124,7 +206,7 @@ namespace Core.UI.Models {
             }
         }
 
-        internal override bool Get(nint ptr, out Variant variant) {
+        public override bool Get(nint ptr, out Variant variant) {
             if (typeof(T) == typeof(string)) {
                 variant = new Variant((Value as string)!);
             }
@@ -152,7 +234,7 @@ namespace Core.UI.Models {
             return true;
         }
 
-        internal override bool Set(nint ptr, Variant variant) {
+        public override bool Set(nint ptr, Variant variant) {
             if (typeof(T) == typeof(string) && variant.Type == VariantType.STRING) {
                 Value = (T)variant.Value!;
             }
@@ -179,7 +261,7 @@ namespace Core.UI.Models {
             return true;
         }
 
-        internal override int Size(nint ptr) {
+        public override int Size(nint ptr) {
             if (Value is DataVariable dv) {
                 return dv.Definition.Size(ptr);
             }
@@ -187,7 +269,7 @@ namespace Core.UI.Models {
             return 0;
         }
 
-        internal override DataVariable Child(nint ptr, string name, int index) {
+        public override DataVariable Child(nint ptr, string name, int index) {
             if (Value is UIDataSubModel subModel) {
                 if (!string.IsNullOrEmpty(name)) {
                     return Value.GetType().GetProperty(name).GetValue(Value) as DataVariable;

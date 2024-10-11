@@ -13,10 +13,12 @@ namespace ACUI.Lib {
         private Dictionary<string, Panel> _panels = []; // <filename, panel>
         internal ILogger? Log;
         private ElementDocument? _modalPanel;
+        private Screen? _currentScreen = null;
         internal readonly Context Context;
 
         public IRenderInterface Render { get; }
         public FontManager FontManager { get; }
+        public Screen? CurrentScreen => _currentScreen;
 
         public PanelManager(Context ctx, IRenderInterface render, ILogger? log) {
             Log = log;
@@ -24,6 +26,19 @@ namespace ACUI.Lib {
             Context = ctx;
             Render = render;
         }
+        public void LoadScreenFile(string name, string rmlFilePath) {
+            if (_currentScreen is not null) {
+                UnloadScreen();
+            }
+
+            _currentScreen = new Screen(name, rmlFilePath, Context, Log);
+        }
+
+        public void UnloadScreen() {
+            _currentScreen?.Dispose();
+            _currentScreen = null;
+        }
+
 
         public Panel LoadPanelFile(string file) {
             if (_panels.TryGetValue(file, out var panel)) {
@@ -45,6 +60,8 @@ namespace ACUI.Lib {
         }
 
         internal void Update() {
+            _currentScreen?.Update();
+
             var panels = _panels.Values.ToArray();
             foreach (var panel in panels) {
                 panel.Update();

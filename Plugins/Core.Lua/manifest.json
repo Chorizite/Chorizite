@@ -3,5 +3,6 @@
   "author": "MagicHat",
   "entryfile": "Core.Lua.dll",
   "version": "0.0.1",
-  "description": "Lua backend for AC"
+  "description": "Lua backend for AC",
+  "environments": [ "Launcher", "Client" ]
 }

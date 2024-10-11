@@ -13,4 +13,30 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="Shaders\VertexPositionColor.frag" />
+    <None Remove="Shaders\VertexPositionColor.vert" />
+    <None Remove="Shaders\VertexPositionColorTexture.frag" />
+    <None Remove="Shaders\VertexPositionColorTexture.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Shaders\VertexPositionColor.frag" />
+    <EmbeddedResource Include="Shaders\VertexPositionColor.vert" />
+    <EmbeddedResource Include="Shaders\VertexPositionColorTexture.frag" />
+    <EmbeddedResource Include="Shaders\VertexPositionColorTexture.vert" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Sayers.SDL2.Core" Version="1.0.11" />
+    <PackageReference Include="WaveEngine.Bindings.OpenGL" Version="1.0.4998" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ext\RmlUI.Net\RmlUI.Net.csproj" />
+    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" />
+  </ItemGroup>
+
 </Project>

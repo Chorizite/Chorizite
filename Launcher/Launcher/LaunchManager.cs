@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,12 +8,13 @@ using System.Text;
 
 namespace Launcher {
     internal class LaunchManager {
-        private readonly string CLIENT_EXE = @"C:\Turbine\Asheron's Call\acclient.exe";
+        private readonly ILogger _log;
 
-        public LaunchManager() {
+        public LaunchManager(ILogger log) {
+            _log = log;
         }
 
-        internal unsafe void Launch(string server, string username, string password) {
+        internal unsafe void Launch(string clientPath, string server, string username, string password) {
             var host = server.Split(":").First();
             var port = server.Split(":").Last();
             var clientArgs = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
@@ -24,7 +26,7 @@ namespace Launcher {
 
             var injectorPath = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "MagicHat.Injector.exe");
             var injectorArgs = new StringBuilder();
-            injectorArgs.Append($"--client-path=\"{CLIENT_EXE}\" --client-args=\"{clientArgs}\"");
+            injectorArgs.Append($"--client-path=\"{clientPath}\" --client-args=\"{clientArgs}\"");
 
             if (dllsToInject.Count > 0) {
                 injectorArgs.Append($" --inject ");

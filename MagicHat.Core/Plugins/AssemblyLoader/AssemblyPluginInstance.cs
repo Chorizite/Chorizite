@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +18,8 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
         private readonly IPluginManager _manager;
 
         public IPluginCore? PluginInstance => (IPluginCore?)_pluginInstance;
+
+        public AssemblyPluginLoadContext LoadContext { get; private set; }
 
         public AssemblyPluginInstance(IPluginManager manager, AssemblyPluginManifest manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             _serviceProvider = serviceProvider;
@@ -52,29 +55,36 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
         }
 
         private void LoadPluginAssembly() {
-            if (IsLoaded) {
-                TriggerOnBeforeReload(this, EventArgs.Empty);
-                UnloadPluginAssembly();
+            try {
+                if (IsLoaded) {
+                    TriggerOnBeforeReload(this, EventArgs.Empty);
+                    UnloadPluginAssembly();
+                }
+
+                TriggerOnBeforeLoad(this, EventArgs.Empty);
+
+                var dllFile = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
+                LoadContext = new AssemblyPluginLoadContext(dllFile, _manager);
+                _pluginLoader = PluginLoader.CreateFromAssemblyFile(dllFile, true, [], (cfg) => {
+                    cfg.EnableHotReload = true;
+                    cfg.LoadInMemory = true;
+                    cfg.PreferSharedTypes = true;
+                    cfg.IsUnloadable = false;
+                    cfg.DefaultContext = LoadContext;
+                });
+
+                _pluginLoader.Reloaded += (s, e) => {
+                    WantsReload = true;
+                };
+
+                InitPlugin();
+
+                IsLoaded = true;
+                TriggerOnLoad(this, EventArgs.Empty);
             }
-
-            TriggerOnBeforeLoad(this, EventArgs.Empty);
-
-            var dllFile = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
-
-            _pluginLoader = PluginLoader.CreateFromAssemblyFile(dllFile, true, [], (cfg) => {
-                cfg.EnableHotReload = true;
-                cfg.LoadInMemory = true;
-                cfg.PreferSharedTypes = true;
-            });
-
-            _pluginLoader.Reloaded += (s, e) => {
-                WantsReload = true;
-            };
-
-            InitPlugin();
-
-            IsLoaded = true;
-            TriggerOnLoad(this, EventArgs.Empty);
+            catch (Exception ex) {
+                _log?.LogError(ex, "Error loading plugin: {0}: {1}", Name, ex.Message);
+            }
         }
 
         private void InitPlugin() {
@@ -110,14 +120,26 @@ namespace MagicHat.Core.Plugins.AssemblyLoader {
                     object? resolved = null;
                     _log?.LogTrace($"Resolving parameter: {parameter.ParameterType} in plugin: {Name}");
 
+                    // special handling for this plugins PluginManifest
                     if (parameter.ParameterType == typeof(PluginManifest) || parameter.ParameterType.IsSubclassOf(typeof(PluginManifest))) {
                         resolved = Manifest;
+                    }
+
+                    // handle other plugin instances
+                    if (resolved is null && parameter.ParameterType.IsAssignableTo(typeof(IPluginCore))) {
+                        resolved = _manager.Plugins
+                            .Where(p => p is AssemblyPluginInstance)
+                            .Cast<AssemblyPluginInstance>()
+                            .FirstOrDefault(p => p.PluginInstance?.GetType() == parameter.ParameterType)?.PluginInstance;
+                        if (resolved is null) {
+                            throw new InvalidOperationException($"Unable to resolve parameter: {parameter.ParameterType} in plugin: {Name}");
+                        }
                     }
 
                     resolved ??= _serviceProvider.Resolve(parameter.ParameterType);
                     
                     if (resolved is null) {
-                        _log?.LogWarning($"Unable to resolve ctor parameter: {parameter.ParameterType} in plugin: {Name}");
+                        _log?.LogError($"Unable to resolve ctor parameter: {parameter.ParameterType} in plugin: {Name}");
                         break;
                     }
                     parameters.Add(resolved);

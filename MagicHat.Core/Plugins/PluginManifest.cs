@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using MagicHat.Core.Serialization;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,8 @@ namespace MagicHat.Core.Plugins {
     public class PluginManifest {
         private static JsonSerializerOptions _serializerOptions = new JsonSerializerOptions {
             WriteIndented = true,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            Converters = { new MagicHatEnvironmentJsonConverter() }
         };
 
         public string Name { get; set; } = "";
@@ -22,6 +24,8 @@ namespace MagicHat.Core.Plugins {
         public string Description { get; set; } = "";
         public string Repo { get; set; } = "";
         public List<string> Dependencies { get; set; } = [];
+        [JsonConverter(typeof(MagicHatEnvironmentJsonConverter))]
+        public MagicHatEnvironment Environments { get; set; }
         public string EntryFile { get; set; } = "";
 
         [JsonIgnore]

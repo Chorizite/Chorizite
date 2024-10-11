@@ -6,30 +6,5 @@
   "description": "RmlUI backend for AC",
   "repo": "https://github.com/trevis/UICore",
   "dependencies": [ "Core.DatService@0.0.1" ],
-  "settings": {
-    "type": "object",
-    "properties": {
-      "scale": {
-        "type": "number",
-        "description": "UI drawing scale modifier",
-        "default": "1",
-        "minimum": 0.01,
-        "maximum": 10
-      },
-      "profile": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 50
-      },
-      "somearray": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      }
-    },
-    "required": [
-      "profile"
-    ]
-  }
+  "environments": ["Launcher", "Client"]
 }

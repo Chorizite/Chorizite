@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace MagicHat.Core.Net {
     public class NetworkParser : PacketReader, IDisposable {
-        private readonly IMagicHatBackend _backend;
+        private readonly IClientBackend _backend;
 
-        public NetworkParser(IMagicHatBackend backend, ILogger<NetworkParser> logger) : base(logger, new MessageReader()) {
+        public NetworkParser(IClientBackend backend, ILogger<NetworkParser> logger) : base(logger, new MessageReader()) {
             _backend = backend;
 
             _backend.OnC2SData += Backend_OnC2SData;

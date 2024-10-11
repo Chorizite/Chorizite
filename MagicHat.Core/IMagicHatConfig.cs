@@ -8,11 +8,14 @@
         /// <summary>
         /// The directory where data is stored.
         /// </summary>
-        string DataDirectory { get; }
+        string StorageDirectory { get; }
 
         /// <summary>
         /// The directory where log files are stored.
         /// </summary>
         string LogDirectory { get; }
+
+        MagicHatEnvironment Environment { get; }
+        string DatDirectory { get; init; }
     }
 }

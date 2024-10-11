@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 using System;
 
 namespace MagicHat.Loader.Injected {
-    public unsafe class ACMagicHatBackend : IMagicHatBackend {
+    public unsafe class ACMagicHatBackend : IClientBackend, IMagicHatBackend {
         public IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
 
@@ -46,27 +46,18 @@ namespace MagicHat.Loader.Injected {
             OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
         }
 
-        public bool ShowScreen(GameScreen screen) {
-            // Todo: check that we are able to switch to this next state...
-            (*UIFlow.m_instance)->QueueUIMode((UIMode)screen);
-            return true;
-        }
-
-        public GameScreen GetScreen() {
-            try {
-                return ((IntPtr)UIFlow.m_instance == IntPtr.Zero || *UIFlow.m_instance is null) ? GameScreen.None : (GameScreen)(*UIFlow.m_instance)->_curMode;
-            }
-            catch {
-                return GameScreen.None;
-            }
-        }
-
         public bool EnterGame(uint characterId) {
             // Todo: check that it is a valid character id
             if ((*UIFlow.m_instance)->_curMode != UIMode.CharacterManagementUI) {
                 return false;
             }
             return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
+        }
+
+        public bool ShowScreen(int screen) {
+            // Todo: check that we are able to switch to this next state...
+            (*UIFlow.m_instance)->QueueUIMode((UIMode)screen);
+            return true;
         }
 
         private delegate* unmanaged[Thiscall]<gmClient*, int> Cleanup = (delegate* unmanaged[Thiscall]<gmClient*, int>)0x00401EC0;

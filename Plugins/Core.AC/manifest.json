@@ -3,5 +3,7 @@
   "author": "MagicHat",
   "entryfile": "Core.AC.dll",
   "version": "0.0.1",
-  "description": "Game interface"
+  "description": "Game interface",
+  "dependencies": [ "Core.UI@0.0.1" ],
+  "environments": [ "Client" ]
 }

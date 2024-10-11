@@ -20,7 +20,7 @@ namespace MagicHat.Core.Plugins {
         /// <summary>
         /// The path to where this plugin should store data
         /// </summary>
-        public string DataDirectory => System.IO.Path.Combine(MagicHatStatics.Config.DataDirectory, "plugins", Manifest.Name);
+        public string DataDirectory => System.IO.Path.Combine(MagicHatStatics.Config.StorageDirectory, "plugins", Manifest.Name);
 
         protected IPluginCore(AssemblyPluginManifest manifest) {
             Manifest = manifest;

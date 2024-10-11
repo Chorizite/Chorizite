@@ -69,12 +69,15 @@ namespace MagicHat.Core.Plugins {
             }
 
             foreach (var file in Directory.EnumerateDirectories(PluginDirectory)) {
-                var manifestFile = Path.Combine(file, "manifest.json");
+                var manifestFile = Path.GetFullPath(Path.Combine(file, "manifest.json"));
                 if (!LoadPluginManifest(manifestFile, out PluginInstance? plugin) || plugin is null) {
                     continue;
                 }
+                _log?.LogWarning($"{plugin.Manifest.Name} v{plugin.Manifest.Version} ({plugin.Manifest.Environments})");
 
-                _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
+                if (plugin.Manifest.Environments.HasFlag(_config.Environment)) {
+                    _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
+                }
             }
         }
 
@@ -181,7 +184,6 @@ namespace MagicHat.Core.Plugins {
             if (plugin.IsLoaded || startedPlugins.Contains(plugin.Name.ToLower())) {
                 return true;
             }
-
             _log?.LogDebug($"Starting plugin: {plugin.Name}");
 
             foreach (var dep in plugin.Manifest.Dependencies) {
@@ -221,6 +223,8 @@ namespace MagicHat.Core.Plugins {
                 _log?.LogError($"Failed to load plugin: {plugin.Name} v{plugin.Manifest.Version}");
                 _loadedPlugins.Remove(plugin.Manifest.EntryFile);
             }
+
+            _log?.LogDebug($"Started plugin: {plugin.Name}");
             startedPlugins.Add(plugin.Name.ToLower());
 
             return true;

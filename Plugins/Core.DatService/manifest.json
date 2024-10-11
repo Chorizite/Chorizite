@@ -3,5 +3,6 @@
   "author": "MagicHat",
   "entryfile": "Core.DatService.dll",
   "version": "0.0.1",
-  "description": "Used for reading / writing dat files"
+  "description": "Used for reading / writing dat files",
+  "environments": [ "Launcher", "Client" ]
 }

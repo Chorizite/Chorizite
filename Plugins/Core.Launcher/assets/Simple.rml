@@ -1,0 +1,73 @@
+﻿<html>
+  <head>
+    <style>
+    body {
+        font-family: LatoLatin;
+        font-size: 18px;
+        color: #fff;
+        display: block;
+        width: 400dp;
+        height: 340dp;
+        display: block;
+    }
+
+    div.wrap {
+      padding: 5dp;
+      display: block;
+    }
+
+    label {
+      display: block;
+      padding: 4dp;
+    }
+
+    input[type="text"], input[type="password"] {
+      border-width: 1px;
+      border-color: red;
+      background-color: white;
+      color: black;
+      padding: 4dp;
+      width: 370dp;
+      display: block;
+    }
+    button {
+      color: red;
+      background-color: white;
+      padding: 6px;
+      margin: 8px auto;
+      display: block;
+      width: 150px;
+      text-align: center;
+      border-width: 2dp;
+      border-color: black;
+    }
+
+    button:hover {
+      background-color: red;
+      color: white;
+    }
+    </style>
+  </head>
+  <body data-model="SimpleLoginScreen">
+    <div class="wrap">
+      <label>
+        Username:
+        <input type="text" data-value="Username" />
+      </label>
+      <label>
+        Password:
+        <input type="password" data-value="Password" />
+      </label>
+      <label>
+        Server:
+        <input type="text" data-value="Server" />
+      </label>
+      <label>
+        AC Client Path:
+        <input type="text" data-value="ClientPath" />
+      </label>
+
+      <button data-event-click="launch()">Launch</button>
+    </div>
+  </body>
+</html>

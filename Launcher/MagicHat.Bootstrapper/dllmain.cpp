@@ -130,7 +130,7 @@ extern "C" __declspec(dllexport) DWORD LaunchInjected(wchar_t* source, LPCWSTR l
         HMODULE loadedLibrary = ::LoadLibraryW(injectedLibName);
 
         char procName[200] = { 0 };
-        sprintf(procName, "%S", entryPointParameters[i].entry_point);
+        sprintf_s(procName, "%S", entryPointParameters[i].entry_point);
 
         LPVOID procAddress = GetProcAddress(loadedLibrary, procName);
         InjectPayloadAndExecute(processInfo.hProcess, (LPTHREAD_START_ROUTINE)procAddress, nullptr, 0);

@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 namespace MagicHat.Core.Render {
     [StructLayout(LayoutKind.Sequential)]
     public struct VertexPositionColorTexture {
+        public static readonly int Size = Marshal.SizeOf<VertexPositionColorTexture>();
+
         public Vector3 Position;
         public ColorVec Color;
         public Vector2 TexCoords;

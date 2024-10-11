@@ -11,6 +11,7 @@ namespace MagicHat.Core.Dats {
     internal class FSDatReader : IDatReaderInterface {
         private string _datPath;
         private readonly ILogger _log;
+        private readonly IMagicHatConfig _config;
 
         public DatDatabaseReader PortalDat { get; private set; }
 

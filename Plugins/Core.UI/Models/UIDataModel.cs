@@ -1,4 +1,5 @@
 ﻿using ACUI;
+using Autofac;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -7,12 +8,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Serialization;
+using System.Xml.Linq;
 
 namespace Core.UI.Models {
     public abstract class UIDataModel : IDisposable {
-        protected readonly DataModelConstructor _modelConstructor;
+        [JsonIgnore]
+        protected DataModelConstructor _modelConstructor;
 
-        public string Name { get; }
+        public string? Name { get; private set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -22,12 +26,23 @@ namespace Core.UI.Models {
             }
         }
 
-        public UIDataModel(string name, Context ctx) {
-            Name = name;
-            _modelConstructor = ctx.CreateDataModel(name);
+        public UIDataModel() {
 
-            PropertyChanged += HandlePropertyChanged;
+        }
+
+        public virtual void Init(string name) {
+            if (CoreUIPlugin.RmlContext is null) {
+                return;
+            }
+
+            Name = name;
+            _modelConstructor = CoreUIPlugin.RmlContext.CreateDataModel(name);
             BuildBindings();
+            PropertyChanged += HandlePropertyChanged;
+        }
+
+        protected void BindAction(string name, Action<Event, IEnumerable<Variant>> action) {
+            _modelConstructor.BindEventCallback(name, action);
         }
 
         internal IEnumerable<PropertyInfo> GetPropsToBind() {
@@ -40,7 +55,7 @@ namespace Core.UI.Models {
             var propsToBind = GetPropsToBind();
             foreach (var p in propsToBind) {
                 if (p.GetValue(this) is DataVariable dv) {
-                    _modelConstructor.BindVariable(p.Name, dv);
+                    _modelConstructor.BindVariable(p.Name, dv.NativePtr);
                 }
                 if (p.GetValue(this) is INotifyPropertyChanged notifyPropertyChanged) {
                     notifyPropertyChanged.PropertyChanged += HandlePropertyChanged;
@@ -62,6 +77,9 @@ namespace Core.UI.Models {
         }
 
         public virtual void Dispose() {
+            if (!string.IsNullOrEmpty(Name)) {
+                CoreUIPlugin.RmlContext?.RemoveDataModel(Name);
+            }
             _modelConstructor?.Dispose();
         }
     }

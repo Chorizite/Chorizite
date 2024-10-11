@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 namespace MagicHat.Core.Render {
     [StructLayout(LayoutKind.Sequential)]
     public struct ColorVec {
-        public float Alpha;
         public float Red;
         public float Green;
         public float Blue;
+        public float Alpha;
 
         public ColorVec(float alpha, float red, float green, float blue) {
             Alpha = alpha;
