@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -7,6 +8,12 @@ using System.Threading.Tasks;
 
 namespace MagicHat.Loader.Standalone.Lib {
     internal static class Native {
+        unsafe public static void WriteProtected<T>(IntPtr address, T value) where T : unmanaged {
+            Native.VirtualProtectEx(Process.GetCurrentProcess().Handle, address, (uint)sizeof(T), 0x40, out int b);
+            *(T*)address = value;
+            Native.VirtualProtectEx(Process.GetCurrentProcess().Handle, address, (uint)sizeof(T), b, out b);
+        }
+
         [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern int MessageBox(IntPtr hWnd, String text, String caption, uint type);
 
@@ -19,6 +26,8 @@ namespace MagicHat.Loader.Standalone.Lib {
             GWL_USERDATA = (-21),
             GWL_ID = (-12)
         }
+        [DllImport("kernel32.dll")]
+        public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, int flNewProtect, out int lpflOldProtect);
 
         [DllImport("user32.dll")]
         private static extern bool IsWindowUnicode(IntPtr hWnd);

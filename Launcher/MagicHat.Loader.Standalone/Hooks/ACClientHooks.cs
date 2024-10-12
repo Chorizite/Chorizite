@@ -29,10 +29,22 @@ namespace MagicHat.Loader.Standalone.Hooks {
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate uint CLBlockAllocator_OpenDataFile(CLBlockAllocator* allocator, IntPtr pFileInfo, PStringBase<byte>* pFileName, PStringBase<ushort>* pcPathToUse, uint open_flags_l, IntPtr* pTranInfo);
 
+        internal static double InactiveTimeBeforeLogout {
+            get => *(double*)0x007CEB70;
+            set => Native.WriteProtected(0x007CEB70, value);
+        }
+        unsafe public static void WriteProtected<T>(IntPtr address, T value) where T : unmanaged {
+            Native.VirtualProtectEx(Process.GetCurrentProcess().Handle, address, (uint)sizeof(T), 0x40, out int b);
+            *(T*)address = value;
+            Native.VirtualProtectEx(Process.GetCurrentProcess().Handle, address, (uint)sizeof(T), b, out b);
+        }
+
         internal static void Init() {
             _clientCleanupHook = CreateHook<Client_Cleanup>(typeof(ACClientHooks), nameof(Client_Cleanup_Impl), 0x004118D0);
             _clientIsAlreadyRunningHook = CreateHook<Client_IsAlreadyRunning>(typeof(ACClientHooks), nameof(Client_IsAlreadyRunning_Impl), 0x004122A0);
             _clBlockAllocatorOpenDataFileHook = CreateHook<CLBlockAllocator_OpenDataFile>(typeof(ACClientHooks), nameof(CLBlockAllocator_OpenDataFile_Impl), 0x00675920);
+
+            InactiveTimeBeforeLogout = double.PositiveInfinity;
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvThiscall) })]
