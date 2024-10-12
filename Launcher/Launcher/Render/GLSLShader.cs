@@ -14,6 +14,8 @@ using WaveEngine.Bindings.OpenGL;
 namespace Launcher.Render {
 
     public unsafe class GLSLShader : AShader {
+        public IntPtr Program { get; protected set; }
+
         public GLSLShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) : base(name, vertSource, fragSource, log, shaderDirectory) {
         }
 

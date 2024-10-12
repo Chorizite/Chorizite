@@ -13,15 +13,14 @@ namespace MagicHat.Core.Render {
         private FileSystemWatcher? _watcher;
         private string _liveShaderDirectory = "";
         protected readonly ILogger _log;
-
-        public string Name { get; }
-
-
-        public IntPtr Program { get; protected set; }
-        public virtual string VertShaderName => $"{Name}.vert";
-        public virtual string FragShaderName => $"{Name}.frag";
-
+        protected virtual string VertShaderFileName => $"{Name}.vert";
+        protected virtual string FragShaderFileName => $"{Name}.frag";
         protected bool NeedsLoad { get; set; }
+
+        /// <summary>
+        /// The name of this shader. It should match the filename without the extension.
+        /// </summary>
+        public string Name { get; }
 
         public AShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) {
             Name = name;
@@ -54,20 +53,24 @@ namespace MagicHat.Core.Render {
             }
         }
 
+        /// <summary>
+        /// Mark this shader is needing to be reloaded. It will attempt to reload next time <see cref="SetActive"/> is called.
+        /// </summary>
         public virtual void Reload() {
             NeedsLoad = true;
         }
+
 
         public virtual void SetActive() {
             if (NeedsLoad) {
                 try {
                     string? vertShaderSource = null;
                     string? fragShaderSource = null;
-                    if (File.Exists(Path.Combine(_liveShaderDirectory, VertShaderName))) {
-                        vertShaderSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, VertShaderName));
+                    if (File.Exists(Path.Combine(_liveShaderDirectory, VertShaderFileName))) {
+                        vertShaderSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, VertShaderFileName));
                     }
-                    if (File.Exists(Path.Combine(_liveShaderDirectory, FragShaderName))) {
-                        fragShaderSource ??= File.ReadAllText(Path.Combine(_liveShaderDirectory, FragShaderName));
+                    if (File.Exists(Path.Combine(_liveShaderDirectory, FragShaderFileName))) {
+                        fragShaderSource ??= File.ReadAllText(Path.Combine(_liveShaderDirectory, FragShaderFileName));
                     }
 
                     if (!string.IsNullOrEmpty(vertShaderSource) && !string.IsNullOrEmpty(fragShaderSource)) {
