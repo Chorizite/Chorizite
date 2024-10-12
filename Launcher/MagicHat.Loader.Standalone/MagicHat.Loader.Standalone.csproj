@@ -37,4 +37,12 @@
   <ItemGroup>
     <NativeLibs Remove="StandaloneLoader.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Render\Shaders\Basic.fx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Render\Shaders\Basic.fx" />
+  </ItemGroup>
 </Project>

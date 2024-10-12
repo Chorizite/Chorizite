@@ -67,10 +67,10 @@ namespace Launcher.Render {
             SetupSDL();
             SetupOpenGL();
 
-            var shaderDir = Path.GetFullPath($"./../../Launcher/Launcher/Shaders");
+            var shaderDir = Path.GetFullPath($"./../../Launcher/Launcher/Render/Shaders");
 
-            ColorShader = new GLSLShader("VertexPositionColor", GetEmbeddedResource("Shaders.VertexPositionColor.vert"), GetEmbeddedResource("Shaders.VertexPositionColor.frag"),  _log, shaderDir);
-            TextureShader = new GLSLShader("VertexPositionColorTexture", GetEmbeddedResource("Shaders.VertexPositionColorTexture.vert"), GetEmbeddedResource("Shaders.VertexPositionColorTexture.frag"), _log, shaderDir);
+            ColorShader = new GLSLShader("VertexPositionColor", GetEmbeddedResource("Render.Shaders.VertexPositionColor.vert"), GetEmbeddedResource("Render.Shaders.VertexPositionColor.frag"),  _log, shaderDir);
+            TextureShader = new GLSLShader("VertexPositionColorTexture", GetEmbeddedResource("Render.Shaders.VertexPositionColorTexture.vert"), GetEmbeddedResource("Render.Shaders.VertexPositionColorTexture.frag"), _log, shaderDir);
         }
 
         private string GetEmbeddedResource(string filename) {

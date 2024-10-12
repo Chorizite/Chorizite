@@ -14,6 +14,7 @@ using Reloaded.Memory.Pointers;
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Threading;
 
 namespace MagicHat.Loader.Standalone {
     public static class StandaloneLoader {
@@ -35,6 +36,13 @@ namespace MagicHat.Loader.Standalone {
         public static unsafe int Init(IntPtr a, int b) {
             try {
                 Log?.LogError($"Startup");
+                
+                /*
+                while (!Debugger.IsAttached) {
+                    Thread.Sleep(100);
+                }
+                */
+
                 DirectXHooks.Init(a, b);
                 NetHooks.Init();
                 ACClientHooks.Init();

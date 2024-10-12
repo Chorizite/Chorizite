@@ -14,6 +14,9 @@ using AcClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Reflection;
+using Autofac.Core;
 
 namespace MagicHat.Loader.Standalone.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
@@ -51,19 +54,31 @@ namespace MagicHat.Loader.Standalone.Render {
         public Vector2 ViewportSize => new(D3Ddevice.Viewport.Width, D3Ddevice.Viewport.Height);
 
         public IntPtr DataPatchUI { get; private set; }
+        internal HLSLShader BasicShader { get; }
 
         public DX9RenderInterface(IntPtr unmanagedD3dPtr, ILogger logger, IDatReaderInterface datReader) {
             _log = logger;
             _datReader = datReader;
             D3Ddevice = new Device(unmanagedD3dPtr);
+
+            var shaderDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), $"./../../Launcher/MagicHat.Loader.Standalone/Render/Shaders"));
+
+            BasicShader = new HLSLShader(D3Ddevice, "Basic", GetEmbeddedResource("Render.Shaders.Basic.fx"), null, _log, shaderDir);
+        }
+
+        private string GetEmbeddedResource(string filename) {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "MagicHat.Loader.Standalone." + filename;
+
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            using var reader = new StreamReader(stream);
+            string result = reader.ReadToEnd();
+            return result;
         }
 
         public void Render2D() {
             using (var stateBlock = new StateBlock(D3Ddevice, StateBlockType.All)) {
                 stateBlock.Capture();
-                var hp = 0.5f;
-                var projection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(hp, D3Ddevice.Viewport.Width + hp, D3Ddevice.Viewport.Height + hp, hp, -1, 1).ToDX();
-                var view = Matrix4x4.Identity.ToDX();
 
                 D3Ddevice.SetRenderState(RenderState.CullMode, Cull.Clockwise);
                 D3Ddevice.SetRenderState(RenderState.Lighting, false);
@@ -86,9 +101,6 @@ namespace MagicHat.Loader.Standalone.Render {
                 D3Ddevice.SetSamplerState(0, SamplerState.AddressV, TextureAddress.Clamp);
 
                 D3Ddevice.SetRenderState(RenderState.ColorVertex, true);
-
-                D3Ddevice.SetTransform(TransformState.View, view);
-                D3Ddevice.SetTransform(TransformState.Projection, projection);
 
                 try {
                     OnRender2D?.Invoke(this, EventArgs.Empty);
@@ -134,20 +146,38 @@ namespace MagicHat.Loader.Standalone.Render {
 
         public void RenderGeometry(IntPtr geometry, Matrix4x4 transform, ITexture? texture) {
             var geom = _geometryBuffers[geometry];
+            var hp = 0.5f;
+            var projection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(hp, D3Ddevice.Viewport.Width + hp, D3Ddevice.Viewport.Height + hp, hp, -1, 1);
 
+
+            BasicShader.SetActive();
 
             if (texture is ManagedDXTexture dxTexture && dxTexture is not null) {
                 D3Ddevice.SetTexture(0, dxTexture.Texture);
+                BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColorTexture");
             }
             else {
                 D3Ddevice.SetTexture(0, null);
+                BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColor");
             }
 
-            D3Ddevice.VertexDeclaration = geom.VertexDecl;
-            D3Ddevice.SetTransform(TransformState.World, transform.ToDX());
-            D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
-            D3Ddevice.Indices = geom.IndexBuffer;
-            D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
+            BasicShader.SetUniform("xWorld", transform);
+            BasicShader.SetUniform("xProjection", projection);
+
+            var numPasses = BasicShader.Effect.Begin();
+
+            for (var p = 0; p < numPasses; p++) {
+                BasicShader.Effect.BeginPass(p);
+
+                D3Ddevice.VertexDeclaration = geom.VertexDecl;
+                D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
+                D3Ddevice.Indices = geom.IndexBuffer;
+                D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
+
+                BasicShader.Effect.EndPass();
+            }
+            BasicShader.Effect.End();
+
         }
 
         public void ReleaseGeometry(IntPtr geometry) {
@@ -239,6 +269,8 @@ namespace MagicHat.Loader.Standalone.Render {
                 ReleaseGeometry(geom);
             }
             _geometryBuffers.Clear();
+
+            BasicShader?.Dispose();
         }
     }
 }

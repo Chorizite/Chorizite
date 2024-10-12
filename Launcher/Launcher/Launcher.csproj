@@ -14,17 +14,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Shaders\VertexPositionColor.frag" />
-    <None Remove="Shaders\VertexPositionColor.vert" />
-    <None Remove="Shaders\VertexPositionColorTexture.frag" />
-    <None Remove="Shaders\VertexPositionColorTexture.vert" />
+    <None Remove="Render\Shaders\VertexPositionColor.frag" />
+    <None Remove="Render\Shaders\VertexPositionColor.vert" />
+    <None Remove="Render\Shaders\VertexPositionColorTexture.frag" />
+    <None Remove="Render\Shaders\VertexPositionColorTexture.vert" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Shaders\VertexPositionColor.frag" />
-    <EmbeddedResource Include="Shaders\VertexPositionColor.vert" />
-    <EmbeddedResource Include="Shaders\VertexPositionColorTexture.frag" />
-    <EmbeddedResource Include="Shaders\VertexPositionColorTexture.vert" />
+    <EmbeddedResource Include="Render\Shaders\VertexPositionColor.frag" />
+    <EmbeddedResource Include="Render\Shaders\VertexPositionColor.vert" />
+    <EmbeddedResource Include="Render\Shaders\VertexPositionColorTexture.frag" />
+    <EmbeddedResource Include="Render\Shaders\VertexPositionColorTexture.vert" />
   </ItemGroup>
 
   <ItemGroup>

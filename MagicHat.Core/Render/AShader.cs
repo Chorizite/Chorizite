@@ -15,16 +15,20 @@ namespace MagicHat.Core.Render {
         protected readonly ILogger _log;
         protected virtual string VertShaderFileName => $"{Name}.vert";
         protected virtual string FragShaderFileName => $"{Name}.frag";
-        protected bool NeedsLoad { get; set; }
+        protected bool NeedsLoad { get; set; } = true;
+        protected string? _vertSource;
+        protected string? _fragSource;
 
         /// <summary>
         /// The name of this shader. It should match the filename without the extension.
         /// </summary>
         public string Name { get; }
 
-        public AShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) {
+        public AShader(string name, string vertSource, string? fragSource, ILogger log, string? shaderDirectory = null) {
             Name = name;
             _log = log;
+            _vertSource = vertSource;
+            _fragSource = fragSource;
 
             if (!string.IsNullOrEmpty(shaderDirectory)) {
                 _liveShaderDirectory = Path.GetFullPath(shaderDirectory);
@@ -34,8 +38,6 @@ namespace MagicHat.Core.Render {
                     WatchShaderFiles(_liveShaderDirectory);
                 }
             }
-
-            LoadShader(vertSource, fragSource);
         }
 
         private void WatchShaderFiles(string shaderDir) {
@@ -49,6 +51,7 @@ namespace MagicHat.Core.Render {
 
         private void _watcher_Changed(object sender, FileSystemEventArgs e) {
             if (e.ChangeType == WatcherChangeTypes.Changed) {
+                _log.LogDebug($"Reloading shader: {Name}");
                 Reload();
             }
         }
@@ -64,18 +67,16 @@ namespace MagicHat.Core.Render {
         public virtual void SetActive() {
             if (NeedsLoad) {
                 try {
-                    string? vertShaderSource = null;
-                    string? fragShaderSource = null;
+                    string? vertShaderSource = _vertSource;
+                    string? fragShaderSource = _fragSource;
                     if (File.Exists(Path.Combine(_liveShaderDirectory, VertShaderFileName))) {
                         vertShaderSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, VertShaderFileName));
                     }
                     if (File.Exists(Path.Combine(_liveShaderDirectory, FragShaderFileName))) {
-                        fragShaderSource ??= File.ReadAllText(Path.Combine(_liveShaderDirectory, FragShaderFileName));
+                        fragShaderSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, FragShaderFileName));
                     }
 
-                    if (!string.IsNullOrEmpty(vertShaderSource) && !string.IsNullOrEmpty(fragShaderSource)) {
-                        LoadShader(vertShaderSource, fragShaderSource);
-                    }
+                    LoadShader(vertShaderSource, fragShaderSource);
                     NeedsLoad = false;
                 }
                 catch (IOException ex) { }
@@ -85,7 +86,7 @@ namespace MagicHat.Core.Render {
             }
         }
 
-        protected abstract void LoadShader(string vertShaderSource, string fragShaderSource);
+        protected abstract void LoadShader(string? vertShaderSource, string? fragShaderSource);
 
         public abstract void SetUniform(string name, Matrix4x4 viewProj);
         public abstract void SetUniform(string name, int v);

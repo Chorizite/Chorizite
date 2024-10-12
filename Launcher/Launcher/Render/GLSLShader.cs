@@ -20,8 +20,8 @@ namespace Launcher.Render {
         }
 
         public override void SetActive() {
-            GL.glUseProgram((uint)Program);
             base.SetActive();
+            GL.glUseProgram((uint)Program);
         }
 
         public override void SetUniform(string location, Matrix4x4 m) {
@@ -143,8 +143,13 @@ namespace Launcher.Render {
             }
         }
 
-        protected override void LoadShader(string vertShaderSource, string fragShaderSource) {
+        protected override void LoadShader(string? vertShaderSource, string? fragShaderSource) {
             NeedsLoad = false;
+
+            if (string.IsNullOrWhiteSpace(vertShaderSource) || string.IsNullOrWhiteSpace(fragShaderSource)) {
+                _log.LogError($"Shader {Name} has no source code!");
+                return;
+            }
 
             uint vertexShader = CompileShader(ShaderType.VertexShader, Name, vertShaderSource);
             uint fragmentShader = CompileShader(ShaderType.FragmentShader, Name, fragShaderSource);
