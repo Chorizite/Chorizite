@@ -56,7 +56,6 @@ namespace MagicHat.Loader.Standalone.Render {
             _log = logger;
             _datReader = datReader;
             D3Ddevice = new Device(unmanagedD3dPtr);
-            _log.LogTrace($"DX Device 2: {(int)unmanagedD3dPtr:X8} // {D3Ddevice.Viewport.Width}x{D3Ddevice.Viewport.Height}");
         }
 
         public void Render2D() {
@@ -165,12 +164,7 @@ namespace MagicHat.Loader.Standalone.Render {
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
 
-            var d3d9_texture = new Texture(D3Ddevice, dx, dy, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
-            var s = d3d9_texture.LockRectangle(0, LockFlags.None);
-            Marshal.Copy(source, 0, s.DataPointer, source.Length);
-            d3d9_texture.UnlockRectangle(0);
-
-            var mTexture = new ManagedDXTexture(d3d9_texture);
+            var mTexture = new ManagedDXTexture(source, dx, dy);
             _textures.Add(mTexture);
             return mTexture;
         }
@@ -186,11 +180,8 @@ namespace MagicHat.Loader.Standalone.Render {
                 //var assembly = stackTrace.GetFrame(0).GetMethod().DeclaringType.Assembly;
                 //_log?.LogDebug($"Called LoadTexture from {assembly.GetName().Name}");
 
-                if (source.EndsWith(".tga")) {
-                    texture = new ManagedDXTexture(TgaDecoder.FromFile(source));
-                }
-                else if (_datFileRegex.IsMatch(source)) {
-                    texture = ManagedDXTexture.FromDatUrl(source, _log, _datReader);
+                if (_datFileRegex.IsMatch(source)) {
+                    texture = new ManagedDXTexture(source, _datReader);
                 }
                 else {
                     texture = new ManagedDXTexture(source);
@@ -204,7 +195,7 @@ namespace MagicHat.Loader.Standalone.Render {
 
                 _log?.LogTrace($"Loaded texture: 0x{texture.TexturePtr:X8} {source}");
 
-                textureDimensions = new Vector2(texture.Bitmap.Width, texture.Bitmap.Height);
+                textureDimensions = new Vector2(texture.Width, texture.Height);
                 _textures.Add(texture);
                 return texture;
             }

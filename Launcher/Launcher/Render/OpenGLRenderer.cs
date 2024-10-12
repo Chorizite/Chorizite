@@ -244,19 +244,7 @@ namespace Launcher.Render {
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
 
-            var bmp = new Image<Argb32>(dx, dy);
-
-            for (int x = 0; x < bmp.Width; x++) {
-                for (int y = 0; y < bmp.Height; y++) {
-                    var r = source[(y * dx + x) * 4 + 0];
-                    var g = source[(y * dx + x) * 4 + 1];
-                    var b = source[(y * dx + x) * 4 + 2];
-                    var a = source[(y * dx + x) * 4 + 3];
-                    bmp[x, y] = Color.FromRgba(r, g, b, a);
-                }
-            }
-
-            var texture = new ManagedGLTexture(bmp);
+            var texture = new ManagedGLTexture(source, dx, dy);
             _textures.Add(texture);
             return texture;
         }
@@ -267,7 +255,7 @@ namespace Launcher.Render {
                 ManagedGLTexture texture;
 
                 if (_datFileRegex.IsMatch(source)) {
-                    texture = ManagedGLTexture.FromDatUrl(source, _log, _datReader);
+                    texture = new ManagedGLTexture(source, _datReader);
                 }
                 else {
                     texture = new ManagedGLTexture(source);
@@ -281,7 +269,7 @@ namespace Launcher.Render {
 
                 _log?.LogTrace($"Loaded texture: 0x{texture.TexturePtr:X8} {source}");
 
-                textureDimensions = new Vector2(texture.Bitmap.Width, texture.Bitmap.Height);
+                textureDimensions = new Vector2(texture.Width, texture.Height);
                 _textures.Add(texture);
                 return texture;
             }

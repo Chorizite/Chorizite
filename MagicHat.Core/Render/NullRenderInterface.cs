@@ -10,6 +10,10 @@ namespace MagicHat.Core.Render {
         internal class NullTexture : ITexture {
             public IntPtr TexturePtr { get; }
 
+            public int Width => 0;
+
+            public int Height => 0;
+
             public NullTexture(uint textureId) {
                 TexturePtr = (IntPtr)textureId;
             }
