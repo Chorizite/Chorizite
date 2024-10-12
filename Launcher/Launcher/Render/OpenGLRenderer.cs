@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using WaveEngine.Bindings.OpenGL;
 using static SDL2.SDL;
 using Color = SixLabors.ImageSharp.Color;
+using System.Reflection;
 
 namespace Launcher.Render {
     unsafe public class OpenGLRenderer : IRenderInterface {
@@ -66,8 +67,20 @@ namespace Launcher.Render {
             SetupSDL();
             SetupOpenGL();
 
-            ColorShader = new GLSLShader("VertexPositionColor", _log);
-            TextureShader = new GLSLShader("VertexPositionColorTexture", _log);
+            var shaderDir = Path.GetFullPath($"./../../Launcher/Launcher/Shaders");
+
+            ColorShader = new GLSLShader("VertexPositionColor", GetEmbeddedResource("Shaders.VertexPositionColor.vert"), GetEmbeddedResource("Shaders.VertexPositionColor.frag"),  _log, shaderDir);
+            TextureShader = new GLSLShader("VertexPositionColorTexture", GetEmbeddedResource("Shaders.VertexPositionColorTexture.vert"), GetEmbeddedResource("Shaders.VertexPositionColorTexture.frag"), _log, shaderDir);
+        }
+
+        private string GetEmbeddedResource(string filename) {
+            var assembly = Assembly.GetExecutingAssembly();
+            var resourceName = "Launcher." + filename;
+
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            using var reader = new StreamReader(stream);
+            string result = reader.ReadToEnd();
+            return result;
         }
 
         #region graphics / input setup

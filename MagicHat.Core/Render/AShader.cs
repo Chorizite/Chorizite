@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -8,21 +10,80 @@ using System.Threading.Tasks;
 namespace MagicHat.Core.Render {
 
     public abstract class AShader : IDisposable {
-        internal static readonly Dictionary<string, AShader> LoadedShaders = [];
+        private FileSystemWatcher? _watcher;
+        private string _liveShaderDirectory = "";
+        protected readonly ILogger _log;
+
         public string Name { get; }
 
+
         public IntPtr Program { get; protected set; }
-        public string VertShaderSource { get; protected set; }
-        public string FragShaderSource { get; protected set; }
+        public virtual string VertShaderName => $"{Name}.vert";
+        public virtual string FragShaderName => $"{Name}.frag";
 
-        public bool NeedsLoad { get; set; }
+        protected bool NeedsLoad { get; set; }
 
-        public AShader(string name) {
+        public AShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) {
             Name = name;
-            LoadedShaders.TryAdd(name, this);
+            _log = log;
+
+            if (!string.IsNullOrEmpty(shaderDirectory)) {
+                _liveShaderDirectory = Path.GetFullPath(shaderDirectory);
+                _log.LogDebug($"Live shader directory: {Path.GetFullPath(_liveShaderDirectory)}");
+                if (Directory.Exists(_liveShaderDirectory)) {
+                    _log.LogDebug($"Watching shader directory for changes: {_liveShaderDirectory}");
+                    WatchShaderFiles(_liveShaderDirectory);
+                }
+            }
+
+            LoadShader(vertSource, fragSource);
         }
 
-        public abstract void SetActive();
+        private void WatchShaderFiles(string shaderDir) {
+            System.Diagnostics.Debug.WriteLine($"Watching {shaderDir}{Name}.*");
+            _watcher = new FileSystemWatcher(shaderDir);
+            _watcher.NotifyFilter = NotifyFilters.LastWrite;
+            _watcher.Filter = $"{Name}.*";
+            _watcher.Changed += _watcher_Changed;
+            _watcher.EnableRaisingEvents = true;
+        }
+
+        private void _watcher_Changed(object sender, FileSystemEventArgs e) {
+            if (e.ChangeType == WatcherChangeTypes.Changed) {
+                Reload();
+            }
+        }
+
+        public virtual void Reload() {
+            NeedsLoad = true;
+        }
+
+        public virtual void SetActive() {
+            if (NeedsLoad) {
+                try {
+                    string? vertShaderSource = null;
+                    string? fragShaderSource = null;
+                    if (File.Exists(Path.Combine(_liveShaderDirectory, VertShaderName))) {
+                        vertShaderSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, VertShaderName));
+                    }
+                    if (File.Exists(Path.Combine(_liveShaderDirectory, FragShaderName))) {
+                        fragShaderSource ??= File.ReadAllText(Path.Combine(_liveShaderDirectory, FragShaderName));
+                    }
+
+                    if (!string.IsNullOrEmpty(vertShaderSource) && !string.IsNullOrEmpty(fragShaderSource)) {
+                        LoadShader(vertShaderSource, fragShaderSource);
+                    }
+                    NeedsLoad = false;
+                }
+                catch (IOException ex) { }
+                catch (Exception ex) {
+                    _log?.LogError(ex, $"Error setting active shader {Name}");
+                }
+            }
+        }
+
+        protected abstract void LoadShader(string vertShaderSource, string fragShaderSource);
+
         public abstract void SetUniform(string name, Matrix4x4 viewProj);
         public abstract void SetUniform(string name, int v);
         public abstract void SetUniform(string name, float v);
@@ -31,17 +92,13 @@ namespace MagicHat.Core.Render {
         public abstract void SetUniform(string name, Vector3 vec);
         public abstract void SetUniform(string name, Vector2 vec);
         public abstract void SetUniform(string name, Vector3[] vecs);
+        protected abstract void Unload();
 
-        public abstract void Dispose();
-
-        public virtual void Reload(string vertexSource = null, string fragmentSource = null) {
-            if (vertexSource is not null) {
-                VertShaderSource = vertexSource;
-            }
-            if (fragmentSource is not null) {
-                FragShaderSource = fragmentSource;
-            }
-            NeedsLoad = true;
+        public virtual void Dispose() {
+            Unload();
+            _watcher?.Dispose();
+            _watcher = null;
         }
+
     }
 }

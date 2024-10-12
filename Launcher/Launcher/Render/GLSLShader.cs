@@ -14,79 +14,12 @@ using WaveEngine.Bindings.OpenGL;
 namespace Launcher.Render {
 
     public unsafe class GLSLShader : AShader {
-        private FileSystemWatcher _watcher;
-        private string _liveShaderDirectory;
-        private readonly ILogger _log;
-
-        private string VertShaderName => $"{Name}.vert";
-        private string FragShaderName => $"{Name}.frag";
-
-        public GLSLShader(string name, ILogger log) : base(name) {
-            _log = log;
-            VertShaderSource = GetEmbeddedResource($"Shaders.{VertShaderName}");
-            FragShaderSource = GetEmbeddedResource($"Shaders.{FragShaderName}");
-
-            _liveShaderDirectory = Path.GetFullPath($"./../../Launcher/Launcher/Shaders");
-            _log.LogDebug($"Live shader directory: {Path.GetFullPath(_liveShaderDirectory)}");
-            if (Directory.Exists(_liveShaderDirectory)) {
-                _log.LogDebug($"Watching shader directory for changes: {_liveShaderDirectory}");
-                WatchShaderFiles(_liveShaderDirectory);
-            }
-
-            LoadShader(VertShaderSource, FragShaderSource);
-        }
-        private string GetEmbeddedResource(string filename) {
-            var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "Launcher." + filename;
-
-            using var stream = assembly.GetManifestResourceStream(resourceName);
-            using var reader = new StreamReader(stream);
-            string result = reader.ReadToEnd();
-            return result;
-        }
-
-        private void WatchShaderFiles(string shaderDir) {
-            System.Diagnostics.Debug.WriteLine($"Watching {shaderDir}{Name}.*");
-            _watcher = new FileSystemWatcher(shaderDir);
-            _watcher.NotifyFilter = NotifyFilters.LastWrite;
-            _watcher.Filter = $"{Name}.*";
-            _watcher.Changed += _watcher_Changed;
-            _watcher.EnableRaisingEvents = true;
-        }
-
-        private void _watcher_Changed(object sender, FileSystemEventArgs e) {
-            if (e.ChangeType == WatcherChangeTypes.Changed) {
-                VertShaderSource = null;
-                FragShaderSource = null;
-                Reload();
-            }
-        }
-
-        public override void Reload(string vertexSource = null, string fragmentSource = null) {
-            try {
-                base.Reload(vertexSource, fragmentSource);
-            }
-            catch { }
+        public GLSLShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) : base(name, vertSource, fragSource, log, shaderDirectory) {
         }
 
         public override void SetActive() {
-            if (NeedsLoad) {
-                try {
-                    if (File.Exists(Path.Combine(_liveShaderDirectory, VertShaderName))) {
-                        VertShaderSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, VertShaderName));
-                    }
-                    if (File.Exists(Path.Combine(_liveShaderDirectory, FragShaderName))) {
-                        FragShaderSource ??= File.ReadAllText(Path.Combine(_liveShaderDirectory, FragShaderName));
-                    }
-
-                    LoadShader(VertShaderSource, FragShaderSource);
-                }
-                catch (IOException ex) { }
-                catch (Exception ex) {
-                    _log?.LogError(ex, $"Error setting active shader {Name}");
-                }
-            }
             GL.glUseProgram((uint)Program);
+            base.SetActive();
         }
 
         public override void SetUniform(string location, Matrix4x4 m) {
@@ -208,7 +141,7 @@ namespace Launcher.Render {
             }
         }
 
-        private void LoadShader(string vertShaderSource, string fragShaderSource) {
+        protected override void LoadShader(string vertShaderSource, string fragShaderSource) {
             NeedsLoad = false;
 
             uint vertexShader = CompileShader(ShaderType.VertexShader, Name, vertShaderSource);
@@ -264,17 +197,11 @@ namespace Launcher.Render {
             return shader;
         }
 
-        private void Unload() {
+        protected override void Unload() {
             if (Program != 0) {
                 GL.glDeleteProgram((uint)Program);
                 Program = 0;
             }
-        }
-
-        public override void Dispose() {
-            Unload();
-            _watcher.Dispose();
-            _watcher = null;
         }
     }
 }
