@@ -33,7 +33,7 @@ MagicHat serves as a plugin framework for *Asheron's Call*, allowing developers 
   - The Launcher app. 
   - Implements the required backend interfaces for running **MagicHat.Core** in a launcher environment.
 - **Launcher/MagicHat.Injector**
-  - Launches acclient and injects **Launcher/MagicHat.Bootstrapper** (and optionally decal).
+  - Launches acclient and uses **Launcher/MagicHat.Bootstrapper** to inject **Launcher/MagicHat.Loader.Standalone** (and optionally decal).
   - A separate app from the launcher is used because this is x86 where the launcher is x64. This makes it easier to do the injection.
 - **Launcher/MagicHat.Bootstrapper**
   - Used to bootstrap dotnet inside the client, and loads **Launcher/MagicHat.Loader.Standalone**.
