@@ -54,8 +54,6 @@ namespace Core.AC {
             CoreUI = coreUI;
             ClientBackend = clientBackend;
 
-            Hooks.Init();
-
             Game = new GameInterface(log, Net.Messages);
 
             /*
@@ -93,7 +91,13 @@ namespace Core.AC {
             RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "CharSelect.rml"));
             RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "DatPatch.rml"));
 
+            ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
+
             Log?.LogDebug($"CoreAC Version: {Manifest.Version}");
+        }
+
+        private void ClientBackend_OnScreenChanged(object? sender, EventArgs e) {
+            CurrentScreen = (GameScreen)ClientBackend.GameScreen;
         }
 
         /// <inheritdoc/>
@@ -118,7 +122,7 @@ namespace Core.AC {
         }
 
         public override void Dispose() {
-            Hooks.Destroy();
+            ClientBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
 
             CoreUI.UnregisterUIModel("CharSelectScreen", _charSelectModel);
             CoreUI.UnregisterUIModel("DatPatchScreen", _datPatchModel);

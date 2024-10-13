@@ -16,9 +16,10 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MagicHat.Loader.Standalone.Hooks {
     internal unsafe class ACClientHooks : HookBase {
-        private static IHook<Client_Cleanup> _clientCleanupHook;
-        private static IHook<Client_IsAlreadyRunning> _clientIsAlreadyRunningHook;
-        private static IHook<CLBlockAllocator_OpenDataFile> _clBlockAllocatorOpenDataFileHook;
+        private static IHook<Client_Cleanup>? _clientCleanupHook;
+        private static IHook<Client_IsAlreadyRunning>? _clientIsAlreadyRunningHook;
+        private static IHook<CLBlockAllocator_OpenDataFile>? _clBlockAllocatorOpenDataFileHook;
+        private static IHook<UIFlow_UseNewMode>? _uiFlowUseNewModeHook;
 
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate void Client_Cleanup(IntPtr client);
@@ -28,6 +29,9 @@ namespace MagicHat.Loader.Standalone.Hooks {
 
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate uint CLBlockAllocator_OpenDataFile(CLBlockAllocator* allocator, IntPtr pFileInfo, PStringBase<byte>* pFileName, PStringBase<ushort>* pcPathToUse, uint open_flags_l, IntPtr* pTranInfo);
+
+        [Function(CallingConventions.MicrosoftThiscall)]
+        private delegate uint UIFlow_UseNewMode(UIFlow* uiFlow);
 
         internal static double InactiveTimeBeforeLogout {
             get => *(double*)0x007CEB70;
@@ -43,6 +47,7 @@ namespace MagicHat.Loader.Standalone.Hooks {
             _clientCleanupHook = CreateHook<Client_Cleanup>(typeof(ACClientHooks), nameof(Client_Cleanup_Impl), 0x004118D0);
             _clientIsAlreadyRunningHook = CreateHook<Client_IsAlreadyRunning>(typeof(ACClientHooks), nameof(Client_IsAlreadyRunning_Impl), 0x004122A0);
             _clBlockAllocatorOpenDataFileHook = CreateHook<CLBlockAllocator_OpenDataFile>(typeof(ACClientHooks), nameof(CLBlockAllocator_OpenDataFile_Impl), 0x00675920);
+            _uiFlowUseNewModeHook = CreateHook<UIFlow_UseNewMode>(typeof(ACClientHooks), nameof(UIFlow_UseNewMode_Impl), 0x00479AA0);
 
             InactiveTimeBeforeLogout = double.PositiveInfinity;
         }
@@ -50,7 +55,7 @@ namespace MagicHat.Loader.Standalone.Hooks {
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvThiscall) })]
         private static void Client_Cleanup_Impl(IntPtr client) {
             StandaloneLoader.Input?.HandleShutdown();
-            _clientCleanupHook.OriginalFunction(client);
+            _clientCleanupHook?.OriginalFunction(client);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
@@ -61,7 +66,24 @@ namespace MagicHat.Loader.Standalone.Hooks {
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static uint CLBlockAllocator_OpenDataFile_Impl(CLBlockAllocator* allocator, IntPtr pFileInfo, PStringBase<byte>* pFileName, PStringBase<ushort>* pcPathToUse, uint open_flags_l, IntPtr* pTranInfo) {
             open_flags_l |= 4;
-            return _clBlockAllocatorOpenDataFileHook.OriginalFunction(allocator, pFileInfo, pFileName, pcPathToUse, open_flags_l, pTranInfo);
+            return _clBlockAllocatorOpenDataFileHook?.OriginalFunction(allocator, pFileInfo, pFileName, pcPathToUse, open_flags_l, pTranInfo) ?? 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
+        private static uint UIFlow_UseNewMode_Impl(UIFlow* uiFlow) {
+            var mode = uiFlow->_nextMode;
+            var ret = _uiFlowUseNewModeHook?.OriginalFunction(uiFlow) ?? 0;
+
+            StandaloneLoader.Backend.GameScreen = (int)mode;
+
+            return ret;
+        }
+
+        void Destroy() {
+            _clientCleanupHook?.Disable();
+            _clientIsAlreadyRunningHook?.Disable();
+            _clBlockAllocatorOpenDataFileHook?.Disable();
+            _uiFlowUseNewModeHook?.Disable();
         }
     }
 }

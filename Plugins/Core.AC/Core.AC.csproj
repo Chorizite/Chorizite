@@ -26,11 +26,6 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\Launcher\MagicHat.Loader.Standalone\MagicHat.Loader.Standalone.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
     <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
@@ -51,10 +46,6 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" ExcludeAssets="runtime" />
-    <PackageReference Include="Reloaded.Hooks" Version="4.3.2">
-      <ExcludeAssets>runtime;buildTransitive</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

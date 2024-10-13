@@ -53,11 +53,11 @@ namespace Core.AC.UIModels {
             base.Init(name);
 
             BindAction("create_character", (evt, variants) => {
-                CoreACPlugin.Instance.ClientBackend.ShowScreen((int)GameScreen.CharCreate);
+                CoreACPlugin.Instance.ClientBackend.GameScreen = (int)GameScreen.CharCreate;
             });
 
             BindAction("show_credits", (evt, variants) => {
-                CoreACPlugin.Instance.ClientBackend.ShowScreen((int)GameScreen.Credits);
+                CoreACPlugin.Instance.ClientBackend.GameScreen = (int)GameScreen.Credits;
             });
 
             BindAction("exit", (evt, variants) => {

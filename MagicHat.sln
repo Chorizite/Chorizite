@@ -25,8 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{52AEE83B-EC3
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatReaderWriter", "ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj", "{31721F88-7943-4723-8FA9-1B1166147AEE}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backends", "Backends", "{F27F9A01-6A17-4634-ACFF-36C9D227A7D1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicHat.ACProtocol", "ext\ACProtocol\MagicHat.ACProtocol\MagicHat.ACProtocol.csproj", "{91D37015-E1C3-481C-B246-76711EABE6F6}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MagicHat.ACProtocol.SourceGen", "ext\ACProtocol\MagicHat.ACProtocol.SourceGen\MagicHat.ACProtocol.SourceGen.csproj", "{44A6DA3C-3B5E-4C3C-BA6E-009542A344FB}"

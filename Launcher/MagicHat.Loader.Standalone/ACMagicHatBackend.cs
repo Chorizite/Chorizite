@@ -1,10 +1,12 @@
 ﻿using AcClient;
 using Autofac;
+using Iced.Intel;
 using MagicHat.ACProtocol;
 using MagicHat.ACProtocol.Enums;
 using MagicHat.Core;
 using MagicHat.Core.Backend;
 using MagicHat.Core.Dats;
+using MagicHat.Core.Extensions;
 using MagicHat.Core.Input;
 using MagicHat.Core.Net;
 using MagicHat.Core.Render;
@@ -15,14 +17,32 @@ using System;
 
 namespace MagicHat.Loader.Standalone {
     public unsafe class ACMagicHatBackend : IClientBackend, IMagicHatBackend {
+        private int _previousGameScreen = (int)UIMode.None;
+
         public IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
 
         public IInputManager Input { get; }
         public Win32InputManager Win32Input { get; }
 
+        public int GameScreen {
+            get => ((IntPtr)UIFlow.m_instance == IntPtr.Zero || *UIFlow.m_instance is null) ? 0 : (int)(*UIFlow.m_instance)->_curMode;
+            set {
+                if (!((IntPtr)UIFlow.m_instance == IntPtr.Zero || *UIFlow.m_instance is null)) {
+                    if (value != _previousGameScreen) {
+                        if ((int)(*UIFlow.m_instance)->_curMode != value) {
+                            (*UIFlow.m_instance)->QueueUIMode((UIMode)value);
+                        }
+                        OnScreenChanged?.InvokeSafely(this, EventArgs.Empty);
+                        _previousGameScreen = value;
+                    }
+                }
+            }
+        }
+
         public event EventHandler<PacketDataEventArgs>? OnC2SData;
         public event EventHandler<PacketDataEventArgs>? OnS2CData;
+        public event EventHandler<EventArgs>? OnScreenChanged;
 
         public static IMagicHatBackend Create(IContainer container) {
             var renderer = new DX9RenderInterface(StandaloneLoader.UnmanagedD3DPtr, container.Resolve<ILogger<DX9RenderInterface>>(), container.Resolve<IDatReaderInterface>());
@@ -54,18 +74,12 @@ namespace MagicHat.Loader.Standalone {
             return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
         }
 
-        public bool ShowScreen(int screen) {
-            // Todo: check that we are able to switch to this next state...
-            (*UIFlow.m_instance)->QueueUIMode((UIMode)screen);
-            return true;
-        }
-
-        private delegate* unmanaged[Thiscall]<gmClient*, int> Cleanup = (delegate* unmanaged[Thiscall]<gmClient*, int>)0x00401EC0;
-        public static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
+        private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
+        private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
 
         public void Exit() {
             CleanupNet(*Client.m_instance);
-            Cleanup((gmClient*)*Client.m_instance);
+            Cleanup(*Client.m_instance);
         }
 
         public void Dispose() {

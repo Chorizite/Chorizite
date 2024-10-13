@@ -11,11 +11,13 @@ using System.Threading.Tasks;
 
 namespace MagicHat.Core.Backend {
     public interface IClientBackend : IDisposable {
+        int GameScreen { get; set; }
+
         public event EventHandler<PacketDataEventArgs>? OnC2SData;
         public event EventHandler<PacketDataEventArgs>? OnS2CData;
+        event EventHandler<EventArgs>? OnScreenChanged;
 
-        void Exit();
         bool EnterGame(uint characterId);
-        bool ShowScreen(int screen);
+        void Exit();
     }
 }
