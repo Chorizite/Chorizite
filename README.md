@@ -47,7 +47,7 @@ MagicHat serves as a plugin framework for *Asheron's Call*, allowing developers 
   - **Core.DatService**
     - Provides API / Hooks for reading / writing game dat files.
   - **Core.UI**
-    - Provides UI interface for both the client and launcher using [RmlUI](https://github.com/mikke89/RmlUi).
+    - Provides UI for both the client and launcher using [RmlUI](https://github.com/mikke89/RmlUi).
   - **Core.Lua**
     - Provides lua scripting for plugins and RmlUI scripts.
 
