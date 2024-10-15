@@ -20,11 +20,11 @@ namespace Launcher {
             var clientArgs = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
 
             var dllsToInject = new List<string>() {
-                Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "MagicHat.Bootstrapper.dll") + ";Bootstrap",
+                Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "Chorizite.Bootstrapper.dll") + ";Bootstrap",
                 //DecalHelpers.GetDecalLocation() + ";DecalStartup"
             };
 
-            var injectorPath = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "MagicHat.Injector.exe");
+            var injectorPath = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "Chorizite.Injector.exe");
             var injectorArgs = new StringBuilder();
             injectorArgs.Append($"--client-path=\"{clientPath}\" --client-args=\"{clientArgs}\"");
 

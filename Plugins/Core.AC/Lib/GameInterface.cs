@@ -1,10 +1,10 @@
 ﻿using Core.AC.Lib.Enums;
-using MagicHat.ACProtocol;
-using MagicHat.ACProtocol.Messages.C2S;
-using MagicHat.ACProtocol.Messages.C2S.Actions;
-using MagicHat.ACProtocol.Messages.S2C;
-using MagicHat.ACProtocol.Messages.S2C.Events;
-using MagicHat.ACProtocol.Types;
+using Chorizite.ACProtocol;
+using Chorizite.ACProtocol.Messages.C2S;
+using Chorizite.ACProtocol.Messages.C2S.Actions;
+using Chorizite.ACProtocol.Messages.S2C;
+using Chorizite.ACProtocol.Messages.S2C.Events;
+using Chorizite.ACProtocol.Types;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -94,7 +94,7 @@ namespace Core.AC.Lib {
                 State = GameState.InGame;
         }
 
-        protected virtual void MessageHandler_Login_LogOffCharacter_S2C(object sender, MagicHat.ACProtocol.Messages.S2C.Login_LogOffCharacter e) {
+        protected virtual void MessageHandler_Login_LogOffCharacter_S2C(object sender, Chorizite.ACProtocol.Messages.S2C.Login_LogOffCharacter e) {
             State = GameState.LoggingOut;
         }
 

@@ -1,4 +1,4 @@
-﻿using MagicHat.Core.Input;
+﻿using Chorizite.Core.Input;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;

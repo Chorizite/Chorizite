@@ -1,6 +1,6 @@
 ﻿using ACClientLib.DatReaderWriter;
 using Core.DatService;
-using MagicHat.Core.Render;
+using Chorizite.Core.Render;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;

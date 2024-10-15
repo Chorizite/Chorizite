@@ -18,12 +18,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\ACProtocol\MagicHat.ACProtocol\MagicHat.ACProtocol.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\ext\ACProtocol\Chorizite.ACProtocol\Chorizite.ACProtocol.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

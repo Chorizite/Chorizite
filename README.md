@@ -1,6 +1,6 @@
-# MagicHat
+# Chorizite
 
-**MagicHat** is an open-source plugin manager for the game *Asheron's Call*. It enables the integration and management of plugins that extend the game's functionality. This project includes core plugins for various features such as HTML/CSS-based UI design, DAT file reading, and Lua scripting support.
+**Chorizite** is an open-source plugin manager for the game *Asheron's Call*. It enables the integration and management of plugins that extend the game's functionality. This project includes core plugins for various features such as HTML/CSS-based UI design, DAT file reading, and Lua scripting support.
 
 ## Table of Contents
 
@@ -14,7 +14,7 @@
 
 ## Introduction
 
-MagicHat serves as a plugin framework for *Asheron's Call*, allowing developers to create and manage plugins for the game. It provides essential tools for interfacing with the game files, rendering HTML/CSS-based interfaces, and scripting with Lua.
+Chorizite serves as a plugin framework for *Asheron's Call*, allowing developers to create and manage plugins for the game. It provides essential tools for interfacing with the game files, rendering HTML/CSS-based interfaces, and scripting with Lua.
 
 ## Dependencies
 
@@ -27,18 +27,18 @@ MagicHat serves as a plugin framework for *Asheron's Call*, allowing developers 
 
 ## Project Overview
 
-- **MagicHat.Core**
-  - The main MagicHat project.  This is responsible for starting up the plugin system.
+- **Chorizite.Core**
+  - The main Chorizite project.  This is responsible for starting up the plugin system.
 - **Launcher/Launcher**
   - The Launcher app. 
-  - Implements the required backend interfaces for running **MagicHat.Core** in a launcher environment.
-- **Launcher/MagicHat.Injector**
-  - Launches acclient and uses **Launcher/MagicHat.Bootstrapper** to inject **Launcher/MagicHat.Loader.Standalone** (and optionally decal).
+  - Implements the required backend interfaces for running **Chorizite.Core** in a launcher environment.
+- **Launcher/Chorizite.Injector**
+  - Launches acclient and uses **Launcher/Chorizite.Bootstrapper** to inject **Launcher/Chorizite.Loader.Standalone** (and optionally decal).
   - A separate app from the launcher is used because this is x86 where the launcher is x64. This makes it easier to do the injection.
-- **Launcher/MagicHat.Bootstrapper**
-  - Used to bootstrap dotnet inside the client, and loads **Launcher/MagicHat.Loader.Standalone**.
-- **Launcher/MagicHat.Loader.Standalone**
-  - Implements the required backend interfaces for running **MagicHat.Core** in a client environment.
+- **Launcher/Chorizite.Bootstrapper**
+  - Used to bootstrap dotnet inside the client, and loads **Launcher/Chorizite.Loader.Standalone**.
+- **Launcher/Chorizite.Loader.Standalone**
+  - Implements the required backend interfaces for running **Chorizite.Core** in a client environment.
 - **Plugins**
   - **Core.Client**
     - Provides API / Hooks for interacting with the game client.

@@ -1,27 +1,27 @@
 ﻿using Autofac;
 using Launcher.Render;
-using MagicHat.Core.Backend;
-using MagicHat.Core.Dats;
-using MagicHat.Core.Input;
-using MagicHat.Core.Render;
+using Chorizite.Core.Backend;
+using Chorizite.Core.Dats;
+using Chorizite.Core.Input;
+using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 
 namespace Launcher.Lib {
-    internal class LauncherMagicHatBackend : IMagicHatBackend, ILauncherBackend {
+    internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
         public IRenderInterface Renderer { get; }
         public OpenGLRenderer GLRenderer { get; }
 
         public IInputManager Input { get; }
         public SDLInputManager SDLInput { get; }
 
-        public static IMagicHatBackend Create(IContainer container) {
+        public static IChoriziteBackend Create(IContainer container) {
             var renderer = new OpenGLRenderer(container.Resolve<ILogger<OpenGLRenderer>>(), container.Resolve<IDatReaderInterface>());
             var input = new SDLInputManager(container.Resolve<ILogger<SDLInputManager>>());
 
-            return new LauncherMagicHatBackend(renderer, input);
+            return new LauncherChoriziteBackend(renderer, input);
         }
 
-        private LauncherMagicHatBackend(OpenGLRenderer renderer, SDLInputManager input) {
+        private LauncherChoriziteBackend(OpenGLRenderer renderer, SDLInputManager input) {
             GLRenderer = renderer;
             Renderer = renderer;
             SDLInput = input;

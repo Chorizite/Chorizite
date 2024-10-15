@@ -3,8 +3,8 @@ using System;
 using Microsoft.Extensions.Logging;
 using WattleScript.Interpreter;
 using ScriptHost.Lib;
-using MagicHat.Core.Plugins;
-using MagicHat.Core.Plugins.AssemblyLoader;
+using Chorizite.Core.Plugins;
+using Chorizite.Core.Plugins.AssemblyLoader;
 using Core.AC;
 using System.Linq;
 

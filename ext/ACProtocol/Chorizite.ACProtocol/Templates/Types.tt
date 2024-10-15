@@ -1,0 +1,72 @@
+﻿<#@ assembly name="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\System.CodeDom.dll" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\Chorizite.ACProtocol.SourceGen.dll" #>
+<#@ template language="c#" hostspecific="true" inherits="Chorizite.ACProtocol.SourceGen.CSTemplateBase" #>
+<#@ output extension=".cs" #>
+<#@include file="MultipleOutputHelper.ttinclude"#>
+<#
+    var manager = Manager.Create(Host, GenerationEnvironment); 
+    
+    SetupMessageParser(this.Host.ResolvePath("../protocol.xml"));
+    foreach (var kv in this.MessageReader.ACDataTypes) {
+        if (kv.Key == "Vector3" || kv.Key == "Quaternion" || kv.Key == "PHashTable" || kv.Key == "PackableHashTable" || kv.Key == "PSmartArray" || kv.Key == "PackableList" || kv.Key == "PList") {
+            continue;
+        }
+
+        manager.StartNewFile($"../Types/{kv.Key}.generated.cs");
+        PrintLocalModificationWarning();
+        WriteLine("using System;");
+        WriteLine("using System.Numerics;");
+        WriteLine("using System.IO;");
+        WriteLine("using System.Collections.Generic;"); 
+        WriteLine("using Chorizite.ACProtocol.Enums;");
+        WriteLine("using Chorizite.ACProtocol.Extensions;");
+        WriteUsingAliases(this.MessageReader.ACTypeAliases);
+        WriteLine("namespace Chorizite.ACProtocol.Types {");
+        using (new IndentHelper(this)) {
+            var dataType = kv.Value; 
+        
+            if (dataType.IsTemplated)
+                continue;
+
+            // summary docs and class definition
+            WriteSummary(dataType.Text);
+            WriteLine("public class " + dataType.Name + " : IACDataType {");
+
+            using (new IndentHelper(this)) {
+                var usedPropertyNames = new List<string>();
+
+                // generate struct fields from messages.xml
+                foreach (var baseModel in dataType.AllChildren) {
+                    GenerateClassProperties(baseModel, ref usedPropertyNames);
+                }
+
+                // define method that can parse from binary
+                WriteSummary("Reads instance data from a binary reader");
+                WriteLine("public void Read(BinaryReader reader) {"); 
+                using (new IndentHelper(this)) {
+                    foreach (var child in dataType.Children) {
+                        GenerateReaderContents(child, 0);
+                    }
+                }
+                WriteLine("}\n");
+
+                // define method that can parse from binary
+                WriteSummary("Writes instance data to a binary writer");
+                WriteLine("public void Write(BinaryWriter writer) {");
+                using (new IndentHelper(this)) {
+                    foreach (var child in dataType.Children) {
+                        GenerateWriterContents(child, 0);
+                    }
+                }
+                WriteLine("}\n");
+            }
+            WriteLine("}\n"); // close class definition
+        }
+        WriteLine("}");
+        manager.EndBlock();
+    }
+
+
+    manager.Process(true);
+#>

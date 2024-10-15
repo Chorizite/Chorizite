@@ -1,5 +1,5 @@
 ﻿using ACUI.Lib.Fonts;
-using MagicHat.Core.Render;
+using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;

@@ -1,18 +1,18 @@
 ﻿using System.IO;
 using System;
 using Microsoft.Extensions.Logging;
-using MagicHat.Core.Plugins;
-using MagicHat.Core.Plugins.AssemblyLoader;
+using Chorizite.Core.Plugins;
+using Chorizite.Core.Plugins.AssemblyLoader;
 using Core.AC.Lib;
-using MagicHat.Core.Net;
-using MagicHat.ACProtocol;
+using Chorizite.Core.Net;
+using Chorizite.ACProtocol;
 using Core.UI;
 using Core.AC.UIModels;
-using MagicHat.Core.Render;
+using Chorizite.Core.Render;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using Core.UI.Lib;
-using MagicHat.Core.Backend;
+using Chorizite.Core.Backend;
 
 namespace Core.AC {
     public class CoreACPlugin : IPluginCore, ScreenProvider<GameScreen> {

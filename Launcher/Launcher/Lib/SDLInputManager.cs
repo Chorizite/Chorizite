@@ -1,4 +1,4 @@
-﻿using MagicHat.Core.Input;
+﻿using Chorizite.Core.Input;
 using Microsoft.Extensions.Logging;
 using SDL2;
 using System;
@@ -27,7 +27,7 @@ namespace Launcher.Lib {
         public event EventHandler<MouseMoveEventArgs>? OnMouseMove;
         public event EventHandler<MouseDownEventArgs>? OnMouseDown;
         public event EventHandler<MouseUpEventArgs>? OnMouseUp;
-        public event EventHandler<MagicHat.Core.Input.KeyPressEventArgs>? OnKeyPress;
+        public event EventHandler<Chorizite.Core.Input.KeyPressEventArgs>? OnKeyPress;
         public event EventHandler<EventArgs>? OnShutdown;
         public event EventHandler<KeyDownEventArgs>? OnKeyDown;
         public event EventHandler<KeyUpEventArgs>? OnKeyUp;
@@ -91,7 +91,7 @@ namespace Launcher.Lib {
                         break;
                     case SDL_EventType.SDL_TEXTINPUT:
                         var str = Marshal.PtrToStringAnsi((IntPtr)e.text.text);
-                        OnKeyPress?.Invoke(this, new MagicHat.Core.Input.KeyPressEventArgs(str));
+                        OnKeyPress?.Invoke(this, new Chorizite.Core.Input.KeyPressEventArgs(str));
                         break;
                     case SDL_EventType.SDL_QUIT:
                         Program.Exit();

@@ -1,9 +1,9 @@
 using Autofac;
 using Launcher.Lib;
 using Launcher.Render;
-using MagicHat.Core;
-using MagicHat.Core.Logging;
-using MagicHat.Core.Plugins;
+using Chorizite.Core;
+using Chorizite.Core.Logging;
+using Chorizite.Core.Plugins;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Reflection;
@@ -23,26 +23,26 @@ namespace Launcher {
         public static OpenGLRenderer Renderer { get; private set; }
         public static SDLInputManager Input { get; private set; }
         public static LaunchManager LaunchManager { get; private set; }
-        public static MagicHatConfig Config { get; private set; }
-        public static MagicHat<LauncherMagicHatBackend> MagicHatInstance { get; private set; }
+        public static ChoriziteConfig Config { get; private set; }
+        public static Chorizite<LauncherChoriziteBackend> ChoriziteInstance { get; private set; }
 
         [DllImport("Kernel32.dll")]
         public static extern IntPtr LoadLibrary(string path);
 
         static void Main() {
-            Log = new MagicHatLogger("Launcher", _logDirectory);
+            Log = new ChoriziteLogger("Launcher", _logDirectory);
             Log.LogDebug($"Launcher version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
 
             LaunchManager = new LaunchManager(Log);
 
-            Config = new MagicHatConfig(MagicHatEnvironment.Launcher, _pluginDirectory, _dataDirectory, _logDirectory, _datDirectory);
-            MagicHatInstance = new MagicHat<LauncherMagicHatBackend>(Config);
+            Config = new ChoriziteConfig(ChoriziteEnvironment.Launcher, _pluginDirectory, _dataDirectory, _logDirectory, _datDirectory);
+            ChoriziteInstance = new Chorizite<LauncherChoriziteBackend>(Config);
 
-            Input = (MagicHatInstance.Backend.Input as SDLInputManager)!;
-            Renderer = (MagicHatInstance.Backend.Renderer as OpenGLRenderer)!;
+            Input = (ChoriziteInstance.Backend.Input as SDLInputManager)!;
+            Renderer = (ChoriziteInstance.Backend.Renderer as OpenGLRenderer)!;
 
-            var ui = MagicHatInstance.Scope.Resolve<IPluginManager>();
-            var pluginManager = MagicHatInstance.Scope.Resolve<IPluginManager>();
+            var ui = ChoriziteInstance.Scope.Resolve<IPluginManager>();
+            var pluginManager = ChoriziteInstance.Scope.Resolve<IPluginManager>();
 
             while (!_shouldExit) {
                 Input.Update();

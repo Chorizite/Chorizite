@@ -1,4 +1,4 @@
-﻿using MagicHat.Core.Render;
+﻿using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

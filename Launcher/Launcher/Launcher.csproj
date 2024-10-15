@@ -36,7 +36,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ext\RmlUI.Net\RmlUI.Net.csproj" />
-    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" />
+    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,9 @@
 ﻿using Core.UI.Models;
-using MagicHat.ACProtocol;
-using MagicHat.ACProtocol.Enums;
-using MagicHat.ACProtocol.Messages.S2C;
-using MagicHat.Core.Backend;
-using MagicHat.Core.Net;
+using Chorizite.ACProtocol;
+using Chorizite.ACProtocol.Enums;
+using Chorizite.ACProtocol.Messages.S2C;
+using Chorizite.Core.Backend;
+using Chorizite.Core.Net;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.ObjectModel;

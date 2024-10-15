@@ -1,0 +1,104 @@
+﻿<#@ assembly name="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\System.CodeDom.dll" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\Chorizite.ACProtocol.SourceGen.dll" #>
+<#@ template language="c#" hostspecific="true" inherits="Chorizite.ACProtocol.SourceGen.CSTemplateBase" #> 
+<#@ import namespace="Chorizite.ACProtocol.SourceGen.Models" #>
+<#@ output extension=".cs" #>
+<#@include file="MultipleOutputHelper.ttinclude"#>
+<#
+    var manager = Manager.Create(Host, GenerationEnvironment);
+    
+    SetupMessageParser(this.Host.ResolvePath("../protocol.xml"));
+    foreach (var kv in this.MessageReader.GameEvents) {
+    manager.StartNewFile($"../Messages/S2C/Events/{kv.Key}.generated.cs");
+#>
+using System.IO;
+using System.Collections.Generic;
+using Chorizite.ACProtocol.Enums;
+using Chorizite.ACProtocol.Messages;
+using Chorizite.ACProtocol.Types;
+using Chorizite.ACProtocol.Extensions;
+using System.Numerics;
+<# WriteUsingAliases(this.MessageReader.ACTypeAliases); #>
+
+namespace Chorizite.ACProtocol.Messages.S2C.Events {
+<# 
+    using (new IndentHelper(this)) {
+            WriteMessageClass(kv.Value);
+    }
+
+// close namespace
+#>
+}
+<#
+        manager.EndBlock();
+    }
+    foreach (var kv in this.MessageReader.GameActions) {
+    manager.StartNewFile($"../Messages/C2S/Actions/{kv.Key}.generated.cs"); 
+#>
+using System.IO;
+using System.Collections.Generic;
+using Chorizite.ACProtocol.Enums;
+using Chorizite.ACProtocol.Messages;
+using Chorizite.ACProtocol.Types;
+using Chorizite.ACProtocol.Extensions;
+using System.Numerics;
+<# WriteUsingAliases(this.MessageReader.ACTypeAliases); #>
+
+namespace Chorizite.ACProtocol.Messages.C2S.Actions {
+<# 
+    using (new IndentHelper(this)) {
+            WriteMessageClass(kv.Value);
+    }
+
+// close namespace
+#>
+}
+<#
+        manager.EndBlock();
+    }
+    manager.Process(true);
+    void WriteMessageClass(ACMessage message) {
+        // summary docs and class definition
+        WriteSummary(message.Text);
+        
+        if (message.Direction == "c2s") {
+            WriteLine("public class " + message.Name + " : ACGameAction {");
+        }
+        else {
+            WriteLine("public class " + message.Name + " : ACGameEvent {");
+        }
+
+        using (new IndentHelper(this)) {
+            var usedPropertyNames = new List<string>();
+
+            // generate struct fields from messages.xml
+            foreach (var baseModel in message.AllChildren) {
+                GenerateClassProperties(baseModel, ref usedPropertyNames);
+            }
+
+            // define method that can parse from binary
+            WriteSummary("Reads instance data from a binary reader");
+            WriteLine("public override void Read(BinaryReader reader) {");
+            using (new IndentHelper(this)) {
+                WriteLine("base.Read(reader);");
+                foreach (var child in message.Children) {
+                    GenerateReaderContents(child, 0);
+                }
+            }
+            WriteLine("}\n");
+
+            // define method that can parse from binary 
+            WriteSummary("Writes instance data to a binary writer"); 
+            WriteLine("public override void Write(BinaryWriter writer) {");
+            using (new IndentHelper(this)) {
+                WriteLine("base.Write(writer);");
+                foreach (var child in message.Children) {
+                    GenerateWriterContents(child, 0);
+                }
+            }
+            WriteLine("}\n");
+        }
+        WriteLine("}\n"); // close class definition
+    }
+#>

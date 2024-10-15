@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <NoWarn>1591</NoWarn>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <AssemblyVersion>1.3.3.7</AssemblyVersion>
+    <LangVersion>12</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\bin\net8.0\</OutputPath>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="8.1.0" />
+    <PackageReference Include="McMaster.NETCore.Plugins" Version="1.4.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ext\ACProtocol\Chorizite.ACProtocol\Chorizite.ACProtocol.csproj" />
+    <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
+  </ItemGroup>
+</Project>

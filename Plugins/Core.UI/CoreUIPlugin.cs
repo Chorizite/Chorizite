@@ -6,13 +6,13 @@ using Core.UI.Lib;
 using Core.UI.Lib.RmlUi;
 using Core.UI.Lib.Serialization;
 using Core.UI.Models;
-using MagicHat.Core;
-using MagicHat.Core.Backend;
-using MagicHat.Core.Input;
-using MagicHat.Core.Net;
-using MagicHat.Core.Plugins;
-using MagicHat.Core.Plugins.AssemblyLoader;
-using MagicHat.Core.Render;
+using Chorizite.Core;
+using Chorizite.Core.Backend;
+using Chorizite.Core.Input;
+using Chorizite.Core.Net;
+using Chorizite.Core.Plugins;
+using Chorizite.Core.Plugins.AssemblyLoader;
+using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -39,7 +39,7 @@ namespace Core.UI {
         private bool _didInitRml;
 
         internal static ILogger Log;
-        internal readonly IMagicHatBackend Backend;
+        internal readonly IChoriziteBackend Backend;
 
         internal readonly IPluginManager PluginManager;
         internal static Context? RmlContext;
@@ -67,11 +67,11 @@ namespace Core.UI {
         /// </summary>
         public event EventHandler<EventArgs>? OnScreenChanged;
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IMagicHatConfig config, IPluginManager pluginManager, IMagicHatBackend magicHatBackend, ILifetimeScope scope, ILogger<CoreUIPlugin> log) : base(manifest) {
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, ILogger<CoreUIPlugin> log) : base(manifest) {
             Instance = this;
             Log = log;
             PluginManager = pluginManager;
-            Backend = magicHatBackend;
+            Backend = ChoriziteBackend;
             if (!Directory.Exists(DataDirectory)) {
                 Directory.CreateDirectory(DataDirectory);
             }

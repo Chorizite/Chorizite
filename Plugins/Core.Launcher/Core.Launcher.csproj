@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\MagicHat.Core\MagicHat.Core.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
+    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System;
 using Microsoft.Extensions.Logging;
-using MagicHat.Core.Plugins;
-using MagicHat.Core.Plugins.AssemblyLoader;
+using Chorizite.Core.Plugins;
+using Chorizite.Core.Plugins.AssemblyLoader;
 using Core.UI;
 using Core.Launcher.Lib;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using Core.UI.Lib;
 using Core.Launcher.UIModels;
 using Core.UI.Lib.Serialization;
 using System.Text.Json;
-using MagicHat.Core.Backend;
+using Chorizite.Core.Backend;
 
 namespace Core.Launcher {
     public class CoreLauncherPlugin : IPluginCore, ScreenProvider<LauncherScreen> {
@@ -24,7 +24,7 @@ namespace Core.Launcher {
         internal static CoreLauncherPlugin Instance { get; private set; }
         internal static ILogger<CoreLauncherPlugin>? Log;
         internal readonly ILauncherBackend LauncherBackend;
-        internal readonly IMagicHatBackend Backend;
+        internal readonly IChoriziteBackend Backend;
 
         public LauncherScreen CurrentScreen {
             get => _currentScreen;
@@ -44,7 +44,7 @@ namespace Core.Launcher {
         /// </summary>
         public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
 
-        protected CoreLauncherPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, ILogger<CoreLauncherPlugin> log, CoreUIPlugin coreUI, ILauncherBackend launcherBackend, IMagicHatBackend backend) : base(manifest) {
+        protected CoreLauncherPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, ILogger<CoreLauncherPlugin> log, CoreUIPlugin coreUI, ILauncherBackend launcherBackend, IChoriziteBackend backend) : base(manifest) {
             Instance = this;
             Log = log;
             _pluginManager = pluginManager;

@@ -1,6 +1,6 @@
 {
   "name": "Core.Launcher",
-  "author": "MagicHat",
+  "author": "Chorizite",
   "entryfile": "Core.Launcher.dll",
   "version": "0.0.1",
   "description": "Launcher interface",

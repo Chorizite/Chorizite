@@ -1,7 +1,7 @@
 ﻿using ACClientLib.DatReaderWriter.Enums;
 using ACDatReader.FileTypes;
-using MagicHat.Core.Dats;
-using MagicHat.Core.Render;
+using Chorizite.Core.Dats;
+using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;

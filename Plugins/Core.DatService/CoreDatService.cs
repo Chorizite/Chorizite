@@ -2,9 +2,9 @@
 using System;
 using Microsoft.Extensions.Logging;
 using ACClientLib.DatReaderWriter;
-using MagicHat.Core.Plugins;
-using MagicHat.Core.Plugins.AssemblyLoader;
-using MagicHat.Core;
+using Chorizite.Core.Plugins;
+using Chorizite.Core.Plugins.AssemblyLoader;
+using Chorizite.Core;
 
 namespace Core.DatService {
     public class CoreDatService : IPluginCore {
@@ -13,7 +13,7 @@ namespace Core.DatService {
 
         public DatDatabaseReader PortalDat { get; }
 
-        protected CoreDatService(AssemblyPluginManifest manifest, IMagicHatConfig config, IPluginManager pluginManager, ILogger<CoreDatService>? log) : base(manifest) {
+        protected CoreDatService(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, ILogger<CoreDatService>? log) : base(manifest) {
             Log = log;
             _pluginManager = pluginManager;
 

@@ -1,6 +1,6 @@
 ﻿using Core.UI.Lib.Serialization;
 using Core.UI.Models;
-using MagicHat.Core.Net;
+using Chorizite.Core.Net;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;

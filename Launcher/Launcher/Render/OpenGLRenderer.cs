@@ -1,5 +1,5 @@
-﻿using MagicHat.Core.Dats;
-using MagicHat.Core.Render;
+﻿using Chorizite.Core.Dats;
+using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp;
