@@ -7569,7 +7569,7 @@
     <type name="Combat_HandleAttackerNotificationEvent" queue="UIQueue" text="HandleAttackerNotificationEvent: You have hit your target with a melee attack." type="0x01B1" lastUpdater="zegeger" lastUpdate="20170913">
       <field type="string" name="DefenderName" text="the name of your target" />
       <field type="DamageType" name="Type" text="the type of damage done" />
-      <field type="float" name="DamagePercent" text="percentage of targets hp removed by damage. 0.0 (low) to 1.0 (high)" />
+      <field type="double" name="DamagePercent" text="percentage of targets hp removed by damage. 0.0 (low) to 1.0 (high)" />
       <field type="uint" name="Damage" text="the amount of damage done" />
       <field type="bool" name="Critical" text="critical hit: 0=no, 1=yes" />
       <field type="AttackConditionsMask" name="AttackConditions" text="additional information about the attack, such as whether it was a Sneak Attack, etc" />
@@ -7577,7 +7577,7 @@
     <type name="Combat_HandleDefenderNotificationEvent" queue="UIQueue" text="HandleDefenderNotificationEvent: You have been hit by a creature's melee attack." type="0x01B2" lastUpdater="zegeger" lastUpdate="20170913">
       <field type="string" name="AttackerName" text="the name of the creature" />
       <field type="DamageType" name="Type" text="the type of damage done" />
-      <field type="float" name="DamagePercent" text="percentage of targets hp removed by damage. 0.0 (low) to 1.0 (high)" />
+      <field type="double" name="DamagePercent" text="percentage of targets hp removed by damage. 0.0 (low) to 1.0 (high)" />
       <field type="uint" name="Damage" text="the amount of damage done" />
       <field type="DamageLocation" name="Location" text="the location of the damage done" />
       <field type="bool" name="Critical" text="critical hit: 0=no, 1=yes" />

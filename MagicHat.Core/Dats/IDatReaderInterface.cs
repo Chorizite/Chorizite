@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 namespace MagicHat.Core.Dats {
     public interface IDatReaderInterface
     {
-        T? Get<T>(uint fileId) where T : IUnpackable;
-        bool TryGet<T>(uint fileId, out T? result) where T : IUnpackable;
+        T? Get<T>(uint fileId) where T : IDatFileType;
+        bool TryGet<T>(uint fileId, out T? result) where T : IDatFileType;
         bool Init(string datPath);
     }
 }

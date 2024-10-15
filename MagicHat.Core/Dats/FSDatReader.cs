@@ -29,11 +29,11 @@ namespace MagicHat.Core.Dats {
             return true;
         }
 
-        public T? Get<T>(uint fileId) where T : IUnpackable {
+        public T? Get<T>(uint fileId) where T : IDatFileType {
             return PortalDat.TryReadFile<T>(fileId, out T? result) ? result : default;
         }
 
-        public bool TryGet<T>(uint fileId, out T? result) where T : IUnpackable {
+        public bool TryGet<T>(uint fileId, out T? result) where T : IDatFileType {
             result = Get<T>(fileId);
             return result is not null;
         }
