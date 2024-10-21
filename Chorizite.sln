@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Loader.Standalone
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatReaderWriter.Tests", "ext\DatReaderWriter\DatReaderWriter.Tests\DatReaderWriter.Tests.csproj", "{D3431F60-1CBF-47AA-BDDB-94F5357A8454}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatReaderWriter.SourceGen", "ext\DatReaderWriter\DatReaderWriter.SourceGen\DatReaderWriter.SourceGen.csproj", "{992C837D-8559-452E-91D4-DED53FE4E33F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{D3431F60-1CBF-47AA-BDDB-94F5357A8454}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3431F60-1CBF-47AA-BDDB-94F5357A8454}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3431F60-1CBF-47AA-BDDB-94F5357A8454}.Release|Any CPU.Build.0 = Release|Any CPU
+		{992C837D-8559-452E-91D4-DED53FE4E33F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{992C837D-8559-452E-91D4-DED53FE4E33F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{992C837D-8559-452E-91D4-DED53FE4E33F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{992C837D-8559-452E-91D4-DED53FE4E33F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +136,7 @@ Global
 		{9A1F640F-70CE-4832-A716-C3B7E1562B5C} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{A9FB6442-D33F-4D41-AA9F-0916F1750565} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
 		{D3431F60-1CBF-47AA-BDDB-94F5357A8454} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
+		{992C837D-8559-452E-91D4-DED53FE4E33F} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

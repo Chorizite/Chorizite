@@ -1,5 +1,4 @@
 ﻿using ACClientLib.DatReaderWriter.Enums;
-using ACDatReader.FileTypes;
 using Chorizite.Core.Dats;
 using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
@@ -13,6 +12,7 @@ using WaveEngine.Bindings.OpenGL;
 using static System.Windows.Forms.DataFormats;
 using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
+using PixelFormat = WaveEngine.Bindings.OpenGL.PixelFormat;
 
 namespace Launcher.Render {
     internal unsafe class ManagedGLTexture : BitmapTexture {

@@ -29,11 +29,11 @@ namespace Chorizite.Core.Dats {
             return true;
         }
 
-        public T? Get<T>(uint fileId) where T : IDatFileType {
+        public T? Get<T>(uint fileId) where T : IDBObj {
             return PortalDat.TryReadFile<T>(fileId, out T? result) ? result : default;
         }
 
-        public bool TryGet<T>(uint fileId, out T? result) where T : IDatFileType {
+        public bool TryGet<T>(uint fileId, out T? result) where T : IDBObj {
             result = Get<T>(fileId);
             return result is not null;
         }
