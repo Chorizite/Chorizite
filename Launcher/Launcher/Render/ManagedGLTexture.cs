@@ -9,7 +9,6 @@ using SixLabors.ImageSharp.Processing;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using WaveEngine.Bindings.OpenGL;
-using static System.Windows.Forms.DataFormats;
 using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
 using PixelFormat = WaveEngine.Bindings.OpenGL.PixelFormat;

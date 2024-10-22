@@ -30,24 +30,32 @@ namespace Launcher {
         public static extern IntPtr LoadLibrary(string path);
 
         static void Main() {
-            Log = new ChoriziteLogger("Launcher", _logDirectory);
-            Log.LogDebug($"Launcher version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
+            try {
+                Log = new ChoriziteLogger("Launcher", _logDirectory);
+                Log.LogDebug($"Launcher version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
 
-            LaunchManager = new LaunchManager(Log);
+                LaunchManager = new LaunchManager(Log);
 
-            Config = new ChoriziteConfig(ChoriziteEnvironment.Launcher, _pluginDirectory, _dataDirectory, _logDirectory, _datDirectory);
-            ChoriziteInstance = new Chorizite<LauncherChoriziteBackend>(Config);
+                Config = new ChoriziteConfig(ChoriziteEnvironment.Launcher, _pluginDirectory, _dataDirectory, _logDirectory, _datDirectory);
+                ChoriziteInstance = new Chorizite<LauncherChoriziteBackend>(Config);
 
-            Input = (ChoriziteInstance.Backend.Input as SDLInputManager)!;
-            Renderer = (ChoriziteInstance.Backend.Renderer as OpenGLRenderer)!;
+                Input = (ChoriziteInstance.Backend.Input as SDLInputManager)!;
+                Renderer = (ChoriziteInstance.Backend.Renderer as OpenGLRenderer)!;
 
-            var ui = ChoriziteInstance.Scope.Resolve<IPluginManager>();
-            var pluginManager = ChoriziteInstance.Scope.Resolve<IPluginManager>();
+                var ui = ChoriziteInstance.Scope.Resolve<IPluginManager>();
+                var pluginManager = ChoriziteInstance.Scope.Resolve<IPluginManager>();
 
-            while (!_shouldExit) {
-                Input.Update();
-                Renderer.Update();
-                Renderer.Render();
+                while (!_shouldExit) {
+                    Input.Update();
+                    Renderer.Update();
+                    Renderer.Render();
+                }
+
+                Input?.HandleShutdown();
+                System.Environment.Exit(0);
+            }
+            catch (Exception ex) {
+                Log.LogError(ex.ToString());
             }
 
             Input?.HandleShutdown();
