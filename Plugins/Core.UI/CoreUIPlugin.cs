@@ -171,7 +171,7 @@ namespace Core.UI {
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
                 // fail to find it later
 
-                var rmlNativePath = Path.Combine(AssemblyDirectory, "lib", (IntPtr.Size == 8) ? "x64" : "x86", "RmlUiNative.dll");
+                var rmlNativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
                 Log?.LogDebug($"Manually pre-loading {rmlNativePath}");
                 Native.LoadLibrary(rmlNativePath);
 

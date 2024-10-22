@@ -8,10 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Update="lib\x64\RmlUiNative.dll">
+    <None Update="runtimes\win-x64\native\RmlUiNative.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="lib\x86\RmlUiNative.dll">
+    <None Update="runtimes\win-x86\native\RmlUiNative.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

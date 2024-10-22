@@ -32,9 +32,7 @@ Chorizite serves as a plugin framework for *Asheron's Call*, allowing developers
 - **Launcher/Launcher**
   - The Launcher app. 
   - Implements the required backend interfaces for running **Chorizite.Core** in a launcher environment.
-- **Launcher/Chorizite.Injector**
   - Launches acclient and uses **Launcher/Chorizite.Bootstrapper** to inject **Launcher/Chorizite.Loader.Standalone** (and optionally decal).
-  - A separate app from the launcher is used because this is x86 where the launcher is x64. This makes it easier to do the injection.
 - **Launcher/Chorizite.Bootstrapper**
   - Used to bootstrap dotnet inside the client, and loads **Launcher/Chorizite.Loader.Standalone**.
 - **Launcher/Chorizite.Loader.Standalone**
