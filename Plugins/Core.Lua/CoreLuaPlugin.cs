@@ -2,43 +2,37 @@
 using System;
 using Microsoft.Extensions.Logging;
 using WattleScript.Interpreter;
-using ScriptHost.Lib;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Core.AC;
 using System.Linq;
+using Core.UI;
 
-namespace ScriptHost {
+namespace Core.Lua {
     public class CoreLuaPlugin : IPluginCore {
         private readonly IPluginManager _pluginManager;
-        public static ILogger<CoreLuaPlugin>? Log;
+        private readonly CoreUIPlugin _coreUI;
+        public static ILogger? Log;
 
-        public Script Script { get; }
-
-        public CoreLuaPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, ILogger<CoreLuaPlugin> log) : base(manifest) {
+        public CoreLuaPlugin(AssemblyPluginManifest manifest, CoreUIPlugin coreUI, IPluginManager pluginManager, ILogger log) : base(manifest) {
             Log = log;
             _pluginManager = pluginManager;
+            _coreUI = coreUI;
 
-            Script = new Script();
-            Script.Options.AutoAwait = true;
-            Script.Options.Syntax = ScriptSyntax.Lua;
-
-            Script.Options.DebugPrint = (message) => {
-                Log?.LogInformation(message);
-            };
-        }
-
-        public void Startup() {
-            try {
-                Script.DoString("print(\"Hello from lua\", TestClassScripting.Test())");
+            Log?.LogDebug($"Core.Lua 4: {Manifest.Version}");
+            var count = 0;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                if (assembly.FullName.Contains("Core.Lua")) {
+                    Log?.LogDebug($"\t Found Core.Lua assembly1: {assembly.FullName}");
+                    count++;
+                }
             }
-            catch   (Exception ex) {
-                Log?.LogError(ex, ex.Message);
-            }
+
+            Log?.LogDebug($"\t Found Core.Lua assembly2: {count}"); 
         }
 
         public override void Dispose() {
-            
+            Log = null;
         }
     }
 }

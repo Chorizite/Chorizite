@@ -19,6 +19,16 @@ namespace Chorizite.Core.Plugins {
         IReadOnlyList<PluginInstance> Plugins { get; }
 
         /// <summary>
+        /// An event that is triggered when a plugin is loaded.
+        /// </summary>
+        public event EventHandler<PluginLoadedEventArgs> OnPluginLoaded;
+
+        /// <summary>
+        /// An event that is triggered when a plugin is unloaded.
+        /// </summary>
+        public event EventHandler<PluginUnloadedEventArgs> OnPluginUnloaded;
+
+        /// <summary>
         /// Load all plugin manifests from the <see cref="PluginDirectory"/>.
         /// </summary>
         void LoadPluginManifests();

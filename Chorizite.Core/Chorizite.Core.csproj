@@ -16,9 +16,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" />
-    <PackageReference Include="McMaster.NETCore.Plugins" Version="1.4.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
@@ -26,6 +26,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--
+    <ProjectReference Include="..\Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
+    <ProjectReference Include="..\Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.CodeFixes\Chorizite.SourceAnalyzer.CodeFixes.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
+    -->
+    <ProjectReference Include="..\Chorizite.Common\Chorizite.Common.csproj" />
     <ProjectReference Include="..\ext\ACProtocol\Chorizite.ACProtocol\Chorizite.ACProtocol.csproj" />
     <ProjectReference Include="..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
   </ItemGroup>

@@ -86,4 +86,8 @@
   <ItemGroup>
     <Folder Include="Messages\S2C\Events\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Chorizite.Common\Chorizite.Common.csproj" />
+  </ItemGroup>
 </Project>

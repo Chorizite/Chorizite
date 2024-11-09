@@ -11,6 +11,7 @@
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
+    <AssemblyVersion>0.0.1</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime" SetTargetFramework="TargetFramework=$(TargetFramework)">
+    <ProjectReference Include="..\..\Chorizite.Common\Chorizite.Common.csproj" ExcludeAssets="runtime">
+      <Private>False</Private>
+      <ExcludeAssets>all</ExcludeAssets>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

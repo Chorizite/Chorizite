@@ -41,7 +41,6 @@ namespace Chorizite.Core.Render {
         }
 
         private void WatchShaderFiles(string shaderDir) {
-            System.Diagnostics.Debug.WriteLine($"Watching {shaderDir}{Name}.*");
             _watcher = new FileSystemWatcher(shaderDir);
             _watcher.NotifyFilter = NotifyFilters.LastWrite;
             _watcher.Filter = $"{Name}.*";

@@ -20,12 +20,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" ExcludeAssets="runtime" >
+    <ProjectReference Include="..\..\Chorizite.Common\Chorizite.Common.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime" >
+    <ProjectReference Include="..\..\Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.CodeFixes\Chorizite.SourceAnalyzer.CodeFixes.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <OutputItemType>Analyzer</OutputItemType>
+    </ProjectReference>
+    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" ExcludeAssets="runtime">
+      <Private>False</Private>
+      <ExcludeAssets>all</ExcludeAssets>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

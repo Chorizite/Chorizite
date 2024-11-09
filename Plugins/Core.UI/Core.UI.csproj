@@ -30,7 +30,7 @@
     <PackageReference Include="System.Collections" Version="4.3.0" ExcludeAssets="runtime" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\ACProtocol\Chorizite.ACProtocol\Chorizite.ACProtocol.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\Chorizite.Common\Chorizite.Common.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

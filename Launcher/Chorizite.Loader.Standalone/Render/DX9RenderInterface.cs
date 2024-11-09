@@ -4,19 +4,15 @@ using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using SharpDX.Direct3D9;
 using SharpDX.Mathematics.Interop;
-using SharpDX.Multimedia;
-using System.Drawing.Imaging;
-using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using AcClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Reflection;
-using Autofac.Core;
+using Chorizite.Common;
 
 namespace Chorizite.Loader.Standalone.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
@@ -45,9 +41,27 @@ namespace Chorizite.Loader.Standalone.Render {
         private ILogger _log;
         private readonly IDatReaderInterface _datReader;
 
-        public event EventHandler<EventArgs>? OnRender2D;
-        public event EventHandler<EventArgs>? OnGraphicsPreReset;
-        public event EventHandler<EventArgs>? OnGraphicsPostReset;
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnRender2D {
+            add { _OnRender2D.Subscribe(value); }
+            remove { _OnRender2D.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnRender2D = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnGraphicsPreReset {
+            add { _OnGraphicsPreReset.Subscribe(value); }
+            remove { _OnGraphicsPreReset.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnGraphicsPreReset = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnGraphicsPostReset {
+            add { _OnGraphicsPostReset.Subscribe(value); }
+            remove { _OnGraphicsPostReset.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnGraphicsPostReset = new();
 
         public static Device D3Ddevice { get; private set; }
 
@@ -55,6 +69,7 @@ namespace Chorizite.Loader.Standalone.Render {
 
         public IntPtr DataPatchUI { get; private set; }
         internal HLSLShader BasicShader { get; }
+
 
         public DX9RenderInterface(IntPtr unmanagedD3dPtr, ILogger logger, IDatReaderInterface datReader) {
             _log = logger;
@@ -103,7 +118,7 @@ namespace Chorizite.Loader.Standalone.Render {
                 D3Ddevice.SetRenderState(RenderState.ColorVertex, true);
 
                 try {
-                    OnRender2D?.Invoke(this, EventArgs.Empty);
+                    _OnRender2D?.Invoke(this, EventArgs.Empty);
                 }
                 catch (Exception ex) {
                     _log?.LogError(ex, $"Error in OnRender2D: {ex.Message}");
@@ -250,11 +265,11 @@ namespace Chorizite.Loader.Standalone.Render {
         }
 
         public void TriggerGraphicsPreReset(object sender, EventArgs e) {
-            OnGraphicsPreReset?.Invoke(sender, e);
+            _OnGraphicsPreReset?.Invoke(sender, e);
         }
 
         public void TriggerGraphicsPostReset(object sender, EventArgs e) {
-            OnGraphicsPostReset?.Invoke(sender, e);
+            _OnGraphicsPostReset?.Invoke(sender, e);
         }
 
         public void Dispose() {

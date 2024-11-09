@@ -5,6 +5,7 @@ using SharpDX;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Chorizite.Common;
 
 namespace Chorizite.Loader.Standalone.Input {
     public class Win32InputManager : IInputManager {
@@ -17,25 +18,70 @@ namespace Chorizite.Loader.Standalone.Input {
         [DllImport("USER32.dll")]
         static extern short VkKeyScanA(byte charCode);
 
+        /// <inheritdoc/>
         public bool MouseIsOverWindow { get; private set; }
+
+        /// <inheritdoc/>
         public int MouseX { get; private set; }
+
+        /// <inheritdoc/>
         public int MouseY { get; private set; }
 
-        public event EventHandler<MouseMoveEventArgs>? OnMouseMove;
-        public event EventHandler<MouseDownEventArgs>? OnMouseDown;
-        public event EventHandler<MouseUpEventArgs>? OnMouseUp;
-        public event EventHandler<MouseWheelEventArgs>? OnMouseWheel;
-        public event EventHandler<KeyUpEventArgs>? OnKeyUp;
-        public event EventHandler<KeyDownEventArgs>? OnKeyDown;
-        public event EventHandler<KeyPressEventArgs>? OnKeyPress;
-        public event EventHandler<EventArgs>? OnShutdown;
+        /// <inheritdoc/>
+        public event EventHandler<MouseMoveEventArgs>? OnMouseMove {
+            add { _OnMouseMove.Subscribe(value); }
+            remove { _OnMouseMove.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseMoveEventArgs> _OnMouseMove = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<MouseDownEventArgs>? OnMouseDown {
+            add { _OnMouseDown.Subscribe(value); }
+            remove { _OnMouseDown.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseDownEventArgs> _OnMouseDown = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<MouseUpEventArgs>? OnMouseUp {
+            add { _OnMouseUp.Subscribe(value); }
+            remove { _OnMouseUp.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseUpEventArgs> _OnMouseUp = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyPressEventArgs>? OnKeyPress {
+            add { _OnKeyPress.Subscribe(value); }
+            remove { _OnKeyPress.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<KeyPressEventArgs> _OnKeyPress = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnShutdown {
+            add { _OnShutdown.Subscribe(value); }
+            remove { _OnShutdown.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnShutdown = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyDownEventArgs>? OnKeyDown {
+            add { _OnKeyDown.Subscribe(value); }
+            remove { _OnKeyDown.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<KeyDownEventArgs> _OnKeyDown = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyUpEventArgs>? OnKeyUp {
+            add { _OnKeyUp.Subscribe(value); }
+            remove { _OnKeyUp.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<KeyUpEventArgs> _OnKeyUp = new();
 
         public Win32InputManager(ILogger logger) {
             _log = logger;
         }
 
         public void HandleShutdown() {
-            OnShutdown?.Invoke(this, EventArgs.Empty);
+            _OnShutdown?.Invoke(this, EventArgs.Empty);
         }
 
         public bool IsKeyPressed(Key key) {
@@ -60,16 +106,16 @@ namespace Chorizite.Loader.Standalone.Input {
                     break;
                 case WindowMessageType.KEYUP:
                     eatableEvent = new KeyUpEventArgs((Key)wParam);
-                    OnKeyUp?.InvokeSafely(this, (KeyUpEventArgs)eatableEvent);
+                    _OnKeyUp.Invoke(this, (KeyUpEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.KEYDOWN:
                     eatableEvent = new KeyDownEventArgs((Key)wParam);
-                    OnKeyDown?.InvokeSafely(this, (KeyDownEventArgs)eatableEvent);
+                    _OnKeyDown.Invoke(this, (KeyDownEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.CHAR:
                     var key = VkKeyScanA((byte)wParam) & 0xFF;
                     eatableEvent = new KeyPressEventArgs(((char)wParam).ToString());
-                    OnKeyPress?.InvokeSafely(this, (KeyPressEventArgs)eatableEvent);
+                    _OnKeyPress.Invoke(this, (KeyPressEventArgs)eatableEvent);
                     break;
             }
 
@@ -80,45 +126,45 @@ namespace Chorizite.Loader.Standalone.Input {
             switch (type) {
                 case WindowMessageType.LBUTTONDOWN:
                     eatableEvent = new MouseDownEventArgs(MouseButton.Left);
-                    OnMouseDown?.InvokeSafely(this, (MouseDownEventArgs)eatableEvent);
+                    _OnMouseDown.Invoke(this, (MouseDownEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.LBUTTONUP:
                     eatableEvent = new MouseUpEventArgs(MouseButton.Left);
-                    OnMouseUp?.InvokeSafely(this, (MouseUpEventArgs)eatableEvent);
+                    _OnMouseUp.Invoke(this, (MouseUpEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.RBUTTONDOWN:
                     eatableEvent = new MouseDownEventArgs(MouseButton.Right);
-                    OnMouseDown?.InvokeSafely(this, (MouseDownEventArgs)eatableEvent);
+                    _OnMouseDown.Invoke(this, (MouseDownEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.RBUTTONUP:
                     eatableEvent = new MouseUpEventArgs(MouseButton.Right);
-                    OnMouseUp?.InvokeSafely(this, (MouseUpEventArgs)eatableEvent);
+                    _OnMouseUp.Invoke(this, (MouseUpEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.MBUTTONDOWN:
                     eatableEvent = new MouseDownEventArgs(MouseButton.Middle);
-                    OnMouseDown?.InvokeSafely(this, (MouseDownEventArgs)eatableEvent);
+                    _OnMouseDown.Invoke(this, (MouseDownEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.MBUTTONUP:
                     eatableEvent = new MouseUpEventArgs(MouseButton.Middle);
-                    OnMouseUp?.InvokeSafely(this, (MouseUpEventArgs)eatableEvent);
+                    _OnMouseUp.Invoke(this, (MouseUpEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.XBUTTONDOWN:
                     eatableEvent = new MouseDownEventArgs(MouseButton.X);
-                    OnMouseDown?.InvokeSafely(this, (MouseDownEventArgs)eatableEvent);
+                    _OnMouseDown.Invoke(this, (MouseDownEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.XBUTTONUP:
                     eatableEvent = new MouseUpEventArgs(MouseButton.X);
-                    OnMouseUp?.InvokeSafely(this, (MouseUpEventArgs)eatableEvent);
+                    _OnMouseUp.Invoke(this, (MouseUpEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.MOUSEWHEEL:
-                    eatableEvent = new MouseWheelEventArgs(HIWORD(wParam) / 120);
-                    OnMouseWheel?.InvokeSafely(this, (MouseWheelEventArgs)eatableEvent);
+                    //eatableEvent = new MouseWheelEventArgs(HIWORD(wParam) / 120);
+                    //_OnMouseWheel.Invoke(this, (MouseWheelEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.MOUSEMOVE:
                     MouseX = LOWORD(lParam);
                     MouseY = HIWORD(lParam);
                     eatableEvent = new MouseMoveEventArgs(MouseX, MouseY);
-                    OnMouseMove?.InvokeSafely(this, (MouseMoveEventArgs)eatableEvent);
+                    _OnMouseMove.Invoke(this, (MouseMoveEventArgs)eatableEvent);
                     eatableEvent.Eat = false;
                     break;
             }

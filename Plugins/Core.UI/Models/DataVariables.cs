@@ -97,8 +97,10 @@ namespace Core.UI.Models {
         public new VariableListDefinition<T> Definition { get; }
         public ObservableCollection<T> Value => Definition.Value;
 
+#pragma warning disable CZ0001 // Public events should use WeakEvent<TEventArgs>
         public event NotifyCollectionChangedEventHandler? CollectionChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CZ0001 // Public events should use WeakEvent<TEventArgs>
 
         public DataVariableList(ObservableCollection<T> value, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "") : base() {
             Definition = new VariableListDefinition<T>(memberName, value);
@@ -108,7 +110,9 @@ namespace Core.UI.Models {
     }
 
     public class VariableListDefinition<T> : VariableDefinition, INotifyPropertyChanged, IDisposable where T : DataVariable {
+#pragma warning disable CZ0001 // Public events should use WeakEvent<TEventArgs>
         public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CZ0001 // Public events should use WeakEvent<TEventArgs>
         private ObservableCollection<T> _value;
 
         public string Name { get; }
@@ -140,7 +144,9 @@ namespace Core.UI.Models {
     public class DataVariable<T> : DataVariable, INotifyPropertyChanged {
         public new VariableDefinition<T> Definition { get; }
 
+#pragma warning disable CZ0001 // Public events should use WeakEvent<TEventArgs>
         public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CZ0001 // Public events should use WeakEvent<TEventArgs>
 
         public T Value {
             get => Definition.Value;
@@ -150,7 +156,7 @@ namespace Core.UI.Models {
         public DataVariable(T value, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "") : base() {
             Definition = new VariableDefinition<T>(memberName, value);
             base.Definition = Definition;
-            Definition.PropertyChanged += (_, e) => PropertyChanged?.Invoke(this, e);
+            //Definition.PropertyChanged += (_, e) => PropertyChanged?.Invoke(this, e);
             CreateNative(Definition);
         }
     }
@@ -170,7 +176,9 @@ namespace Core.UI.Models {
             }
         }
 
+#pragma warning disable CZ0001 // Public events should use WeakEvent<TEventArgs>
         public event PropertyChangedEventHandler? PropertyChanged;
+#pragma warning restore CZ0001 // Public events should use WeakEvent<TEventArgs>
 
         public VariableDefinition(string name, T value) : base(DataVariableType.Scalar) {
             Name = name;

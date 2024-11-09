@@ -1,7 +1,8 @@
-﻿using ACClientLib.DatReaderWriter.Enums;
+﻿using Chorizite.Core.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Chorizite.Common;
 
 namespace Chorizite.Core.Render {
     public interface IRenderInterface : IDisposable {
@@ -13,17 +14,17 @@ namespace Chorizite.Core.Render {
         /// <summary>
         /// Callback for 2D rendering
         /// </summary>
-        event EventHandler<EventArgs>? OnRender2D;
+        public event EventHandler<EventArgs>? OnRender2D;
 
         /// <summary>
         /// Callback for graphics reset
         /// </summary>
-        event EventHandler<EventArgs>? OnGraphicsPreReset;
+        public event EventHandler<EventArgs>? OnGraphicsPreReset;
 
         /// <summary>
         /// Callback for graphics reset
         /// </summary>
-        event EventHandler<EventArgs>? OnGraphicsPostReset;
+        public event EventHandler<EventArgs>? OnGraphicsPostReset;
 
         /// <summary>
         /// Compile the specified geometry and return a pointer to the compiled geometry
@@ -59,7 +60,6 @@ namespace Chorizite.Core.Render {
         /// Generate the specified texture and return a pointer to the texture
         /// </summary>
         /// <param name="source"></param>
-        /// <param name="numBytes"></param>
         /// <param name="dimensions"></param>
         /// <returns></returns>
         public ITexture GenerateTexture(byte[] source, Vector2 dimensions);

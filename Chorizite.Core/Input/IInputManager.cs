@@ -10,13 +10,13 @@ namespace Chorizite.Core.Input {
         int MouseX { get; }
         int MouseY { get; }
 
-        event EventHandler<MouseMoveEventArgs>? OnMouseMove;
-        event EventHandler<MouseDownEventArgs>? OnMouseDown;
-        event EventHandler<MouseUpEventArgs>? OnMouseUp;
-        event EventHandler<KeyPressEventArgs>? OnKeyPress;
-        event EventHandler<EventArgs>? OnShutdown;
-        event EventHandler<KeyDownEventArgs>? OnKeyDown;
-        event EventHandler<KeyUpEventArgs>? OnKeyUp;
+        public event EventHandler<MouseMoveEventArgs> OnMouseMove;
+        public event EventHandler<MouseDownEventArgs> OnMouseDown;
+        public event EventHandler<MouseUpEventArgs> OnMouseUp;
+        public event EventHandler<KeyPressEventArgs> OnKeyPress;
+        public event EventHandler<KeyDownEventArgs> OnKeyDown;
+        public event EventHandler<KeyUpEventArgs> OnKeyUp;
+        public event EventHandler<EventArgs> OnShutdown;
 
         void HandleShutdown();
         bool IsKeyPressed(Key key);

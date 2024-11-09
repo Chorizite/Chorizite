@@ -1,5 +1,6 @@
 ﻿using ACUI;
 using Autofac;
+using Core.UI.Lib.Serialization;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -18,7 +19,7 @@ namespace Core.UI.Models {
 
         public string? Name { get; private set; }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
+        private event PropertyChangedEventHandler? PropertyChanged;
 
         protected void InvokePropertyChange([System.Runtime.CompilerServices.CallerMemberName] string memberName = "") {
             if (!string.IsNullOrEmpty(memberName)) {
@@ -38,7 +39,7 @@ namespace Core.UI.Models {
             Name = name;
             _modelConstructor = CoreUIPlugin.RmlContext.CreateDataModel(name);
             BuildBindings();
-            PropertyChanged += HandlePropertyChanged;
+            //PropertyChanged += HandlePropertyChanged;
         }
 
         protected void BindAction(string name, Action<Event, IEnumerable<Variant>> action) {

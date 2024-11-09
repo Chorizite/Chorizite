@@ -1,8 +1,10 @@
-﻿namespace Core.Launcher.Lib {
+﻿using System;
+
+namespace Core.Launcher.Lib {
     /// <summary>
     /// Screen changed
     /// </summary>
-    public class ScreenChangedEventArgs {
+    public class ScreenChangedEventArgs : EventArgs {
         /// <summary>
         /// The previous screen
         /// </summary>

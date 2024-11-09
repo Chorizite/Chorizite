@@ -45,6 +45,24 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatReaderWriter.Tests", "ex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatReaderWriter.SourceGen", "ext\DatReaderWriter\DatReaderWriter.SourceGen\DatReaderWriter.SourceGen.csproj", "{992C837D-8559-452E-91D4-DED53FE4E33F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chorizite.SourceGen", "Chorizite.SourceGen", "{C7CD0069-3FFB-4235-937D-0BD68D221330}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceGen", "Chorizite.SourceGen\Chorizite.SourceGen\Chorizite.SourceGen.csproj", "{37B58086-1646-4EF2-A054-D810FC2D383B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceGen.Tests", "Chorizite.SourceGen\Chorizite.SourceGen.Tests\Chorizite.SourceGen.Tests.csproj", "{AE22ADD9-34AD-4443-86FD-5154DCBA47F8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceAnalyzer", "Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.csproj", "{43569ECA-3574-4707-B4AA-3EE4859E3E1F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceAnalyzer.CodeFixes", "Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.CodeFixes\Chorizite.SourceAnalyzer.CodeFixes.csproj", "{F1587CAC-45F9-497B-A0BB-E351B076C570}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceAnalyzer.Package", "Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.Package\Chorizite.SourceAnalyzer.Package.csproj", "{E056230D-E325-4CBC-A2EE-CAFF58E68F45}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceAnalyzer.Test", "Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.Test\Chorizite.SourceAnalyzer.Test.csproj", "{7903C7D3-01FD-488A-A327-D322459BC353}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceAnalyzer.Vsix", "Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.Vsix\Chorizite.SourceAnalyzer.Vsix.csproj", "{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Common", "Chorizite.Common\Chorizite.Common.csproj", "{04A378EC-18B3-42A8-923A-6A8D4B8F4716}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +129,38 @@ Global
 		{992C837D-8559-452E-91D4-DED53FE4E33F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{992C837D-8559-452E-91D4-DED53FE4E33F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{992C837D-8559-452E-91D4-DED53FE4E33F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37B58086-1646-4EF2-A054-D810FC2D383B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37B58086-1646-4EF2-A054-D810FC2D383B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37B58086-1646-4EF2-A054-D810FC2D383B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37B58086-1646-4EF2-A054-D810FC2D383B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE22ADD9-34AD-4443-86FD-5154DCBA47F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE22ADD9-34AD-4443-86FD-5154DCBA47F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE22ADD9-34AD-4443-86FD-5154DCBA47F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE22ADD9-34AD-4443-86FD-5154DCBA47F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43569ECA-3574-4707-B4AA-3EE4859E3E1F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43569ECA-3574-4707-B4AA-3EE4859E3E1F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43569ECA-3574-4707-B4AA-3EE4859E3E1F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43569ECA-3574-4707-B4AA-3EE4859E3E1F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1587CAC-45F9-497B-A0BB-E351B076C570}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1587CAC-45F9-497B-A0BB-E351B076C570}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1587CAC-45F9-497B-A0BB-E351B076C570}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1587CAC-45F9-497B-A0BB-E351B076C570}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E056230D-E325-4CBC-A2EE-CAFF58E68F45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E056230D-E325-4CBC-A2EE-CAFF58E68F45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E056230D-E325-4CBC-A2EE-CAFF58E68F45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E056230D-E325-4CBC-A2EE-CAFF58E68F45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7903C7D3-01FD-488A-A327-D322459BC353}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7903C7D3-01FD-488A-A327-D322459BC353}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7903C7D3-01FD-488A-A327-D322459BC353}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7903C7D3-01FD-488A-A327-D322459BC353}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -130,6 +180,14 @@ Global
 		{A9FB6442-D33F-4D41-AA9F-0916F1750565} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
 		{D3431F60-1CBF-47AA-BDDB-94F5357A8454} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
 		{992C837D-8559-452E-91D4-DED53FE4E33F} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
+		{C7CD0069-3FFB-4235-937D-0BD68D221330} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
+		{37B58086-1646-4EF2-A054-D810FC2D383B} = {C7CD0069-3FFB-4235-937D-0BD68D221330}
+		{AE22ADD9-34AD-4443-86FD-5154DCBA47F8} = {C7CD0069-3FFB-4235-937D-0BD68D221330}
+		{43569ECA-3574-4707-B4AA-3EE4859E3E1F} = {C7CD0069-3FFB-4235-937D-0BD68D221330}
+		{F1587CAC-45F9-497B-A0BB-E351B076C570} = {C7CD0069-3FFB-4235-937D-0BD68D221330}
+		{E056230D-E325-4CBC-A2EE-CAFF58E68F45} = {C7CD0069-3FFB-4235-937D-0BD68D221330}
+		{7903C7D3-01FD-488A-A327-D322459BC353} = {C7CD0069-3FFB-4235-937D-0BD68D221330}
+		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9} = {C7CD0069-3FFB-4235-937D-0BD68D221330}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

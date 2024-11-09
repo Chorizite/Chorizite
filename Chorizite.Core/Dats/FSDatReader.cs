@@ -1,5 +1,5 @@
-﻿using ACClientLib.DatReaderWriter;
-using ACClientLib.DatReaderWriter.IO;
+﻿using DatReaderWriter;
+using DatReaderWriter.Lib.IO;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -13,7 +13,7 @@ namespace Chorizite.Core.Dats {
         private readonly ILogger _log;
         private readonly IChoriziteConfig _config;
 
-        public DatDatabaseReader PortalDat { get; private set; }
+        public DatDatabase PortalDat { get; private set; }
 
         public FSDatReader(ILogger<FSDatReader> log) {
             _log = log;
@@ -22,7 +22,7 @@ namespace Chorizite.Core.Dats {
         public bool Init(string datPath) {
             _datPath = datPath;
 
-            PortalDat = new DatDatabaseReader(options => {
+            PortalDat = new DatDatabase(options => {
                 options.FilePath = System.IO.Path.Combine(datPath, $"client_Portal.dat");
             });
 

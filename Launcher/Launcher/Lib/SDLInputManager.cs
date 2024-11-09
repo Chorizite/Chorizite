@@ -7,10 +7,13 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Chorizite.Common;
 using static SDL2.SDL;
 
 namespace Launcher.Lib {
-
+    /// <summary>
+    /// A SDL2 implementation of <see cref="IInputManager"/>
+    /// </summary>
     public class SDLInputManager : IInputManager {
         private readonly ILogger<SDLInputManager> _log;
 
@@ -18,26 +21,70 @@ namespace Launcher.Lib {
             _log = log;
         }
 
+        /// <inheritdoc/>
         public int MouseX { get; private set; }
 
+        /// <inheritdoc/>
         public int MouseY { get; private set; }
 
+        /// <inheritdoc/>
         public bool MouseIsOverWindow => throw new NotImplementedException();
 
-        public event EventHandler<MouseMoveEventArgs>? OnMouseMove;
-        public event EventHandler<MouseDownEventArgs>? OnMouseDown;
-        public event EventHandler<MouseUpEventArgs>? OnMouseUp;
-        public event EventHandler<Chorizite.Core.Input.KeyPressEventArgs>? OnKeyPress;
-        public event EventHandler<EventArgs>? OnShutdown;
-        public event EventHandler<KeyDownEventArgs>? OnKeyDown;
-        public event EventHandler<KeyUpEventArgs>? OnKeyUp;
+        /// <inheritdoc/>
+        public event EventHandler<MouseMoveEventArgs>? OnMouseMove {
+            add { _OnMouseMove.Subscribe(value); }
+            remove { _OnMouseMove.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseMoveEventArgs> _OnMouseMove = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<MouseDownEventArgs>? OnMouseDown {
+            add { _OnMouseDown.Subscribe(value); }
+            remove { _OnMouseDown.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseDownEventArgs> _OnMouseDown = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<MouseUpEventArgs>? OnMouseUp {
+            add { _OnMouseUp.Subscribe(value); }
+            remove { _OnMouseUp.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseUpEventArgs> _OnMouseUp = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyPressEventArgs>? OnKeyPress {
+            add { _OnKeyPress.Subscribe(value); }
+            remove { _OnKeyPress.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<KeyPressEventArgs> _OnKeyPress = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnShutdown {
+            add { _OnShutdown.Subscribe(value); }
+            remove { _OnShutdown.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnShutdown = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyDownEventArgs>? OnKeyDown {
+            add { _OnKeyDown.Subscribe(value); }
+            remove { _OnKeyDown.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<KeyDownEventArgs> _OnKeyDown = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<KeyUpEventArgs>? OnKeyUp {
+            add { _OnKeyUp.Subscribe(value); }
+            remove { _OnKeyUp.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<KeyUpEventArgs> _OnKeyUp = new();
 
         public bool IsKeyPressed(Key key) {
             return false;
         }
 
         public void HandleShutdown() {
-            OnShutdown?.Invoke(this, EventArgs.Empty);
+            _OnShutdown?.Invoke(this, EventArgs.Empty);
         }
 
         public unsafe void Update() {
@@ -46,7 +93,7 @@ namespace Launcher.Lib {
             if (MouseX != mouseX || MouseY != mouseY) {
                 MouseX = mouseX;
                 MouseY = mouseY;
-                OnMouseMove?.Invoke(this, new MouseMoveEventArgs(MouseX, MouseY));
+                _OnMouseMove?.Invoke(this, new MouseMoveEventArgs(MouseX, MouseY));
             }
 
             SDL_Event e;
@@ -78,20 +125,20 @@ namespace Launcher.Lib {
                         }
                         break;
                     case SDL_EventType.SDL_MOUSEBUTTONDOWN:
-                        OnMouseDown?.Invoke(this, new MouseDownEventArgs(ConvertSDLMouseButton(e.button.button)));
+                        _OnMouseDown?.Invoke(this, new MouseDownEventArgs(ConvertSDLMouseButton(e.button.button)));
                         break;
                     case SDL_EventType.SDL_MOUSEBUTTONUP:
-                        OnMouseUp?.Invoke(this, new MouseUpEventArgs(ConvertSDLMouseButton(e.button.button)));
+                        _OnMouseUp?.Invoke(this, new MouseUpEventArgs(ConvertSDLMouseButton(e.button.button)));
                         break;
                     case SDL_EventType.SDL_KEYDOWN:
-                        OnKeyDown?.Invoke(this, new KeyDownEventArgs(ConvertSDLToKey(e.key.keysym.sym)));
+                        _OnKeyDown?.Invoke(this, new KeyDownEventArgs(ConvertSDLToKey(e.key.keysym.sym)));
                         break;
                     case SDL_EventType.SDL_KEYUP:
-                        OnKeyUp?.Invoke(this, new KeyUpEventArgs(ConvertSDLToKey(e.key.keysym.sym)));
+                        _OnKeyUp?.Invoke(this, new KeyUpEventArgs(ConvertSDLToKey(e.key.keysym.sym)));
                         break;
                     case SDL_EventType.SDL_TEXTINPUT:
                         var str = Marshal.PtrToStringAnsi((IntPtr)e.text.text);
-                        OnKeyPress?.Invoke(this, new Chorizite.Core.Input.KeyPressEventArgs(str));
+                        _OnKeyPress?.Invoke(this, new Chorizite.Core.Input.KeyPressEventArgs(str));
                         break;
                     case SDL_EventType.SDL_QUIT:
                         Program.Exit();

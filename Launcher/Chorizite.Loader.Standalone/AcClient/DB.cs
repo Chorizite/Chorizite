@@ -485,14 +485,14 @@ namespace AcClient {
     public unsafe struct GrowBuffer {
         // Struct:
         public Turbine_RefCount a0;
-        public char* m_data;
+        public byte* m_data;
         public UInt32 m_size;
         public Byte m_ownsBuffer;
         public Byte m_bCanResize;
         public Byte m_bAllocateFromFreelist;
         public override string ToString() => $"a0(Turbine_RefCount):{a0}, m_data:->(char*)0x{(int)m_data:X8}, m_size:{m_size:X8}, m_ownsBuffer:{m_ownsBuffer:X2}, m_bCanResize:{m_bCanResize:X2}, m_bAllocateFromFreelist:{m_bAllocateFromFreelist:X2}";
         public unsafe struct FreeGrowBuffer {
-            public char* pData;
+            public byte* pData;
             public UInt32 cbSize;
             public override string ToString() => $"pData:->(char*)0x{(int)pData:X8}, cbSize:{cbSize:X8}";
         }

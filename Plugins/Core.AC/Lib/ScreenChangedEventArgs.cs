@@ -1,8 +1,10 @@
-﻿namespace Core.AC.Lib {
+﻿using System;
+
+namespace Core.AC.Lib {
     /// <summary>
     /// Screen changed
     /// </summary>
-    public class ScreenChangedEventArgs {
+    public class ScreenChangedEventArgs : EventArgs {
         /// <summary>
         /// The previous screen
         /// </summary>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using Chorizite.ACProtocol;
 using Chorizite.ACProtocol.Messages;
+using Chorizite.Common;
 
 namespace Chorizite.ACProtocol
 {
@@ -12,12 +13,20 @@ namespace Chorizite.ACProtocol
         /// <summary>
         /// Fired for every valid parsed Message. This includes C2S and S2C
         /// </summary>
-        public event EventHandler<MessageEventArgs>? OnMessage;
+        public event EventHandler<MessageEventArgs>? OnMessage {
+            add { _OnMessage.Subscribe(value); }
+            remove { _OnMessage.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MessageEventArgs> _OnMessage = new();
 
         /// <summary>
         /// Fired when an unknown Message type was encountered. This includes C2S and S2C
         /// </summary>
-        public event EventHandler<UnknownMessageEventArgs>? OnUnknownMessage;
+        public event EventHandler<UnknownMessageEventArgs>? OnUnknownMessage {
+            add { _OnUnknownMessage.Subscribe(value); }
+            remove { _OnUnknownMessage.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<UnknownMessageEventArgs> _OnUnknownMessage = new();
 
         /// <summary>
         /// Server to Client message events
@@ -38,19 +47,19 @@ namespace Chorizite.ACProtocol
         }
 
         private void S2C_OnUnknownMessage(object sender, UnknownMessageEventArgs e) {
-            OnUnknownMessage?.Invoke(sender, e);
+            _OnUnknownMessage?.Invoke(sender, e);
         }
 
         private void C2S_OnUnknownMessage(object sender, UnknownMessageEventArgs e) {
-            OnUnknownMessage?.Invoke(sender, e);
+            _OnUnknownMessage?.Invoke(sender, e);
         }
 
         private void S2C_OnMessage(object sender, MessageEventArgs e) {
-            OnMessage?.Invoke(sender, e);
+            _OnMessage?.Invoke(sender, e);
         }
 
         private void C2S_OnMessage(object sender, MessageEventArgs e) {
-            OnMessage?.Invoke(sender, e);
+            _OnMessage?.Invoke(sender, e);
         }
 
         public ACMessage? ProcessS2CMessage(BinaryReader reader) {

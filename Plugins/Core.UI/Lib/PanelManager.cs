@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace ACUI.Lib {
     public class PanelManager : IDisposable {
@@ -26,6 +27,7 @@ namespace ACUI.Lib {
             Context = ctx;
             Render = render;
         }
+
         public void LoadScreenFile(string name, string rmlFilePath) {
             if (_currentScreen is not null) {
                 UnloadScreen();
