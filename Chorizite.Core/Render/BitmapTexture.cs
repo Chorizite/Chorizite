@@ -1,4 +1,4 @@
-﻿using ACClientLib.DatReaderWriter.Enums;
+﻿using DatReaderWriter.Enums;
 using Chorizite.Core.Dats;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp.PixelFormats;
@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
-using ACClientLib.DatReaderWriter.DBObjs;
+using DatReaderWriter.DBObjs;
 
 namespace Chorizite.Core.Render {
     public abstract class BitmapTexture : ITexture {
@@ -160,7 +160,7 @@ namespace Chorizite.Core.Render {
             */
         }
 
-        protected static Image<Rgba32> GetBitmap(ACClientLib.DatReaderWriter.DBObjs.RenderSurface texture) {
+        protected static Image<Rgba32> GetBitmap(DatReaderWriter.DBObjs.RenderSurface texture) {
             if (texture.Format == PixelFormat.PFID_CUSTOM_RAW_JPEG) {
                 using (var ms = new MemoryStream(texture.SourceData)) {
                     using (var src = Image.Load(ms)) {
@@ -401,7 +401,7 @@ namespace Chorizite.Core.Render {
             { "piercing", 0x060033C4 }
         };
 
-        private static Image<Rgba32> GetIconBitmap(uint id, IDatReaderInterface portalDat, out ACClientLib.DatReaderWriter.DBObjs.RenderSurface? iconFile) {
+        private static Image<Rgba32> GetIconBitmap(uint id, IDatReaderInterface portalDat, out DatReaderWriter.DBObjs.RenderSurface? iconFile) {
             if (!portalDat.TryGet(id, out iconFile)) {
                 throw new Exception($"Could not load icon from dat: 0x{id:X8}");
             }

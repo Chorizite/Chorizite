@@ -17,9 +17,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core {
-    internal class ChoriziteStatics {
+    internal static class ChoriziteStatics {
         internal static ILogger Log { get; set; }
         internal static IChoriziteConfig Config { get; set; }
+
+        internal static ChoriziteLogger MakeLogger(string name) {
+            return new ChoriziteLogger(name, Config.LogDirectory);
+        }
     }
 
     /// <summary>

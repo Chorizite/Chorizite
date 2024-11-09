@@ -1,5 +1,4 @@
-﻿using ACClientLib.DatReaderWriter;
-using Core.DatService;
+﻿using Core.DatService;
 using Chorizite.Core.Render;
 using RmlUiNet;
 using System;

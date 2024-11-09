@@ -14,6 +14,7 @@ using Chorizite.Loader.Standalone.Input;
 using Chorizite.Loader.Standalone.Render;
 using Microsoft.Extensions.Logging;
 using System;
+using Chorizite.Common;
 
 namespace Chorizite.Loader.Standalone {
     public unsafe class ACChoriziteBackend : IClientBackend, IChoriziteBackend {
@@ -33,16 +34,30 @@ namespace Chorizite.Loader.Standalone {
                         if ((int)(*UIFlow.m_instance)->_curMode != value) {
                             (*UIFlow.m_instance)->QueueUIMode((UIMode)value);
                         }
-                        OnScreenChanged?.InvokeSafely(this, EventArgs.Empty);
                         _previousGameScreen = value;
+                        _OnScreenChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
         }
 
-        public event EventHandler<PacketDataEventArgs>? OnC2SData;
-        public event EventHandler<PacketDataEventArgs>? OnS2CData;
-        public event EventHandler<EventArgs>? OnScreenChanged;
+        private readonly WeakEvent<PacketDataEventArgs> _OnC2SData = new WeakEvent<PacketDataEventArgs>();
+        public event EventHandler<PacketDataEventArgs>? OnC2SData {
+            add { _OnC2SData.Subscribe(value); }
+            remove { _OnC2SData.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<PacketDataEventArgs> _OnS2CData = new WeakEvent<PacketDataEventArgs>();
+        public event EventHandler<PacketDataEventArgs>? OnS2CData {
+            add { _OnS2CData.Subscribe(value); }
+            remove { _OnS2CData.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
+        public event EventHandler<EventArgs>? OnScreenChanged {
+            add { _OnScreenChanged.Subscribe(value); }
+            remove { _OnScreenChanged.Unsubscribe(value); }
+        }
 
         public static IChoriziteBackend Create(IContainer container) {
             var renderer = new DX9RenderInterface(StandaloneLoader.UnmanagedD3DPtr, container.Resolve<ILogger<DX9RenderInterface>>(), container.Resolve<IDatReaderInterface>());
@@ -59,11 +74,11 @@ namespace Chorizite.Loader.Standalone {
         }
 
         internal void HandleC2SPacketData(byte[] bytes) {
-            OnC2SData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ClientToServer, bytes));
+            _OnC2SData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ClientToServer, bytes));
         }
 
         internal void HandleS2CPacketData(byte[] bytes) {
-            OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
+            _OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
         }
 
         public bool EnterGame(uint characterId) {

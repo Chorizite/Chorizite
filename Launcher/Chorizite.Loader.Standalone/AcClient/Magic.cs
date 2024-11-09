@@ -340,6 +340,17 @@ namespace AcClient {
         public UInt32 pack_size() => ((delegate* unmanaged[Thiscall]<ref CEnchantmentRegistry, UInt32>)0x005947B0)(ref this); // .text:006B7800 ; unsigned int __thiscall CEnchantmentRegistry::pack_size(GenericQualitiesData *this) .text:006B7800 ?pack_size@CEnchantmentRegistry@@QAEIXZ
     }
 
+    public unsafe struct CRegionDesc {
+        public SerializeUsingPackDBObj a0;
+
+        public uint region_number;
+        public AC1Legacy.PStringBase<byte> region_name;
+
+        public uint version;
+        public int minimize_pal;
+        public uint parts_mask;
+    }
+
     public unsafe struct CSpellTable {
         // Struct:
         public SerializeUsingPackDBObj a0;

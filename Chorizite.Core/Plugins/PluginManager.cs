@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Chorizite.Common;
 using Chorizite.Core.Dats;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core.Render;
@@ -9,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace Chorizite.Core.Plugins {
     /// <summary>
@@ -31,6 +33,20 @@ namespace Chorizite.Core.Plugins {
 
         /// <inheritdoc />
         public IReadOnlyList<IPluginLoader> PluginLoaders => _pluginLoaders;
+
+        /// <inheritdoc />
+        public event EventHandler<PluginLoadedEventArgs>? OnPluginLoaded {
+            add { _OnPluginLoaded.Subscribe(value); }
+            remove { _OnPluginLoaded.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<PluginLoadedEventArgs> _OnPluginLoaded = new WeakEvent<PluginLoadedEventArgs>();
+
+        /// <inheritdoc />
+        public event EventHandler<PluginUnloadedEventArgs>? OnPluginUnloaded {
+            add { _OnPluginUnloaded.Subscribe(value); }
+            remove { _OnPluginUnloaded.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<PluginUnloadedEventArgs> _OnPluginUnloaded = new WeakEvent<PluginUnloadedEventArgs>();
 
         public PluginManager(IChoriziteConfig config, IRenderInterface render, ILogger<PluginManager> log) {
             _config = config;
@@ -92,7 +108,7 @@ namespace Chorizite.Core.Plugins {
             }
         }
 
-        private void Render_OnRender2D(object sender, EventArgs e) {
+        private void Render_OnRender2D(object? sender, EventArgs e) {
             if (!_wantsReload && Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
                 _wantsReloadAt = DateTime.Now + TimeSpan.FromSeconds(1);
                 _wantsReload = true;
@@ -111,10 +127,21 @@ namespace Chorizite.Core.Plugins {
                     UnloadPluginAndDependents(plugin, ref unloadedPlugins);
                 }
 
+                var unloadingPlugins = pluginsToReload
+                    .Where(p => p is AssemblyPluginInstance)
+                    .Cast<AssemblyPluginInstance>()
+                    .Where(p => p.CountLoadedAssemblies() > 0)
+                    .ToList();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                _log?.LogDebug($"Unloading: {string.Join(", ", unloadingPlugins.Select(p => $"{p.Name}:{p.CountLoadedAssemblies()}"))}");
+
                 foreach (var plugin in unloadedPlugins) {
                     var startedPlugins = new List<string>();
                     StartPlugin(plugin, ref startedPlugins);
                 }
+
+                _wantsReload = false;
             }
             catch (Exception ex) {
                 _log?.LogError(ex, "Error reloading plugins: {0}", ex.Message);
@@ -129,6 +156,7 @@ namespace Chorizite.Core.Plugins {
             }
             unloadedPlugins.Add(plugin);
             plugin.Unload();
+            _OnPluginUnloaded?.Invoke(this, new PluginUnloadedEventArgs(plugin.Name));
         }
 
         private bool LoadPluginManifest(string manifestFile, out PluginInstance? plugin) {
@@ -226,6 +254,8 @@ namespace Chorizite.Core.Plugins {
 
             _log?.LogDebug($"Started plugin: {plugin.Name}");
             startedPlugins.Add(plugin.Name.ToLower());
+
+            _OnPluginLoaded?.Invoke(this, new PluginLoadedEventArgs(plugin.Name));
 
             return true;
         }

@@ -19,18 +19,19 @@ namespace Core.Launcher.UIModels {
         public DataVariable<string> ClientPath { get; } = new(@"C:\Turbine\Asheron's Call\acclient.exe");
         public DataVariable<string> Server { get; } = new("play.coldeve.ac:9000");
 
-        internal static SimpleLoginScreenModel LoadFrom(string dataDirectory, JsonSerializerOptions serializerOptions, ILogger? log) {
+        internal static SimpleLoginScreenModel LoadFrom(string dataDirectory, ILogger? log) {
             SimpleLoginScreenModel? model = null;
+            
             var modelJsonPath = Path.Combine(dataDirectory, "simplelogin.json");
             if (File.Exists(modelJsonPath)) {
                 try {
-                    model = JsonSerializer.Deserialize<SimpleLoginScreenModel>(File.ReadAllText(modelJsonPath), serializerOptions);
+                    model = JsonSerializer.Deserialize(File.ReadAllText(modelJsonPath), SourceGenerationContext.Default.SimpleLoginScreenModel); 
                 }
                 catch (Exception ex) {
                     log?.LogError($"Error deserializing {modelJsonPath}: {ex.Message}");
                 }
             }
-
+            
             return model ?? new SimpleLoginScreenModel();
         }
 
@@ -46,8 +47,8 @@ namespace Core.Launcher.UIModels {
             });
         }
 
-        public void Save(string dataDirectory, JsonSerializerOptions serializerOptions, ILogger? log) {
-            string jsonString = JsonSerializer.Serialize(this, serializerOptions);
+        public void Save(string dataDirectory, ILogger? log) {
+            string jsonString = JsonSerializer.Serialize(this!, SourceGenerationContext.Default.SimpleLoginScreenModel);
             if (!Directory.Exists(dataDirectory)) {
                 Directory.CreateDirectory(dataDirectory);
             }

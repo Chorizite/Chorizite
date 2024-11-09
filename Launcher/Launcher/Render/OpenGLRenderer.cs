@@ -7,8 +7,9 @@ using System.Numerics;
 using System.Text.RegularExpressions;
 using WaveEngine.Bindings.OpenGL;
 using static SDL2.SDL;
-using Color = SixLabors.ImageSharp.Color;
 using System.Reflection;
+using Chorizite.Common;
+using Chorizite.Common;
 
 namespace Launcher.Render {
     unsafe public class OpenGLRenderer : IRenderInterface {
@@ -57,9 +58,26 @@ namespace Launcher.Render {
         public GLSLShader ColorShader { get; }
         public GLSLShader TextureShader { get; }
 
-        public event EventHandler<EventArgs>? OnRender2D;
-        public event EventHandler<EventArgs>? OnGraphicsPreReset;
-        public event EventHandler<EventArgs>? OnGraphicsPostReset;
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnRender2D {
+            add { _OnRender2D.Subscribe(value); }
+            remove { _OnRender2D.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnRender2D = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnGraphicsPreReset {
+            add { _OnGraphicsPreReset.Subscribe(value); }
+            remove { _OnGraphicsPreReset.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnGraphicsPreReset = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnGraphicsPostReset {
+            add { _OnGraphicsPostReset.Subscribe(value); }
+            remove { _OnGraphicsPostReset.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnGraphicsPostReset = new();
 
         public OpenGLRenderer(ILogger<OpenGLRenderer> log, IDatReaderInterface datReader) {
             _log = log;
@@ -164,7 +182,7 @@ namespace Launcher.Render {
             ColorShader.SetUniform("xProjection", Matrix4x4.CreateOrthographicOffCenter(0, Width, Height, 0, -10000, 10000));
             TextureShader.SetUniform("xProjection", Matrix4x4.CreateOrthographicOffCenter(0, Width, Height, 0, -10000, 10000));
 
-            OnRender2D?.Invoke(this, EventArgs.Empty);
+            _OnRender2D?.Invoke(this, EventArgs.Empty);
 
             SDL_GL_SwapWindow(SDLWindowHandle);
 

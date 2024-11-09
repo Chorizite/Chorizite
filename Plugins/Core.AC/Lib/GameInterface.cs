@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Chorizite.Common;
 
 namespace Core.AC.Lib {
     public class GameInterface : IDisposable {
@@ -24,12 +25,20 @@ namespace Core.AC.Lib {
         /// <summary>
         /// Fired when client state changes. See [ClientState](xref:UBScript.Enums.ClientState) for a list of valid states.
         /// </summary>
-        public event EventHandler<GameStateChangedEventArgs> OnStateChanged;
+        public event EventHandler<GameStateChangedEventArgs>? OnStateChanged {
+            add { _OnStateChanged.Subscribe(value); }
+            remove { _OnStateChanged.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<GameStateChangedEventArgs> _OnStateChanged = new();
 
         /// <summary>
         /// Fired every frame, during 3D rendering
         /// </summary>
-        public event EventHandler<EventArgs> OnRender3D;
+        public event EventHandler<EventArgs>? OnRender3D {
+            add { _OnRender3D.Subscribe(value); }
+            remove { _OnRender3D.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnRender3D = new();
 
         /// <summary>
         /// A list of characters available on the character select screen.
@@ -59,7 +68,7 @@ namespace Core.AC.Lib {
             internal set {
                 if (value != _gameState) {
                     _gameState = value;
-                    OnStateChanged?.Invoke(this, new GameStateChangedEventArgs(State));
+                    _OnStateChanged?.Invoke(this, new GameStateChangedEventArgs(State));
                 }
             }
         }
@@ -67,8 +76,8 @@ namespace Core.AC.Lib {
         public GameInterface(ILogger logger, MessageReader messageReader) {
             _messageReader = messageReader;
             _log = logger;
-
             _messageReader.S2C.OnLogin_LoginCharacterSet += MessageHandler_Login_LoginCharacterSet_S2C;
+
             _messageReader.S2C.OnLogin_WorldInfo += MessageHandler_Login_WorldInfo_S2C;
             _messageReader.S2C.OnLogin_PlayerDescription += MessageHandler_Login_PlayerDescription_S2C;
             _messageReader.C2S.OnLogin_SendEnterWorld += MessageHandler_Login_SendEnterWorld_C2S;
@@ -84,7 +93,7 @@ namespace Core.AC.Lib {
         #endregion // public api
 
         internal void Render3D() {
-            OnRender3D?.Invoke(this, EventArgs.Empty);
+            _OnRender3D?.Invoke(this, EventArgs.Empty);
         }
 
         #region Message Handlers

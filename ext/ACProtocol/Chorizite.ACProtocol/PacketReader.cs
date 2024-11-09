@@ -2,6 +2,7 @@
 using Chorizite.ACProtocol.Lib;
 using Chorizite.ACProtocol.Messages;
 using Chorizite.ACProtocol.Packets;
+using Chorizite.Common;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,8 +18,23 @@ namespace Chorizite.ACProtocol {
 
         public MessageReader Messages { get; }
 
-        public EventHandler<PacketEventArgs>? OnC2SPacket;
-        public EventHandler<PacketEventArgs>? OnS2CPacket;
+        /// <summary>
+        /// Called when a packet is sent from client to server
+        /// </summary>
+        public event EventHandler<PacketEventArgs>? OnC2SPacket {
+            add { _OnC2SPacket.Subscribe(value); }
+            remove { _OnC2SPacket.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<PacketEventArgs> _OnC2SPacket = new();
+
+        /// <summary>
+        /// Called when a packet is sent from server to client
+        /// </summary>
+        public event EventHandler<PacketEventArgs>? OnS2CPacket {
+            add { _OnS2CPacket.Subscribe(value); }
+            remove { _OnS2CPacket.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<PacketEventArgs> _OnS2CPacket = new();
 
         public PacketReader(ILogger log, MessageReader reader) {
             _log = log;
@@ -50,10 +66,10 @@ namespace Chorizite.ACProtocol {
                     }
 
                     if (direction == MessageDirection.ClientToServer) {
-                        OnC2SPacket?.Invoke(this, new PacketEventArgs(acPacket, direction));
+                        _OnC2SPacket?.Invoke(this, new PacketEventArgs(acPacket, direction));
                     }
                     else if (direction == MessageDirection.ServerToClient) {
-                        OnS2CPacket?.Invoke(this, new PacketEventArgs(acPacket, direction));
+                        _OnS2CPacket?.Invoke(this, new PacketEventArgs(acPacket, direction));
                     }
                     packets.Add(acPacket);
 

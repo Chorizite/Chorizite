@@ -9,12 +9,14 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Chorizite.Core.Plugins.AssemblyLoader {
-    public class AssemblyPluginLoadContext : AssemblyLoadContext {
+    public class AssemblyPluginLoadContext : AssemblyLoadContext, IDisposable {
+        private readonly ILogger _log;
         private readonly string _pluginPath;
         private IPluginManager _manager;
         internal AssemblyDependencyResolver Resolver;
 
-        public AssemblyPluginLoadContext(string pluginPath, IPluginManager manager) : base(null, true) {
+        public AssemblyPluginLoadContext(string pluginPath, IPluginManager manager, ILogger log) : base(pluginPath, true) {
+            _log = log;
             _pluginPath = pluginPath;
             _manager = manager;
             Resolver = new AssemblyDependencyResolver(pluginPath);
@@ -34,7 +36,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 }
             }
 
-            return Default.LoadFromAssemblyName(assemblyName);
+            return null;// Default.LoadFromAssemblyName(assemblyName);
         }
 
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName) {
@@ -43,6 +45,11 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 return LoadUnmanagedDllFromPath(libraryPath);
             }
             return IntPtr.Zero;
+        }
+
+        public void Dispose() {
+            Unload();
+            Resolver = null;
         }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 
 namespace Launcher {
     internal static class Program {
@@ -26,43 +27,33 @@ namespace Launcher {
         public static ChoriziteConfig Config { get; private set; }
         public static Chorizite<LauncherChoriziteBackend> ChoriziteInstance { get; private set; }
 
-        [DllImport("Kernel32.dll")]
-        public static extern IntPtr LoadLibrary(string path);
-
         static void Main() {
-            try {
-                Log = new ChoriziteLogger("Launcher", _logDirectory);
-                Log.LogDebug($"Launcher version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
+            Log = new ChoriziteLogger("Launcher", _logDirectory);
 
-                LaunchManager = new LaunchManager(Log);
+            Log.LogDebug($"Launcher version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
 
-                Config = new ChoriziteConfig(ChoriziteEnvironment.Launcher, _pluginDirectory, _dataDirectory, _logDirectory, _datDirectory);
-                ChoriziteInstance = new Chorizite<LauncherChoriziteBackend>(Config);
+            LaunchManager = new LaunchManager(Log);
 
-                Input = (ChoriziteInstance.Backend.Input as SDLInputManager)!;
-                Renderer = (ChoriziteInstance.Backend.Renderer as OpenGLRenderer)!;
+            Config = new ChoriziteConfig(ChoriziteEnvironment.Launcher, _pluginDirectory, _dataDirectory, _logDirectory, _datDirectory);
+            ChoriziteInstance = new Chorizite<LauncherChoriziteBackend>(Config);
 
-                var ui = ChoriziteInstance.Scope.Resolve<IPluginManager>();
-                var pluginManager = ChoriziteInstance.Scope.Resolve<IPluginManager>();
+            Input = (ChoriziteInstance.Backend.Input as SDLInputManager)!;
+            Renderer = (ChoriziteInstance.Backend.Renderer as OpenGLRenderer)!;
 
-                while (!_shouldExit) {
-                    Input.Update();
-                    Renderer.Update();
-                    Renderer.Render();
-                }
+            var pluginManager = ChoriziteInstance.Scope.Resolve<IPluginManager>();
 
-                Input?.HandleShutdown();
-                System.Environment.Exit(0);
-            }
-            catch (Exception ex) {
-                Log.LogError(ex.ToString());
+            while (!_shouldExit) {
+                Input.Update();
+                Renderer.Update();
+                Renderer.Render();
+                Thread.Sleep(10);
             }
 
             Input?.HandleShutdown();
             System.Environment.Exit(0);
         }
 
-        internal static void Exit() {
+        public static void Exit() {
             _shouldExit = true;
         }
     }

@@ -1,32 +1,61 @@
 ﻿using Autofac;
-using McMaster.NETCore.Plugins;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins.AssemblyLoader {
     public class AssemblyPluginInstance : PluginInstance<AssemblyPluginManifest> {
-        private object? _pluginInstance;
-        private PluginLoader _pluginLoader;
+        private FileSystemWatcher? _watcher;
+        private WeakReference<IPluginCore>? _pluginInstance;
         private readonly IPluginManager _manager;
 
-        public IPluginCore? PluginInstance => (IPluginCore?)_pluginInstance;
+        public IPluginCore? PluginInstance {
+            get {
+                if (_pluginInstance?.TryGetTarget(out var instance) == true) {
+                    return instance;
+                }
+                return null;
+            }
+        }
 
         public AssemblyPluginLoadContext LoadContext { get; private set; }
 
         public AssemblyPluginInstance(IPluginManager manager, AssemblyPluginManifest manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             _serviceProvider = serviceProvider;
             _manager = manager;
+
+            _watcher = new FileSystemWatcher(Path.GetDirectoryName(Manifest.ManifestFile));
+            _watcher.NotifyFilter = NotifyFilters.LastWrite;
+            _watcher.Filter = Manifest.EntryFile;
+            _watcher.Changed += _watcher_Changed;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void _watcher_Changed(object sender, FileSystemEventArgs e) {
+            WantsReload = true;
+            _log?.LogDebug($"Plugin file changed: {e.FullPath}");
+        }
+
+        public int CountLoadedAssemblies() {
+            var count = 0;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                if (assembly.GetName().Name == Name) {
+                    count++;
+                }
+            }
+
+            return count;
         }
 
         /// <inheritdoc cref="PluginInstance.Load()"/>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public override bool Load() {
             if (!base.Load()) return false;
 
@@ -41,6 +70,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         }
 
         /// <inheritdoc cref="PluginInstance.Unload()"/>
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public override bool Unload() {
             if (!base.Unload()) return false;
 
@@ -54,6 +84,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void LoadPluginAssembly() {
             try {
                 if (IsLoaded) {
@@ -64,31 +95,34 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 TriggerOnBeforeLoad(this, EventArgs.Empty);
 
                 var dllFile = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
-                LoadContext = new AssemblyPluginLoadContext(dllFile, _manager);
-                _pluginLoader = PluginLoader.CreateFromAssemblyFile(dllFile, true, [], (cfg) => {
-                    cfg.EnableHotReload = true;
-                    cfg.LoadInMemory = true;
-                    cfg.PreferSharedTypes = true;
-                    cfg.IsUnloadable = false;
-                    cfg.DefaultContext = LoadContext;
-                });
-
-                _pluginLoader.Reloaded += (s, e) => {
-                    WantsReload = true;
-                };
+                LoadContext = new AssemblyPluginLoadContext(dllFile, _manager, _log);
 
                 InitPlugin();
 
                 IsLoaded = true;
+                WantsReload = false;
                 TriggerOnLoad(this, EventArgs.Empty);
+                _watcher.EnableRaisingEvents = true;
             }
             catch (Exception ex) {
                 _log?.LogError(ex, "Error loading plugin: {0}: {1}", Name, ex.Message);
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void InitPlugin() {
-            var pluginType = _pluginLoader.LoadDefaultAssembly().GetTypes().Where(t => {
+            var dllFile = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
+            var pdbFile = Path.ChangeExtension(dllFile, ".pdb");
+            using var dllStream = File.OpenRead(dllFile);
+            Assembly? loaded;
+            if (!string.IsNullOrEmpty(pdbFile) && File.Exists(pdbFile)) {
+                using var pdbStream = File.OpenRead(pdbFile);
+                loaded = LoadContext.LoadFromStream(dllStream, pdbStream);
+            }
+            else {
+                loaded = LoadContext.LoadFromStream(dllStream);
+            }
+            var pluginType = loaded.GetTypes().Where(t => {
                 return typeof(IPluginCore).IsAssignableFrom(t) && !t.IsAbstract;
             }).FirstOrDefault();
 
@@ -97,10 +131,12 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 return;
             }
 
-            _pluginInstance = InstantiatePlugin(pluginType);
+            _pluginInstance = new WeakReference<IPluginCore>(InstantiatePlugin(pluginType));
         }
 
-        private object? InstantiatePlugin(Type type) {
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private IPluginCore? InstantiatePlugin(Type type) {
+            IPluginCore? instance = null;
             var constructors = type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).ToList();
             constructors ??= [];
             constructors.AddRange(type.GetConstructors(BindingFlags.Public | BindingFlags.Instance).ToList());
@@ -125,6 +161,11 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                         resolved = Manifest;
                     }
 
+                    //special logger handling
+                    if (parameter.ParameterType == typeof(ILogger)) {
+                        resolved = ChoriziteStatics.MakeLogger(type.Name);
+                    }
+
                     // handle other plugin instances
                     if (resolved is null && parameter.ParameterType.IsAssignableTo(typeof(IPluginCore))) {
                         resolved = _manager.Plugins
@@ -137,7 +178,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                     }
 
                     resolved ??= _serviceProvider.Resolve(parameter.ParameterType);
-                    
+
                     if (resolved is null) {
                         _log?.LogError($"Unable to resolve ctor parameter: {parameter.ParameterType} in plugin: {Name}");
                         break;
@@ -146,29 +187,49 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 }
 
                 if (parameters.Count == ctor.GetParameters().Length) {
-                    _pluginInstance = ctor.Invoke(parameters.ToArray());
+                    instance = (IPluginCore)ctor.Invoke(parameters.ToArray());
                     break;
                 }
             }
 
-            return _pluginInstance;
+            return instance;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void UnloadPluginAssembly() {
             if (IsLoaded) {
+                _watcher.EnableRaisingEvents = false;
                 _log?.LogDebug($"Unloading plugin assembly: {Name}");
                 TriggerOnBeforeUnload(this, EventArgs.Empty);
 
                 PluginInstance?.Dispose();
                 _pluginInstance = null;
-                _pluginLoader.Dispose();
+                LoadContext.Unload();
+                LoadContext.Dispose();
+                LoadContext = null;
+
+                for (int i = 0; (i < 10); i++) {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }
 
                 IsLoaded = false;
-                TriggerOnLoad(this, EventArgs.Empty);
+                TriggerOnUnload(this, EventArgs.Empty);
+                
+                var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(Name) == true);
+
+                if (isAlive) {
+                    System.Diagnostics.Debugger.Break();
+                    _log?.LogWarning($"Failed to unload plugin assembly: {Name}");
+                    _log?.LogWarning($"\t Assemblies: {string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).Where(a => a?.Contains(Name) == true))}");
+                }
+                _pluginInstance = null;
             }
         }
 
         public override void Dispose() {
+            _watcher?.Dispose();
             UnloadPluginAssembly();
             base.Dispose();
         }

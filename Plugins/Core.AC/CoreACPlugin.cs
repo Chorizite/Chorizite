@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Xml.Linq;
 using Core.UI.Lib;
 using Chorizite.Core.Backend;
+using Chorizite.Core.Input;
+using Chorizite.Common;
 
 namespace Core.AC {
     public class CoreACPlugin : IPluginCore, ScreenProvider<GameScreen> {
@@ -21,7 +23,7 @@ namespace Core.AC {
         private CharSelectScreenModel _charSelectModel;
         private DatPatchScreenModel _datPatchModel;
 
-        internal static ILogger<CoreACPlugin>? Log;
+        internal static ILogger? Log;
         internal static CoreACPlugin Instance;
         internal CoreUIPlugin CoreUI { get; }
         public IClientBackend ClientBackend { get; }
@@ -37,17 +39,21 @@ namespace Core.AC {
                     var oldScreen = _currentScreen;
                     _currentScreen = value;
                     CoreUI.Screen = _currentScreen.ToString();
-                    OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
+                    _OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
                 }
             }
         }
 
         /// <summary>
-        /// Called when the game screen changes.
+        /// Screen changed
         /// </summary>
-        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
+        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged {
+            add { _OnScreenChanged.Subscribe(value); }
+            remove { _OnScreenChanged.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<ScreenChangedEventArgs> _OnScreenChanged = new();
 
-        protected CoreACPlugin(AssemblyPluginManifest manifest, IClientBackend clientBackend, IPluginManager pluginManager, NetworkParser net, CoreUIPlugin coreUI, ILogger<CoreACPlugin> log) : base(manifest) {
+        protected CoreACPlugin(AssemblyPluginManifest manifest, IClientBackend clientBackend, IPluginManager pluginManager, NetworkParser net, CoreUIPlugin coreUI, ILogger log) : base(manifest) {
             Instance = this;
             Log = log;
             Net = net;
@@ -55,32 +61,6 @@ namespace Core.AC {
             ClientBackend = clientBackend;
 
             Game = new GameInterface(log, Net.Messages);
-
-            /*
-            if (IsRunningInClient) {
-                if (!IsHotReload) {
-                    _models.Add(GameScreen.DatPatch, new DatPatchScreenModel("DatPatchScreen", this));
-                    _models.Add(GameScreen.CharSelect, new CharSelectScreenModel("CharSelectScreen", this));
-                }
-                else if (File.Exists(Path.Combine(DataDirectory, "models.json"))) {
-                    var serializeOptions = new JsonSerializerOptions {
-                        WriteIndented = true,
-                        Converters = {
-                            new UIDataModelJsonConverter(this)
-                        }
-                    };
-                    try {
-                        var models = JsonSerializer.Deserialize<Dictionary<GameScreen, UIDataModel>>(File.ReadAllText(Path.Combine(DataDirectory, "models.json")), serializeOptions);
-                        foreach (var model in models) {
-                            _models.Add(model.Key, model.Value);
-                        }
-                    }
-                    catch (Exception ex) {
-                        _log?.LogError(ex, "Error deserializing models.json");
-                    }
-                }
-            }
-            */
 
             _charSelectModel = new CharSelectScreenModel();
             _datPatchModel = new DatPatchScreenModel();
@@ -124,14 +104,21 @@ namespace Core.AC {
         public override void Dispose() {
             ClientBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
 
+            foreach (var screen in _registeredGameScreens) {
+                UnregisterScreen(screen.Key, screen.Value);
+            }
+            _registeredGameScreens.Clear();
+
             CoreUI.UnregisterUIModel("CharSelectScreen", _charSelectModel);
             CoreUI.UnregisterUIModel("DatPatchScreen", _datPatchModel);
 
             _charSelectModel.Dispose();
             _datPatchModel.Dispose();
 
-            UnregisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "CharSelect.rml"));
-            UnregisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "DatPatch.rml"));
+            CoreUI.Screen = "None";
+
+            Game.Dispose();
+            Instance = null!;
         }
     }
 }

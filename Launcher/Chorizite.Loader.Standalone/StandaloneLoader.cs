@@ -10,11 +10,9 @@ using Chorizite.Loader.Standalone.Hooks;
 using Chorizite.Loader.Standalone.Input;
 using Chorizite.Loader.Standalone.Render;
 using Microsoft.Extensions.Logging;
-using Reloaded.Memory.Pointers;
 using System;
-using System.Diagnostics;
 using System.Reflection;
-using System.Threading;
+using System.Runtime.Loader;
 
 namespace Chorizite.Loader.Standalone {
     public static class StandaloneLoader {
@@ -35,8 +33,6 @@ namespace Chorizite.Loader.Standalone {
 
         public static unsafe int Init(IntPtr a, int b) {
             try {
-                Log?.LogError($"Startup");
-                
                 /*
                 while (!Debugger.IsAttached) {
                     Thread.Sleep(100);
@@ -47,24 +43,21 @@ namespace Chorizite.Loader.Standalone {
                 NetHooks.Init();
                 ACClientHooks.Init();
             }
-            catch (Exception ex) { Log?.LogError(ex.ToString()); }
+            catch (Exception ex) {
+                Log.LogError(ex, "Failed to initialize hooks");
+            }
             return 0;
         }
 
-        internal static void Startup(int _unmanagedD3DPtr) {
-            try {
-                UnmanagedD3DPtr = _unmanagedD3DPtr;
-                Config = new ChoriziteConfig(ChoriziteEnvironment.Client, _pluginDirectory, _dataDirectory, _logDirectory, Environment.CurrentDirectory);
-                ChoriziteInstance = new Chorizite<ACChoriziteBackend>(Config);
+        public static void Startup(int unmanagedD3DPtr) {
+            UnmanagedD3DPtr = unmanagedD3DPtr;
+            Config = new ChoriziteConfig(ChoriziteEnvironment.Client, _pluginDirectory, _dataDirectory, _logDirectory, Environment.CurrentDirectory);
+            ChoriziteInstance = new Chorizite<ACChoriziteBackend>(Config);
 
-                Backend = (ChoriziteInstance.Backend as ACChoriziteBackend)!;
-                Render = (ChoriziteInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface)!;
-                Input = (ChoriziteInstance.Scope.Resolve<IInputManager>() as Win32InputManager)!;
-                Net = ChoriziteInstance.Scope.Resolve<NetworkParser>();
-            }
-            catch (Exception ex) {
-                Log?.LogError(ex, $"Error during Startup: {ex.Message}");
-            }
+            Backend = (ChoriziteInstance.Backend as ACChoriziteBackend)!;
+            Render = (ChoriziteInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface)!;
+            Input = (ChoriziteInstance.Scope.Resolve<IInputManager>() as Win32InputManager)!;
+            Net = ChoriziteInstance.Scope.Resolve<NetworkParser>();
         }
     }
 }

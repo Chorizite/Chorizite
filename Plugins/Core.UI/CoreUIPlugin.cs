@@ -21,13 +21,14 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using Chorizite.Common;
 
 namespace Core.UI {
     /// <summary>
     /// This is the main plugin class. When your plugin is loaded, Startup() is called, and when it's unloaded Shutdown() is called.
     /// </summary>
     public class CoreUIPlugin : IPluginCore {
-        private readonly Dictionary<string, UIDataModel> _models = [];
+        private Dictionary<string, UIDataModel> _models = [];
         private readonly Dictionary<string, string> _gameScreenRmls = [];
         private string _screen = "None";
         private Screen? _activePanel;
@@ -55,7 +56,7 @@ namespace Core.UI {
             set {
                 if (_screen != value) {
                     _screen = value;
-                    OnScreenChanged?.Invoke(this, EventArgs.Empty);
+                    _OnScreenChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
         }
@@ -63,11 +64,15 @@ namespace Core.UI {
         public static CoreUIPlugin? Instance { get; internal set; }
 
         /// <summary>
-        /// Called when the screen changes.
+        /// Fired when the screen changes
         /// </summary>
-        public event EventHandler<EventArgs>? OnScreenChanged;
+        public event EventHandler<EventArgs> OnScreenChanged {
+            add { _OnScreenChanged.Subscribe(value); }
+            remove { _OnScreenChanged.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, ILogger<CoreUIPlugin> log) : base(manifest) {
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, ILogger log) : base(manifest) {
             Instance = this;
             Log = log;
             PluginManager = pluginManager;
@@ -80,6 +85,15 @@ namespace Core.UI {
 
             Backend.Input.OnKeyPress += Input_OnKeyPress;
             OnScreenChanged += CoreUIPlugin_OnScreenChanged;
+            PluginManager.OnPluginUnloaded += PluginManager_OnPluginUnloaded;
+        }
+
+        private void PluginManager_OnPluginUnloaded(object? sender, PluginUnloadedEventArgs e) {
+            foreach (var kv in _models) {
+                if (kv.Value.GetType().Assembly.GetName().Name?.Contains(e.Name) == true) {
+                    _models.Remove(kv.Key);
+                }
+            }
         }
 
         #region Public API
@@ -120,11 +134,9 @@ namespace Core.UI {
         public bool RegisterUIModel(string name, UIDataModel model) {
             if (_models.ContainsKey(name)) {
                 _models[name].Dispose();
-                _models[name] = model;
+                _models.Remove(name);
             }
-            else {
-                _models.Add(name, model);
-            }
+            _models.Add(name, model);
             model.Init(name);
             return true;
         }
@@ -135,9 +147,7 @@ namespace Core.UI {
         /// <param name="name"></param>
         /// <param name="model"></param>
         public void UnregisterUIModel(string name, UIDataModel model) {
-            if (_models.TryGetValue(name, out var m) && m == model) {
-                _models.Remove(name);
-            }
+            _models.Remove(name);
         }
 
         #endregion
@@ -267,7 +277,6 @@ namespace Core.UI {
 
         private void CoreUIPlugin_OnScreenChanged(object? sender, EventArgs e) {
             PanelManager.UnloadScreen();
-
             if (_gameScreenRmls.TryGetValue(Screen, out var rmlFilePath)) {
                 PanelManager.LoadScreenFile(Screen, rmlFilePath);
             }
@@ -278,6 +287,9 @@ namespace Core.UI {
         /// </summary>
         public override void Dispose() {
             try {
+                OnScreenChanged -= CoreUIPlugin_OnScreenChanged;
+
+                PluginManager.OnPluginUnloaded -= PluginManager_OnPluginUnloaded;
                 Backend.Input.OnKeyPress -= Input_OnKeyPress;
                 ShutdownRmlUI();
             }

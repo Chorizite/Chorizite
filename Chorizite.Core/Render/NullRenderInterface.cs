@@ -4,6 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using Chorizite.Common;
 
 namespace Chorizite.Core.Render {
     internal class NullRenderInterface : IRenderInterface {
@@ -29,9 +30,26 @@ namespace Chorizite.Core.Render {
 
         public unsafe IntPtr DataPatchUI { get; set; }
 
-        public event EventHandler<EventArgs>? OnRender2D;
-        public event EventHandler<EventArgs>? OnGraphicsPreReset;
-        public event EventHandler<EventArgs>? OnGraphicsPostReset;
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnRender2D {
+            add { _OnRender2D.Subscribe(value); }
+            remove { _OnRender2D.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnRender2D = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnGraphicsPreReset {
+            add { _OnGraphicsPreReset.Subscribe(value); }
+            remove { _OnGraphicsPreReset.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnGraphicsPreReset = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<EventArgs>? OnGraphicsPostReset {
+            add { _OnGraphicsPostReset.Subscribe(value); }
+            remove { _OnGraphicsPostReset.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<EventArgs> _OnGraphicsPostReset = new();
 
         public IntPtr CompileGeometry(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices) {
             return (IntPtr)_nextGeometryId++;

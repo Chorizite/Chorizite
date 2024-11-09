@@ -11,6 +11,9 @@ using Core.Launcher.UIModels;
 using Core.UI.Lib.Serialization;
 using System.Text.Json;
 using Chorizite.Core.Backend;
+using System.Runtime.CompilerServices;
+using Chorizite.Core.Input;
+using Chorizite.Common;
 
 namespace Core.Launcher {
     public class CoreLauncherPlugin : IPluginCore, ScreenProvider<LauncherScreen> {
@@ -19,10 +22,9 @@ namespace Core.Launcher {
         private readonly SimpleLoginScreenModel _simpleLoginScreenModel;
         private LauncherScreen _currentScreen = LauncherScreen.None;
         private readonly Dictionary<LauncherScreen, string> _registeredScreens = [];
-        private readonly JsonSerializerOptions _serializerSettings;
 
         internal static CoreLauncherPlugin Instance { get; private set; }
-        internal static ILogger<CoreLauncherPlugin>? Log;
+        internal static ILogger? Log;
         internal readonly ILauncherBackend LauncherBackend;
         internal readonly IChoriziteBackend Backend;
 
@@ -34,17 +36,21 @@ namespace Core.Launcher {
                     var oldScreen = _currentScreen;
                     _currentScreen = value;
                     CoreUI.Screen = _currentScreen.ToString();
-                    OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
+                    _OnScreenChanged.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
                 }
             }
         }
 
         /// <summary>
-        /// Called when the game screen changes.
+        /// Screen changed
         /// </summary>
-        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged;
+        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged {
+            add { _OnScreenChanged.Subscribe(value); }
+            remove { _OnScreenChanged.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<ScreenChangedEventArgs> _OnScreenChanged = new();
 
-        protected CoreLauncherPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, ILogger<CoreLauncherPlugin> log, CoreUIPlugin coreUI, ILauncherBackend launcherBackend, IChoriziteBackend backend) : base(manifest) {
+        protected CoreLauncherPlugin(AssemblyPluginManifest manifest, IPluginManager pluginManager, ILogger log, CoreUIPlugin coreUI, ILauncherBackend launcherBackend, IChoriziteBackend backend) : base(manifest) {
             Instance = this;
             Log = log;
             _pluginManager = pluginManager;
@@ -52,19 +58,12 @@ namespace Core.Launcher {
             Backend = backend;
             CoreUI = coreUI;
 
-            _serializerSettings = new JsonSerializerOptions {
-                WriteIndented = true,
-                Converters = {
-                    new UIDataModelJsonConverter()
-                }
-            };
-
-            _simpleLoginScreenModel = SimpleLoginScreenModel.LoadFrom(DataDirectory, _serializerSettings, Log);
+            _simpleLoginScreenModel = SimpleLoginScreenModel.LoadFrom(DataDirectory, Log);
 
             CoreUI.RegisterUIModel("SimpleLoginScreen", _simpleLoginScreenModel);
             RegisterScreen(LauncherScreen.Simple, Path.Combine(AssemblyDirectory, "assets", "Simple.rml"));
 
-            Log?.LogDebug($"Version: {Manifest.Version}");
+            Log?.LogDebug($"Version: {Manifest.Version} dsddfdcfc");
 
             CurrentScreen = LauncherScreen.Simple;
 
@@ -80,18 +79,16 @@ namespace Core.Launcher {
         /// <inheritdoc/>
         public bool RegisterScreen(LauncherScreen screen, string rmlPath) {
             if (_registeredScreens.ContainsKey(screen)) {
-                _registeredScreens[screen] = rmlPath;
+                UnregisterScreen(screen, rmlPath);
             }
-            else {
-                _registeredScreens.Add(screen, rmlPath);
-            }
+            _registeredScreens.Add(screen, rmlPath);
 
-            return CoreUI.RegisterScreen(screen.ToString(), rmlPath);
+            return CoreUI.RegisterScreen(screen.ToString(), rmlPath); 
         }
 
         /// <inheritdoc/>
         public void UnregisterScreen(LauncherScreen screen, string rmlPath) {
-            if (_registeredScreens.TryGetValue(screen, out var rmlFile) && rmlFile == rmlPath) {
+            if (_registeredScreens.TryGetValue(screen, out var rmlFile)) {
                 _registeredScreens.Remove(screen);
             }
 
@@ -99,10 +96,22 @@ namespace Core.Launcher {
         }
 
         public override void Dispose() {
+            Log?.LogDebug("Disposing CoreLauncherPlugin");
             Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
 
-            _simpleLoginScreenModel?.Save(DataDirectory, _serializerSettings, Log);
+            CoreUI.UnregisterUIModel("SimpleLoginScreen", _simpleLoginScreenModel);
+            
+            foreach (var screen in _registeredScreens.Keys) {
+                UnregisterScreen(screen, _registeredScreens[screen]);
+            }
+
+            CoreUI.Screen = "None";
+
+            _simpleLoginScreenModel?.Save(DataDirectory, Log);
             _simpleLoginScreenModel?.Dispose();
+
+            _registeredScreens.Clear(); 
+            Instance = null;
         }
     }
 }
