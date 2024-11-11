@@ -2,17 +2,12 @@
 using Chorizite.ACProtocol;
 using Chorizite.ACProtocol.Enums;
 using Chorizite.ACProtocol.Messages.S2C;
-using Chorizite.Core.Backend;
 using Chorizite.Core.Net;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Linq;
-using System.Xml.Linq;
+using Core.UI.Lib.Serialization;
+using System.Text.Json.Serialization;
 
 namespace Core.AC.UIModels {
+    [JsonConverter(typeof(UIDataModelJsonConverter))]
     public class DatPatchScreenModel : UIDataModel {
         private readonly NetworkParser _net;
 

@@ -15,16 +15,16 @@ using Core.UI.Lib;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Input;
 using Chorizite.Common;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Core.AC {
-    public class CoreACPlugin : IPluginCore, ScreenProvider<GameScreen> {
+    public class CoreACPlugin : IPluginCore, ScreenProvider<GameScreen>, ISerializeState<ACState> {
         private readonly Dictionary<GameScreen, string> _registeredGameScreens = [];
-        private GameScreen _currentScreen = GameScreen.None;
-        private CharSelectScreenModel _charSelectModel;
-        private DatPatchScreenModel _datPatchModel;
 
         internal static ILogger? Log;
         internal static CoreACPlugin Instance;
+        private ACState _state;
+
         internal CoreUIPlugin CoreUI { get; }
         public IClientBackend ClientBackend { get; }
         internal NetworkParser Net { get; }
@@ -32,17 +32,13 @@ namespace Core.AC {
         public GameInterface Game { get; }
 
         public GameScreen CurrentScreen {
-            get => _currentScreen;
+            get => _state.CurrentScreen;
             set {
-                // TODO: validate screen transitions
-                if (_currentScreen != value) {
-                    var oldScreen = _currentScreen;
-                    _currentScreen = value;
-                    CoreUI.Screen = _currentScreen.ToString();
-                    _OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
-                }
+                SetScreen(value);
             }
         }
+
+        JsonTypeInfo<ACState> ISerializeState<ACState>.JsonStateTypeInfo => SourceGenerationContext.Default.ACState;
 
         /// <summary>
         /// Screen changed
@@ -61,19 +57,34 @@ namespace Core.AC {
             ClientBackend = clientBackend;
 
             Game = new GameInterface(log, Net.Messages);
+        }
 
-            _charSelectModel = new CharSelectScreenModel();
-            _datPatchModel = new DatPatchScreenModel();
+        private void SetScreen(GameScreen value, bool force = false) {
+            // TODO: validate screen transitions
+            if (force || _state.CurrentScreen != value) {
+                var oldScreen = _state.CurrentScreen;
+                _state.CurrentScreen = value;
+                CoreUI.Screen = _state.CurrentScreen.ToString();
+                _OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _state.CurrentScreen));
+            }
+        }
 
-            CoreUI.RegisterUIModel("CharSelectScreen", _charSelectModel);
-            CoreUI.RegisterUIModel("DatPatchScreen", _datPatchModel);
+        ACState ISerializeState<ACState>.SerializeBeforeUnload() => _state;
+
+        void ISerializeState<ACState>.DeserializeAfterLoad(ACState? state) {
+            _state = state ?? new ACState();
+            _state.CharSelectModel ??= new CharSelectScreenModel();
+            _state.DatPatchModel ??= new DatPatchScreenModel();
+
+            CoreUI.RegisterUIModel("CharSelectScreen", _state.CharSelectModel);
+            CoreUI.RegisterUIModel("DatPatchScreen", _state.DatPatchModel);
 
             RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "CharSelect.rml"));
             RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "DatPatch.rml"));
 
             ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
 
-            Log?.LogDebug($"CoreAC Version: {Manifest.Version}");
+            SetScreen(_state.CurrentScreen, true);
         }
 
         private void ClientBackend_OnScreenChanged(object? sender, EventArgs e) {
@@ -104,18 +115,18 @@ namespace Core.AC {
         public override void Dispose() {
             ClientBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
 
+            CoreUI.Screen = "None";
+
             foreach (var screen in _registeredGameScreens) {
                 UnregisterScreen(screen.Key, screen.Value);
             }
             _registeredGameScreens.Clear();
 
-            CoreUI.UnregisterUIModel("CharSelectScreen", _charSelectModel);
-            CoreUI.UnregisterUIModel("DatPatchScreen", _datPatchModel);
+            CoreUI.UnregisterUIModel("CharSelectScreen", _state.CharSelectModel);
+            CoreUI.UnregisterUIModel("DatPatchScreen", _state.DatPatchModel);
 
-            _charSelectModel.Dispose();
-            _datPatchModel.Dispose();
-
-            CoreUI.Screen = "None";
+            _state.CharSelectModel.Dispose();
+            _state.DatPatchModel.Dispose();
 
             Game.Dispose();
             Instance = null!;

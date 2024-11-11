@@ -14,32 +14,29 @@ using Chorizite.Core.Backend;
 using System.Runtime.CompilerServices;
 using Chorizite.Core.Input;
 using Chorizite.Common;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Core.Launcher {
-    public class CoreLauncherPlugin : IPluginCore, ScreenProvider<LauncherScreen> {
+    public class CoreLauncherPlugin : IPluginCore, ScreenProvider<LauncherScreen>, ISerializeState<LauncherState>, ISerializeSettings<LauncherSettings> {
         private IPluginManager _pluginManager;
         private readonly CoreUIPlugin CoreUI;
-        private readonly SimpleLoginScreenModel _simpleLoginScreenModel;
-        private LauncherScreen _currentScreen = LauncherScreen.None;
         private readonly Dictionary<LauncherScreen, string> _registeredScreens = [];
+        private LauncherSettings _settings;
+        private LauncherState _state;
 
-        internal static CoreLauncherPlugin Instance { get; private set; }
+        internal static CoreLauncherPlugin? Instance { get; private set; }
         internal static ILogger? Log;
         internal readonly ILauncherBackend LauncherBackend;
         internal readonly IChoriziteBackend Backend;
 
+        JsonTypeInfo<LauncherState> ISerializeState<LauncherState>.JsonStateTypeInfo => SourceGenerationContext.Default.LauncherState;
+        JsonTypeInfo<LauncherSettings> ISerializeSettings<LauncherSettings>.JsonSettingsTypeInfo => SourceGenerationContext.Default.LauncherSettings;
+
         public LauncherScreen CurrentScreen {
-            get => _currentScreen;
-            set {
-                // TODO: validate screen transitions
-                if (_currentScreen != value) {
-                    var oldScreen = _currentScreen;
-                    _currentScreen = value;
-                    CoreUI.Screen = _currentScreen.ToString();
-                    _OnScreenChanged.Invoke(this, new ScreenChangedEventArgs(oldScreen, _currentScreen));
-                }
-            }
+            get => _state.CurrentScreen;
+            set => SetScreen(value);
         }
+
 
         /// <summary>
         /// Screen changed
@@ -58,16 +55,34 @@ namespace Core.Launcher {
             Backend = backend;
             CoreUI = coreUI;
 
-            _simpleLoginScreenModel = SimpleLoginScreenModel.LoadFrom(DataDirectory, Log);
-
-            CoreUI.RegisterUIModel("SimpleLoginScreen", _simpleLoginScreenModel);
-            RegisterScreen(LauncherScreen.Simple, Path.Combine(AssemblyDirectory, "assets", "Simple.rml"));
-
-            Log?.LogDebug($"Version: {Manifest.Version} dsddfdcfc");
-
-            CurrentScreen = LauncherScreen.Simple;
-
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
+        }
+
+        void ISerializeSettings<LauncherSettings>.DeserializeAfterLoad(LauncherSettings? settings) {
+            _settings = settings ?? new LauncherSettings();
+            _settings.SimpleLoginScreenModel ??= new SimpleLoginScreenModel();
+
+            CoreUI.RegisterUIModel("SimpleLoginScreen", _settings.SimpleLoginScreenModel);
+            RegisterScreen(LauncherScreen.Simple, Path.Combine(AssemblyDirectory, "assets", "Simple.rml"));
+        }
+
+        LauncherSettings ISerializeSettings<LauncherSettings>.SerializeBeforeUnload() => _settings;
+
+        void ISerializeState<LauncherState>.DeserializeAfterLoad(LauncherState? state) {
+            _state = state ?? new LauncherState(LauncherScreen.Simple);
+            SetScreen(_state.CurrentScreen, true);
+        }
+        LauncherState ISerializeState<LauncherState>.SerializeBeforeUnload() => _state;
+
+        private void SetScreen(LauncherScreen value, bool force = false) {
+            if (!force && _state.CurrentScreen == value) {
+                return;
+            }
+
+            var oldScreen = _state.CurrentScreen;
+            _state.CurrentScreen = value;
+            CoreUI.Screen = _state.CurrentScreen.ToString();
+            _OnScreenChanged.Invoke(this, new ScreenChangedEventArgs(oldScreen, _state.CurrentScreen));
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {
@@ -96,21 +111,20 @@ namespace Core.Launcher {
         }
 
         public override void Dispose() {
-            Log?.LogDebug("Disposing CoreLauncherPlugin");
             Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
-
-            CoreUI.UnregisterUIModel("SimpleLoginScreen", _simpleLoginScreenModel);
-            
-            foreach (var screen in _registeredScreens.Keys) {
-                UnregisterScreen(screen, _registeredScreens[screen]);
-            }
 
             CoreUI.Screen = "None";
 
-            _simpleLoginScreenModel?.Save(DataDirectory, Log);
-            _simpleLoginScreenModel?.Dispose();
+            foreach (var screen in _registeredScreens.Keys) {
+                UnregisterScreen(screen, _registeredScreens[screen]);
+            }
+            _registeredScreens.Clear();
 
-            _registeredScreens.Clear(); 
+            if (_settings?.SimpleLoginScreenModel is not null) {
+                CoreUI.UnregisterUIModel("SimpleLoginScreen", _settings.SimpleLoginScreenModel);
+                _settings.SimpleLoginScreenModel?.Dispose();
+            }
+
             Instance = null;
         }
     }

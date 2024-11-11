@@ -1,36 +1,28 @@
 ﻿using ACUI.Lib;
 using ACUI.Lib.RmlUi;
 using Autofac;
-using Core.DatService;
 using Core.UI.Lib;
 using Core.UI.Lib.RmlUi;
-using Core.UI.Lib.Serialization;
 using Core.UI.Models;
 using Chorizite.Core;
 using Chorizite.Core.Backend;
-using Chorizite.Core.Input;
-using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
-using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text.Json;
 using Chorizite.Common;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Core.UI {
     /// <summary>
     /// This is the main plugin class. When your plugin is loaded, Startup() is called, and when it's unloaded Shutdown() is called.
     /// </summary>
-    public class CoreUIPlugin : IPluginCore {
+    public class CoreUIPlugin : IPluginCore, ISerializeState<UIState> {
         private Dictionary<string, UIDataModel> _models = [];
         private readonly Dictionary<string, string> _gameScreenRmls = [];
-        private string _screen = "None";
         private Screen? _activePanel;
         private TestPlugin? _testPlugin;
         private RmlUIRenderInterface? _rmlRenderInterface;
@@ -38,13 +30,14 @@ namespace Core.UI {
         private RmlInputManager? _rmlInput;
         private TestElementInstancer? _rmlElementInstancer;
         private bool _didInitRml;
+        private bool _isDebugging;
+        private UIState _state;
 
         internal static ILogger Log;
         internal readonly IChoriziteBackend Backend;
 
         internal readonly IPluginManager PluginManager;
         internal static Context? RmlContext;
-        private bool _isDebugging;
 
         public PanelManager PanelManager { get; private set; }
 
@@ -52,16 +45,15 @@ namespace Core.UI {
         /// The current screen
         /// </summary>
         public string Screen {
-            get => _screen;
+            get => _state.Screen;
             set {
-                if (_screen != value) {
-                    _screen = value;
-                    _OnScreenChanged?.Invoke(this, EventArgs.Empty);
-                }
+                SetScreen(value);
             }
         }
 
         public static CoreUIPlugin? Instance { get; internal set; }
+
+        JsonTypeInfo<UIState> ISerializeState<UIState>.JsonStateTypeInfo => SourceGenerationContext.Default.UIState;
 
         /// <summary>
         /// Fired when the screen changes
@@ -83,7 +75,6 @@ namespace Core.UI {
 
             InitRmlUI();
 
-            Backend.Input.OnKeyPress += Input_OnKeyPress;
             OnScreenChanged += CoreUIPlugin_OnScreenChanged;
             PluginManager.OnPluginUnloaded += PluginManager_OnPluginUnloaded;
         }
@@ -94,6 +85,21 @@ namespace Core.UI {
                     _models.Remove(kv.Key);
                 }
             }
+        }
+
+        private void SetScreen(string value, bool force = false) {
+            if (force || _state.Screen != value) {
+                _state.Screen = value;
+                _OnScreenChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        UIState ISerializeState<UIState>.SerializeBeforeUnload() => _state;
+
+        void ISerializeState<UIState>.DeserializeAfterLoad(UIState? state) {
+            _state = state ?? new UIState();
+
+            SetScreen(_state.Screen, true);
         }
 
         #region Public API
@@ -151,12 +157,6 @@ namespace Core.UI {
         }
 
         #endregion
-
-        private void Input_OnKeyPress(object? sender, KeyPressEventArgs e) {
-            if (e.Text == "p") {
-                ToggleDebugger();
-            }
-        }
 
         private void ToggleDebugger() {
             if (!_didInitRml || RmlContext is null) return;
@@ -290,7 +290,6 @@ namespace Core.UI {
                 OnScreenChanged -= CoreUIPlugin_OnScreenChanged;
 
                 PluginManager.OnPluginUnloaded -= PluginManager_OnPluginUnloaded;
-                Backend.Input.OnKeyPress -= Input_OnKeyPress;
                 ShutdownRmlUI();
             }
             catch (Exception ex) {

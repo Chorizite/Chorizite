@@ -8,6 +8,9 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins.AssemblyLoader {
@@ -15,6 +18,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         private FileSystemWatcher? _watcher;
         private WeakReference<IPluginCore>? _pluginInstance;
         private readonly IPluginManager _manager;
+        private readonly Dictionary<string, string> _serializedState = [];
 
         public IPluginCore? PluginInstance {
             get {
@@ -153,31 +157,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 var parameters = new List<object>();
 
                 foreach (var parameter in ctor.GetParameters()) {
-                    object? resolved = null;
-                    _log?.LogTrace($"Resolving parameter: {parameter.ParameterType} in plugin: {Name}");
-
-                    // special handling for this plugins PluginManifest
-                    if (parameter.ParameterType == typeof(PluginManifest) || parameter.ParameterType.IsSubclassOf(typeof(PluginManifest))) {
-                        resolved = Manifest;
-                    }
-
-                    //special logger handling
-                    if (parameter.ParameterType == typeof(ILogger)) {
-                        resolved = ChoriziteStatics.MakeLogger(type.Name);
-                    }
-
-                    // handle other plugin instances
-                    if (resolved is null && parameter.ParameterType.IsAssignableTo(typeof(IPluginCore))) {
-                        resolved = _manager.Plugins
-                            .Where(p => p is AssemblyPluginInstance)
-                            .Cast<AssemblyPluginInstance>()
-                            .FirstOrDefault(p => p.PluginInstance?.GetType() == parameter.ParameterType)?.PluginInstance;
-                        if (resolved is null) {
-                            throw new InvalidOperationException($"Unable to resolve parameter: {parameter.ParameterType} in plugin: {Name}");
-                        }
-                    }
-
-                    resolved ??= _serviceProvider.Resolve(parameter.ParameterType);
+                    object? resolved = ResolveParameter(type, parameter);
 
                     if (resolved is null) {
                         _log?.LogError($"Unable to resolve ctor parameter: {parameter.ParameterType} in plugin: {Name}");
@@ -192,7 +172,45 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 }
             }
 
+            if (instance is null) {
+                _log?.LogError($"Unable to instantiate plugin: {Name}");
+            }
+            else {
+                TryDeserializeSettings(instance);
+                TryDeserializeState(instance);
+            }
+
             return instance;
+        }
+
+        private object? ResolveParameter(Type type, ParameterInfo parameter) {
+            object? resolved = null;
+            _log?.LogTrace($"Resolving parameter: {parameter.ParameterType} in plugin: {Name}");
+
+            // special handling for this plugins PluginManifest
+            if (parameter.ParameterType == typeof(PluginManifest) || parameter.ParameterType.IsSubclassOf(typeof(PluginManifest))) {
+                resolved = Manifest;
+            }
+
+            //special logger handling
+            if (parameter.ParameterType == typeof(ILogger)) {
+                resolved = ChoriziteStatics.MakeLogger(type.Name);
+            }
+
+            // handle other plugin instances
+            if (resolved is null && parameter.ParameterType.IsAssignableTo(typeof(IPluginCore))) {
+                resolved = _manager.Plugins
+                    .Where(p => p is AssemblyPluginInstance)
+                    .Cast<AssemblyPluginInstance>()
+                    .FirstOrDefault(p => p.PluginInstance?.GetType() == parameter.ParameterType)?.PluginInstance;
+                if (resolved is null) {
+                    throw new InvalidOperationException($"Unable to resolve parameter: {parameter.ParameterType} in plugin: {Name}");
+                }
+            }
+
+            resolved ??= _serviceProvider.Resolve(parameter.ParameterType);
+
+            return resolved;
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -202,11 +220,15 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 _log?.LogDebug($"Unloading plugin assembly: {Name}");
                 TriggerOnBeforeUnload(this, EventArgs.Empty);
 
-                PluginInstance?.Dispose();
+                if (PluginInstance is not null) {
+                    TrySerializeSettings();
+                    TrySerializeState();
+                    PluginInstance?.Dispose();
+                }
                 _pluginInstance = null;
                 LoadContext.Unload();
                 LoadContext.Dispose();
-                LoadContext = null;
+                LoadContext = null!;
 
                 for (int i = 0; (i < 10); i++) {
                     GC.Collect();
@@ -216,7 +238,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
                 IsLoaded = false;
                 TriggerOnUnload(this, EventArgs.Empty);
-                
+
                 var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(Name) == true);
 
                 if (isAlive) {
@@ -226,6 +248,125 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 }
                 _pluginInstance = null;
             }
+        }
+
+        private void TryDeserializeType(IPluginCore instance, Type type, string jsonTypePropName, string? fileName = null) {
+            if (instance is null) {
+                return;
+            }
+
+            var stateSerializer = instance.GetType().GetInterfaces().FirstOrDefault(x =>
+                 x.IsGenericType &&
+                 x.GetGenericTypeDefinition() == type);
+
+            if (stateSerializer is null) {
+                return;
+            }
+
+            _log.LogTrace($"TryDeserializeState({type.Name}) for plugin: {Name}");
+            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            var serializedType = stateSerializer.GetGenericArguments()[0];
+            if (stateSerializer.GetProperty(jsonTypePropName, flags)?.GetValue(instance) is not JsonTypeInfo jsonTypeInfo) {
+                _log.LogError($"Unable to find JsonTypeInfo for plugin: {Name} ({serializedType.Name})");
+                return;
+            }
+
+
+            var serializedName = $"{serializedType.Namespace}.{serializedType.Name}_{type.Name}";
+
+            string? jsonState = null;
+            if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName)) {
+                jsonState = File.ReadAllText(fileName);
+            }
+            if (string.IsNullOrEmpty(jsonState)) {
+                _serializedState.TryGetValue(serializedName, out jsonState);
+            }
+
+            object? serializedObj = null;
+            if (!string.IsNullOrEmpty(jsonState)) {
+                try {
+                    serializedObj = JsonSerializer.Deserialize(jsonState, jsonTypeInfo);
+                }
+                catch (Exception ex) {
+                    _log.LogError($"Unable to deserialize state for plugin: {Name} ({serializedType.Name}): {ex.Message}");
+                }
+            }
+
+            _log.LogTrace($"Deserializing {type.Name} for plugin: {Name}: {serializedObj?.GetType().Name ?? "null"}");
+            stateSerializer.GetMethod("DeserializeAfterLoad", flags)?.Invoke(instance, [serializedObj]);
+        }
+
+        private void TrySerializeType(Type type, string jsonTypePropName, string? fileName = null) {
+            if (PluginInstance is null) {
+                return;
+            }
+
+            var stateSerializer = PluginInstance.GetType().GetInterfaces().FirstOrDefault(x =>
+                 x.IsGenericType &&
+                 x.GetGenericTypeDefinition() == type);
+
+            if (stateSerializer is null) {
+                return;
+            }
+
+            _log.LogTrace($"TrySerialize({type.Name}) for plugin: {Name}");
+            var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            var stateType = stateSerializer.GetGenericArguments()[0];
+            var stateObj = stateSerializer.GetMethod("SerializeBeforeUnload", flags)?.Invoke(PluginInstance, []);
+
+            if (stateObj is null) {
+                return;
+            }
+
+            _log.LogTrace($"Serializing {type.Name} for plugin: {Name}: {stateObj.GetType().Name}");
+
+            if (stateSerializer.GetProperty(jsonTypePropName, flags)?.GetValue(PluginInstance) is not JsonTypeInfo jsonTypeInfo) {
+                _log.LogError($"Unable to find JsonTypeInfo for plugin: {Name} ({stateType.Name})");
+                return;
+            }
+
+            var jsonState = JsonSerializer.Serialize(stateObj, jsonTypeInfo);
+
+            if (!string.IsNullOrEmpty(fileName)) {
+                File.WriteAllText(fileName, jsonState);
+            }
+            else {
+                var stateName = $"{stateType.Namespace}.{stateType.Name}_{type.Name}";
+                if (!_serializedState.TryAdd(stateName, jsonState)) {
+                    _serializedState[stateName] = jsonState;
+                }
+            }
+        }
+
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void TryDeserializeSettings(IPluginCore instance) {
+            if (instance is null) return;
+
+            TryDeserializeType(instance, typeof(ISerializeSettings<>), "JsonSettingsTypeInfo", Path.Combine(instance.DataDirectory, "settings.json"));
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void TrySerializeSettings() {
+            if (PluginInstance is null) return;
+
+            if (!Directory.Exists(PluginInstance.DataDirectory)) {
+                Directory.CreateDirectory(PluginInstance.DataDirectory);
+            }
+
+            TrySerializeType(typeof(ISerializeSettings<>), "JsonSettingsTypeInfo", Path.Combine(PluginInstance.DataDirectory, "settings.json"));
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void TryDeserializeState(IPluginCore instance) {
+            TryDeserializeType(instance, typeof(ISerializeState<>), "JsonStateTypeInfo");
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void TrySerializeState() {
+            TrySerializeType(typeof(ISerializeState<>), "JsonStateTypeInfo");
         }
 
         public override void Dispose() {
