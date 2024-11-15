@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Chorizite.Core.Lib;
+using System;
 
 namespace Chorizite.Core.Input {
-    public class MouseMoveEventArgs : EatableEvent {
+    public class MouseMoveEventArgs : EatableEventArgs {
         public int X { get; set; }
         public int Y { get; set; }
 

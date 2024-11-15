@@ -7,7 +7,7 @@ namespace RmlUiNet.Native
     internal static class SystemInterface
     {
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_SystemInterface_New")]
-        public static extern IntPtr Create(OnGetElapsedTime onGetElapsedTime, OnTranslateString onTranslateString, OnLogMessage onLogMessage, OnJoinPath onJoinPath);
+        public static extern IntPtr Create(OnGetElapsedTime onGetElapsedTime, OnTranslateString onTranslateString, OnLogMessage onLogMessage, OnJoinPath onJoinPath, OnSetMouseCursor onSetMouseCursor);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate double OnGetElapsedTime();
@@ -20,5 +20,8 @@ namespace RmlUiNet.Native
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate string OnJoinPath(string path, string file);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void OnSetMouseCursor(string message);
     }
 }

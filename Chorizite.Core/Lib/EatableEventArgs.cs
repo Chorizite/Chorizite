@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Chorizite.Core.Input {
-    public abstract class EatableEvent : EventArgs {
+namespace Chorizite.Core.Lib {
+    public abstract class EatableEventArgs : EventArgs {
         /// <summary>
         /// Set to true to eat this event.
         /// </summary>

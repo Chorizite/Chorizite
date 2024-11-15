@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins {
-    public abstract class IPluginCore : IDisposable {
+    public abstract class IPluginCore {
         /// <summary>
         /// The manifest that was used to load this plugin.
         /// </summary>
@@ -26,6 +26,6 @@ namespace Chorizite.Core.Plugins {
             Manifest = manifest;
         }
 
-        public abstract void Dispose();
+        protected abstract void Dispose();
     }
 }

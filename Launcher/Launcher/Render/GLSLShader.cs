@@ -168,8 +168,7 @@ namespace Launcher.Render {
                 return;
             }
             else {
-                System.Diagnostics.Debug.WriteLine($"{(Program != 0 ? "Reloaded" : "Loaded")} shader: {Name}");
-                _log.LogDebug($"{(Program != 0 ? "Reloaded" : "Loaded")} shader: {Name}");
+                _log.LogTrace($"{(Program != 0 ? "Reloaded" : "Loaded")} shader: {Name}");
             }
 
             GL.glDeleteShader(vertexShader);

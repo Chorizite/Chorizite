@@ -34,6 +34,15 @@ namespace RmlUiNet
         }
 
         /// <summary>
+        /// Merge a style sheet container into the document.
+        /// </summary>
+        /// <param name="container"></param>
+        public void AddStyleSheetContainer(StyleSheetContainer container)
+        {
+            Native.ElementDocument.AddStyleSheetContainer(NativePtr, container.NativePtr);
+        }
+
+        /// <summary>
         /// Close the document.
         /// </summary>
         /// <remarks>

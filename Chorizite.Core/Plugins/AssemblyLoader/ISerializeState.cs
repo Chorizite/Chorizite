@@ -9,7 +9,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         /// <summary>
         /// The json type info for the state object
         /// </summary>
-        protected System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> JsonStateTypeInfo { get; }
+        protected System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> TypeInfo { get; }
 
         /// <summary>
         /// Called before the plugin is unloaded during a reload.

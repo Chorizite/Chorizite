@@ -1,12 +1,6 @@
 ﻿<html>
   <head>
     <style>
-            @spritesheet panel {
-              src: panel.9.png;
-              panel: 1px 1px 64px 64px;
-              panel-inner: 6px 6px 52px 52px;
-            }
-
             body {
               font-family: LatoLatin;
               height: 600px;
@@ -18,7 +12,6 @@
 
             #panel {
               display: block;
-              decorator: ninepatch(panel, panel-inner);
               position: absolute;
               top: 206px;
               left: 37px;

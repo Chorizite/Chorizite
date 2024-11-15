@@ -22,8 +22,6 @@ namespace Chorizite.Core.Plugins {
         private readonly IChoriziteConfig _config;
         private readonly ILogger _log;
         private readonly IRenderInterface _render;
-        private DateTime _wantsReloadAt = DateTime.MinValue;
-        private bool _wantsReload;
 
         /// <inheritdoc />
         public string PluginDirectory => _config.PluginDirectory;
@@ -78,7 +76,7 @@ namespace Chorizite.Core.Plugins {
 
         /// <inheritdoc />
         public void LoadPluginManifests() {
-            _log?.LogDebug($"Loading plugins");
+            _log?.LogTrace($"Loading plugin manifests");
             if (!Directory.Exists(PluginDirectory)) {
                 _log?.LogWarning($"Plugin directory does not exist: {PluginDirectory}");
                 return;
@@ -89,7 +87,6 @@ namespace Chorizite.Core.Plugins {
                 if (!LoadPluginManifest(manifestFile, out PluginInstance? plugin) || plugin is null) {
                     continue;
                 }
-                _log?.LogWarning($"{plugin.Manifest.Name} v{plugin.Manifest.Version} ({plugin.Manifest.Environments})");
 
                 if (plugin.Manifest.Environments.HasFlag(_config.Environment)) {
                     _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
@@ -109,12 +106,7 @@ namespace Chorizite.Core.Plugins {
         }
 
         private void Render_OnRender2D(object? sender, EventArgs e) {
-            if (!_wantsReload && Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
-                _wantsReloadAt = DateTime.Now + TimeSpan.FromSeconds(1);
-                _wantsReload = true;
-            }
-
-            if (_wantsReload && DateTime.Now > _wantsReloadAt) {
+            if (Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
                 ReloadPlugins();
             }
         }
@@ -140,8 +132,6 @@ namespace Chorizite.Core.Plugins {
                     var startedPlugins = new List<string>();
                     StartPlugin(plugin, ref startedPlugins);
                 }
-
-                _wantsReload = false;
             }
             catch (Exception ex) {
                 _log?.LogError(ex, "Error reloading plugins: {0}", ex.Message);
@@ -161,9 +151,9 @@ namespace Chorizite.Core.Plugins {
 
         private bool LoadPluginManifest(string manifestFile, out PluginInstance? plugin) {
             try {
-                _log?.LogDebug($"Loading plugin manifest: {manifestFile}");
+                _log?.LogTrace($"Loading plugin manifest: {manifestFile}");
                 if (PluginManifest.TryLoadManifest(manifestFile, out PluginManifest manifest, out string? errorStr)) {
-                    _log?.LogDebug($"Loaded plugin manifest {manifest.Name} v{manifest.Version} which depends on: {string.Join(", ", manifest.Dependencies)}");
+                    _log?.LogTrace($"Loaded plugin manifest {manifest.Name} v{manifest.Version} which depends on: {string.Join(", ", manifest.Dependencies)}");
                     if (TryGetPluginLoader(manifest, out IPluginLoader? loader)) {
                         if (loader?.LoadPluginInstance(manifest, out plugin) == true && plugin is not null) {
                             return true;
@@ -212,7 +202,7 @@ namespace Chorizite.Core.Plugins {
             if (plugin.IsLoaded || startedPlugins.Contains(plugin.Name.ToLower())) {
                 return true;
             }
-            _log?.LogDebug($"Starting plugin: {plugin.Name}");
+            _log?.LogTrace($"Starting plugin: {plugin.Name}");
 
             foreach (var dep in plugin.Manifest.Dependencies) {
                 var parts = dep.Split('@');

@@ -19,6 +19,11 @@ RMLUI_CAPI void rml_Context_Update(Rml::Context *context) {
     context->Update();
 }
 
+RMLUI_CAPI void rml_Context_SetDimensions(Rml::Context *context, int x, int y) {
+    auto vec = Rml::Vector2i(x, y);
+    context->SetDimensions(vec);
+}
+
 RMLUI_CAPI void rml_Context_Render(Rml::Context *context) {
     context->Render();
 }

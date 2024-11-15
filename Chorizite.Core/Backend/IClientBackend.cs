@@ -13,11 +13,15 @@ using Chorizite.Common;
 namespace Chorizite.Core.Backend {
     public interface IClientBackend : IDisposable {
         int GameScreen { get; set; }
-        public event EventHandler<PacketDataEventArgs>? OnC2SData;
-        public event EventHandler<PacketDataEventArgs>? OnS2CData;
-        public event EventHandler<EventArgs>? OnScreenChanged;
 
-        bool EnterGame(uint characterId);
-        void Exit();
+        public event EventHandler<PacketDataEventArgs> OnC2SData;
+        public event EventHandler<PacketDataEventArgs> OnS2CData;
+        public event EventHandler<EventArgs> OnScreenChanged;
+        public event EventHandler<ChatInputEventArgs> OnChatInput;
+        public event EventHandler<ChatTextAddedEventArgs> OnChatTextAdded;
+
+        public bool EnterGame(uint characterId);
+        public void Exit();
+        public void AddChatText(string text, ChatType type = ChatType.Default);
     }
 }

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 
 namespace Chorizite.Loader.Standalone.Hooks {
     internal class DirectXHooks : HookBase {
+        private static bool _isResetting = false;
         private static IHook<EndScene> _endSceneHook;
         private static IHook<CreateDevice> _createDeviceHook;
         private static IHook<WndProc> _windowProcHook;
@@ -26,21 +27,60 @@ namespace Chorizite.Loader.Standalone.Hooks {
 
         public static Device D3Ddevice { get; private set; }
 
-        private static nint _hwnd;
+        private static IntPtr _hwnd;
+        private static IHook<Reset> _resetHook;
 
         [Function(CallingConventions.Stdcall)]
-        private delegate nint WndProc(nint a, uint b, nint c, nint d);
+        private delegate IntPtr WndProc(IntPtr a, uint b, IntPtr c, IntPtr d);
 
         [Function(CallingConventions.Stdcall)]
-        private delegate nint CreateDevice(nint a, uint b, DeviceType c, nint d, CreateFlags e, nint f, nint g);
+        private delegate IntPtr CreateDevice(IntPtr a, uint b, DeviceType c, IntPtr d, CreateFlags e, IntPtr f, IntPtr g);
 
         [FunctionHookOptions(PreferRelativeJump = true)]
         [Function(CallingConventions.Stdcall)]
-        private delegate nint EndScene(nint a);
+        private delegate IntPtr EndScene(IntPtr a);
+
+        [Function(CallingConventions.Stdcall)]
+        private unsafe delegate int Reset(IntPtr a, PresentParameters* b);
+
+        public static int Init(IntPtr a, int b) {
+            using var direct3D = new Direct3D();
+            using var device = new Device(direct3D, 0, DeviceType.Hardware, IntPtr.Zero, CreateFlags.HardwareVertexProcessing, GetParameters(direct3D, 0));
+
+            Direct3D9VTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(direct3D.NativePointer, Enum.GetNames(typeof(IDirect3D9)).Length);
+            DeviceVTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(device.NativePointer, Enum.GetNames(typeof(IDirect3DDevice9)).Length);
+
+            var createDevicePtr = (int)Direct3D9VTable[(int)IDirect3D9.CreateDevice].FunctionPointer;
+            _createDeviceHook = CreateHook<CreateDevice>(typeof(DirectXHooks), nameof(CreateDeviceImpl), createDevicePtr);
+
+            var endScenePtr = (int)DeviceVTable[(int)IDirect3DDevice9.EndScene].FunctionPointer;
+            _endSceneHook = CreateHook<EndScene>(typeof(DirectXHooks), nameof(EndSceneImpl), endScenePtr);
+
+            var resetPtr = (int)DeviceVTable[(int)IDirect3DDevice9.Reset].FunctionPointer;
+            _resetHook = CreateHook<Reset>(typeof(DirectXHooks), nameof(ResetImpl), resetPtr);
+
+            return 0;
+        }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
-        private static nint EndSceneImpl(nint a) {
+        private unsafe static int ResetImpl(IntPtr a, PresentParameters* b) {
+            var res = _resetHook.OriginalFunction.Invoke(a, b);
+            if (res != 0) {
+                StandaloneLoader.Render.TriggerGraphicsPreReset(StandaloneLoader.Render, EventArgs.Empty);
+                return res;
+            }
+            StandaloneLoader.Render.TriggerGraphicsPostReset(StandaloneLoader.Render, EventArgs.Empty);
+            return res;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+        private static IntPtr EndSceneImpl(IntPtr a) {
             try {
+                if (a != _unmanagedD3DPtr) {
+                    _unmanagedD3DPtr = (int)a;
+                    D3Ddevice = new Device(_unmanagedD3DPtr);
+                    StandaloneLoader.Backend.DX9Renderer.SetDevice(D3Ddevice);
+                }
                 StandaloneLoader.Render?.Render2D();
             }
             catch (Exception ex) {
@@ -50,7 +90,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
-        private unsafe static nint CreateDeviceImpl(nint a, uint b, DeviceType c, nint hwnd, CreateFlags e, nint f, nint d3dPtr) {
+        private unsafe static IntPtr CreateDeviceImpl(IntPtr a, uint b, DeviceType c, IntPtr hwnd, CreateFlags e, IntPtr f, IntPtr d3dPtr) {
             var devicePtr = _createDeviceHook.OriginalFunction.Invoke(a, b, c, hwnd, e, f, d3dPtr);
             _unmanagedD3DPtr = *(int*)d3dPtr;
             D3Ddevice = new Device(_unmanagedD3DPtr);
@@ -65,30 +105,14 @@ namespace Chorizite.Loader.Standalone.Hooks {
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
-        private static nint WndProcImpl(nint hwnd, uint uMsg, nint wParam, nint lParam) {
+        private static IntPtr WndProcImpl(IntPtr hwnd, uint uMsg, IntPtr wParam, IntPtr lParam) {
             if (StandaloneLoader.Input.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam)) {
-                return nint.Zero;
+                return IntPtr.Zero;
             }
             return _windowProcHook.OriginalFunction.Invoke(hwnd, uMsg, wParam, lParam);
         }
 
-        public static int Init(nint a, int b) {
-            using var direct3D = new Direct3D();
-            using var device = new Device(direct3D, 0, DeviceType.Hardware, nint.Zero, CreateFlags.HardwareVertexProcessing, GetParameters(direct3D, 0));
-
-            Direct3D9VTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(direct3D.NativePointer, Enum.GetNames(typeof(IDirect3D9)).Length);
-            DeviceVTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(device.NativePointer, Enum.GetNames(typeof(IDirect3DDevice9)).Length);
-
-            var createDevicePtr = (int)Direct3D9VTable[(int)IDirect3D9.CreateDevice].FunctionPointer;
-            _createDeviceHook = CreateHook<CreateDevice>(typeof(DirectXHooks), nameof(CreateDeviceImpl), createDevicePtr);
-
-            var endScenePtr = (int)DeviceVTable[(int)IDirect3DDevice9.EndScene].FunctionPointer;
-            _endSceneHook = CreateHook<EndScene>(typeof(DirectXHooks), nameof(EndSceneImpl), endScenePtr);
-
-            return 0;
-        }
-
-        private static PresentParameters GetParameters(Direct3D d3d, nint windowHandle) {
+        private static PresentParameters GetParameters(Direct3D d3d, IntPtr windowHandle) {
             var mode = d3d.GetAdapterDisplayMode(0);
             return new PresentParameters() {
                 BackBufferWidth = mode.Width,

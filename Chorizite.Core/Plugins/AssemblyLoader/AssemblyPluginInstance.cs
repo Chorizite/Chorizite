@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Chorizite.Core.Lib;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -15,19 +16,12 @@ using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins.AssemblyLoader {
     public class AssemblyPluginInstance : PluginInstance<AssemblyPluginManifest> {
-        private FileSystemWatcher? _watcher;
-        private WeakReference<IPluginCore>? _pluginInstance;
         private readonly IPluginManager _manager;
+        private readonly FileWatcher _fileWatcher;
         private readonly Dictionary<string, string> _serializedState = [];
+        private IPluginCore? _pluginInstance;
 
-        public IPluginCore? PluginInstance {
-            get {
-                if (_pluginInstance?.TryGetTarget(out var instance) == true) {
-                    return instance;
-                }
-                return null;
-            }
-        }
+        public IPluginCore? PluginInstance => _pluginInstance;
 
         public AssemblyPluginLoadContext LoadContext { get; private set; }
 
@@ -35,16 +29,9 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             _serviceProvider = serviceProvider;
             _manager = manager;
 
-            _watcher = new FileSystemWatcher(Path.GetDirectoryName(Manifest.ManifestFile));
-            _watcher.NotifyFilter = NotifyFilters.LastWrite;
-            _watcher.Filter = Manifest.EntryFile;
-            _watcher.Changed += _watcher_Changed;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void _watcher_Changed(object sender, FileSystemEventArgs e) {
-            WantsReload = true;
-            _log?.LogDebug($"Plugin file changed: {e.FullPath}");
+            _fileWatcher = new FileWatcher(Path.GetDirectoryName(Manifest.ManifestFile)!, Manifest.EntryFile, (file) => {
+                WantsReload = true;
+            });
         }
 
         public int CountLoadedAssemblies() {
@@ -106,7 +93,6 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 IsLoaded = true;
                 WantsReload = false;
                 TriggerOnLoad(this, EventArgs.Empty);
-                _watcher.EnableRaisingEvents = true;
             }
             catch (Exception ex) {
                 _log?.LogError(ex, "Error loading plugin: {0}: {1}", Name, ex.Message);
@@ -135,7 +121,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 return;
             }
 
-            _pluginInstance = new WeakReference<IPluginCore>(InstantiatePlugin(pluginType));
+            _pluginInstance = InstantiatePlugin(pluginType);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -216,14 +202,13 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void UnloadPluginAssembly() {
             if (IsLoaded) {
-                _watcher.EnableRaisingEvents = false;
                 _log?.LogDebug($"Unloading plugin assembly: {Name}");
                 TriggerOnBeforeUnload(this, EventArgs.Empty);
 
                 if (PluginInstance is not null) {
                     TrySerializeSettings();
                     TrySerializeState();
-                    PluginInstance?.Dispose();
+                    PluginInstance?.GetType()?.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(PluginInstance, []);
                 }
                 _pluginInstance = null;
                 LoadContext.Unload();
@@ -250,7 +235,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             }
         }
 
-        private void TryDeserializeType(IPluginCore instance, Type type, string jsonTypePropName, string? fileName = null) {
+        private void TryDeserializeType(IPluginCore instance, Type type, string? fileName = null) {
             if (instance is null) {
                 return;
             }
@@ -267,8 +252,9 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             var flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             var serializedType = stateSerializer.GetGenericArguments()[0];
+            var jsonTypePropName = "TypeInfo";
             if (stateSerializer.GetProperty(jsonTypePropName, flags)?.GetValue(instance) is not JsonTypeInfo jsonTypeInfo) {
-                _log.LogError($"Unable to find JsonTypeInfo for plugin: {Name} ({serializedType.Name})");
+                _log.LogError($"Unable to find JsonTypeInfo for plugin: {Name} ({jsonTypePropName}) ({serializedType.Name}): {stateSerializer.Name} / {stateSerializer.GetProperty(jsonTypePropName, flags)?.GetValue(instance)}");
                 return;
             }
 
@@ -297,7 +283,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             stateSerializer.GetMethod("DeserializeAfterLoad", flags)?.Invoke(instance, [serializedObj]);
         }
 
-        private void TrySerializeType(Type type, string jsonTypePropName, string? fileName = null) {
+        private void TrySerializeType(Type type, string? fileName = null) {
             if (PluginInstance is null) {
                 return;
             }
@@ -322,6 +308,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
             _log.LogTrace($"Serializing {type.Name} for plugin: {Name}: {stateObj.GetType().Name}");
 
+            var jsonTypePropName = "TypeInfo";
             if (stateSerializer.GetProperty(jsonTypePropName, flags)?.GetValue(PluginInstance) is not JsonTypeInfo jsonTypeInfo) {
                 _log.LogError($"Unable to find JsonTypeInfo for plugin: {Name} ({stateType.Name})");
                 return;
@@ -345,7 +332,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         private void TryDeserializeSettings(IPluginCore instance) {
             if (instance is null) return;
 
-            TryDeserializeType(instance, typeof(ISerializeSettings<>), "JsonSettingsTypeInfo", Path.Combine(instance.DataDirectory, "settings.json"));
+            TryDeserializeType(instance, typeof(ISerializeSettings<>), Path.Combine(instance.DataDirectory, "settings.json"));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -356,21 +343,21 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 Directory.CreateDirectory(PluginInstance.DataDirectory);
             }
 
-            TrySerializeType(typeof(ISerializeSettings<>), "JsonSettingsTypeInfo", Path.Combine(PluginInstance.DataDirectory, "settings.json"));
+            TrySerializeType(typeof(ISerializeSettings<>), Path.Combine(PluginInstance.DataDirectory, "settings.json"));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TryDeserializeState(IPluginCore instance) {
-            TryDeserializeType(instance, typeof(ISerializeState<>), "JsonStateTypeInfo");
+            TryDeserializeType(instance, typeof(ISerializeState<>));
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TrySerializeState() {
-            TrySerializeType(typeof(ISerializeState<>), "JsonStateTypeInfo");
+            TrySerializeType(typeof(ISerializeState<>));
         }
 
         public override void Dispose() {
-            _watcher?.Dispose();
+            _fileWatcher?.Dispose();
             UnloadPluginAssembly();
             base.Dispose();
         }

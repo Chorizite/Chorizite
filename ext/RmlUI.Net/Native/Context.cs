@@ -14,6 +14,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_Update")]
         public static extern void Update(IntPtr context);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_SetDimensions")]
+        public static extern void SetDimensions(IntPtr context, int x, int y);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_Render")]
         public static extern void Render(IntPtr context);
 

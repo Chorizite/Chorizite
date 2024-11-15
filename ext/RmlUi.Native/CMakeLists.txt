@@ -55,6 +55,8 @@ add_library(${PROJECT_NAME} SHARED
     "src/SystemInterface.cpp"
     "src/FileInterface.cpp"
     "src/Plugin.cpp"
+
+    "src/StyleSheetContainer.cpp"
     
     "src/XMLAttributes.cpp"
     "src/Rml.cpp"

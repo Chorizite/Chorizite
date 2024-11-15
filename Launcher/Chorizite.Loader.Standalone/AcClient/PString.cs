@@ -196,9 +196,10 @@ namespace AcClient {
 
 
 
-    public unsafe struct PStringBase<T> where T : unmanaged {
+    public unsafe struct PStringBase<T> : IDisposable where T : unmanaged {
         // Struct:
         public PSRefBufferCharData<T>* m_charbuffer;
+
         public override string ToString() {
             int len = 0;
             if (typeof(T) == typeof(UInt16)) {
@@ -208,6 +209,39 @@ namespace AcClient {
             for (int i = 0; ((sbyte*)m_charbuffer->m_data)[i] != 0; i++) len++;
             return new string((sbyte*)m_charbuffer, 0, len);
         }
+
+        public static implicit operator PStringBase<T>(string inStr) {
+            PStringBase<T> ret;
+            if (typeof(T) == typeof(UInt16)) {
+                ret.m_charbuffer = *s_NullBuffer_w;
+                UInt16[] buf = new UInt16[inStr.Length];
+                for (int i = 0; i < inStr.Length; i++) {
+                    buf[i] = inStr[i];
+                }
+                __Ctor_16((PStringBase<UInt16>*)&ret, buf);
+                return ret;
+
+            }
+            throw new Exception("Not implemented.");
+            /*
+            ret.m_charbuffer = *s_NullBuffer;
+
+            __Ctor_((PStringBase<byte>*)&ret, inStr.ToCharArray());
+            return ret;
+            */
+        }
+
+        public void Dispose() {
+            if (this is PStringBase<UInt16> pShort) {
+                __Dtor_16(&pShort);
+            }
+        }
+
+        public static delegate* unmanaged[Thiscall]<PStringBase<UInt16>*, UInt16[], void> __Ctor_16 = (delegate* unmanaged[Thiscall]<PStringBase<UInt16>*, UInt16[], void>)0x00402730;
+        public static delegate* unmanaged[Thiscall]<PStringBase<byte>*, byte[], void> __Ctor_ = (delegate* unmanaged[Thiscall]<PStringBase<byte>*, byte[], void>)0x00401340;
+        public static delegate* unmanaged[Thiscall]<PStringBase<UInt16>*, void> __Dtor_16 = (delegate* unmanaged[Thiscall]<PStringBase<UInt16>*, void>)0x004011B0;
+
+        //004011B0
 
         // Functions:
 
@@ -320,10 +354,10 @@ namespace AcClient {
         public int replace(PStringBase<UInt16>* search, PStringBase<UInt16>* str) => ((delegate* unmanaged[Thiscall]<ref PStringBase<T>, PStringBase<UInt16>*, PStringBase<UInt16>*, int>)0x0040D870)(ref this, search, str); // .text:0040D510 ; int __thiscall PStringBase<unsigned short>::replace(PStringBase<unsigned short> *this, PStringBase<unsigned short> *search, PStringBase<unsigned short> *str) .text:0040D510 ?replace@?$PStringBase@G@@QAEJABV1@0@Z
 
         // PStringBase.set<char>:
-        public void set(PStringBase<char>* str) => ((delegate* unmanaged[Thiscall]<ref PStringBase<T>, PStringBase<char>*, void>)0x00401700)(ref this, str); // .text:004016F0 ; void __thiscall PStringBase<char>::set(PStringBase<char> *this, PStringBase<char> *str) .text:004016F0 ?set@?$PStringBase@D@@QAEXABV1@@Z
+        public void set(PStringBase<byte>* str) => ((delegate* unmanaged[Thiscall]<ref PStringBase<T>, PStringBase<byte>*, void>)0x00401700)(ref this, str); // .text:004016F0 ; void __thiscall PStringBase<char>::set(PStringBase<char> *this, PStringBase<char> *str) .text:004016F0 ?set@?$PStringBase@D@@QAEXABV1@@Z
 
         // PStringBase.set<char>:
-        public void set(char* str) => ((delegate* unmanaged[Thiscall]<ref PStringBase<T>, char*, void>)0x00405000)(ref this, str); // .text:00404E00 ; void __thiscall PStringBase<char>::set(PStringBase<char> *this, const char *str) .text:00404E00 ?set@?$PStringBase@D@@QAEXPBD@Z
+        public void set(byte* str) => ((delegate* unmanaged[Thiscall]<ref PStringBase<T>, byte*, void>)0x00405000)(ref this, str); // .text:00404E00 ; void __thiscall PStringBase<char>::set(PStringBase<char> *this, const char *str) .text:00404E00 ?set@?$PStringBase@D@@QAEXPBD@Z
 
         // PStringBase.set<unsigned short>:
         public void set(UInt16* str) => ((delegate* unmanaged[Thiscall]<ref PStringBase<T>, UInt16*, void>)0x00407E40)(ref this, str); // .text:00407B90 ; void __thiscall PStringBase<unsigned short>::set(PStringBase<unsigned short> *this, const unsigned __int16 *str) .text:00407B90 ?set@?$PStringBase@G@@QAEXPBG@Z
@@ -383,9 +417,9 @@ namespace AcClient {
         public int vsprintf(UInt16* fmt, char* args) => ((delegate* unmanaged[Thiscall]<ref PStringBase<T>, UInt16*, char*, int>)0x00402520)(ref this, fmt, args); // .text:00402380 ; int __thiscall PStringBase<unsigned short>::vsprintf(PStringBase<unsigned short> *this, const unsigned __int16 *fmt, char *args) .text:00402380 ?vsprintf@?$PStringBase@G@@QAEJPBGPAD@Z
 
         // Globals:
-        public static PSRefBufferCharData<UInt16>** s_NullBuffer_w = (PSRefBufferCharData<UInt16>**)0x00818340; // .data:00817340 ; PSRefBufferCharData<unsigned short> *PStringBase<unsigned short>::s_NullBuffer .data:00817340 ?s_NullBuffer@?$PStringBase@G@@0PAV?$PSRefBufferCharData@G@@A
-        public static PStringBase<char>* s_NullBuffer = (PStringBase<char>*)0x00818344; // .data:00817344 ; PStringBase<char> PStringBase<char>::s_NullBuffer .data:00817344 ?s_NullBuffer@?$PStringBase@D@@0PAV?$PSRefBufferCharData@D@@A
-        public static PStringBase<char>* null_string = (PStringBase<char>*)0x008183B4; // .data:008173B4 ; PStringBase<char> PStringBase<char>::null_string .data:008173B4 ?null_string@?$PStringBase@D@@2V1@B
+        public static PSRefBufferCharData<T>** s_NullBuffer_w = (PSRefBufferCharData<T>**)0x00818340; // .data:00817340 ; PSRefBufferCharData<unsigned short> *PStringBase<unsigned short>::s_NullBuffer .data:00817340 ?s_NullBuffer@?$PStringBase@G@@0PAV?$PSRefBufferCharData@G@@A
+        public static PStringBase<byte>* s_NullBuffer = (PStringBase<byte>*)0x00818344; // .data:00817344 ; PStringBase<char> PStringBase<char>::s_NullBuffer .data:00817344 ?s_NullBuffer@?$PStringBase@D@@0PAV?$PSRefBufferCharData@D@@A
+        public static PStringBase<byte>* null_string = (PStringBase<byte>*)0x008183B4; // .data:008173B4 ; PStringBase<char> PStringBase<char>::null_string .data:008173B4 ?null_string@?$PStringBase@D@@2V1@B
                                                                                        // public static PStringBase<char>* whitespace_string = (PStringBase<char>*)0xDEADBEEF; // .data:00836748 ; PStringBase<char> PStringBase<char>::whitespace_string .data:00836748 ?whitespace_string@?$PStringBase@D@@2V1@B
         public static PStringBase<UInt16>* null_string_w = (PStringBase<UInt16>*)0x0083774C; // .data:0083674C ; PStringBase<unsigned short> PStringBase<unsigned short>::null_string .data:0083674C ?null_string@?$PStringBase@G@@2V1@B
         public static PStringBase<UInt16>* whitespace_string_w = (PStringBase<UInt16>*)0x00837750; // .data:00836750 ; PStringBase<unsigned short> PStringBase<unsigned short>::whitespace_string .data:00836750 ?whitespace_string@?$PStringBase@G@@2V1@B
