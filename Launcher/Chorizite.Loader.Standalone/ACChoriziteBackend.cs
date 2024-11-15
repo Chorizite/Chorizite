@@ -15,6 +15,11 @@ using Chorizite.Loader.Standalone.Render;
 using Microsoft.Extensions.Logging;
 using System;
 using Chorizite.Common;
+using Chorizite.Loader.Standalone.Hooks;
+using ChatType = Chorizite.Core.Backend.ChatType;
+using System.Text;
+using System.Linq;
+using SharpDX;
 
 namespace Chorizite.Loader.Standalone {
     public unsafe class ACChoriziteBackend : IClientBackend, IChoriziteBackend {
@@ -41,6 +46,8 @@ namespace Chorizite.Loader.Standalone {
             }
         }
 
+        WeakEvent<LogMessageEventArgs> IChoriziteBackend._OnLogMessage { get; } = new();
+
         private readonly WeakEvent<PacketDataEventArgs> _OnC2SData = new WeakEvent<PacketDataEventArgs>();
         public event EventHandler<PacketDataEventArgs>? OnC2SData {
             add { _OnC2SData.Subscribe(value); }
@@ -51,6 +58,18 @@ namespace Chorizite.Loader.Standalone {
         public event EventHandler<PacketDataEventArgs>? OnS2CData {
             add { _OnS2CData.Subscribe(value); }
             remove { _OnS2CData.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<ChatInputEventArgs> _OnChatInput = new();
+        public event EventHandler<ChatInputEventArgs>? OnChatInput {
+            add { _OnChatInput.Subscribe(value); }
+            remove { _OnChatInput.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<ChatTextAddedEventArgs> _OnChatTextAdded = new();
+        public event EventHandler<ChatTextAddedEventArgs>? OnChatTextAdded {
+            add { _OnChatTextAdded.Subscribe(value); }
+            remove { _OnChatTextAdded.Unsubscribe(value); }
         }
 
         private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
@@ -81,12 +100,24 @@ namespace Chorizite.Loader.Standalone {
             _OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
         }
 
+        internal void HandleChatTextAdded(ChatTextAddedEventArgs eventArgs) {
+            _OnChatTextAdded?.Invoke(this, eventArgs);
+        }
+
+        internal void HandleChatTextInput(ChatInputEventArgs eventArgs) {
+            _OnChatInput?.Invoke(this, eventArgs);
+        }
+
         public bool EnterGame(uint characterId) {
             // Todo: check that it is a valid character id
             if ((*UIFlow.m_instance)->_curMode != UIMode.CharacterManagementUI) {
                 return false;
             }
             return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
+        }
+
+        public void AddChatText(string text, ChatType type = ChatType.Default) {
+            ChatHooks.AddChatText(text, (eChatTypes)type);
         }
 
         private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;

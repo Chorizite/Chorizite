@@ -5,5 +5,5 @@
   "version": "0.0.1",
   "description": "Lua backend for AC",
   "dependencies": [ "Core.UI@0.0.1" ],
-  "environments": [ "Launcher", "Client" ]
+  "environments": [ "Client" ]
 }

@@ -16,34 +16,34 @@ using Chorizite.Core.Backend;
 using Chorizite.Core.Input;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
+using Core.AC.Lib.Screens;
+using Core.AC.Lib.Panels;
 
 namespace Core.AC {
-    public class CoreACPlugin : IPluginCore, ScreenProvider<GameScreen>, ISerializeState<ACState> {
+    public class CoreACPlugin : IPluginCore, IScreenProvider<GameScreen>, IPanelProvider<GamePanel>, ISerializeState<ACState> {
         private readonly Dictionary<GameScreen, string> _registeredGameScreens = [];
-
-        internal static ILogger? Log;
-        internal static CoreACPlugin Instance;
+        private readonly Dictionary<GamePanel, string> _registeredGamePanels = [];
         private ACState _state;
 
+        internal static ILogger Log;
+        internal static CoreACPlugin Instance;
         internal CoreUIPlugin CoreUI { get; }
-        public IClientBackend ClientBackend { get; }
         internal NetworkParser Net { get; }
+        internal IClientBackend ClientBackend { get; }
 
-        public GameInterface Game { get; }
+        public GameInterface Game { get; private set; }
 
         public GameScreen CurrentScreen {
             get => _state.CurrentScreen;
-            set {
-                SetScreen(value);
-            }
+            set => SetScreen(value);
         }
 
-        JsonTypeInfo<ACState> ISerializeState<ACState>.JsonStateTypeInfo => SourceGenerationContext.Default.ACState;
+        JsonTypeInfo<ACState> ISerializeState<ACState>.TypeInfo => SourceGenerationContext.Default.ACState;
 
         /// <summary>
         /// Screen changed
         /// </summary>
-        public event EventHandler<ScreenChangedEventArgs>? OnScreenChanged {
+        public event EventHandler<ScreenChangedEventArgs> OnScreenChanged {
             add { _OnScreenChanged.Subscribe(value); }
             remove { _OnScreenChanged.Unsubscribe(value); }
         }
@@ -56,7 +56,24 @@ namespace Core.AC {
             CoreUI = coreUI;
             ClientBackend = clientBackend;
 
-            Game = new GameInterface(log, Net.Messages);
+            // since this plugin is ISerializeState<ACState>, we wait to do full initialization until after loading state.
+            // ISerializeState{ACState}.DeserializeAfterLoad(ACState?) is now responsible for calling Init()
+        }
+
+        private void Init() {
+            Game = new GameInterface(Log, Net.Messages);
+
+            CoreUI.RegisterUIModel("CharSelectScreen", _state.CharSelectModel);
+            CoreUI.RegisterUIModel("DatPatchScreen", _state.DatPatchModel);
+
+            RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "screens", "CharSelect.rml"));
+            RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "screens", "DatPatch.rml"));
+
+            RegisterPanel(GamePanel.Logs, Path.Combine(AssemblyDirectory, "assets", "panels", "Logs.rml"));
+
+            ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
+
+            SetScreen(_state.CurrentScreen, true);
         }
 
         private void SetScreen(GameScreen value, bool force = false) {
@@ -69,6 +86,7 @@ namespace Core.AC {
             }
         }
 
+        #region State / Settings Serialization
         ACState ISerializeState<ACState>.SerializeBeforeUnload() => _state;
 
         void ISerializeState<ACState>.DeserializeAfterLoad(ACState? state) {
@@ -76,17 +94,11 @@ namespace Core.AC {
             _state.CharSelectModel ??= new CharSelectScreenModel();
             _state.DatPatchModel ??= new DatPatchScreenModel();
 
-            CoreUI.RegisterUIModel("CharSelectScreen", _state.CharSelectModel);
-            CoreUI.RegisterUIModel("DatPatchScreen", _state.DatPatchModel);
-
-            RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "CharSelect.rml"));
-            RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "DatPatch.rml"));
-
-            ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
-
-            SetScreen(_state.CurrentScreen, true);
+            Init();
         }
+        #endregion // State / Settings Serialization
 
+        #region ScreenProvider
         private void ClientBackend_OnScreenChanged(object? sender, EventArgs e) {
             CurrentScreen = (GameScreen)ClientBackend.GameScreen;
         }
@@ -112,7 +124,44 @@ namespace Core.AC {
             CoreUI.UnregisterScreen(screen.ToString(), rmlPath);
         }
 
-        public override void Dispose() {
+        /// <inheritdoc/>
+        public GameScreen CustomScreenFromName(string name) => GameScreenHelpers.FromString(name);
+        #endregion // ScreenProvider
+
+        #region PanelProvider
+        /// <inheritdoc/>
+        public bool RegisterPanel(GamePanel panel, string rmlPath) {
+            if (_registeredGamePanels.TryGetValue(panel, out var existingRmlPath)) {
+                CoreUI.UnregisterPanel(panel.ToString(), existingRmlPath);
+                _registeredGamePanels[panel] = rmlPath;
+            }
+            else {
+                _registeredGamePanels.Add(panel, rmlPath);
+            }
+
+            return CoreUI.RegisterPanel(panel.ToString(), rmlPath);
+        }
+
+        /// <inheritdoc/>
+        public void UnregisterPanel(GamePanel panel, string rmlPath) {
+            if (_registeredGamePanels.TryGetValue(panel, out var rmlFile) && rmlFile == rmlPath) {
+                _registeredGamePanels.Remove(panel);
+            }
+
+            CoreUI.UnregisterPanel(panel.ToString(), rmlPath);
+        }
+
+        /// <inheritdoc/>
+        public GamePanel CustomPanelFromName(string name) => GamePanelHelpers.FromString(name);
+
+        /// <inheritdoc/>
+        public bool IsPanelVisible(GamePanel panel) => CoreUI.IsPanelVisible(panel.ToString());
+
+        /// <inheritdoc/>
+        public void TogglePanelVisibility(GamePanel panel, bool visible) => CoreUI.TogglePanelVisibility(panel.ToString(), visible);
+        #endregion // PanelProvider
+
+        protected override void Dispose() {
             ClientBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
 
             CoreUI.Screen = "None";
@@ -121,6 +170,11 @@ namespace Core.AC {
                 UnregisterScreen(screen.Key, screen.Value);
             }
             _registeredGameScreens.Clear();
+
+            foreach (var panel in _registeredGamePanels) {
+                UnregisterPanel(panel.Key, panel.Value);
+            }
+            _registeredGamePanels.Clear();
 
             CoreUI.UnregisterUIModel("CharSelectScreen", _state.CharSelectModel);
             CoreUI.UnregisterUIModel("DatPatchScreen", _state.DatPatchModel);

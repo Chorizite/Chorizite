@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACUI.Lib.Fonts {
+namespace Core.UI.Lib.Fonts {
     public enum FontSubFamily {
         Regular,
         Italic,

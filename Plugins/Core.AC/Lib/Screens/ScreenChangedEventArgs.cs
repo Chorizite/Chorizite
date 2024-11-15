@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Core.AC.Lib {
+namespace Core.AC.Lib.Screens {
     /// <summary>
     /// Screen changed
     /// </summary>

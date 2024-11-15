@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.AC.Lib {
+namespace Core.AC.Lib.Screens {
     /// <summary>
     /// Game screen
     /// </summary>
@@ -50,5 +50,19 @@ namespace Core.AC.Lib {
         /// Character creation
         /// </summary>
         CharCreate = 0x1000000B
+    }
+
+    /// <summary>
+    /// GameScreen enum helpers
+    /// </summary>
+    public static class GameScreenHelpers {
+        /// <summary>
+        /// Create a custom GameScreen based on a strings hash code.
+        /// Use this to add custom GameScreens that are not part of the enum.
+        /// </summary>
+        /// <returns></returns>
+        public static GameScreen FromString(string name) {
+            return (GameScreen)name.GetHashCode();
+        }
     }
 }

@@ -11,6 +11,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_Hide")]
         public static extern void Hide(IntPtr document);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_AddStyleSheetContainer")]
+        public static extern void AddStyleSheetContainer(IntPtr document, IntPtr container);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_Close")]
         public static extern void Close(IntPtr document);
     }

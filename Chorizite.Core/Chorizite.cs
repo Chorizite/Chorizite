@@ -20,6 +20,8 @@ namespace Chorizite.Core {
     internal static class ChoriziteStatics {
         internal static ILogger Log { get; set; }
         internal static IChoriziteConfig Config { get; set; }
+        internal static ILifetimeScope Scope { get; set; }
+        internal static IChoriziteBackend Backend { get; set; }
 
         internal static ChoriziteLogger MakeLogger(string name) {
             return new ChoriziteLogger(name, Config.LogDirectory);
@@ -40,44 +42,48 @@ namespace Chorizite.Core {
         /// The absolute path to the magic hat dll directory.
         /// </summary>
         public static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(Chorizite<>))!.Location)!;
-        public IChoriziteConfig Config { get; }
-        public ILifetimeScope Scope { get; }
-        public IChoriziteBackend Backend { get; }
+
+        /// <summary>
+        /// The configuration being used
+        /// </summary>
+        public IChoriziteConfig Config => ChoriziteStatics.Config;
+        public ILifetimeScope Scope => ChoriziteStatics.Scope;
+        public IChoriziteBackend Backend => ChoriziteStatics.Backend;
 
         /// <summary>
         /// Create a new Chorizite instance and configure it.
         /// </summary>
-        /// <param name="configure">A configuration callback that allows you to configure advanced options</param>
+        /// <param name="config">Configuration</param>
         public Chorizite(IChoriziteConfig config) {
             ChoriziteStatics.Config = config;
-            Config = config;
-            var builder = new ContainerBuilder();
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+            var builder = new ContainerBuilder();
 
             builder.RegisterGeneric(MakeGenericLogger)
                 .As(typeof(ILogger<>))
                 .IfNotRegistered(typeof(ILogger<>));
 
-            var assemblyDir = Path.GetDirectoryName(Assembly.GetAssembly(GetType())!.Location);
             builder.Register(c => {
-                var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
-                datReader.Init(Config.DatDirectory);
-                return datReader;
-            })
+                    var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
+                    datReader.Init(Config.DatDirectory);
+                    return datReader;
+                })
                 .As<IDatReaderInterface>()
                 .SingleInstance()
                 .IfNotRegistered(typeof(IDatReaderInterface));
+
             builder.RegisterInstance(Config)
                 .As<IChoriziteConfig>()
                 .SingleInstance();
 
             _container = builder.Build();
-            Backend = TBackend.Create(_container);
+            ChoriziteStatics.Backend = TBackend.Create(_container);
             _log = new ChoriziteLogger("Chorizite", Config.LogDirectory);
             ChoriziteStatics.Log = _log;
 
-            Scope = _container.BeginLifetimeScope(builder => {
+            ChoriziteStatics.Scope = _container.BeginLifetimeScope(builder => {
                 builder.RegisterInstance(Backend);
                 builder.RegisterInstance(Backend.Renderer)
                     .As<IRenderInterface>()
@@ -95,7 +101,7 @@ namespace Chorizite.Core {
                         clientBackend = (IClientBackend)Backend;
                     }
                     else {
-                        throw new Exception("Client environments must provide an IACBackend");
+                        throw new Exception("Client environments must provide an IClientBackend");
                     }
 
                     builder.RegisterInstance(clientBackend)
@@ -148,9 +154,9 @@ namespace Chorizite.Core {
             _pluginManager.StartPlugins();
         }
 
-        private Assembly? CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args) {
+        private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args) {
             var name = new AssemblyName(args.Name);
-            Assembly assembly = null;
+            Assembly? assembly = null;
             _log?.LogTrace($"CurrentDomain_AssemblyResolve {name.Name}");
 
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -187,7 +193,7 @@ namespace Chorizite.Core {
                 return Activator.CreateInstance(typeof(ChoriziteLogger<>).MakeGenericType(types), new object[] {
                     friendlyName,
                     Config.LogDirectory
-                });
+                })!;
             }
             else {
                 return _log;

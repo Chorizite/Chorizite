@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
+using Core.UI.Lib.Fonts;
 
 namespace Core.UI {
     /// <summary>
@@ -23,12 +24,11 @@ namespace Core.UI {
     public class CoreUIPlugin : IPluginCore, ISerializeState<UIState> {
         private Dictionary<string, UIDataModel> _models = [];
         private readonly Dictionary<string, string> _gameScreenRmls = [];
-        private Screen? _activePanel;
-        private TestPlugin? _testPlugin;
+        private readonly Dictionary<string, Panel> _gamePanelRmls = [];
         private RmlUIRenderInterface? _rmlRenderInterface;
         private ACSystemInterface? _rmlSystemInterface;
+        private ThemePlugin _themePlugin;
         private RmlInputManager? _rmlInput;
-        private TestElementInstancer? _rmlElementInstancer;
         private bool _didInitRml;
         private bool _isDebugging;
         private UIState _state;
@@ -36,8 +36,11 @@ namespace Core.UI {
         internal static ILogger Log;
         internal readonly IChoriziteBackend Backend;
 
+        public FontManager FontManager { get; }
+
         internal readonly IPluginManager PluginManager;
         internal static Context? RmlContext;
+        private bool _needsViewportUpdate;
 
         public PanelManager PanelManager { get; private set; }
 
@@ -53,7 +56,7 @@ namespace Core.UI {
 
         public static CoreUIPlugin? Instance { get; internal set; }
 
-        JsonTypeInfo<UIState> ISerializeState<UIState>.JsonStateTypeInfo => SourceGenerationContext.Default.UIState;
+        JsonTypeInfo<UIState> ISerializeState<UIState>.TypeInfo => SourceGenerationContext.Default.UIState;
 
         /// <summary>
         /// Fired when the screen changes
@@ -69,14 +72,19 @@ namespace Core.UI {
             Log = log;
             PluginManager = pluginManager;
             Backend = ChoriziteBackend;
-            if (!Directory.Exists(DataDirectory)) {
-                Directory.CreateDirectory(DataDirectory);
-            }
+            FontManager = new FontManager(Log);
 
             InitRmlUI();
 
             OnScreenChanged += CoreUIPlugin_OnScreenChanged;
             PluginManager.OnPluginUnloaded += PluginManager_OnPluginUnloaded;
+
+            Backend.Renderer.OnRender2D += Renderer_OnRender2D;
+            Backend.Renderer.OnGraphicsPostReset += Renderer_OnGraphicsPostReset;
+        }
+
+        private void Renderer_OnGraphicsPostReset(object? sender, EventArgs e) {
+            _needsViewportUpdate = true;
         }
 
         private void PluginManager_OnPluginUnloaded(object? sender, PluginUnloadedEventArgs e) {
@@ -110,6 +118,11 @@ namespace Core.UI {
         /// <param name="rmlFilePath">The absolute path to an RML file</param>
         /// <returns></returns>
         public bool RegisterScreen(string name, string rmlFilePath) {
+            if (!File.Exists(rmlFilePath)) {
+                Log?.LogError($"Could not find RML file {rmlFilePath}");
+                return false;
+            }
+                
             // TODO: allow multiple screens
             if (_gameScreenRmls.ContainsKey(name)) {
                 _gameScreenRmls[name] = rmlFilePath;
@@ -156,6 +169,44 @@ namespace Core.UI {
             _models.Remove(name);
         }
 
+
+        public bool RegisterPanel(string name, string rmlFilePath) {
+            if (!File.Exists(rmlFilePath)) {
+                Log?.LogError($"Could not find RML file {rmlFilePath}");
+                return false;
+            }
+
+            UnregisterPanel(name, rmlFilePath);
+
+            var panel = PanelManager.CreatePanel(name, rmlFilePath);
+
+            // TODO: allow multiple panels
+            if (_gamePanelRmls.ContainsKey(name)) {
+                _gamePanelRmls[name] = panel;
+            }
+            else {
+                _gamePanelRmls.Add(name, panel);
+            }
+
+            return true;
+        }
+
+        public void UnregisterPanel(string name, string rmlFilePath) {
+            if (_gamePanelRmls.TryGetValue(name, out var panel) && panel?.File == rmlFilePath) {
+                _gamePanelRmls.Remove(name);
+            }
+
+            PanelManager.DestroyPanel(name);
+        }
+
+        public bool IsPanelVisible(string name) {
+            return true;
+        }
+
+        public void TogglePanelVisibility(string name, bool visible) {
+            
+        }
+
         #endregion
 
         private void ToggleDebugger() {
@@ -175,28 +226,32 @@ namespace Core.UI {
 
         private void InitRmlUI() {
             if (_didInitRml) return;
-            Log?.LogDebug($"Initializing UI");
 
             try {
+                var x = Backend.Renderer.ViewportSize.X;
+            }
+            catch (Exception ex) {
+                return;
+            }
+
+            try {
+                Log.LogDebug($"InitRmlUI");
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
                 // fail to find it later
 
                 var rmlNativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
-                Log?.LogDebug($"Manually pre-loading {rmlNativePath}");
+                Log?.LogTrace($"Manually pre-loading {rmlNativePath}");
                 Native.LoadLibrary(rmlNativePath);
 
-                //_testPlugin = new TestPlugin(_log);
                 _rmlRenderInterface = new RmlUIRenderInterface(Backend.Renderer);
-                _rmlSystemInterface = new ACSystemInterface(Log);
+                _rmlSystemInterface = new ACSystemInterface(FontManager, Log);
 
                 Rml.SetSystemInterface(_rmlSystemInterface);
                 Rml.SetRenderInterface(_rmlRenderInterface);
 
                 var size = new Vector2i((int)Backend.Renderer.ViewportSize.X, (int)Backend.Renderer.ViewportSize.Y);
-                Log?.LogDebug($"Window size: {size.X}x{size.Y}");
 
                 if (Rml.Initialise()) {
-                    //Rml.RegisterPlugin(_testPlugin);
                     //_rmlElementInstancer = new TestElementInstancer(_log);
                     RmlContext = Rml.CreateContext("viewport", size);
 
@@ -205,16 +260,16 @@ namespace Core.UI {
                     }
 
                     _rmlInput = new RmlInputManager(Backend.Input, RmlContext, Log);
-                    PanelManager = new PanelManager(RmlContext, Backend.Renderer, Log);
+                    PanelManager = new PanelManager(RmlContext, _rmlSystemInterface, Backend.Renderer, Log);
+                    _themePlugin = new ThemePlugin(PanelManager, Backend, Log);
+                    Rml.RegisterPlugin(_themePlugin);
+
+                    LoadDefaultFonts();
 
                     var fontFiles = Directory.GetFiles(Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile)!, "assets"), "*.ttf");
                     foreach (var fontFile in fontFiles) {
                         Rml.LoadFontFace(fontFile);
                     }
-
-                    Backend.Renderer.OnRender2D += Renderer_OnRender2D;
-                    Backend.Renderer.OnGraphicsPreReset += PluginManager_OnGraphicsPreReset;
-                    Backend.Renderer.OnGraphicsPostReset += PluginManager_OnGraphicsPostReset;
 
                     _didInitRml = true;
                 }
@@ -227,10 +282,36 @@ namespace Core.UI {
             }
         }
 
+        private void LoadDefaultFonts() {
+            if (!FontManager.TryGetFont("Palatino Linotype", "regular", out var fontInfo)) {
+                if (!FontManager.TryGetFont("Arial", "regular", out fontInfo)) {
+                    Log.LogWarning("Could not find default fonts Palatino Linotype or Arial");
+                }
+            }
+
+            if (fontInfo is not null) {
+                Rml.LoadFontFace(fontInfo.Filename, true, FontWeight.Normal);
+            }
+
+            if (!FontManager.TryGetFont("Palatino Linotype", "bold", out var fontInfoBold)) {
+                if (!FontManager.TryGetFont("Arial", "bold", out fontInfoBold)) {
+                    Log.LogWarning("Could not find default fonts Palatino Linotype or Arial");
+                }
+            }
+
+            if (fontInfoBold is not null) {
+                Rml.LoadFontFace(fontInfoBold.Filename, false, FontWeight.Bold);
+            }
+        }
+
         private void Renderer_OnRender2D(object? sender, EventArgs e) {
             try {
-                PanelManager?.Update();
                 if (!_didInitRml) return;
+                if (_needsViewportUpdate) {
+                    RmlContext?.SetDimensions((int)Backend.Renderer.ViewportSize.X, (int)Backend.Renderer.ViewportSize.Y);
+                    _needsViewportUpdate = false;
+                }
+                PanelManager?.Update();
                 RmlContext?.Update();
                 RmlContext?.Render();
             }
@@ -242,12 +323,7 @@ namespace Core.UI {
         private void ShutdownRmlUI() {
             Log?.LogDebug($"ShutdownRmlUI");
 
-            Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
-            Backend.Renderer.OnGraphicsPreReset -= PluginManager_OnGraphicsPreReset;
-            Backend.Renderer.OnGraphicsPostReset -= PluginManager_OnGraphicsPostReset;
-
             _rmlInput?.Dispose();
-            PanelManager?.Dispose();
 
             foreach (var model in _models.Values) {
                 model.Dispose();
@@ -255,42 +331,38 @@ namespace Core.UI {
             _models.Clear();
 
             RmlContext?.Dispose();
+            _themePlugin.Dispose();
 
             if (_didInitRml) {
                 Rml.Shutdown();
             }
-
             _rmlRenderInterface?.Dispose();
             _rmlSystemInterface?.Dispose();
-            _testPlugin?.Dispose();
 
             _didInitRml = false;
         }
 
-        private void PluginManager_OnGraphicsPreReset(object? sender, EventArgs e) {
-            ShutdownRmlUI();
-        }
-
-        private void PluginManager_OnGraphicsPostReset(object? sender, EventArgs e) {
-            InitRmlUI();
-        }
-
         private void CoreUIPlugin_OnScreenChanged(object? sender, EventArgs e) {
-            PanelManager.UnloadScreen();
+            PanelManager.DestroyScreen();
             if (_gameScreenRmls.TryGetValue(Screen, out var rmlFilePath)) {
-                PanelManager.LoadScreenFile(Screen, rmlFilePath);
+                PanelManager.CreateScreen(Screen, rmlFilePath);
             }
         }
 
         /// <summary>
         /// Called when your plugin is unloaded. Either when logging out, closing the client, or hot reloading.
         /// </summary>
-        public override void Dispose() {
+        protected override void Dispose() {
             try {
+                Backend.Renderer.OnGraphicsPostReset -= Renderer_OnGraphicsPostReset;
+                Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
                 OnScreenChanged -= CoreUIPlugin_OnScreenChanged;
 
+                PanelManager.Dispose();
                 PluginManager.OnPluginUnloaded -= PluginManager_OnPluginUnloaded;
                 ShutdownRmlUI();
+                PanelManager?.Dispose();
+                FontManager?.Dispose();
             }
             catch (Exception ex) {
                 Log?.LogError(ex, "Error during shutdown");

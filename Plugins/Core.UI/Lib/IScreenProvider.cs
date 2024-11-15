@@ -5,7 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Core.UI.Lib {
-    public interface ScreenProvider<T> where T : Enum {
+    /// <summary>
+    /// Interface for a screen provider. Plugins that provide screens to Core.UI should implement this interface.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public interface IScreenProvider<T> where T : Enum {
         /// <summary>
         /// The current screen
         /// </summary>
@@ -25,5 +29,12 @@ namespace Core.UI.Lib {
         /// <param name="screen"></param>
         /// <param name="rmlPath"></param>
         public void UnregisterScreen(T screen, string rmlPath);
+
+        /// <summary>
+        /// Create a custom T enum entry from a string name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public T CustomScreenFromName(string name);
     }
 }

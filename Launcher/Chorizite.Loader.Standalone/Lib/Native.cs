@@ -30,6 +30,10 @@ namespace Chorizite.Loader.Standalone.Lib {
         public static extern bool VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, UIntPtr dwSize, int flNewProtect, out int lpflOldProtect);
 
         [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+
+        [DllImport("user32.dll")]
         private static extern bool IsWindowUnicode(IntPtr hWnd);
 
         [DllImport("user32.dll", EntryPoint = "GetWindowLong")]
@@ -60,5 +64,12 @@ namespace Chorizite.Loader.Standalone.Lib {
             var is64Bit = Environment.Is64BitProcess;
             return is64Bit ? GetWindowLongPtr64W(hWnd, (int)nIndex) : GetWindowLongPtr32W(hWnd, (int)nIndex);
         }
+    }
+
+    internal struct RECT {
+        public int left;
+        public int top;
+        public int right;
+        public int bottom;
     }
 }

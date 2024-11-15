@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Chorizite.Common;
+using Chorizite.Core.Lib;
 
 namespace Chorizite.Loader.Standalone.Input {
     public class Win32InputManager : IInputManager {
@@ -90,7 +91,7 @@ namespace Chorizite.Loader.Standalone.Input {
         }
 
         public bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {
-            EatableEvent? eatableEvent = null;
+            EatableEventArgs? eatableEvent = null;
 
             switch (type) {
                 case WindowMessageType.MOUSEHOVER:

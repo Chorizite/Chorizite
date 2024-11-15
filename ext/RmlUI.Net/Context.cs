@@ -25,8 +25,14 @@ namespace RmlUiNet {
         internal Context(IntPtr ptr) : base(ptr) {
         }
 
-        public void Update() {
+        public void Update()
+        {
             Native.Context.Update(NativePtr);
+        }
+
+        public void SetDimensions(int x, int y)
+        {
+            Native.Context.SetDimensions(NativePtr, x, y);
         }
 
         public void Render() {

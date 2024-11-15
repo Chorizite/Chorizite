@@ -3,13 +3,14 @@ using Microsoft.Extensions.Logging;
 using RoyT.TrueType;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACUI.Lib.Fonts {
+namespace Core.UI.Lib.Fonts {
     public class FontManager : IDisposable {
         private readonly ILogger? _log;
         private Dictionary<string, FontInfo> _availableFonts = new Dictionary<string, FontInfo>();
@@ -20,22 +21,18 @@ namespace ACUI.Lib.Fonts {
             _log = log;
 
             var fontFiles = new List<string>();
-            /*
-            var fontsList = Directory.GetFiles(Path.Combine(UBService.AssemblyDirectory, "fonts"), "*.ttf");
-            foreach (var file in fontsList) {
-                fontFiles.Add(file);
-            }
-            */
+            var fontDir = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+            if (Directory.Exists(fontDir)) {
+                var winfontsList = Directory.GetFiles(fontDir, "*.ttf");
 
-#if NET48_OR_GREATER
-            var winfontsList = Directory.GetFiles(Environment.GetFolderPath(Environment.SpecialFolder.Fonts), "*.ttf");
-            foreach (var file in winfontsList) {
-                var fontName = Path.GetFileNameWithoutExtension(file).ToLower();
-                fontFiles.Add(file);
-            }
-#endif
-            foreach (var file in fontFiles) {
-                RegisterFontFile(file);
+                foreach (var file in winfontsList) {
+                    var fontName = Path.GetFileNameWithoutExtension(file).ToLower();
+                    fontFiles.Add(file);
+                }
+
+                foreach (var file in fontFiles) {
+                    RegisterFontFile(file);
+                }
             }
         }
 
@@ -56,12 +53,23 @@ namespace ACUI.Lib.Fonts {
                     _availableFonts.Remove(filename);
                 }
 
+                _log?.LogTrace($"Registered font: {fontInfo.Family}: {filename}");
+
                 _availableFonts.Add(filename, fontInfo);
             }
             catch (Exception ex) {
                 _log?.LogError($"Error registering font: {filename}: {ex}");
             }
             return false;
+        }
+
+        public bool TryGetFont(string fontName, string fontStyle, [MaybeNullWhen(false)] out FontInfo font) {
+            fontName = fontName.ToLowerInvariant();
+            fontStyle = fontStyle.ToLowerInvariant();
+
+            font = _availableFonts.Values.FirstOrDefault(f => f.Family.ToLowerInvariant().Contains(fontName) && f.SubFamily.ToString().ToLowerInvariant().Contains(fontStyle));
+
+            return font != null;
         }
 
         public void Dispose() {

@@ -11,20 +11,24 @@ typedef bool(*onLogMessage)(Rml::Log::Type type, const char *message);
 
 typedef char*(*onJoinPath)(const char *document_path, const char *path);
 
+typedef bool(*onSetMouseCursor)(const char *message);
+
 class SystemInterface : Rml::SystemInterface {
 private:
     ::onGetElapsedTime m_onGetElapsedTime;
     ::onTranslateString m_onTranslateString;
     ::onLogMessage m_onLogMessage;
     ::onJoinPath m_onJoinPath;
+    ::onSetMouseCursor m_onSetMouseCursor;
 
 public:
     explicit SystemInterface(::onGetElapsedTime onGetElapsedTime, ::onTranslateString onTranslateString,
-                             ::onLogMessage onLogMessage, ::onJoinPath onJoinPath) {
+                             ::onLogMessage onLogMessage, ::onJoinPath onJoinPath, ::onSetMouseCursor onSetMouseCursor) {
         m_onGetElapsedTime = onGetElapsedTime;
         m_onTranslateString = onTranslateString;
         m_onLogMessage = onLogMessage;
         m_onJoinPath = onJoinPath;
+        m_onSetMouseCursor = onSetMouseCursor;
     }
 
     double GetElapsedTime() override {
@@ -48,6 +52,7 @@ public:
     }
 
     void SetMouseCursor(const Rml::String &cursor_name) override {
+        (*m_onSetMouseCursor)(cursor_name.c_str());
     }
 
     void SetClipboardText(const Rml::String &text) override {
@@ -64,6 +69,6 @@ public:
 };
 
 RMLUI_CAPI void *rml_SystemInterface_New(::onGetElapsedTime onGetElapsedTime, ::onTranslateString onTranslateString,
-                                         ::onLogMessage onLogMessage, ::onJoinPath onJoinPath) {
-    return new SystemInterface(onGetElapsedTime, onTranslateString, onLogMessage, onJoinPath);
+                                         ::onLogMessage onLogMessage, ::onJoinPath onJoinPath, ::onSetMouseCursor onSetMouseCursor) {
+    return new SystemInterface(onGetElapsedTime, onTranslateString, onLogMessage, onJoinPath, onSetMouseCursor);
 }

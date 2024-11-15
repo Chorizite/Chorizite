@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Chorizite.Core.Lib;
+using System;
 
 namespace Chorizite.Core.Input {
-    public class KeyPressEventArgs : EatableEvent {
+    public class KeyPressEventArgs : EatableEventArgs {
         public string Text { get; }
 
         public KeyPressEventArgs(string text) {

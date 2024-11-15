@@ -34,14 +34,15 @@ namespace Chorizite.Loader.Standalone {
         public static unsafe int Init(IntPtr a, int b) {
             try {
                 /*
-                while (!Debugger.IsAttached) {
-                    Thread.Sleep(100);
+                while (!System.Diagnostics.Debugger.IsAttached) {
+                    System.Threading.Thread.Sleep(100);
                 }
-                */
+                //*/
 
                 DirectXHooks.Init(a, b);
                 NetHooks.Init();
                 ACClientHooks.Init();
+                ChatHooks.Init();
             }
             catch (Exception ex) {
                 Log.LogError(ex, "Failed to initialize hooks");
