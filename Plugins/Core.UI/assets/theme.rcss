@@ -68,8 +68,8 @@ p {
 	titlebar: 51px 185px 82px 30px;
 	titlebar-inner: 88px 194px 8px 12px;
 	window-close: 51px 216px 17px 17px;
-	window-close-active: 69px 216px 17px 17px;
-	window-close-hover: 87px 216px 17px 17px;
+	window-close-hover: 69px 216px 17px 17px;
+	window-close-active: 87px 216px 17px 17px;
 	cursor-active: 167px 216px 16px 28px;
 	cursor: 152px 216px 16px 28px;
 	cursor-red: 183px 216px 16px 28px;
@@ -88,6 +88,11 @@ p {
 	button-small-hover-inner: 135px 271px 10px 10px;
 	button-small-active-inner: 135px 289px 10px 10px;
 	button-small-disable-inner: 135px 307px 10px 10px;
+	window-minimize: 51px 234px 16px 16px;
+	window-minimize-hover: 69px 234px 16px 16px;
+	window-minimize-active: 87px 234px 16px 16px;
+	input-bg: 195px 29px 20px 20px;
+	input-bg-inner: 200px 34px 10px 10px;
 }
 
 scrollbarvertical {
@@ -336,4 +341,12 @@ textarea {
 	text-align: left;
 	line-height: 1.3;
 	color: white;
+}
+
+input[type="text"], input[type="password"] {
+	decorator: ninepatch(input-bg, input-bg-inner);
+	font-effect: shadow(1px 1px black);
+	color: #f3be5d;
+	display: inline-block;
+	padding: 6px;
 }

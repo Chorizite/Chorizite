@@ -29,6 +29,14 @@ namespace Core.Launcher.UIModels {
             BindAction("launch", (evt, variants) => {
                 CoreLauncherPlugin.Instance?.LauncherBackend.LaunchClient(ClientPath.Value, Server.Value, Username.Value, Password.Value);
             });
+
+            BindAction("exit", (evt, variants) => {
+                CoreLauncherPlugin.Instance?.LauncherBackend.Exit();
+            });
+
+            BindAction("minimize", (evt, variants) => {
+                CoreLauncherPlugin.Instance?.LauncherBackend.Minimize();
+            });
         }
 
         public override void Dispose() {

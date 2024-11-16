@@ -51,6 +51,8 @@ namespace ACUI.Lib {
             }
         }
 
+        public Screen? GetScreen() => _currentScreen;
+
         /// <summary>
         /// Create a screen
         /// </summary>

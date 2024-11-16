@@ -10,6 +10,7 @@ using static SDL2.SDL;
 using System.Reflection;
 using Chorizite.Common;
 using Chorizite.Common;
+using Launcher.Lib;
 
 namespace Launcher.Render {
     unsafe public class OpenGLRenderer : IRenderInterface {
@@ -18,6 +19,9 @@ namespace Launcher.Render {
         private List<ManagedGLTexture> _textures = new();
         internal SDL_DisplayMode CurrentDisplayMode;
         private nint SDLWindowHandle;
+
+        public nint HWND { get; private set; }
+
         private nint SDLGLContext;
         private int _nextGeometryId = 1;
         private readonly ILogger _log;
@@ -50,8 +54,8 @@ namespace Launcher.Render {
             }
         }
 
-        public int Width { get; protected set; } = 400;
-        public int Height { get; protected set; } = 340;
+        public int Width { get; protected set; } = 440;
+        public int Height { get; protected set; } = 240;
         public List<string> Extensions { get; } = [];
         public Vector2 ViewportSize => new(Width, Height);
 
@@ -120,12 +124,19 @@ namespace Launcher.Render {
             SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_CONTEXT_MINOR_VERSION, 3);
             SDL_GetCurrentDisplayMode(0, out CurrentDisplayMode);
 
-            var windowFlags = SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL | SDL_WindowFlags.SDL_WINDOW_RESIZABLE;
+            var windowFlags = SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL/* | SDL_WindowFlags.SDL_WINDOW_BORDERLESS*/;
             SDLWindowHandle = SDL_CreateWindow("Launcher", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Width, Height, windowFlags);
             if (SDLWindowHandle == nint.Zero) {
                 _log.LogError($"Failed to create window: {SDL_GetError()}");
                 return;
             }
+
+            SDL_SysWMinfo wmInfo = new();
+            SDL_VERSION(out var version);
+            SDL_GetWindowWMInfo(SDLWindowHandle, ref wmInfo);
+            Native.MakeWindowTransparent(wmInfo.info.win.window);
+
+            HWND = wmInfo.info.win.window;
 
             SDLGLContext = SDL_GL_CreateContext(SDLWindowHandle);
             if (SDLGLContext == nint.Zero) {
@@ -145,6 +156,7 @@ namespace Launcher.Render {
         }
 
         public void Resize(int width, int height) {
+            return;
             if (width > 0 && height > 0) {
                 if (Width != width) {
                     Width = width;
@@ -165,7 +177,7 @@ namespace Launcher.Render {
 
             GL.glBindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-            GL.glClearColor(0.02f, 0.118f, 0.188f, 1.0f);
+            GL.glClearColor(255f, 0f, 255f, 0f);
             GL.glClear((uint)(AttribMask.ColorBufferBit | AttribMask.DepthBufferBit | AttribMask.StencilBufferBit));
 
             GL.glEnable(EnableCap.Blend);
@@ -173,6 +185,7 @@ namespace Launcher.Render {
             GL.glDisable(EnableCap.CullFace);
             GL.glBlendEquation(BlendEquationModeEXT.FuncAdd);
             GL.glBlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
+            GL.glBlendFuncSeparate(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha, BlendingFactor.One, (BlendingFactor)0);
             GL.glEnable(EnableCap.StencilTest);
             GL.glStencilFunc(StencilFunction.Always, 1, 0xFFFFFFFF);
             GL.glStencilMask(0xFFFFFFFF);
@@ -326,8 +339,8 @@ namespace Launcher.Render {
             }
         }
 
-        public void SetScissorRegion(int x, int y, int width, int height) {
-           GL.glScissor(x, y, width, height);
+        public void SetScissorRegion(int left, int top, int right, int bottom) {
+           GL.glScissor(left, top, right - left, bottom - top);
         }
 
         public void Dispose() {

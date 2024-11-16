@@ -14,6 +14,7 @@ p {
 
 @spritesheet acsprites
 {
+	/* Path: D:/projects/Chorizite/Plugins/Core.UI/assets/acsprites.png */
 	src: acsprites.png;
 
 	button-primary: 0px 0px 151px 46px;
@@ -67,8 +68,8 @@ p {
 	titlebar: 51px 185px 82px 30px;
 	titlebar-inner: 88px 194px 8px 12px;
 	window-close: 51px 216px 17px 17px;
-	window-close-active: 69px 216px 17px 17px;
-	window-close-hover: 87px 216px 17px 17px;
+	window-close-hover: 69px 216px 17px 17px;
+	window-close-active: 87px 216px 17px 17px;
 	cursor-active: 167px 216px 16px 28px;
 	cursor: 152px 216px 16px 28px;
 	cursor-red: 183px 216px 16px 28px;
@@ -83,8 +84,14 @@ p {
 	scroll-right-button-hover: 40px 252px 16px 16px;
 	scroll-right-button-active: 40px 269px 16px 16px;
 	scroll-right-button: 40px 286px 16px 16px;
+	button-small-inner: 135px 253px 10px 10px;
+	button-small-hover-inner: 135px 271px 10px 10px;
+	button-small-active-inner: 135px 289px 10px 10px;
+	button-small-disable-inner: 135px 307px 10px 10px;
+	window-minimize: 51px 234px 16px 16px;
+	window-minimize-hover: 69px 234px 16px 16px;
+	window-minimize-active: 87px 234px 16px 16px;
 }
-
 
 scrollbarvertical {
 	width: 16px;
@@ -175,6 +182,9 @@ button.secondary[disabled] {
 }
 
 button.small {
+	padding: 4px 6px 2px 6px;
+	font-effect: shadow(1px 1px black);
+	font-size: 12px;
 	decorator: ninepatch(button-small, button-small-inner);
 }
 
@@ -265,6 +275,7 @@ select
 	display: inline-block;
 	margin-bottom: -6px;
 	height: 20px;
+	font-effect: shadow(1px 1px black);
 }
 
 select selectvalue
@@ -305,6 +316,7 @@ select selectbox
 select selectbox,
 tbody
 {
+	max-height: 250px;
 }
 
 select selectbox option
@@ -320,4 +332,11 @@ select selectbox option:checked
 select selectbox option:hover
 {
 	decorator: ninepatch( combo-active-bg, combo-active-bg-inner );
+}
+
+textarea {
+	display: inline-block;
+	text-align: left;
+	line-height: 1.3;
+	color: white;
 }
