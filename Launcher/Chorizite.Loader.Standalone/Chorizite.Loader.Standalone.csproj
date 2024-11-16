@@ -18,7 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\DatReaderWriter\DatReaderWriter\DatReaderWriter.csproj" />
     <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
   </ItemGroup>
 
