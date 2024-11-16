@@ -5,11 +5,52 @@
         font-family: LatoLatin;
         font-size: 18px;
         color: #fff;
+        background: black;
         display: block;
         width: 400dp;
         height: 340dp;
         display: block;
     }
+
+      .window {
+        display: block;
+        decorator: ninepatch(panel, panel-inner);
+        position: absolute;
+        padding: 4px 4px 4px 4px;
+        font-size: 13dp;
+      }
+
+      #content {
+        display: block;
+      }
+
+      #window-close {
+        width: 24px;
+        height: 25px;
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        decorator: image(window-close);
+      }
+
+      #window-close:hover {
+        decorator: image(window-close-hover);
+      }
+
+      #title-bar {
+        position: relative;
+      }
+
+      #title-bar span {
+        margin-top: 1px;
+        display: block;
+        decorator: ninepatch(tab, tab-inner);
+        text-align: center;
+        padding: 4px 8px 4px 8px;
+        display: block;
+        font-effect: shadow(2px 2px black);
+        margin-right: 24px;
+      }
 
     div.wrap {
       padding: 5dp;
@@ -48,7 +89,14 @@
     }
     </style>
   </head>
-  <body data-model="SimpleLoginScreen">
+  <body data-model="SimpleLoginScreen" class="window">
+  	<div id="title-bar">
+      <handle move_target="#document">
+        <span id="title">Testing</span>
+        <div id="window-close"></div>
+      </handle>
+    </div>
+    <div id="content">
     <div class="wrap">
       <label>
         Username:
@@ -68,6 +116,7 @@
       </label>
 
       <button data-event-click="launch()">Launch</button>
+    </div>
     </div>
   </body>
 </html>

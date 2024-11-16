@@ -57,19 +57,6 @@ namespace Launcher.Render {
                 byte[] pixelData = new byte[Bitmap.Width * Bitmap.Height * 4];
                 Bitmap.CopyPixelDataTo(pixelData);
 
-                // Swap ARGB to RGBA format
-                for (int i = 0; i < pixelData.Length; i += 4) {
-                    byte a = pixelData[i];
-                    byte r = pixelData[i + 1];
-                    byte g = pixelData[i + 2];
-                    byte b = pixelData[i + 3];
-
-                    pixelData[i] = r;
-                    pixelData[i + 1] = g;
-                    pixelData[i + 2] = b;
-                    pixelData[i + 3] = a;
-                }
-
                 fixed (byte* data = &pixelData[0]) {
                     GL.glTexImage2D(TextureTarget.Texture2d, 0, 0x8058, Bitmap.Width, Bitmap.Height, 0, PixelFormat.Rgba, (PixelType)0x1401, data);
                 }
