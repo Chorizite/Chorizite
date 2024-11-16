@@ -11,5 +11,6 @@ namespace Chorizite.Core.Backend {
         void SetWindowSize(int width, int height);
         void Exit();
         void LaunchClient(string clientPath, string server, string username, string password);
+        void Minimize();
     }
 }

@@ -32,6 +32,7 @@ namespace Core.Launcher {
             get => _state.CurrentScreen;
             set => SetScreen(value);
         }
+        public Screen? Screen { get; private set; }
 
         /// <summary>
         /// Screen changed
@@ -77,6 +78,7 @@ namespace Core.Launcher {
             var oldScreen = _state.CurrentScreen;
             _state.CurrentScreen = value;
             CoreUI.Screen = _state.CurrentScreen.ToString();
+            Screen = CoreUI.PanelManager.GetScreen();
             _OnScreenChanged.Invoke(this, new ScreenChangedEventArgs(oldScreen, _state.CurrentScreen));
             Log.LogDebug($"Screen changed from {oldScreen} to {_state.CurrentScreen}");
         }

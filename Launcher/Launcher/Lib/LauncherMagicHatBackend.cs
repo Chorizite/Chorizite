@@ -50,7 +50,11 @@ namespace Launcher.Lib {
         }
 
         public void Exit() {
-            
+            Program.Exit();
+        }
+
+        public void Minimize() {
+            Native.ShowWindow(GLRenderer.HWND, 2);
         }
 
         public void Dispose() {
