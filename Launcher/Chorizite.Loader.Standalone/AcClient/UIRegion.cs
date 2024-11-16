@@ -714,14 +714,18 @@ namespace AcClient {
         public Byte m_shown;
     };
     public unsafe struct StringInfo {
-        public PStringBase<Char> m_strToken;
+        public PStringBase<byte> m_strToken;
         public UInt32 m_stringID;
         public UInt32 m_tableID;
         public HashTable<UInt32, StringInfoData> m_variables;
         public PStringBase<UInt16> m_LiteralValue;
-        public Char m_Override;
-        public PStringBase<Char> m_strEnglish;
-        public PStringBase<Char> m_strComment;
+        public byte m_Override;
+        public PStringBase<byte> m_strEnglish;
+        public PStringBase<byte> m_strComment;
+
+        public override string ToString() {
+            return $"m_strToken:{m_strToken.ToString()} m_strEnglish:{m_strEnglish.ToString()} m_strComment:{m_strComment.ToString()} m_LiteralValue:{m_LiteralValue.ToString()} m_stringID:{m_stringID:X8} m_tableID:{m_tableID:X8} m_Override:{m_Override}";
+        }
     };
 
 

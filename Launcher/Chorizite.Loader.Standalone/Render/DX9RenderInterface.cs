@@ -13,6 +13,7 @@ using System.Linq;
 using System.IO;
 using System.Reflection;
 using Chorizite.Common;
+using Chorizite.Loader.Standalone.Lib;
 
 namespace Chorizite.Loader.Standalone.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
@@ -43,21 +44,21 @@ namespace Chorizite.Loader.Standalone.Render {
 
 
         /// <inheritdoc/>
-        public event EventHandler<EventArgs>? OnRender2D {
+        public event EventHandler<EventArgs> OnRender2D {
             add { _OnRender2D.Subscribe(value); }
             remove { _OnRender2D.Unsubscribe(value); }
         }
         private readonly WeakEvent<EventArgs> _OnRender2D = new();
 
         /// <inheritdoc/>
-        public event EventHandler<EventArgs>? OnGraphicsPreReset {
+        public event EventHandler<EventArgs> OnGraphicsPreReset {
             add { _OnGraphicsPreReset.Subscribe(value); }
             remove { _OnGraphicsPreReset.Unsubscribe(value); }
         }
         private readonly WeakEvent<EventArgs> _OnGraphicsPreReset = new();
 
         /// <inheritdoc/>
-        public event EventHandler<EventArgs>? OnGraphicsPostReset {
+        public event EventHandler<EventArgs> OnGraphicsPostReset {
             add { _OnGraphicsPostReset.Subscribe(value); }
             remove { _OnGraphicsPostReset.Unsubscribe(value); }
         }
@@ -65,7 +66,11 @@ namespace Chorizite.Loader.Standalone.Render {
 
         public static Device D3Ddevice { get; private set; }
 
-        public Vector2 ViewportSize => new(D3Ddevice.Viewport.Width, D3Ddevice.Viewport.Height);
+        public Vector2 ViewportSize {
+            get {
+                return new (D3Ddevice.Viewport.Width + D3Ddevice.Viewport.X, D3Ddevice.Viewport.Height + D3Ddevice.Viewport.Y);
+            }
+        }
 
         public IntPtr DataPatchUI { get; private set; }
         internal HLSLShader BasicShader { get; }
@@ -81,6 +86,10 @@ namespace Chorizite.Loader.Standalone.Render {
             BasicShader = new HLSLShader(D3Ddevice, "Basic", GetEmbeddedResource("Render.Shaders.Basic.fx"), null, _log, shaderDir);
         }
 
+        internal void SetDevice(Device device) {
+            D3Ddevice = device;
+        }
+
         private string GetEmbeddedResource(string filename) {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = "Chorizite.Loader.Standalone." + filename;
@@ -92,6 +101,7 @@ namespace Chorizite.Loader.Standalone.Render {
         }
 
         public void Render2D() {
+            var oldViewport = D3Ddevice.Viewport;
             using (var stateBlock = new StateBlock(D3Ddevice, StateBlockType.All)) {
                 stateBlock.Capture();
 
@@ -117,6 +127,15 @@ namespace Chorizite.Loader.Standalone.Render {
 
                 D3Ddevice.SetRenderState(RenderState.ColorVertex, true);
 
+                D3Ddevice.Viewport = new RawViewport() {
+                    X = 0,
+                    Y = 0,
+                    Width = (int)ViewportSize.X,
+                    Height = (int)ViewportSize.Y,
+                    MinDepth = -1000,
+                    MaxDepth = 1000
+                };
+
                 try {
                     _OnRender2D?.Invoke(this, EventArgs.Empty);
                 }
@@ -126,6 +145,7 @@ namespace Chorizite.Loader.Standalone.Render {
 
                 stateBlock.Apply();
             }
+            D3Ddevice.Viewport = oldViewport;
         }
 
 
@@ -157,42 +177,42 @@ namespace Chorizite.Loader.Standalone.Render {
             return new IntPtr(id);
         }
 
-
-
         public void RenderGeometry(IntPtr geometry, Matrix4x4 transform, ITexture? texture) {
-            var geom = _geometryBuffers[geometry];
-            var hp = 0.5f;
-            var projection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(hp, D3Ddevice.Viewport.Width + hp, D3Ddevice.Viewport.Height + hp, hp, -1, 1);
+            try {
+                var geom = _geometryBuffers[geometry];
+                var hp = 0.5f;
+                var projection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(hp, ViewportSize.X + hp, ViewportSize.Y + hp, hp, -1000, 1000);
 
+                BasicShader.SetActive();
 
-            BasicShader.SetActive();
+                if (texture is ManagedDXTexture dxTexture && dxTexture is not null) {
+                    D3Ddevice.SetTexture(0, dxTexture.Texture);
+                    BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColorTexture");
+                }
+                else {
+                    D3Ddevice.SetTexture(0, null);
+                    BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColor");
+                }
+                BasicShader.SetUniform("xWorld", transform);
+                BasicShader.SetUniform("xProjection", projection);
 
-            if (texture is ManagedDXTexture dxTexture && dxTexture is not null) {
-                D3Ddevice.SetTexture(0, dxTexture.Texture);
-                BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColorTexture");
+                var numPasses = BasicShader.Effect.Begin();
+
+                for (var p = 0; p < numPasses; p++) {
+                    BasicShader.Effect.BeginPass(p);
+
+                    D3Ddevice.VertexDeclaration = geom.VertexDecl;
+                    D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
+                    D3Ddevice.Indices = geom.IndexBuffer;
+                    D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
+
+                    BasicShader.Effect.EndPass();
+                }
+                BasicShader.Effect.End();
             }
-            else {
-                D3Ddevice.SetTexture(0, null);
-                BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColor");
+            catch (Exception ex) {
+                _log?.LogError(ex, $"Error in RenderGeometry: {ex.Message}");
             }
-
-            BasicShader.SetUniform("xWorld", transform);
-            BasicShader.SetUniform("xProjection", projection);
-
-            var numPasses = BasicShader.Effect.Begin();
-
-            for (var p = 0; p < numPasses; p++) {
-                BasicShader.Effect.BeginPass(p);
-
-                D3Ddevice.VertexDeclaration = geom.VertexDecl;
-                D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
-                D3Ddevice.Indices = geom.IndexBuffer;
-                D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
-
-                BasicShader.Effect.EndPass();
-            }
-            BasicShader.Effect.End();
-
         }
 
         public void ReleaseGeometry(IntPtr geometry) {
@@ -260,11 +280,12 @@ namespace Chorizite.Loader.Standalone.Render {
             D3Ddevice.SetRenderState(RenderState.ScissorTestEnable, enable);
         }
 
-        public void SetScissorRegion(int x, int y, int width, int height) {
-            D3Ddevice.ScissorRect = new RawRectangle(x, y, x + width, y + height);
+        public void SetScissorRegion(int x, int y, int right, int bottom) {
+            D3Ddevice.ScissorRect = new RawRectangle(x, y, right, bottom);
         }
 
         public void TriggerGraphicsPreReset(object sender, EventArgs e) {
+            BasicShader.Reload();
             _OnGraphicsPreReset?.Invoke(sender, e);
         }
 

@@ -5,14 +5,27 @@ using Chorizite.Core.Dats;
 using Chorizite.Core.Input;
 using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
+using Chorizite.Common;
 
 namespace Launcher.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
+        /// <inheritdoc/>
         public IRenderInterface Renderer { get; }
+
+        /// <summary>
+        /// The <see cref="OpenGLRenderer"/> used by this backend
+        /// </summary>
         public OpenGLRenderer GLRenderer { get; }
 
+        /// <inheritdoc/>
         public IInputManager Input { get; }
+
+        /// <summary>
+        /// The <see cref="SDLInputManager"/> used by this backend
+        /// </summary>
         public SDLInputManager SDLInput { get; }
+
+        WeakEvent<LogMessageEventArgs> IChoriziteBackend._OnLogMessage { get; } = new();
 
         public static IChoriziteBackend Create(IContainer container) {
             var renderer = new OpenGLRenderer(container.Resolve<ILogger<OpenGLRenderer>>(), container.Resolve<IDatReaderInterface>());

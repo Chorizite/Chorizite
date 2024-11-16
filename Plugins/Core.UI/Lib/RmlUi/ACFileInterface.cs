@@ -1,16 +1,22 @@
-﻿using RmlUiNet;
+﻿using Chorizite.Core.Lib;
+using Microsoft.Extensions.Logging;
+using RmlUiNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 namespace ACUI.Lib.RmlUi {
     public class ACFileInterface : FileInterface {
-        private readonly string BasePath = "rml";
+        private readonly ILogger _log;
         private List<FileStream> m_Streams = new List<FileStream>();
 
+        public ACFileInterface(ILogger log) {
+            _log = log;
+        }
+
         public override void Close(ulong file) {
-            //UIPluginCore.Log($"ACFileInterface::Close({file})");
             if (m_Streams[(int)file - 1] == null) {
-                //UIPluginCore.Log("ERROR: Invalid FileHandle!");
+                _log.LogError($"ACFileInterface.Close: Invalid FileHandle: {file}");
+                return;
             }
 
             m_Streams[(int)file - 1].Dispose();
@@ -18,18 +24,18 @@ namespace ACUI.Lib.RmlUi {
         }
 
         public override ulong Length(ulong file) {
-            //UIPluginCore.Log($"ACFileInterface::Length({file})");
             if (m_Streams[(int)file - 1] == null) {
-                //UIPluginCore.Log("ERROR: Invalid FileHandle!");
+                _log.LogError($"ACFileInterface.Length: Invalid FileHandle: {file}");
+                return 0;
             }
 
             return (ulong)m_Streams[(int)file - 1].Length;
         }
 
         public override string LoadFile(string path) {
-            //UIPluginCore.Log($"ACFileInterface::LoadFile({path})");
+            path = PathHelpers.TryMakeDevPath(path);
             if (!File.Exists(path)) {
-                //UIPluginCore.Log($"ERR: File {path} doesn't exist within RmlUi files!");
+                _log.LogError($"ACFileInterface.LoadFile: Invalid File: {path}");
                 return "";
             }
 
@@ -37,9 +43,9 @@ namespace ACUI.Lib.RmlUi {
         }
 
         public override ulong Open(string path) {
-            //UIPluginCore.Log($"ACFileInterface::Open({path})");
+            path = PathHelpers.TryMakeDevPath(path);
             if (!File.Exists(path)) {
-                //UIPluginCore.Log($"ERR: File {path} doesn't exist within RmlUi files!");
+                _log.LogError($"ACFileInterface.Open: Invalid File: {path}");
                 return 0;
             }
 
@@ -48,47 +54,44 @@ namespace ACUI.Lib.RmlUi {
                 var openIndex = m_Streams.FindIndex((e) => e == null);
                 if (openIndex != -1) {
                     m_Streams[openIndex] = File.Open(path, FileMode.Open, FileAccess.Read);
-                    //UIPluginCore.Log($"ACFileInterface::Open({path}) RETURN {(ulong)openIndex + 1}");
                     return (ulong)openIndex + 1;
                 }
                 else {
                     m_Streams.Add(File.Open(path, FileMode.Open, FileAccess.Read));
-                    //UIPluginCore.Log($"ACFileInterface::Open({path}) RETURN {(ulong)m_Streams.Count}");
                     return (ulong)m_Streams.Count;
                 }
             }
             catch (Exception ex) {
-                //UIPluginCore.Log($"ERR: {ex}");
+                _log.LogError(ex, $"ACFileInterface.Open");
             }
-            //UIPluginCore.Log($"ACFileInterface::Open({path}) RETURN 0");
 
             return 0;
         }
 
         public override ulong Read(byte[] buffer, ulong size, ulong file) {
-            //UIPluginCore.Log($"ACFileInterface::Read({file})");
             if (m_Streams[(int)file - 1] == null) {
-                //UIPluginCore.Log("ERROR: Invalid FileHandle!");
+                _log.LogError($"ACFileInterface.Read: Invalid FileHandle: {file}");
+                return 0;
             }
 
             return (ulong)m_Streams[(int)file - 1].Read(buffer, (int)m_Streams[(int)file - 1].Position, (int)size);
         }
 
         public override bool Seek(ulong file, long offset, int origin) {
-            //UIPluginCore.Log($"ACFileInterface::Seek({file})");
             if (m_Streams[(int)file - 1] == null) {
-                //UIPluginCore.Log("ERROR: Invalid FileHandle!");
+                _log.LogError($"ACFileInterface.Seek: Invalid FileHandle: {file}");
+                return false;
             }
 
             m_Streams[(int)file - 1].Seek(offset, (SeekOrigin)origin);
 
-            return true; // we can't really tell if it was successful or not?
+            return true;
         }
 
         public override ulong Tell(ulong file) {
-            //UIPluginCore.Log($"ACFileInterface::Tell({file})");
             if (m_Streams[(int)file - 1] == null) {
-               //UIPluginCore.Log("ERROR: Invalid FileHandle!");
+                _log.LogError($"ACFileInterface.Tell: Invalid FileHandle: {file}");
+                return 0;
             }
 
             return (ulong)m_Streams[(int)file - 1].Position;

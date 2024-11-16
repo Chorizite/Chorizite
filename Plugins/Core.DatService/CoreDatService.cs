@@ -8,7 +8,7 @@ using Chorizite.Core;
 namespace Core.DatService {
     public class CoreDatService : IPluginCore {
         private IPluginManager _pluginManager;
-        public static ILogger Log;
+        internal static ILogger Log;
 
         protected CoreDatService(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, ILogger log) : base(manifest) {
             Log = log;
@@ -17,7 +17,7 @@ namespace Core.DatService {
             Log?.LogDebug($"CoreDatService Version: {Manifest.Version}");
         }
 
-        public override void Dispose() {
+        protected override void Dispose() {
             
         }
     }

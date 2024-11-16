@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Chorizite.Core.Lib;
+using System;
 
 namespace Chorizite.Core.Input {
-    public class KeyDownEventArgs : EatableEvent {
+    public class KeyDownEventArgs : EatableEventArgs {
         /// <summary>
         /// The key that was pressed
         /// </summary>

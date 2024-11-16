@@ -1,18 +1,26 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Core.UI.Lib.Fonts;
+using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace ACUI.Lib.RmlUi {
     public class ACSystemInterface : SystemInterface {
         private readonly DateTime _start;
         private readonly ILogger? _log;
+        private readonly FontManager _fontManager;
+        private readonly Regex _missingFontRegex = new(@"No font face defined. Ensure \(1\) that Context::Update is run after new elements are constructed, before Context::Render, and \(2\) that the specified font face '([^']+)' \[([^\]]+)\] has been successfully loaded\.", RegexOptions.IgnoreCase);
 
         public override double ElapsedTime => (DateTime.UtcNow - _start).TotalSeconds;
 
-        public ACSystemInterface(ILogger? logger) {
+        internal bool HasNewFontsLoaded { get; set; }
+        private List<string> _loadedFonts = [];
+
+        public ACSystemInterface(FontManager fontManager, ILogger? logger) {
             _start = DateTime.UtcNow;
             _log = logger;
-
+            _fontManager = fontManager;
         }
 
         public override string TranslateString(out int changeCount, string input) {
@@ -21,6 +29,25 @@ namespace ACUI.Lib.RmlUi {
         }
 
         public override bool LogMessage(LogType type, string message) {
+            // attempt to load missing fonts.
+            if (_missingFontRegex.IsMatch(message)) {
+                var match = _missingFontRegex.Match(message);
+                var fontName = match.Groups[1].Value;
+                var fontStyle = match.Groups[2].Value;
+
+                if (_fontManager.TryGetFont(fontName, fontStyle, out var font)) {
+                    if (_loadedFonts.Contains(font.Filename)) {
+                        return true;
+                    }
+                    _loadedFonts.Add(font.Filename);
+                    Rml.LoadFontFace(font.Filename);
+                    HasNewFontsLoaded = true;
+                    return true;
+                }
+
+                _log?.LogWarning($"[RmlUi] Missing font: {fontName} ({fontStyle}) - this may cause text to not display correctly.");
+                return true;
+            }
             _log?.LogInformation($"[RmlUi] {message}");
             return true;
         }

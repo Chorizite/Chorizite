@@ -9,6 +9,7 @@ namespace RmlUiNet
         private Native.SystemInterface.OnTranslateString _onTranslateString;
         private Native.SystemInterface.OnLogMessage _onLogMessage;
         private Native.SystemInterface.OnJoinPath _onJoinPath;
+        private Native.SystemInterface.OnSetMouseCursor _onSetMouseCursor;
 
         public SystemInterface() : base(IntPtr.Zero)
         {
@@ -16,12 +17,14 @@ namespace RmlUiNet
             _onTranslateString = OnTranslateStringInternal;
             _onLogMessage = LogMessage;
             _onJoinPath = JoinPath;
+            _onSetMouseCursor = OnSetMouseCursor;
 
             NativePtr = Native.SystemInterface.Create(
                 _onGetElapsedTime,
                 _onTranslateString,
                 _onLogMessage,
-                _onJoinPath
+                _onJoinPath,
+                _onSetMouseCursor
             );
 
             ManuallyRegisterCache(NativePtr, this);
@@ -39,6 +42,11 @@ namespace RmlUiNet
         private string OnTranslateStringInternal(ref int changeCount, string input)
         {
             return TranslateString(out changeCount, input);
+        }
+
+        private void OnSetMouseCursor(string mouseCursor)
+        {
+            SetMouseCursor(mouseCursor);
         }
 
         /// <summary>
@@ -63,6 +71,10 @@ namespace RmlUiNet
             Console.WriteLine("[{0}] {1}", type, message);
 
             return true;
+        }
+
+        public virtual void SetMouseCursor(string cursor) {
+            
         }
     }
 

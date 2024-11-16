@@ -1,0 +1,323 @@
+﻿/* reset */
+body {
+  display: block;
+}
+
+div {
+	display: block;
+}
+
+p {
+	display: block;
+	margin: 6px 0px;
+}
+
+@spritesheet acsprites
+{
+	src: acsprites.png;
+
+	button-primary: 0px 0px 151px 46px;
+	button-primary-inner: 8px 8px 135px 30px;
+	button-primary-hover: 0px 46px 151px 46px;
+	button-primary-hover-inner: 8px 54px 135px 30px;
+	button-primary-active: 0px 92px 151px 46px;
+	button-primary-active-inner: 8px 100px 135px 30px;
+	button-primary-disabled: 0px 138px 151px 46px;
+	button-primary-disabled-inner: 8px 146px 135px 30px;
+	tab: 153px 0px 32px 25px;
+	tab-active: 153px 25px 32px 25px;
+	tab-active-inner: 167px 38px 5px 6px;
+	tab-inner: 166px 13px 6px 6px;
+	panel: 152px 52px 64px 64px;
+	panel-inner: 158px 58px 52px 52px;
+	radio: 186px 0px 10px 10px;
+	radio-checked: 198px 0px 10px 10px;
+	checkbox: 200px 12px 13px 13px;
+	checkbox-checked: 186px 12px 13px 13px;
+	button-secondary: 217px 42px 38px 32px;
+	button-secondary-inner: 224px 51px 26px 16px;
+	button-secondary-active: 217px 75px 38px 32px;
+	button-secondary-active-inner: 224px 83px 25px 16px;
+	button-secondary-hover: 217px 108px 38px 32px;
+	button-secondary-hover-inner: 225px 117px 24px 15px;
+	button-secondary-disabled: 217px 141px 38px 32px;
+	button-secondary-disabled-inner: 224px 150px 25px 15px;
+	scroll-up-button: 34px 185px 16px 16px;
+	scroll-up-button-hover: 0px 185px 16px 16px;
+	scroll-up-button-active: 17px 185px 16px 16px;
+	scroll-down-button: 34px 225px 16px 16px;
+	scroll-down-button-hover: 0px 225px 16px 16px;
+	scroll-down-button-active: 17px 225px 16px 16px;
+	scroll-bar-vert-top: 0px 202px 16px 4px;
+	scroll-bar-vert-mid: 0px 210px 16px 4px;
+	scroll-bar-vert-bottom: 0px 220px 16px 4px;
+	scroll-bar-vert-top-hover: 17px 202px 16px 4px;
+	scroll-bar-vert-mid-hover: 17px 210px 16px 4px;
+	scroll-bar-vert-bottom-hover: 17px 220px 16px 4px;
+	scroll-bar-vert-top-active: 34px 202px 16px 4px;
+	scroll-bar-vert-mid-active: 34px 210px 16px 4px;
+	scroll-bar-vert-bottom-active: 34px 220px 16px 4px;
+	combo-up-arrow: 215px 0px 20px 19px;
+	combo-down-arrow: 236px 0px 20px 19px;
+	combo-active-bg: 215px 20px 20px 19px;
+	combo-active-bg-inner: 222px 24px 8px 11px;
+	combo-bg: 236px 20px 20px 19px;
+	combo-bg-inner: 242px 26px 8px 8px;
+	cursor-move: 227px 189px 29px 29px;
+	titlebar: 51px 185px 82px 30px;
+	titlebar-inner: 88px 194px 8px 12px;
+	window-close: 51px 216px 17px 17px;
+	window-close-active: 69px 216px 17px 17px;
+	window-close-hover: 87px 216px 17px 17px;
+	cursor-active: 167px 216px 16px 28px;
+	cursor: 152px 216px 16px 28px;
+	cursor-red: 183px 216px 16px 28px;
+	cursor-red-active: 199px 216px 16px 28px;
+	button-small: 118px 249px 46px 17px;
+	button-small-hover: 118px 267px 46px 17px;
+	button-small-active: 118px 285px 46px 17px;
+	button-small-disable: 118px 303px 46px 17px;
+	scroll-left-button-hover: 0px 252px 16px 16px;
+	scroll-left-button-active: 0px 269px 16px 16px;
+	scroll-left-button: 0px 286px 16px 16px;
+	scroll-right-button-hover: 40px 252px 16px 16px;
+	scroll-right-button-active: 40px 269px 16px 16px;
+	scroll-right-button: 40px 286px 16px 16px;
+}
+
+
+scrollbarvertical {
+	width: 16px;
+}
+
+scrollbarvertical slidertrack {
+	decorator: image("scroll-vert-bg.png" repeat-y);
+}
+
+scrollbarvertical sliderbar {
+	width: 16px;
+	min-height: 46px;
+	decorator: tiled-vertical( scroll-bar-vert-top, scroll-bar-vert-mid, scroll-bar-vert-bottom );
+}
+
+scrollbarvertical sliderbar:hover {
+	decorator: tiled-vertical( scroll-bar-vert-top-hover, scroll-bar-vert-mid-hover, scroll-bar-vert-bottom-hover );
+}
+
+scrollbarvertical sliderbar:active {
+	decorator: tiled-vertical( scroll-bar-vert-top-active, scroll-bar-vert-mid-active, scroll-bar-vert-bottom-active );
+}
+
+scrollbarvertical sliderarrowdec {
+	width: 16px;
+	height: 16px;
+	decorator: image( scroll-up-button );
+}
+
+scrollbarvertical sliderarrowdec:hover {
+	decorator: image( scroll-up-button-hover );
+}
+
+scrollbarvertical sliderarrowdec:active {
+	decorator: image(scroll-up-button-active );
+}
+
+scrollbarvertical sliderarrowinc {
+	width: 16px;
+	height: 16px;
+	decorator: image( scroll-down-button )
+}
+
+scrollbarvertical sliderarrowinc:hover {
+	decorator: image( scroll-down-button-hover );
+}
+
+scrollbarvertical sliderarrowinc:active {
+	decorator: image( scroll-down-button-active );
+}
+
+button {
+	display: inline-block;
+	cursor: image(cursor-active);
+	padding: 8px;
+	margin: 0px 2px;
+	text-align: center;
+	decorator: ninepatch(button-primary, button-primary-inner);
+}
+
+button:hover {
+	decorator: ninepatch(button-primary-hover, button-primary-hover-inner);
+}
+
+button:active {
+	decorator: ninepatch(button-primary-active, button-primary-active-inner);
+}
+
+button[disabled] {
+	decorator: ninepatch(button-primary-disabled, button-primary-disabled-inner);
+}
+
+button.secondary {
+	padding: 10px 8px 6px 8px;
+	decorator: ninepatch(button-secondary, button-secondary-inner);
+}
+
+button.secondary:hover {
+	decorator: ninepatch(button-secondary-hover, button-secondary-hover-inner);
+}
+
+button.secondary:active {
+	decorator: ninepatch(button-secondary-active, button-secondary-active-inner);
+}
+
+button.secondary[disabled] {
+	decorator: ninepatch(button-secondary-disabled, button-secondary-disabled-inner);
+}
+
+button.small {
+	decorator: ninepatch(button-small, button-small-inner);
+}
+
+button.small:hover {
+	decorator: ninepatch(button-small-hover, button-small-hover-inner);
+}
+
+button.small:active {
+	decorator: ninepatch(button-small-active, button-small-active-inner);
+}
+
+button.small[disabled] {
+	decorator: ninepatch(button-small-disabled, button-small-disabled-inner);
+}
+
+input.radio,
+input.checkbox
+{
+	width: 16dp;
+	height: 16dp;
+	vertical-align: -6dp;
+	margin: 2px;
+	display: inline-block;
+}
+
+input.radio
+{
+	decorator: image( dat://0x06004D19 );
+}
+
+input.radio:checked
+{
+	decorator: image( dat://0x06004D17 );
+}
+
+input.radio:hover, input.radio:focus-visible
+{
+	decorator: image( dat://0x06004D19 );
+}
+
+input.radio:active
+{
+	decorator: image( dat://0x06004D17 );
+}
+
+input.radio:checked:hover, input.radio:checked:focus-visible
+{
+	decorator: image( dat://0x06004D17 );
+}
+
+input.radio:checked:active
+{
+	decorator: image( dat://0x06004D17 );
+}
+
+input.checkbox
+{
+	decorator: image( dat://0x0600191F );
+}
+
+input.checkbox:hover, input.checkbox:focus-visible
+{
+	decorator: image( dat://0x0600191F );
+}
+
+input.checkbox:active
+{
+	decorator: image( dat://0x0600191A );
+}
+
+input.checkbox:checked
+{
+	decorator: image( dat://0x0600191A );
+}
+
+input.checkbox:checked:hover, input.checkbox:checked:focus-visible
+{
+	decorator: image( dat://0x0600191A );
+}
+
+input.checkbox:checked:active
+{
+	decorator: image( dat://0x0600191A );
+}
+
+select
+{
+	display: inline-block;
+	margin-bottom: -6px;
+	height: 20px;
+}
+
+select selectvalue
+{
+	margin-right: 20dp;
+	padding: 3px 0px 0px 4px;
+	decorator: ninepatch( combo-active-bg, combo-active-bg-inner );
+}
+select:focus-visible selectvalue {
+	decorator: image( selectvalue-hover );
+}
+
+select selectarrow
+{
+	width: 20dp;
+	height: 20dp;
+
+	decorator: image( combo-down-arrow fill );
+}
+
+select:hover selectarrow, select:focus-visible selectarrow
+{
+	decorator: image( combo-down-arrow fill );
+}
+
+select:active selectarrow,
+select selectarrow:checked
+{
+	decorator: image( combo-up-arrow );
+}
+
+select selectbox
+{
+	padding: 1dp 4dp 4dp 4dp;
+	margin: 0px 0 0 -4px;
+}
+
+select selectbox,
+tbody
+{
+}
+
+select selectbox option
+{
+	width: auto;
+	padding: 3dp 0 3dp 6dp;
+	decorator: ninepatch( combo-bg, combo-bg-inner );
+}
+select selectbox option:checked
+{
+	decorator: ninepatch( combo-active-bg, combo-active-bg-inner );
+}
+select selectbox option:hover
+{
+	decorator: ninepatch( combo-active-bg, combo-active-bg-inner );
+}

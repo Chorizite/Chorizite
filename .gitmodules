@@ -1,6 +1,7 @@
 [submodule "ext/DatReaderWriter"]
 	path = ext/DatReaderWriter
-	url = git@github.com:ACClientLib/DatReaderWriter.git
+	url = https://github.com/ACClientLib/DatReaderWriter.git
+	update = merge
 [submodule "ext/RmlUi.Native/ext/freetype"]
 	path = ext/RmlUi.Native/ext/freetype
 	url = https://gitlab.freedesktop.org/freetype/freetype.git

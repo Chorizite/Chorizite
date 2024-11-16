@@ -16,4 +16,8 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="runtimes\win-x86\native\" />
+  </ItemGroup>
+
 </Project>

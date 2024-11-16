@@ -1,5 +1,6 @@
 ﻿using DatReaderWriter;
 using DatReaderWriter.Lib.IO;
+using DatReaderWriter.Lib.IO.BlockAllocators;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -23,8 +24,9 @@ namespace Chorizite.Core.Dats {
             _datPath = datPath;
 
             PortalDat = new DatDatabase(options => {
-                options.FilePath = System.IO.Path.Combine(datPath, $"client_Portal.dat");
-            });
+            }, new StreamBlockAllocator(new DatReaderWriter.Options.DatDatabaseOptions() {
+                FilePath = System.IO.Path.Combine(datPath, $"client_Portal.dat")
+            }));
 
             return true;
         }

@@ -8,16 +8,12 @@ using Core.Launcher.Lib;
 using System.Collections.Generic;
 using Core.UI.Lib;
 using Core.Launcher.UIModels;
-using Core.UI.Lib.Serialization;
-using System.Text.Json;
 using Chorizite.Core.Backend;
-using System.Runtime.CompilerServices;
-using Chorizite.Core.Input;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Core.Launcher {
-    public class CoreLauncherPlugin : IPluginCore, ScreenProvider<LauncherScreen>, ISerializeState<LauncherState>, ISerializeSettings<LauncherSettings> {
+    public class CoreLauncherPlugin : IPluginCore, IScreenProvider<LauncherScreen>, ISerializeState<LauncherState>, ISerializeSettings<LauncherSettings> {
         private IPluginManager _pluginManager;
         private readonly CoreUIPlugin CoreUI;
         private readonly Dictionary<LauncherScreen, string> _registeredScreens = [];
@@ -29,14 +25,13 @@ namespace Core.Launcher {
         internal readonly ILauncherBackend LauncherBackend;
         internal readonly IChoriziteBackend Backend;
 
-        JsonTypeInfo<LauncherState> ISerializeState<LauncherState>.JsonStateTypeInfo => SourceGenerationContext.Default.LauncherState;
-        JsonTypeInfo<LauncherSettings> ISerializeSettings<LauncherSettings>.JsonSettingsTypeInfo => SourceGenerationContext.Default.LauncherSettings;
+        JsonTypeInfo<LauncherState> ISerializeState<LauncherState>.TypeInfo => SourceGenerationContext.Default.LauncherState;
+        JsonTypeInfo<LauncherSettings> ISerializeSettings<LauncherSettings>.TypeInfo => SourceGenerationContext.Default.LauncherSettings;
 
         public LauncherScreen CurrentScreen {
             get => _state.CurrentScreen;
             set => SetScreen(value);
         }
-
 
         /// <summary>
         /// Screen changed
@@ -83,6 +78,7 @@ namespace Core.Launcher {
             _state.CurrentScreen = value;
             CoreUI.Screen = _state.CurrentScreen.ToString();
             _OnScreenChanged.Invoke(this, new ScreenChangedEventArgs(oldScreen, _state.CurrentScreen));
+            Log.LogDebug($"Screen changed from {oldScreen} to {_state.CurrentScreen}");
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {
@@ -110,7 +106,10 @@ namespace Core.Launcher {
             CoreUI.UnregisterScreen(screen.ToString(), rmlPath);
         }
 
-        public override void Dispose() {
+        /// <inheritdoc/>
+        public LauncherScreen CustomScreenFromName(string name) => LauncherScreenHelpers.FromString(name);
+
+        protected override void Dispose() {
             Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
 
             CoreUI.Screen = "None";

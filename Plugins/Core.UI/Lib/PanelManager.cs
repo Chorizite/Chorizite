@@ -1,65 +1,109 @@
-﻿using ACUI.Lib.Fonts;
+﻿using ACUI.Lib.RmlUi;
 using Chorizite.Core.Render;
+using Core.UI.Lib;
+using Core.UI.Lib.Fonts;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace ACUI.Lib {
+    /// <summary>
+    /// Manages panels and screens
+    /// </summary>
     public class PanelManager : IDisposable {
-        private Dictionary<string, Panel> _panels = []; // <filename, panel>
-        internal ILogger? Log;
+        private readonly Dictionary<string, Panel> _panels = []; // <filename, panel>
         private ElementDocument? _modalPanel;
         private Screen? _currentScreen = null;
-        internal readonly Context Context;
+        private readonly IRenderInterface Render;
+        private readonly ACSystemInterface _rmlSystemInterface;
+        private readonly Context Context;
+        private readonly ILogger Log;
 
-        public IRenderInterface Render { get; }
         public FontManager FontManager { get; }
         public Screen? CurrentScreen => _currentScreen;
 
-        public PanelManager(Context ctx, IRenderInterface render, ILogger? log) {
+        internal PanelManager(Context ctx, ACSystemInterface rmlSystemInterface, IRenderInterface render, ILogger log) {
             Log = log;
             FontManager = new FontManager(log);
             Context = ctx;
             Render = render;
+            _rmlSystemInterface = rmlSystemInterface;
+
+            Render.OnGraphicsPreReset += Render_OnGraphicsPreReset;
+            Render.OnGraphicsPostReset += Render_OnGraphicsPostReset;
         }
 
-        public void LoadScreenFile(string name, string rmlFilePath) {
+        private void Render_OnGraphicsPreReset(object? sender, EventArgs e) {
+            var panels = _panels.Values.ToArray();
+            foreach (var panel in panels) {
+                panel.HandleGraphicsPreReset();
+            }
+        }
+
+        private void Render_OnGraphicsPostReset(object? sender, EventArgs e) {
+            var panels = _panels.Values.ToArray();
+            foreach (var panel in panels) {
+                panel.HandleGraphicsPostReset();
+            }
+        }
+
+        /// <summary>
+        /// Create a screen
+        /// </summary>
+        /// <param name="name">The name of the screen</param>
+        /// <param name="rmlFilePath">The path to the rml file</param>
+        /// <returns></returns>
+        public Screen CreateScreen(string name, string rmlFilePath) {
             if (_currentScreen is not null) {
-                UnloadScreen();
+                DestroyScreen();
             }
 
-            _currentScreen = new Screen(name, rmlFilePath, Context, Log);
+            return _currentScreen = new Screen(name, rmlFilePath, Context, _rmlSystemInterface, Log);
         }
 
-        public void UnloadScreen() {
+        /// <summary>
+        /// Unloads the current screen
+        /// </summary>
+        public void DestroyScreen() {
             _currentScreen?.Dispose();
             _currentScreen = null;
         }
 
-
-        public Panel LoadPanelFile(string file) {
-            if (_panels.TryGetValue(file, out var panel)) {
+        /// <summary>
+        /// Create a panel
+        /// </summary>
+        /// <param name="name">The name of the panel</param>
+        /// <param name="rmlFilePath">The rml file of the panel</param>
+        /// <returns></returns>
+        public Panel CreatePanel(string name, string rmlFilePath) {
+            if (_panels.Remove(name, out var panel)) {
                 panel.Dispose();
-                _panels.Remove(file);
             }
 
-            panel = new Panel(this, file);
-            _panels.Add(file, panel);
+            panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
+            _panels.Add(name, panel);
 
             return panel;
         }
 
-        public Panel UnloadPanel(Panel panel) {
-            panel.Dispose();
-            _panels.Remove(panel.File);
+        /// <summary>
+        /// Destroy a panel
+        /// </summary>
+        /// <param name="name">The name of the panel</param>
+        /// <returns></returns>
+        public Panel? DestroyPanel(string name) {
+            if (_panels.Remove(name, out var panel)) {
+                panel.Dispose();
+            }
 
             return panel;
         }
+
+        internal Panel? GetPanelByPtr(IntPtr ptr) => _panels.Values.FirstOrDefault(p => p.NativePtr == ptr);
 
         internal void Update() {
             _currentScreen?.Update();
@@ -71,13 +115,19 @@ namespace ACUI.Lib {
         }
 
         public void Dispose() {
+            Render.OnGraphicsPreReset -= Render_OnGraphicsPreReset;
+            Render.OnGraphicsPostReset -= Render_OnGraphicsPostReset;
+
             var panels = _panels.Values.ToArray();
             foreach (var panel in panels) {
                 panel.Dispose();
             }
 
             _panels.Clear();
+            _currentScreen?.Dispose();
+            _currentScreen = null;
             _modalPanel?.Dispose();
+            _modalPanel = null;
             FontManager.Dispose();
         }
 

@@ -1178,6 +1178,8 @@ namespace AcClient {
     public unsafe struct ClientSystem {
         public Interface a0;
         public gmNoticeHandler gmnoticeHandler;
+
+        public int AddTextToScroll(PStringBase<ushort>* text, eChatTypes type, byte unknown, StringInfo* unknown1) => ((delegate* unmanaged[Thiscall]<ref ClientSystem, PStringBase<ushort>*, eChatTypes, byte, StringInfo*, int>)0x005649F0)(ref this, text, type, unknown, unknown1);
     };
     public unsafe struct QualityChangeHandler {
         public QualityChangeHandlerVtbl* vfptr;

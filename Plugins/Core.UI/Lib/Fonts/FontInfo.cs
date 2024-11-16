@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ACUI.Lib.Fonts {
+namespace Core.UI.Lib.Fonts {
     public class FontInfo {
         public string Filename { get; }
         public string Family { get; }
