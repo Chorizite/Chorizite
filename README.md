@@ -7,6 +7,7 @@
 - [Introduction](#introduction)
 - [Dependencies](#dependencies)
 - [Installation](#installation)
+- [Building](#building)
 - [Project Overview](#project-overview)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
@@ -24,6 +25,10 @@ Chorizite serves as a plugin framework for *Asheron's Call*, allowing developers
 ## Installation
 
 1. Install [Dependencies](#dependencies)
+
+## Building
+
+`git clone git@github.com:Chorizite/Chorizite.git && cd Chorizite && git submodule init && git submodule update`
 
 ## Project Overview
 

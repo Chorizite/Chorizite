@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Loader.Standalone.Hooks {
-    internal class DirectXHooks : HookBase {
+    internal unsafe class DirectXHooks : HookBase {
         private static bool _isResetting = false;
         private static IHook<EndScene> _endSceneHook;
         private static IHook<CreateDevice> _createDeviceHook;
@@ -26,8 +26,8 @@ namespace Chorizite.Loader.Standalone.Hooks {
         private static int _unmanagedD3DPtr;
 
         public static Device D3Ddevice { get; private set; }
+        public static int HWND => *(int*)0x008381A4;
 
-        private static IntPtr _hwnd;
         private static IHook<Reset> _resetHook;
 
         [Function(CallingConventions.Stdcall)]
@@ -94,7 +94,6 @@ namespace Chorizite.Loader.Standalone.Hooks {
             var devicePtr = _createDeviceHook.OriginalFunction.Invoke(a, b, c, hwnd, e, f, d3dPtr);
             _unmanagedD3DPtr = *(int*)d3dPtr;
             D3Ddevice = new Device(_unmanagedD3DPtr);
-            _hwnd = hwnd;
 
             var windowProc = (int)Native.GetWindowLong(hwnd, Native.GWL.GWL_WNDPROC);
             _windowProcHook = CreateHook<WndProc>(typeof(DirectXHooks), nameof(WndProcImpl), windowProc);
