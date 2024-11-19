@@ -79,7 +79,15 @@ RMLUI_CAPI void rml_Element_SetProperty(Rml::Element *element, const char *name,
 }
 
 RMLUI_CAPI const Rml::Property* rml_Element_GetProperty(Rml::Element *element, const char *name) {
-    return element->GetProperty(name);
+    return element->GetLocalProperty(name);
+}
+
+RMLUI_CAPI const Rml::Property* rml_Element_GetPropertyById(Rml::Element *element, Rml::PropertyId property_id) {
+    return element->GetLocalProperty(property_id);
+}
+
+RMLUI_CAPI const char* rml_Element_GetPropertyString(Rml::Element *element, const char *name) {
+    return _strdup(element->GetProperty(name)->Get<Rml::String>().c_str());
 }
 
 RMLUI_CAPI Rml::Element* rml_Element_GetChild(Rml::Element *element, int index) {

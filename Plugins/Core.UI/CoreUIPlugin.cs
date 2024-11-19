@@ -16,6 +16,7 @@ using System.IO;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 using Core.UI.Lib.Fonts;
+using XLua;
 
 namespace Core.UI {
     /// <summary>
@@ -39,6 +40,8 @@ namespace Core.UI {
         public FontManager FontManager { get; }
 
         internal readonly IPluginManager PluginManager;
+        private ScriptableDocumentInstancer _scriptableDocumentInstancer;
+        private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
         internal static Context? RmlContext;
         private bool _needsViewportUpdate;
 
@@ -73,6 +76,10 @@ namespace Core.UI {
             PluginManager = pluginManager;
             Backend = ChoriziteBackend;
             FontManager = new FontManager(Log);
+
+            var rmlUINativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
+            Log?.LogTrace($"Manually pre-loading {rmlUINativePath}");
+            Native.LoadLibrary(rmlUINativePath);
 
             InitRmlUI();
 
@@ -235,13 +242,8 @@ namespace Core.UI {
             }
 
             try {
-                Log.LogDebug($"InitRmlUI");
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
                 // fail to find it later
-
-                var rmlNativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
-                Log?.LogTrace($"Manually pre-loading {rmlNativePath}");
-                Native.LoadLibrary(rmlNativePath);
 
                 _rmlRenderInterface = new RmlUIRenderInterface(Backend.Renderer);
                 _rmlSystemInterface = new ACSystemInterface(FontManager, Log);
@@ -252,7 +254,13 @@ namespace Core.UI {
                 var size = new Vector2i((int)Backend.Renderer.ViewportSize.X, (int)Backend.Renderer.ViewportSize.Y);
 
                 if (Rml.Initialise()) {
-                    //_rmlElementInstancer = new TestElementInstancer(_log);
+                    StyleSheetSpecification.RegisterProperty("click-sound", "none", false, false)
+                        .AddParser("string", "none")
+                        .GetId();
+
+                    _scriptableDocumentInstancer = new ScriptableDocumentInstancer(Backend, Log);
+                    _scriptableEventListenerInstancer = new ScriptableEventListenerInstancer(_scriptableDocumentInstancer, Log);
+
                     RmlContext = Rml.CreateContext("viewport", size);
 
                     if (RmlContext is null) {
@@ -331,13 +339,15 @@ namespace Core.UI {
             _models.Clear();
 
             RmlContext?.Dispose();
-            _themePlugin.Dispose();
+            _themePlugin?.Dispose();
 
             if (_didInitRml) {
                 Rml.Shutdown();
             }
+            _scriptableDocumentInstancer?.Dispose();
+            _scriptableEventListenerInstancer?.Dispose();
             _rmlRenderInterface?.Dispose();
-            _rmlSystemInterface?.Dispose();
+            _rmlSystemInterface?.Dispose(); 
 
             _didInitRml = false;
         }

@@ -51,7 +51,7 @@ namespace RmlUiNet
 
         public static Element? GetElementByTypeName(IntPtr elementPtr, string elementType)
         {
-            if (elementType == "class Rml::ElementDocument") {
+            if (elementType == "class Rml::ElementDocument" || elementType == "class ElementDocumentCustom") {
                 return ElementDocument.Create(elementPtr);
             } else if (elementType == "class Rml::ElementDocument") {
                 return ElementDocument.Create(elementPtr);

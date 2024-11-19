@@ -21,7 +21,7 @@ namespace Chorizite.Core.Lib {
         /// <summary>
         /// The amount of time to wait after a file has changed before triggering the event
         /// </summary>
-        public TimeSpan Delay { get; set; } = TimeSpan.FromMilliseconds(300);
+        public TimeSpan Delay { get; set; } = TimeSpan.FromMilliseconds(500);
 
         /// <summary>
         /// Create a new file watcher
@@ -39,21 +39,16 @@ namespace Chorizite.Core.Lib {
 
             _docWatcher = new FileSystemWatcher();
             _docWatcher.Path = directory;
-            _docWatcher.NotifyFilter = NotifyFilters.Attributes |
-                NotifyFilters.CreationTime |
-                NotifyFilters.FileName |
-                NotifyFilters.LastWrite |
-                NotifyFilters.Size |
-                NotifyFilters.Security;
+            _docWatcher.NotifyFilter = NotifyFilters.LastWrite;
             _docWatcher.Filter = pattern;
             _docWatcher.Changed += DocWatcher_Changed;
             _docWatcher.EnableRaisingEvents = true;
         }
 
         private void DocWatcher_Changed(object sender, FileSystemEventArgs e) {
+            _changedAt = DateTime.Now;
             if (!_needsReload) {
                 _needsReload = true;
-                _changedAt = DateTime.Now;
                 _changedFile = e.FullPath;
                 ChoriziteStatics.Backend.Renderer.OnRender2D += OnRender2D;
             }

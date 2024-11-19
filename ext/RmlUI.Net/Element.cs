@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Xml.Linq;
 
 namespace RmlUiNet
 {
@@ -88,9 +89,18 @@ namespace RmlUiNet
         float GetClientHeight();
 
         /// <summary>
-        /// Get attribute string
+        /// Get a properties value as a string.
         /// </summary>
-        string GetAttributeString(string attributeName, string defaultValue = "");
+        /// <param name="name"></param>
+        /// <returns></returns>
+        string GetProperty(string name);
+
+        /// <summary>
+        /// Get a css/style attributes value as a string.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        string GetAttribute(string name);
     }
 
     public abstract class Element<T> : RmlBase<T>, Element
@@ -220,12 +230,25 @@ namespace RmlUiNet
             return Native.Element.GetClientHeight(NativePtr);
         }
 
-        /// <inheritdoc cref="Element.GetAttributeString(string, string)"/>
-        public string GetAttributeString(string attributeName, string defaultValue = "") {
-            var strPtr = Native.Element.GetAttributeString(NativePtr, attributeName, defaultValue);
+        public string GetProperty(string name)
+        {
+            var strPtr = Native.Element.GetPropertyString(NativePtr, name);
+            if (strPtr == IntPtr.Zero) return "";
+
             var strValue = Marshal.PtrToStringAnsi(strPtr);
             Marshal.FreeHGlobal(strPtr);
-            return strValue;
+            return strValue ?? "";
+        }
+
+        /// <inheritdoc cref="Element.GetAttributeString(string, string)"/>
+        public string GetAttribute(string attributeName)
+        {
+            var strPtr = Native.Element.GetAttributeString(NativePtr, attributeName, "");
+            if (strPtr == IntPtr.Zero) return "";
+
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue ?? "";
         }
 
         #endregion

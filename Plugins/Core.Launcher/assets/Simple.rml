@@ -105,12 +105,13 @@
         font-size: 22px;
         font-weight: bold;
         display: inline-block;
+        click-sound: 0x0A0003B3;
     }
     </style>
   </head>
   <body data-model="SimpleLoginScreen" class="window">
     <div class="window-inner">
-      <!-- 
+      <!--
       <div id="title-bar">
         <span id="title">Chorizite</span>
         <div id="window-minimize" data-event-click="minimize()"></div>
@@ -136,7 +137,7 @@
             <input type="text" data-value="ClientPath" />
           </label>
           <div class="actions">
-            <button data-event-click="launch()">Launch</button>
+            <button id="launch-button" data-event-click="launch()">Launch</button>
           </div>
         </div>
       </div>

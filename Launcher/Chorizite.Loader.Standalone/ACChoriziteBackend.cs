@@ -120,6 +120,10 @@ namespace Chorizite.Loader.Standalone {
             ChatHooks.AddChatText(text, (eChatTypes)type);
         }
 
+        public void PlaySound(uint soundId) {
+            
+        }
+
         private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
         private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
 

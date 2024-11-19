@@ -73,6 +73,7 @@ namespace ACUI.Lib {
         public void DestroyScreen() {
             _currentScreen?.Dispose();
             _currentScreen = null;
+            Context.Update();
         }
 
         /// <summary>
@@ -101,6 +102,7 @@ namespace ACUI.Lib {
             if (_panels.Remove(name, out var panel)) {
                 panel.Dispose();
             }
+            Context.Update();
 
             return panel;
         }

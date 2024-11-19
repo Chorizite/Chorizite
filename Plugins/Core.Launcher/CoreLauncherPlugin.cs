@@ -98,10 +98,10 @@ namespace Core.Launcher {
 
             return CoreUI.RegisterScreen(screen.ToString(), rmlPath); 
         }
-
+        
         /// <inheritdoc/>
-        public void UnregisterScreen(LauncherScreen screen, string rmlPath) {
-            if (_registeredScreens.TryGetValue(screen, out var rmlFile)) {
+        public void UnregisterScreen(LauncherScreen screen, string rmlPath) { 
+            if (_registeredScreens.TryGetValue(screen, out var rmlFile)) {  
                 _registeredScreens.Remove(screen);
             }
 
@@ -112,12 +112,13 @@ namespace Core.Launcher {
         public LauncherScreen CustomScreenFromName(string name) => LauncherScreenHelpers.FromString(name);
 
         protected override void Dispose() {
+            Log.LogInformation("CoreLauncherPlugin dispose");
             Backend.Renderer.OnRender2D -= Renderer_OnRender2D;
 
             CoreUI.Screen = "None";
 
             foreach (var screen in _registeredScreens.Keys) {
-                UnregisterScreen(screen, _registeredScreens[screen]);
+                UnregisterScreen(screen, _registeredScreens[screen]); 
             }
             _registeredScreens.Clear();
 

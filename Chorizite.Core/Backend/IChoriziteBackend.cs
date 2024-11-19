@@ -38,5 +38,7 @@ namespace Chorizite.Core.Backend {
         public virtual void HandleLogMessage(LogLevel logLevel, string message) => _OnLogMessage.Invoke(this, new LogMessageEventArgs(logLevel, message));
 
         public virtual static IChoriziteBackend Create(IContainer container) => throw new NotImplementedException("You must implement IChoriziteBackend.Create static method.");
+
+        void PlaySound(uint soundId);
     }
 }

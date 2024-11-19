@@ -47,6 +47,7 @@ add_library(${PROJECT_NAME} SHARED
     "src/DataModelConstructor.cpp"
     "src/Event.cpp"
     "src/EventListener.h"
+    "src/EventListenerInstancer.cpp"
 
     "src/Box.cpp"
     "src/RenderManager.cpp"
@@ -57,8 +58,11 @@ add_library(${PROJECT_NAME} SHARED
     "src/Plugin.cpp"
 
     "src/StyleSheetContainer.cpp"
+    "src/StyleSheetSpecification.cpp"
     
     "src/XMLAttributes.cpp"
+    "src/PropertyDefinition.cpp"
+    "src/Property.cpp"
     "src/Rml.cpp"
     "src/Debugger.cpp"
     "src/Util.h"

@@ -3,7 +3,7 @@
 #include "RmlUi/Core/Types.h"
 #include "Util.h"
 
-RMLUI_CAPI const char *rml_XMLAttributes_GetString(Rml::XMLAttributes *attributes, const char *prop, const char *defaultValue) {
+RMLUI_CAPI const char *rml_Dictionary_GetString(Rml::Dictionary *attributes, const char *prop, const char *defaultValue) {
 	Rml::String result = Rml::String(defaultValue);
 	auto it = attributes->find(prop);
 	

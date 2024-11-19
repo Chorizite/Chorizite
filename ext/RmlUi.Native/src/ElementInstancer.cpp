@@ -3,7 +3,7 @@
 #include "RmlUi/Core/ElementInstancer.h"
 #include "Util.h"
 
-typedef Rml::Element*(*instanceElement)(Rml::Element *parent, const char *tag, const Rml::XMLAttributes &attributes);
+typedef Rml::Element*(*instanceElement)(Rml::Element *parent, const char *tag, const Rml::Dictionary &attributes);
 typedef void(*releaseElement)(Rml::Element *element);
 
 
@@ -18,11 +18,11 @@ public:
         m_releaseElement = releaseElement;
     }
 
-	  Rml::ElementPtr InstanceElement(Rml::Element* parent, const Rml::String& tag, const Rml::XMLAttributes& attributes) override {
+	Rml::ElementPtr InstanceElement(Rml::Element* parent, const Rml::String& tag, const Rml::XMLAttributes& attributes) override {
       return Rml::ElementPtr((*m_instanceElement)(parent, tag.c_str(), attributes));
     }
 
-	  void ReleaseElement(Rml::Element* element) override {
+	void ReleaseElement(Rml::Element* element) override {
       (*m_releaseElement)(element);
     }
 };

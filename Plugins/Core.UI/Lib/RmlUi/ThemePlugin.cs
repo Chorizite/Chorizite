@@ -17,6 +17,7 @@ namespace Core.UI.Lib.RmlUi {
         private readonly IChoriziteBackend _backend;
         private readonly PanelManager _panelManager;
         private readonly Dictionary<IntPtr, ElementDocument> _documents = [];
+        private readonly int _clickSoundId;
         private string _themeFile;
         private StyleSheetContainer _styleSheetContainer;
         private FileSystemWatcher _docWatcher;
@@ -28,7 +29,6 @@ namespace Core.UI.Lib.RmlUi {
             _panelManager = panelManager;
             _themeFile = PathHelpers.TryMakeDevPath(Path.Combine(CoreUIPlugin.Instance!.AssemblyDirectory, "assets", "theme.rcss"));
             LoadTheme();
-
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {
