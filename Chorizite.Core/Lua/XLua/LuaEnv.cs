@@ -21,6 +21,7 @@ namespace XLua
 {
     using System;
     using System.Collections.Generic;
+    using static XLua.LuaEnv;
 
     public class LuaEnv : IDisposable
     {
@@ -403,6 +404,8 @@ namespace XLua
             {
 #endif
                 if (disposed) return;
+                
+                customLoaders.Clear();
                 Tick();
 
                 if (!translator.AllDelegateBridgeReleased())

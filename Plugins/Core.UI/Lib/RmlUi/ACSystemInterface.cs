@@ -48,7 +48,26 @@ namespace ACUI.Lib.RmlUi {
                 _log?.LogWarning($"[RmlUi] Missing font: {fontName} ({fontStyle}) - this may cause text to not display correctly.");
                 return true;
             }
-            _log?.LogInformation($"[RmlUi] {message}");
+            switch (type) {
+                case LogType.Assert:
+                    _log?.LogTrace($"[RmlUi] {message}");
+                    break;
+                case LogType.Debug:
+                    _log?.LogDebug($"[RmlUi] {message}");
+                    break;
+                case LogType.Info:
+                    _log?.LogInformation($"[RmlUi] {message}");
+                    break;
+                case LogType.Warning:
+                    _log?.LogWarning($"[RmlUi] {message}");
+                    break;
+                case LogType.Error:
+                    _log?.LogError($"[RmlUi] {message}");
+                    break;
+                default:
+                    _log?.LogDebug($"[RmlUi] {message}");
+                    break;
+            }
             return true;
         }
 

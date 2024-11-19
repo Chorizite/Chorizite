@@ -1,6 +1,5 @@
 ﻿using Chorizite.Core.Backend;
-using Core.Lua;
-using Core.Lua.Lib;
+using Chorizite.Core.Lua;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -15,7 +14,6 @@ using XLua;
 namespace Core.UI.Lib.RmlUi.Elements {
     public class ScriptableDocumentElement : ElementDocument {
         private readonly ILogger _log;
-        private readonly CoreLuaPlugin _lua;
         private LuaTable _luaState;
 
         public LuaContext LuaContext { get; private set; }
@@ -48,11 +46,10 @@ namespace Core.UI.Lib.RmlUi.Elements {
             }
         }
 
-        public ScriptableDocumentElement(IChoriziteBackend backend, CoreLuaPlugin lua, ILogger logger) : base() {
+        public ScriptableDocumentElement(IChoriziteBackend backend, ILogger logger) : base() {
             _log = logger;
-            _lua = lua;
 
-            LuaContext = lua.MakeLuaEnv();
+            LuaContext = new LuaContext();
             LuaContext.Global.Set("document", this);
 
             AddEventListener("click", new ClickSoundEventListener(backend, _log));

@@ -8,13 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using XLua;
 
-namespace Core.Lua.Lib {
+namespace Chorizite.Core.Lua {
     public class LuaContext : LuaEnv {
         private readonly ILogger _log;
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
-        internal LuaContext(string luaScriptsPath, ILogger log) : base() {
-            _log = log;
+        public LuaContext() : base() {
+            var luaScriptsPath = Path.Combine(ChoriziteStatics.AssemblyDirectory, "Lua", "LuaScripts");
+            _log = ChoriziteStatics.MakeLogger("Lua");
             AddLoader((ref string filename) => {
                 if (filename.StartsWith("framework.") && !filename.EndsWith(".lua")) {
                     var lib = filename.Substring("framework.".Length);
@@ -37,7 +38,7 @@ namespace Core.Lua.Lib {
         }
 
         public string FormatLuaResult(object[]? result, int maxDepth = 2, int depth = 0) {
-            return (result?.Length > 0 ? string.Join(", ", result.Select(x => LuaTypeToFriendlyString(x, maxDepth, depth))) : "nil");
+            return result?.Length > 0 ? string.Join(", ", result.Select(x => LuaTypeToFriendlyString(x, maxDepth, depth))) : "nil";
         }
 
         public string LuaTypeToFriendlyString(object obj, int maxDepth = 2, int depth = 0) {

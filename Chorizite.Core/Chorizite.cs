@@ -2,6 +2,7 @@
 using Chorizite.Core.Backend;
 using Chorizite.Core.Dats;
 using Chorizite.Core.Input;
+using Chorizite.Core.Lib;
 using Chorizite.Core.Logging;
 using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
@@ -22,6 +23,7 @@ namespace Chorizite.Core {
         internal static IChoriziteConfig Config { get; set; }
         internal static ILifetimeScope Scope { get; set; }
         internal static IChoriziteBackend Backend { get; set; }
+        internal static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(Chorizite<>))!.Location)!;
 
         internal static ChoriziteLogger MakeLogger(string name) {
             return new ChoriziteLogger(name, Config.LogDirectory);
@@ -41,7 +43,7 @@ namespace Chorizite.Core {
         /// <summary>
         /// The absolute path to the magic hat dll directory.
         /// </summary>
-        public static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(Chorizite<>))!.Location)!;
+        public static string AssemblyDirectory => ChoriziteStatics.AssemblyDirectory;
 
         /// <summary>
         /// The configuration being used
@@ -146,6 +148,10 @@ namespace Chorizite.Core {
             }
             _inputManager.OnShutdown += InputManager_OnShutdown;
 
+            var xluaPath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "xlua.dll");
+            _log?.LogWarning($"Manually pre-loading {xluaPath}");
+            Native.LoadLibrary(xluaPath);
+
             _pluginManager = Scope.Resolve<IPluginManager>();
 
             _pluginManager.RegisterPluginLoader(Scope.Resolve<AssemblyPluginLoader>());
@@ -157,7 +163,7 @@ namespace Chorizite.Core {
         private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args) {
             var name = new AssemblyName(args.Name);
             Assembly? assembly = null;
-            _log?.LogDebug($"CurrentDomain_AssemblyResolve {name.Name}");
+            _log?.LogTrace($"CurrentDomain_AssemblyResolve {name.Name}");
 
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var loadedAssembly in loadedAssemblies) {

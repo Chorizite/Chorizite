@@ -14,8 +14,8 @@
     <OutputPath>..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <DefineConstants>$(DefineConstants);XLUA_GENERAL</DefineConstants>
   </PropertyGroup>
-
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" />
@@ -39,5 +39,20 @@
     -->
     <ProjectReference Include="..\Chorizite.Common\Chorizite.Common.csproj" />
     <ProjectReference Include="..\ext\ACProtocol\Chorizite.ACProtocol\Chorizite.ACProtocol.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Lua\LuaScripts\framework\AsyncTask.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Lua\LuaScripts\framework\System.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Lua\LuaScripts\init.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x86\native\xlua.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

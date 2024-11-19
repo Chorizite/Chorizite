@@ -298,7 +298,7 @@ namespace XLua
         {
 #if (UNITY_EDITOR || XLUA_GENERAL) && !NET_STANDARD_2_0
             delegate_birdge_type = typeof(DelegateBridge);
-            if (!DelegateBridge.Gen_Flag)
+            if (!DelegateBridge.Gen_Flag) 
             {
                 List<Type> cs_call_lua = new List<Type>();
                 foreach (var type in Utils.GetAllTypes())

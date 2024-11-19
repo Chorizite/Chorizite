@@ -105,24 +105,12 @@
         font-size: 22px;
         font-weight: bold;
         display: inline-block;
+        click-sound: 0x0A0003B3;
     }
     </style>
-    <script type="lua">
-      local click_count = 0
-      function inc_clicks(num_to_increase)
-        click_count = click_count + num_to_increase
-        document:GetElementById("clicker"):SetInnerRml("Clicked: " .. click_count)
-      end
-    </script>
-    <style>
-      button {
-          click-sound: 0x0A0003B3;
-      }
-    </style>
   </head>
-  <body data-model="SimpleLoginScreen" class="window" onload="(async(function() sleep(2000) inc_clicks(100) end))()">
+  <body data-model="SimpleLoginScreen" class="window">
     <div class="window-inner">
-      <button id="clicker" onclick="inc_clicks(1)">click me</button>
       <!--
       <div id="title-bar">
         <span id="title">Chorizite</span>

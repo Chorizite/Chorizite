@@ -46,11 +46,6 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.Lua\Core.Lua.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Update="assets\acsprites.png">

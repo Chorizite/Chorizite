@@ -23,14 +23,12 @@ namespace Core.UI.Lib.RmlUi {
         private FileSystemWatcher _docWatcher;
         private bool _needsThemeLoad;
 
-        public ThemePlugin(PanelManager panelManager, IChoriziteBackend backend, ILogger logger, int clickSoundId) {
+        public ThemePlugin(PanelManager panelManager, IChoriziteBackend backend, ILogger logger) {
             _log = logger;
             _backend = backend;
             _panelManager = panelManager;
             _themeFile = PathHelpers.TryMakeDevPath(Path.Combine(CoreUIPlugin.Instance!.AssemblyDirectory, "assets", "theme.rcss"));
             LoadTheme();
-
-            _clickSoundId = clickSoundId;
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {

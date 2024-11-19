@@ -67,7 +67,6 @@ namespace Launcher.Lib {
         public void PlaySound(uint soundId) {
             try {
                 if (DatReader.TryGet<Wave>(soundId, out var sound)) {
-                    _log.LogDebug($"Found: Sound {soundId:X8}");
                     var file = Path.GetTempFileName();
                     using var stream = new FileStream(file, FileMode.Create);
 

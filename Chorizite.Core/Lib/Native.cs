@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Lua.Lib {
+namespace Chorizite.Core.Lib {
     [StructLayout(LayoutKind.Sequential)]
     internal struct RECT {
         public int Left;        // x position of upper-left corner

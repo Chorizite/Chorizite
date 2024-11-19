@@ -43,7 +43,14 @@ namespace Core.UI.Models {
         }
 
         protected void BindAction(string name, Action<Event, IEnumerable<Variant>> action) {
-            _modelConstructor.BindEventCallback(name, action);
+            _modelConstructor.BindEventCallback(name, (evt, variants) => {
+                try {
+                    action(evt, variants);
+                }
+                catch (Exception ex) {
+                    CoreUIPlugin.Log?.LogError(ex, $"Error in data model action ({Name}.{name}):");
+                }
+            });
         }
 
         internal IEnumerable<PropertyInfo> GetPropsToBind() {
