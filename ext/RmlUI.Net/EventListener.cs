@@ -54,9 +54,16 @@ namespace RmlUiNet
 
         internal void DetachEventInternal(IntPtr elementPtr, string elementType) {
             //CoreUIPlugin.UI.Log?.LogTrace($"DetachEventInternal: {elementPtr}");
-            OnDetach(
-                Util.GetOrThrowElementByTypeName(elementPtr, elementType)
-            );
+            try
+            {
+                OnDetach(
+                    Util.GetOrThrowElementByTypeName(elementPtr, elementType)
+                );
+            }
+            catch (Exception ex)
+            {
+                //CoreUIPlugin.UI.Log?.LogTrace($"DetachEvent: {ex}");
+            }
         }
 
         public abstract void ProcessEvent(Event ev);

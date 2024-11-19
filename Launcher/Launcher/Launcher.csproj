@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
     <PackageReference Include="WaveEngine.Bindings.OpenGL" Version="1.0.4998" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -9,6 +10,8 @@ namespace Chorizite.Common {
 
         // Keep the delegates alive with their target. This prevent anonymous delegates from being garbage collected prematurely.
         private readonly ConditionalWeakTable<object, List<object>> _delegateKeepAlive = new();
+
+        public static ILogger? Log { get; set; }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void Subscribe(EventHandler<TEventArgs> handler) {
@@ -37,7 +40,12 @@ namespace Chorizite.Common {
             var listeners = _listeners.ToArray();
             foreach (var listener in listeners) {
                 if (listener.TryGetTarget(out var target)) {
-                    target.Invoke(sender, args);
+                    try {
+                        target.Invoke(sender, args);
+                    }
+                    catch (Exception ex) {
+                        Log?.LogError(ex, "Error invoking event handler");
+                    }
                 }
                 else {
                     // Remove the listener if the target has been garbage collected

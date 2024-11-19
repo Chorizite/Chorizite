@@ -4,6 +4,6 @@
   "author": "Chorizite",
   "version": "0.0.1",
   "description": "RmlUI backend for AC",
-  "dependencies": [ "Core.DatService@0.0.1" ],
+  "dependencies": [ "Core.DatService@0.0.1", "Core.Lua@0.0.1" ],
   "environments": ["Launcher", "Client"]
 }

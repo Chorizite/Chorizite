@@ -52,5 +52,14 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetAttributeString")]
         public static extern IntPtr GetAttributeString(IntPtr element, string attributeName, string defaultValue);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetPropertyString")]
+        public static extern IntPtr GetPropertyString(IntPtr element, string propertyName);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetProperty")]
+        public static extern IntPtr GetProperty(IntPtr element, string propertyName);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetPropertyById")]
+        public static extern IntPtr GetPropertyById(IntPtr element, int propertyId);
     }
 }

@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Xml.Linq;
 
 namespace Chorizite.Core.Plugins {
     /// <summary>
@@ -37,14 +38,14 @@ namespace Chorizite.Core.Plugins {
             add { _OnPluginLoaded.Subscribe(value); }
             remove { _OnPluginLoaded.Unsubscribe(value); }
         }
-        private readonly WeakEvent<PluginLoadedEventArgs> _OnPluginLoaded = new WeakEvent<PluginLoadedEventArgs>();
+        private readonly WeakEvent<PluginLoadedEventArgs> _OnPluginLoaded = new();
 
         /// <inheritdoc />
         public event EventHandler<PluginUnloadedEventArgs>? OnPluginUnloaded {
             add { _OnPluginUnloaded.Subscribe(value); }
             remove { _OnPluginUnloaded.Unsubscribe(value); }
         }
-        private readonly WeakEvent<PluginUnloadedEventArgs> _OnPluginUnloaded = new WeakEvent<PluginUnloadedEventArgs>();
+        private readonly WeakEvent<PluginUnloadedEventArgs> _OnPluginUnloaded = new();
 
         public PluginManager(IChoriziteConfig config, IRenderInterface render, ILogger<PluginManager> log) {
             _config = config;
@@ -117,19 +118,19 @@ namespace Chorizite.Core.Plugins {
                 var unloadedPlugins = new List<PluginInstance>();
                 foreach (var plugin in pluginsToReload) {
                     UnloadPluginAndDependents(plugin, ref unloadedPlugins);
+                    var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(plugin.Name) == true);
+                    if (isAlive) {
+                        System.Diagnostics.Debugger.Break();
+                        _log?.LogWarning($"Failed to unload plugin assembly: {plugin.Name}");
+                        //_log?.LogWarning($"\t Assemblies: {string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).Where(a => a?.Contains(Name) == true))}");
+                    }
                 }
 
-                var unloadingPlugins = pluginsToReload
-                    .Where(p => p is AssemblyPluginInstance)
-                    .Cast<AssemblyPluginInstance>()
-                    .Where(p => p.CountLoadedAssemblies() > 0)
-                    .ToList();
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
-                _log?.LogDebug($"Unloading: {string.Join(", ", unloadingPlugins.Select(p => $"{p.Name}:{p.CountLoadedAssemblies()}"))}");
 
+                var startedPlugins = new List<string>();
                 foreach (var plugin in unloadedPlugins) {
-                    var startedPlugins = new List<string>();
                     StartPlugin(plugin, ref startedPlugins);
                 }
             }

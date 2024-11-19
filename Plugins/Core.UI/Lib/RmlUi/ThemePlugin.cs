@@ -17,18 +17,20 @@ namespace Core.UI.Lib.RmlUi {
         private readonly IChoriziteBackend _backend;
         private readonly PanelManager _panelManager;
         private readonly Dictionary<IntPtr, ElementDocument> _documents = [];
+        private readonly int _clickSoundId;
         private string _themeFile;
         private StyleSheetContainer _styleSheetContainer;
         private FileSystemWatcher _docWatcher;
         private bool _needsThemeLoad;
 
-        public ThemePlugin(PanelManager panelManager, IChoriziteBackend backend, ILogger logger) {
+        public ThemePlugin(PanelManager panelManager, IChoriziteBackend backend, ILogger logger, int clickSoundId) {
             _log = logger;
             _backend = backend;
             _panelManager = panelManager;
             _themeFile = PathHelpers.TryMakeDevPath(Path.Combine(CoreUIPlugin.Instance!.AssemblyDirectory, "assets", "theme.rcss"));
             LoadTheme();
 
+            _clickSoundId = clickSoundId;
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {

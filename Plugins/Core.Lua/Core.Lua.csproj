@@ -10,6 +10,7 @@
     <LangVersion>12</LangVersion>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <AssemblyVersion>0.0.3</AssemblyVersion>
+    <DefineConstants>$(DefineConstants);XLUA_GENERAL</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,16 +35,6 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.UI\Core.UI.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
-    <ProjectReference Include="..\Core.AC\Core.AC.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -55,10 +46,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="assets\test.rml">
+    <None Update="LuaScripts\framework\AsyncTask.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LuaScripts\framework\System.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="LuaScripts\init.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x86\native\xlua.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

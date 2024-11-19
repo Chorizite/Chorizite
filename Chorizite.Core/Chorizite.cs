@@ -157,7 +157,7 @@ namespace Chorizite.Core {
         private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args) {
             var name = new AssemblyName(args.Name);
             Assembly? assembly = null;
-            _log?.LogTrace($"CurrentDomain_AssemblyResolve {name.Name}");
+            _log?.LogDebug($"CurrentDomain_AssemblyResolve {name.Name}");
 
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var loadedAssembly in loadedAssemblies) {

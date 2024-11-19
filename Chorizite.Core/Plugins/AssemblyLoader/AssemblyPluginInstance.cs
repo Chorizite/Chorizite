@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Chorizite.Core.Backend;
 using Chorizite.Core.Lib;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,6 +13,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins.AssemblyLoader {
@@ -143,17 +145,17 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 var parameters = new List<object>();
 
                 foreach (var parameter in ctor.GetParameters()) {
-                    object? resolved = ResolveParameter(type, parameter);
-
-                    if (resolved is null) {
-                        _log?.LogError($"Unable to resolve ctor parameter: {parameter.ParameterType} in plugin: {Name}");
-                        break;
-                    }
-                    parameters.Add(resolved);
+                    parameters.Add(ResolveParameter(type, parameter));
                 }
 
                 if (parameters.Count == ctor.GetParameters().Length) {
-                    instance = (IPluginCore)ctor.Invoke(parameters.ToArray());
+                    try {
+                        instance = (IPluginCore)ctor.Invoke(parameters.ToArray());
+                    }
+                    catch (Exception ex) {
+                        _log?.LogError(ex, "Error instantiating plugin: {0}: {1}", Name, ex.Message);
+                        instance = null;
+                    }
                     break;
                 }
             }
@@ -169,6 +171,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             return instance;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private object? ResolveParameter(Type type, ParameterInfo parameter) {
             object? resolved = null;
             _log?.LogTrace($"Resolving parameter: {parameter.ParameterType} in plugin: {Name}");
@@ -181,6 +184,20 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             //special logger handling
             if (parameter.ParameterType == typeof(ILogger)) {
                 resolved = ChoriziteStatics.MakeLogger(type.Name);
+            }
+
+            if (parameter.ParameterType.IsAssignableTo(typeof(IClientBackend))) {
+                if (_serviceProvider.IsRegistered<IClientBackend>()) {
+                    resolved = _serviceProvider.Resolve<IClientBackend>();
+                }
+                return resolved;
+            }
+
+            if (parameter.ParameterType.IsAssignableTo(typeof(ILauncherBackend))) {
+                if (_serviceProvider.IsRegistered<ILauncherBackend>()) {
+                    resolved = _serviceProvider.Resolve<ILauncherBackend>();
+                }
+                return resolved;
             }
 
             // handle other plugin instances
@@ -202,13 +219,18 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void UnloadPluginAssembly() {
             if (IsLoaded) {
-                _log?.LogDebug($"Unloading plugin assembly: {Name}");
+                _log?.LogTrace($"Unloading plugin assembly: {Name}");
                 TriggerOnBeforeUnload(this, EventArgs.Empty);
 
                 if (PluginInstance is not null) {
-                    TrySerializeSettings();
-                    TrySerializeState();
-                    PluginInstance?.GetType()?.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(PluginInstance, []);
+                    try {
+                        TrySerializeSettings();
+                        TrySerializeState();
+                        PluginInstance?.GetType()?.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(PluginInstance, []);
+                    }
+                    catch (Exception ex) {
+                        _log?.LogError(ex, "Error unloading plugin: {0}: {1}", Name, ex.Message);
+                    }
                 }
                 _pluginInstance = null;
                 LoadContext.Unload();
@@ -218,23 +240,13 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 for (int i = 0; (i < 10); i++) {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
-                    GC.Collect();
                 }
 
                 IsLoaded = false;
                 TriggerOnUnload(this, EventArgs.Empty);
-
-                var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(Name) == true);
-
-                if (isAlive) {
-                    System.Diagnostics.Debugger.Break();
-                    _log?.LogWarning($"Failed to unload plugin assembly: {Name}");
-                    _log?.LogWarning($"\t Assemblies: {string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).Where(a => a?.Contains(Name) == true))}");
-                }
-                _pluginInstance = null;
             }
         }
-
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void TryDeserializeType(IPluginCore instance, Type type, string? fileName = null) {
             if (instance is null) {
                 return;
@@ -283,6 +295,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             stateSerializer.GetMethod("DeserializeAfterLoad", flags)?.Invoke(instance, [serializedObj]);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void TrySerializeType(Type type, string? fileName = null) {
             if (PluginInstance is null) {
                 return;

@@ -10,6 +10,10 @@ RMLUI_CAPI Rml::EventPhase rml_Event_GetPhase(Rml::Event *ev) {
     return ev->GetPhase();
 }
 
+RMLUI_CAPI const char* rml_Event_GetEventType(Rml::Event *ev) {
+    return ev->GetType().c_str();
+}
+
 RMLUI_CAPI const char *rml_Event_GetCurrentElement(Rml::Event *ev, Rml::Element **element) {
     *element = ev->GetCurrentElement();
 

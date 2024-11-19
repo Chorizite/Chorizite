@@ -11,6 +11,7 @@ namespace RmlUiNet
 
         public static void Shutdown()
         {
+            RmlInstanceCache.Instance?.Clear();
             Native.Rml.Shutdown();
         }
 

@@ -4,6 +4,6 @@
   "entryfile": "Core.Lua.dll",
   "version": "0.0.1",
   "description": "Lua backend for AC",
-  "dependencies": [ "Core.UI@0.0.1" ],
-  "environments": [ "Client" ]
+  "dependencies": [ ],
+  "environments": [ "Client", "Launcher" ]
 }

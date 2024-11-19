@@ -16,5 +16,14 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_Close")]
         public static extern void Close(IntPtr document);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_New")]
+        public static extern IntPtr Create(OnLoadInlineScript? onLoadInlineScript);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_Free")]
+        public static extern void Free(IntPtr document);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void OnLoadInlineScript(string context, string source_path, int source_line);
     }
 }

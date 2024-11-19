@@ -53,6 +53,11 @@ namespace RmlUiNet
             }
         }
 
+        internal void Clear()
+        {
+            _cache.Clear();
+        }
+
         #endregion
 
         public delegate IRmlBase CreateInstance(IntPtr ptr);

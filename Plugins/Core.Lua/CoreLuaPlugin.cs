@@ -1,39 +1,77 @@
 ﻿using System.IO;
 using System;
 using Microsoft.Extensions.Logging;
-using WattleScript.Interpreter;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
-using Core.AC;
 using System.Linq;
-using Core.UI;
 using Chorizite.Core.Backend;
+using XLua;
+using Core.Lua.Lib;
+using System.Text;
+using System.Collections.Generic;
 
 namespace Core.Lua {
     public class CoreLuaPlugin : IPluginCore {
         private readonly IPluginManager _pluginManager;
-        private readonly CoreUIPlugin _coreUI;
-        private readonly IClientBackend _backend;
+        private readonly IClientBackend? _clientBackend;
+        private LuaContext _lua;
         public static ILogger? Log;
 
-        public CoreLuaPlugin(AssemblyPluginManifest manifest, IClientBackend backend, CoreUIPlugin coreUI, IPluginManager pluginManager, ILogger log) : base(manifest) {
+        /// <summary>
+        /// The path to builtin lua scripts
+        /// </summary>
+        public string LuaScriptsPath => Path.Combine(AssemblyDirectory, "LuaScripts");
+
+        public CoreLuaPlugin(AssemblyPluginManifest manifest, IClientBackend? clientBackend, IPluginManager pluginManager, ILogger log) : base(manifest) {
             Log = log;
             _pluginManager = pluginManager;
-            _coreUI = coreUI;
-            _backend = backend;
+            _clientBackend = clientBackend;
 
-            _backend.OnChatTextAdded += OnChatText;
-            _backend.OnChatInput += OnChatInput;
+            if (_clientBackend is not null) {
+                _clientBackend.OnChatTextAdded += OnChatText;
+                _clientBackend.OnChatInput += OnChatInput;
+            }
+            
+            var xluaNativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "xlua.dll");
+            Log?.LogTrace($"Manually pre-loading {xluaNativePath}");
+            Native.LoadLibrary(xluaNativePath);
 
-            Log.LogDebug("Loaded Core.Lua");
+            return;
+            //_lua = MakeLuaEnv();
+
+            try {
+                _clientBackend?.AddChatText($"[Lua] {_lua.FormatLuaResult(RunLuaString("return {}"))}");
+            }
+            catch (Exception ex) {
+                _clientBackend?.AddChatText($"[Lua] Error: {ex.Message}", ChatType.HelpChannel);
+            }
+        }
+
+        public LuaContext MakeLuaEnv() {
+            return new LuaContext(LuaScriptsPath, Log);
         }
 
         private void OnChatInput(object? sender, ChatInputEventArgs e) {
             if (e.Text.StartsWith("/lua")) {
-                Log.LogDebug($"Found LUA command: {e.Text}");
-                _backend.AddChatText($"Found LUA command: {e.Text}", ChatType.Default);
-                _backend.AddChatText($"Found LUA command: {e.Text}", ChatType.Transient);
                 e.Eat = true;
+
+                if (e.Text.Length < 5) {
+                    _clientBackend?.AddChatText($"[Lua] Version {_lua.DoString("return _VERSION").FirstOrDefault()}");
+                    return;
+                }
+
+                var res = RunLuaString(e.Text.Substring(5));
+                _clientBackend?.AddChatText($"[Lua] Result: {_lua.FormatLuaResult(res)}");
+            }
+        }
+
+        public object[]? RunLuaString(string luaStr) {
+            try {
+                return _lua.DoString(luaStr);
+            }
+            catch (Exception ex) {
+                _clientBackend?.AddChatText($"[Lua] Error: {ex.Message}", ChatType.HelpChannel);
+                return null;
             }
         }
 
@@ -42,8 +80,13 @@ namespace Core.Lua {
         }
 
         protected override void Dispose() {
-            _backend.OnChatTextAdded -= OnChatText;
-            _backend.OnChatInput -= OnChatInput;
+            if (_clientBackend is not null) {
+                _clientBackend.OnChatTextAdded -= OnChatText;
+                _clientBackend.OnChatInput -= OnChatInput;
+            }
+
+            _lua?.Dispose();
+            _lua = null;
 
             Log = null;
         }

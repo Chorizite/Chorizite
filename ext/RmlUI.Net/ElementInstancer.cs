@@ -19,13 +19,13 @@ namespace RmlUiNet {
             ManuallyRegisterCache(NativePtr, this);
         }
 
-        public abstract ElementCustom OnInstanceElement(Element parent, string tag, XMLAttributes attributes);
+        public abstract IntPtr OnInstanceElement(Element parent, string tag, XMLAttributes attributes);
 
         public abstract void OnReleaseElement(Element element);
 
         internal virtual IntPtr OnInstanceElementInternal(IntPtr parentElement, string tag, IntPtr xmlAttributes) {
             var el = OnInstanceElement(new ElementGeneric(parentElement, false), tag, new XMLAttributes(xmlAttributes, false));
-            return el?.NativePtr ?? IntPtr.Zero;
+            return el;
         }
 
         internal virtual void OnReleaseElementInternal(IntPtr elementPtr) {

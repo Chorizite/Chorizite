@@ -16,6 +16,8 @@ using System.IO;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 using Core.UI.Lib.Fonts;
+using Core.Lua;
+using XLua;
 
 namespace Core.UI {
     /// <summary>
@@ -37,10 +39,14 @@ namespace Core.UI {
         internal readonly IChoriziteBackend Backend;
 
         public FontManager FontManager { get; }
+        public CoreLuaPlugin Lua { get; }
 
         internal readonly IPluginManager PluginManager;
+        private ScriptableDocumentInstancer _scriptableDocumentInstancer;
+        private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
         internal static Context? RmlContext;
         private bool _needsViewportUpdate;
+        private int _clickSoundId;
 
         public PanelManager PanelManager { get; private set; }
 
@@ -67,12 +73,17 @@ namespace Core.UI {
         }
         private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, ILogger log) : base(manifest) {
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, ILogger log, CoreLuaPlugin lua) : base(manifest) {
             Instance = this;
             Log = log;
             PluginManager = pluginManager;
             Backend = ChoriziteBackend;
             FontManager = new FontManager(Log);
+            Lua = lua;
+
+            var rmlUINativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
+            Log?.LogTrace($"Manually pre-loading {rmlUINativePath}");
+            Native.LoadLibrary(rmlUINativePath);
 
             InitRmlUI();
 
@@ -235,13 +246,8 @@ namespace Core.UI {
             }
 
             try {
-                Log.LogDebug($"InitRmlUI");
                 // we need to manually load RmlUiNative.dll with an absolute path, or DllImport will
                 // fail to find it later
-
-                var rmlNativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
-                Log?.LogTrace($"Manually pre-loading {rmlNativePath}");
-                Native.LoadLibrary(rmlNativePath);
 
                 _rmlRenderInterface = new RmlUIRenderInterface(Backend.Renderer);
                 _rmlSystemInterface = new ACSystemInterface(FontManager, Log);
@@ -252,7 +258,13 @@ namespace Core.UI {
                 var size = new Vector2i((int)Backend.Renderer.ViewportSize.X, (int)Backend.Renderer.ViewportSize.Y);
 
                 if (Rml.Initialise()) {
-                    //_rmlElementInstancer = new TestElementInstancer(_log);
+                    _clickSoundId = StyleSheetSpecification.RegisterProperty("click-sound", "none", false, false)
+                        .AddParser("string", "none")
+                        .GetId();
+
+                    _scriptableDocumentInstancer = new ScriptableDocumentInstancer(Backend, Lua, Log);
+                    //_scriptableEventListenerInstancer = new ScriptableEventListenerInstancer(_scriptableDocumentInstancer, Log);
+
                     RmlContext = Rml.CreateContext("viewport", size);
 
                     if (RmlContext is null) {
@@ -261,7 +273,7 @@ namespace Core.UI {
 
                     _rmlInput = new RmlInputManager(Backend.Input, RmlContext, Log);
                     PanelManager = new PanelManager(RmlContext, _rmlSystemInterface, Backend.Renderer, Log);
-                    _themePlugin = new ThemePlugin(PanelManager, Backend, Log);
+                    _themePlugin = new ThemePlugin(PanelManager, Backend, Log, _clickSoundId);
                     Rml.RegisterPlugin(_themePlugin);
 
                     LoadDefaultFonts();
@@ -331,13 +343,15 @@ namespace Core.UI {
             _models.Clear();
 
             RmlContext?.Dispose();
-            _themePlugin.Dispose();
+            _themePlugin?.Dispose();
 
             if (_didInitRml) {
                 Rml.Shutdown();
             }
+            _scriptableDocumentInstancer?.Dispose();
+            _scriptableEventListenerInstancer?.Dispose();
             _rmlRenderInterface?.Dispose();
-            _rmlSystemInterface?.Dispose();
+            _rmlSystemInterface?.Dispose(); 
 
             _didInitRml = false;
         }
