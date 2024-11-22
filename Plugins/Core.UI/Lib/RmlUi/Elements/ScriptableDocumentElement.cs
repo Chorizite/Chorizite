@@ -14,59 +14,70 @@ using XLua;
 namespace Core.UI.Lib.RmlUi.Elements {
     public class ScriptableDocumentElement : ElementDocument {
         private readonly ILogger _log;
+        private readonly IChoriziteBackend _backend;
         private LuaTable _luaState;
+        private List<ScriptContext> _scripts = new List<ScriptContext>();
 
-        public LuaContext LuaContext { get; private set; }
+        private struct ScriptContext {
+            public string Source;
+            public string SourcePath;
+            public int SourceLine;
 
-        private class ClickSoundEventListener : EventListener {
-            private readonly ILogger _log;
-            private readonly IChoriziteBackend _backend;
-
-            public ClickSoundEventListener(IChoriziteBackend backend, ILogger log) : base() {
-                _log = log;
-                _backend = backend;
-            }
-
-            public override void ProcessEvent(Event ev) {
-                if (ev.TargetElement is null) return;
-                var clickSound = ev.TargetElement.GetProperty("click-sound");
-
-                if (!string.IsNullOrEmpty(clickSound) && clickSound != "none") {
-                    if (clickSound.StartsWith("0x", StringComparison.CurrentCultureIgnoreCase)) {
-                        clickSound = clickSound.Substring(2);
-                    }
-
-                    if (uint.TryParse(clickSound, NumberStyles.HexNumber, CultureInfo.CurrentCulture, out uint soundId)) {
-                        _backend.PlaySound(soundId);
-                    }
-                    else {
-                        _log.LogError("Invalid Click Sound: {0}", clickSound);
-                    }
-                }
+            public ScriptContext(string source, string source_path, int source_line) {
+                Source = source;
+                SourcePath = source_path;
+                SourceLine = source_line;
             }
         }
 
+        public LuaContext LuaContext { get; private set; }
+
         public ScriptableDocumentElement(IChoriziteBackend backend, ILogger logger) : base() {
             _log = logger;
+            _backend = backend;
 
             LuaContext = new LuaContext();
             LuaContext.Global.Set("document", this);
 
-            AddEventListener("click", new ClickSoundEventListener(backend, _log));
+            AddEventListener("click", HandleClick);
+            AddEventListener("load", HandleLoad);
+        }
+
+        private void HandleLoad(Event evt) {
+            foreach (var script in _scripts) {
+                try {
+                    LuaContext.DoString(script.Source, $"{script.SourcePath}:{script.SourceLine}");
+                }
+                catch (Exception ex) {
+                    _log.LogError(LuaContext.FormatDocumentException(ex));
+                }
+            }
+        }
+
+        private void HandleClick(Event evt) {
+            if (evt.TargetElement is null) return;
+            var clickSound = evt.TargetElement.GetProperty("click-sound");
+
+            if (!string.IsNullOrEmpty(clickSound) && clickSound != "none") {
+                if (clickSound.StartsWith("0x", StringComparison.CurrentCultureIgnoreCase)) {
+                    clickSound = clickSound.Substring(2);
+                }
+
+                if (uint.TryParse(clickSound, NumberStyles.HexNumber, CultureInfo.CurrentCulture, out uint soundId)) {
+                    _backend.PlaySound(soundId);
+                }
+                else {
+                    _log.LogError("Invalid Click Sound: {0}", clickSound);
+                }
+            }
         }
 
         public override void OnLoadInlineScript(string context, string source_path, int source_line) {
-            try {
-                var res = LuaContext.DoString(context, $"{source_path}:{source_line}");
-                _log.LogDebug("A Result: {0}", LuaContext.FormatLuaResult(res));
-            }
-            catch (Exception ex) {
-                _log.LogError(ex.Message);
-            }
+            // delay loading inline scripts until the document is loaded
+            _scripts.Add(new ScriptContext(context, source_path, source_line));
         }
 
         public override void Dispose() {
-            LuaContext?.Global.Set<string, ScriptableDocumentElement>("document", null!);
             LuaContext?.Dispose();
             base.Dispose();
             LuaContext = null;

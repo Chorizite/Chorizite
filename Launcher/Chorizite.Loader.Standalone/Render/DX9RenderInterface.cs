@@ -18,6 +18,8 @@ using Chorizite.Loader.Standalone.Lib;
 namespace Chorizite.Loader.Standalone.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
+        private static int iii = 0;
+        private Matrix4x4 _transform = Matrix4x4.Identity;
         private struct GeometryBufferRef : IDisposable {
             public VertexBuffer VertexBuffer;
             public IndexBuffer IndexBuffer;
@@ -150,7 +152,7 @@ namespace Chorizite.Loader.Standalone.Render {
 
 
         public IntPtr CompileGeometry(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices) {
-            _log?.LogTrace($"CompileGeometry: verts: {vertices.Count()} inds: {indices.Count()}");
+            //_log?.LogTrace($"CompileGeometry: verts: {vertices.Count()} inds: {indices.Count()}");
             var verts = vertices.ToArray();
             var inds = indices.ToArray();
 
@@ -193,7 +195,7 @@ namespace Chorizite.Loader.Standalone.Render {
                     D3Ddevice.SetTexture(0, null);
                     BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColor");
                 }
-                BasicShader.SetUniform("xWorld", transform);
+                BasicShader.SetUniform("xWorld", transform * _transform);
                 BasicShader.SetUniform("xProjection", projection);
 
                 var numPasses = BasicShader.Effect.Begin();
@@ -216,16 +218,15 @@ namespace Chorizite.Loader.Standalone.Render {
         }
 
         public void ReleaseGeometry(IntPtr geometry) {
-            _log?.LogTrace($"ReleaseGeometry: 0x{geometry:X8}");
+            //_log?.LogTrace($"ReleaseGeometry: 0x{geometry:X8}");
             if (_geometryBuffers.TryGetValue(geometry, out var geom)) {
                 _geometryBuffers.Remove(geometry);
                 geom.Dispose();
             }
         }
 
-        private static int iii = 0;
         public ITexture GenerateTexture(byte[] source, Vector2 dimensions) {
-            _log?.LogTrace($"Generate texture: {dimensions.X}x{dimensions.Y}");
+            //_log?.LogTrace($"Generate texture: {dimensions.X}x{dimensions.Y}");
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
 
@@ -238,7 +239,7 @@ namespace Chorizite.Loader.Standalone.Render {
 
         public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
-                _log?.LogTrace($"LoadTexture: {source}");
+                //_log?.LogTrace($"LoadTexture: {source}");
                 ManagedDXTexture texture;
 
                 //StackTrace stackTrace = new StackTrace();
@@ -272,12 +273,16 @@ namespace Chorizite.Loader.Standalone.Render {
         }
 
         public void ReleaseTexture(ITexture texture) {
-            _log?.LogTrace($"Disping texture: 0x{texture.TexturePtr:X8}");
+            //_log?.LogTrace($"Disping texture: 0x{texture.TexturePtr:X8}");
             texture.Dispose();
         }
 
         public void EnableScissorRegion(bool enable) {
             D3Ddevice.SetRenderState(RenderState.ScissorTestEnable, enable);
+        }
+
+        public void SetTransform(Matrix4x4 transform) {
+            _transform = transform;
         }
 
         public void SetScissorRegion(int x, int y, int right, int bottom) {

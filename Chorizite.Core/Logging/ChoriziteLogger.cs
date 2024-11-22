@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Chorizite.Core.Backend;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Text;
 
@@ -36,6 +37,7 @@ namespace Chorizite.Core.Logging {
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
+            ChoriziteStatics.HandleLogMessage(new LogMessageEventArgs(Name, logLevel, $"{formatter(state, exception)} {exception?.ToString() ?? ""}"));
             if (!IsEnabled(logLevel)) {
                 return;
             }

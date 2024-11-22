@@ -22,20 +22,21 @@ namespace Chorizite.Core.Backend {
         public IInputManager Input { get; }
 
         /// <summary>
+        /// Get the <see cref="ChoriziteEnvironment"/> being used for this backend.
+        /// </summary>
+        public ChoriziteEnvironment Environment { get; }
+
+        /// <summary>
         /// Fired when the backend logs a message.
         /// </summary>
-        public virtual event EventHandler<LogMessageEventArgs>? OnLogMessage {
-            add { _OnLogMessage.Subscribe(value); }
-            remove { _OnLogMessage.Unsubscribe(value); }
-        }
-        protected abstract WeakEvent<LogMessageEventArgs> _OnLogMessage { get; }
+        public abstract event EventHandler<LogMessageEventArgs> OnLogMessage;
 
         /// <summary>
         /// Handle a log message.
         /// </summary>
         /// <param name="logLevel"></param>
         /// <param name="message"></param>
-        public virtual void HandleLogMessage(LogLevel logLevel, string message) => _OnLogMessage.Invoke(this, new LogMessageEventArgs(logLevel, message));
+        public abstract void HandleLogMessage(LogMessageEventArgs evt);
 
         public virtual static IChoriziteBackend Create(IContainer container) => throw new NotImplementedException("You must implement IChoriziteBackend.Create static method.");
 

@@ -88,6 +88,8 @@ namespace Core.UI {
 
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
             Backend.Renderer.OnGraphicsPostReset += Renderer_OnGraphicsPostReset;
+            
+            RegisterPanel("Breakout", Path.Combine(AssemblyDirectory, "assets", "panels", "Breakout.rml"));
         }
 
         private void Renderer_OnGraphicsPostReset(object? sender, EventArgs e) {

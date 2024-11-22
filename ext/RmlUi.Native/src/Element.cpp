@@ -28,6 +28,10 @@ RMLUI_CAPI const char *rml_Element_GetElementByID(Rml::Element *element, const c
     return nullptr;
 }
 
+RMLUI_CAPI const char *rml_Element_GetElementTypeName(Rml::Element *element) {
+    return rmlui_type_name(*element);
+}
+
 RMLUI_CAPI const char *rml_Element_GetOwnerDocument(Rml::Element *element, Rml::Element **foundElement) {
     *foundElement = element->GetOwnerDocument();
 
@@ -182,8 +186,12 @@ RMLUI_CAPI float rml_Element_GetScrollWidth(Rml::Element *element) {
     return element->GetScrollWidth();
 }
 
-RMLUI_CAPI Rml::Element* rml_Element_AppendChild(Rml::Element *element, bool add_to_dom) {
-    return element->AppendChild(Rml::ElementPtr(element), add_to_dom);
+RMLUI_CAPI Rml::Element* rml_Element_AppendChild(Rml::Element *element, Rml::Element *element_to_append, bool add_to_dom) {
+    return element->AppendChild(Rml::ElementPtr(element_to_append), add_to_dom);
+}
+
+RMLUI_CAPI Rml::Element* rml_Element_AppendChildTag(Rml::Element *element, const char* tagName, bool add_to_dom) {
+    return element->AppendChild(element->GetOwnerDocument()->CreateElement(tagName), add_to_dom);
 }
 
 RMLUI_CAPI Rml::Element* rml_Element_Closest(Rml::Element *element, const char* selectors) {
@@ -241,8 +249,8 @@ RMLUI_CAPI void rml_Element_ScrollIntoView(Rml::Element *element) {
 	element->ScrollIntoView();
 }
 
-RMLUI_CAPI void rml_Element_ScrollTo(Rml::Element *element, Rml::Vector2f offset, Rml::ScrollBehavior behavior) {
-	element->ScrollTo(offset, behavior);
+RMLUI_CAPI void rml_Element_ScrollTo(Rml::Element *element, float x, float y, Rml::ScrollBehavior behavior) {
+	element->ScrollTo(Rml::Vector2f(x, y), behavior);
 }
 
 RMLUI_CAPI const Rml::Box* rml_Element_GetBox(Rml::Element *element) {

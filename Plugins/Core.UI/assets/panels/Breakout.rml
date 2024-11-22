@@ -1,0 +1,390 @@
+﻿<rml>
+	<head>
+    <title>Logs</title>
+		<link type="text/template" href="../templates/tabpanel.rml" />
+		<style>
+      body {
+        font-size: 33px;
+        width: 492px;
+        height: 400px;
+        overflow: hidden;
+        font-family: Palatino Linotype;
+      }
+
+      .inner {
+        width: 492px;
+        height: 375px;
+        background-color: #000000aa;
+        overflow: hidden;
+      }
+
+      #container {
+        width: 490px;
+        height: 370px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .brick {
+        position: absolute;
+        width: 64px;
+        height: 22px;
+        top: 10px;
+        left: 20px;
+        background-color: red;
+      }
+
+      .paddle {
+        position: absolute;
+        decorator: image(dat://0x06002520);
+        width: 90px;
+        height: 18px;
+        display: block;
+      }
+
+      .ball {
+        position: absolute;
+        decorator: image(../pizza.png);
+        width: 18px;
+        height: 18px;
+        display: block;
+      }
+
+    .shake {
+        animation: 0.5s elastic-out infinite shake;
+    }
+
+    .pulse {
+        animation: 0.5s elastic-out 1 pulse;
+    }
+
+    .brick.dead {
+        z-index: 300;
+        animation: 10.5s elastic-out 1 fall;
+        display: none;
+    }
+
+      #score {
+        text-align: center;
+        font-weight: bold;
+        padding-top: 2px;
+        font-size: 16px;
+        font-family: impact;
+      }
+
+      .coin {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        decorator: image(../coin.png);
+        animation: 1.5s linear infinite flip;
+      }
+      
+      @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-1px, 0px) rotate(1deg); }
+        30% { transform: translate(1px,1px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 1px) rotate(-1deg); }
+        60% { transform: translate(-1px, 1px) rotate(0deg); }
+        70% { transform: translate(1px, 1px) rotate(-2deg); }
+        80% { transform: translate(-1px, -1px) rotate(2deg); }
+        90% { transform: translate(1px, 1px) rotate(0deg); }
+        100% { transform: translate(1px, -1px) rotate(-2deg); }
+      }
+      
+      @keyframes fall {
+        0% { transform: translate(1px, 1px) rotate(0deg); opacity: 1; display: block; }
+        80% { opacity: 0; display: none; }
+        100% { transform: translate(1px, 100px) rotate(360deg); opacity: 0; }
+      }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); color: #ffffff; }
+            70% { transform: scale(2); color: orange; }
+            100% { transform: scale(0.95); color: #ffffff; }
+        }
+
+        @keyframes flip {
+            0% { transform: rotateY(0deg); opacity: 1; }
+            50% { transform: rotateY(180deg) scale(2) translate(0px, -8px); }
+            100% { transform: rotateY(0deg) translate(0px, -5px); opacity: 0; }
+        }
+    </style>
+    <script> 
+        local backend = require("backend")
+        local container = nil
+        local scoreEl = nil
+        local WINDOW_WIDTH = 490
+        local WINDOW_HEIGHT = 370
+        local BRICK_WIDTH = 64
+        local BRICK_HEIGHT = 22
+        local PADDLE_WIDTH = 90
+        local BALL_RADIUS = 9
+        local SPEED = 250 -- pixels per second
+        local MAX_BALL_ANGLE = 75 -- Maximum angle in degrees for ball reflection
+        local isRunning = false
+        local lastFrame = os.clock()
+        local bricks = {}
+        local balls = {}
+        local paddle = { x = 0, y = 40, el = nil, vx = 0, vy = 0, width=PADDLE_WIDTH, height=18 }
+        local score = 0
+        local displayedScore = 0
+
+        local SPECIAL_BRICK_BALL_GEN = -1
+
+        local BRICK_IMAGES = {
+            0x06003357,
+            0x06003359,
+            0x06003356,
+            0x06003353,
+            0x06003358,
+            0x06003354,
+            0x06003355
+        }
+
+        function InitGame()
+            container = document:GetElementById("container")
+            scoreEl = document:GetElementById("score")
+                
+            MakeBricks()
+            MakePaddle()
+            MakeBall(WINDOW_WIDTH / 2, paddle.y - BALL_RADIUS, 39, BALL_RADIUS, SPEED)
+                
+            setTimeout(GameLoop)
+        end
+
+        function MakeBall(x, y, angle, radius, speed)
+            local ball = { x = 0, y = 0, vx = 0.0, vy = 0.0, speed = speed, radius = radius, el = nil, alive = true }
+            ball.el = container:AppendChildTag("div")
+            ball.el:AddClass("ball")
+            -- Position ball at center of paddle
+            ball.x = x
+            ball.y = y
+            -- Initial velocity (45 degree angle)
+            local angle = math.rad(angle)
+            ball.vx = ball.speed * math.cos(angle)
+            ball.vy = -ball.speed * math.sin(angle)
+
+            ball.el:SetProperty("top", string.format("%dpx", ball.y - ball.radius))
+            ball.el:SetProperty("left", string.format("%dpx", ball.x - ball.radius))
+            ball.el:SetProperty("width", string.format("%dpx", ball.radius * 2))
+            ball.el:SetProperty("height", string.format("%dpx", ball.radius * 2))
+
+            table.insert(balls, ball)
+        end
+
+        function checkCircleRectCollision(circle, rect)
+            -- Find the closest point to the circle within the rectangle
+            local closestX = math.max(rect.x, math.min(circle.x, rect.x + rect.width))
+            local closestY = math.max(rect.y, math.min(circle.y, rect.y + rect.height))
+            
+            -- Calculate the distance between the circle's center and this closest point
+            local distanceX = circle.x - closestX
+            local distanceY = circle.y - closestY
+            
+            -- If the distance is less than the circle's radius, there is a collision
+            local distanceSquared = (distanceX * distanceX) + (distanceY * distanceY)
+            local collision = distanceSquared < (circle.radius * circle.radius)
+            
+            return collision, {
+                x = closestX,
+                y = closestY,
+                distanceX = distanceX,
+                distanceY = distanceY
+            }
+        end
+
+        function addScore(points)
+            score = score + points
+            scoreEl:AddClass("pulse")
+            setTimeout(function()
+                scoreEl:RemoveClass("pulse")
+            end, 500)
+        end
+
+        function handlePaddleCollision(ball, paddle)
+            -- Calculate where on the paddle the ball hit (relative to center)
+            local relativeIntersectX = (ball.x - (paddle.x + paddle.width/2))
+            local normalizedIntersectX = relativeIntersectX / (paddle.width/2)
+            
+            -- Calculate bounce angle (in radians)
+            local bounceAngle = normalizedIntersectX * math.rad(MAX_BALL_ANGLE)
+            
+            -- Calculate new velocity components
+            local speed = math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy)
+            local newVx = speed * math.sin(bounceAngle)
+            local newVy = -speed * math.cos(bounceAngle)
+            
+            return { vx = newVx, vy = newVy }
+        end
+
+        function UpdateBall(delta, ball)
+            -- Update position
+            ball.x = ball.x + ball.vx * delta
+            ball.y = ball.y + ball.vy * delta
+
+            -- Wall collisions
+            if (ball.x - ball.radius <= 0) then
+                ball.x = ball.radius
+                ball.vx = math.abs(ball.vx)
+            end
+            if (ball.x + ball.radius >= WINDOW_WIDTH) then
+                ball.x = WINDOW_WIDTH - ball.radius
+                ball.vx = -math.abs(ball.vx)
+            end
+            if (ball.y - ball.radius <= 0) then
+                ball.y = ball.radius
+                ball.vy = math.abs(ball.vy)
+            end
+
+            -- Paddle collision
+            local paddleCollision, collisionData = checkCircleRectCollision(ball, paddle)
+            if paddleCollision then
+                -- Calculate new velocities based on where the ball hit the paddle
+                local newVelocities = handlePaddleCollision(ball, paddle)
+                ball.vx = newVelocities.vx
+                ball.vy = newVelocities.vy
+                -- Ensure ball is above paddle
+                ball.y = paddle.y - ball.radius
+                backend:PlaySound(0x0A0003B3)
+                addScore(50)
+            end
+
+            -- Brick collisions
+            for id, brick in pairs(bricks) do
+                if brick.health > 0 then
+                    local collision, collisionData = checkCircleRectCollision(ball, brick)
+                    if collision then
+                        addScore(100)
+                        
+                        -- Determine bounce direction based on collision point
+                        local dx = collisionData.distanceX
+                        local dy = collisionData.distanceY
+                        
+                        -- Reflect based on which side was hit
+                        if math.abs(dx) > math.abs(dy) then
+                            ball.vx = -ball.vx
+                        else
+                            ball.vy = -ball.vy
+                        end
+                        
+                        brick.health = brick.health - 1
+                        if brick.health == 0 then
+                            backend:PlaySound(0x0A0003F8)
+                            brick.el:AddClass("dead")
+                            brick.el:SetProperty("decorator", string.format("image(dat://%s)", 0x06000F6E))
+                            addScore(250)
+                            setTimeout(function()
+                                brick.el:SetProperty("display", "none");
+                            end, 5400)
+                            if brick.action ~= nil then brick:action(ball) end
+                        else
+                            backend:PlaySound(0x0A0003CE)
+                            brick.el:SetProperty("decorator", string.format("image(dat://%s)", BRICK_IMAGES[brick.health]))
+                            brick.el:AddClass("shake");
+                            setTimeout(function()
+                                brick.el:RemoveClass("shake");
+                            end, 1000)
+
+                            local coin = brick.el:AppendChildTag("div")
+                            coin:AddClass("coin")
+                            coin:SetProperty("top", string.format("%dpx", (BRICK_HEIGHT / 2) - 9))
+                            coin:SetProperty("left", string.format("%dpx", (BRICK_WIDTH / 2) - 9))
+                            setTimeout(function()
+                                coin:SetProperty("display", "none");
+                            end, 1100)
+                        end
+                        break
+                    end
+                end
+            end
+
+            -- Update ball element position (accounting for the fact that CSS positions are top-left based)
+            ball.el:SetProperty("left", string.format("%fpx", ball.x - ball.radius))
+            ball.el:SetProperty("top", string.format("%fpx", ball.y - ball.radius))
+        end
+
+        function MakeBrickBar(top, bars)
+            local bar_width = BRICK_WIDTH * #bars;
+            local left = WINDOW_WIDTH / 2 - bar_width / 2
+            for i=0,#bars-1 do
+                local left = left + ((i) * BRICK_WIDTH)
+                local action = nil
+                local health = 1
+                local brick = container:AppendChildTag("div")
+                brick:AddClass("brick")
+                if (bars[i + 1] < 0) then -- special bars
+                    if bars[i + 1] == SPECIAL_BRICK_BALL_GEN then
+                        brick:SetProperty("decorator", string.format("image(dat://%s)", 0x001200))
+                        action = function(ball)
+                            MakeBall(ball.x, ball.y, math.random(1,360), BALL_RADIUS * 2, SPEED * 1.5)
+                        end
+                    end
+                else
+                    health = bars[i + 1]
+                    brick:SetProperty("decorator", string.format("image(dat://%s)", BRICK_IMAGES[bars[i + 1]]))
+                end
+                brick:SetProperty("top", string.format("%dpx", top))
+                brick:SetProperty("left", string.format("%dpx", left))
+
+                local brick_id = string.format("brick_%d_%d", top, left)
+                bricks[brick_id] = { x = left, y = top, width=BRICK_WIDTH, height=BRICK_HEIGHT, el = brick, health = health, vx = 0, vy = 0, action = action }
+            end
+        end
+
+        function MakeBricks()
+            MakeBrickBar(20, {7, 5, 5, 4, 5, 5, 7})
+            MakeBrickBar(42, {6, 5, 4, 4, 5, 6})
+            MakeBrickBar(64, {5, 4, 3, 4, 5})
+            MakeBrickBar(86, {6, 5, 4, 4, 5, 6})
+            MakeBrickBar(108, {SPECIAL_BRICK_BALL_GEN, 5, 5, 4, 5, 5, SPECIAL_BRICK_BALL_GEN})
+        end
+
+        function MakePaddle()
+            paddle.el = container:AppendChildTag("div")
+            paddle.el:AddClass("paddle")
+            paddle.y = WINDOW_HEIGHT - 30
+            paddle.el:SetProperty("top", string.format("%dpx", paddle.y))
+        end
+
+        function UpdatePaddle(delta)
+            paddle.x = backend.Input.MouseX - document:GetAbsoluteLeft() - (PADDLE_WIDTH / 2)
+            if (paddle.x < 0) then paddle.x = 0 end
+            if (paddle.x > WINDOW_WIDTH - PADDLE_WIDTH) then paddle.x = WINDOW_WIDTH - PADDLE_WIDTH end
+            paddle.el:SetProperty("left", string.format("%dpx", paddle.x))
+        end
+
+        function UpdateScore(delta)
+            if score > displayedScore then
+                displayedScore = displayedScore + (delta * math.max(score - displayedScore, 400))
+                displayedScore = math.min(score, displayedScore)
+                scoreEl:SetInnerRml(string.format("Score: %d", math.floor(displayedScore)))
+            end
+        end
+
+        function GameLoop()
+            local thisFrame = os.clock()
+            local delta = thisFrame - lastFrame
+            lastFrame = thisFrame
+            UpdatePaddle(delta)
+            for i=1,#balls do
+                UpdateBall(delta, balls[i])
+            end
+            UpdateScore(delta)
+
+            setTimeout(GameLoop, 1)
+        end
+
+        InitGame()
+    </script>
+	</head>
+	<body class="window" template="tabpanel">
+    <div class="inner">
+      <div id="container">
+        <div id="score">Score: 0</div>
+      </div>
+    </div>
+	</body>
+</rml>

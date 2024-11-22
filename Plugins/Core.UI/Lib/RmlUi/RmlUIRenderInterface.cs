@@ -76,6 +76,16 @@ namespace ACUI.Lib.RmlUi {
             _renderer.SetScissorRegion(x, y, width, height);
         }
 
+        public override void SetTransform(IntPtr transform) {
+            if (transform == IntPtr.Zero) {
+                _renderer.SetTransform(Matrix4x4.Identity);
+            }
+            else {
+                var matrix = Marshal.PtrToStructure<Matrix4x4>(transform);
+                _renderer.SetTransform(matrix);
+            }
+        }
+
         public override void Dispose() {
             var textures = _textures.Values.ToArray();
             foreach (var texture in textures) {

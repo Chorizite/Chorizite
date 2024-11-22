@@ -13,6 +13,14 @@ RMLUI_CAPI void rml_ElementDocument_Hide(Rml::ElementDocument* document) {
     document->Hide();
 }
 
+RMLUI_CAPI Rml::ElementPtr* rml_ElementDocument_CreateElement(Rml::ElementDocument* document, const char* name) {
+    return &document->CreateElement(name);
+}
+
+RMLUI_CAPI Rml::Element* rml_ElementDocument_CreateTextNode(Rml::ElementDocument* document, const char* text) {
+    return document->CreateTextNode(text).get();
+}
+
 RMLUI_CAPI void rml_ElementDocument_AddStyleSheetContainer(Rml::ElementDocument* document, Rml::StyleSheetContainer* container) {
     auto sheet_container = document->GetStyleSheetContainer()->CombineStyleSheetContainer(*container);
     document->SetStyleSheetContainer(sheet_container);

@@ -7,6 +7,7 @@ using System.Linq;
 using Core.UI.Lib.Serialization;
 using System.Text.Json.Serialization;
 using Core.AC.Lib.Screens;
+using Microsoft.Extensions.Logging;
 
 namespace Core.AC.UIModels {
     [JsonConverter(typeof(UIDataModelJsonConverter))]
@@ -61,6 +62,7 @@ namespace Core.AC.UIModels {
 
             BindAction("enter_game", (evt, variants) => {
                 if (variants.First().Value is uint characterId) {
+                    CoreACPlugin.Log.LogDebug($"EnterGame: {characterId}");
                     CoreACPlugin.Instance.ClientBackend.EnterGame(characterId);
                 }
             });
@@ -69,6 +71,7 @@ namespace Core.AC.UIModels {
                 if (variants.Count() == 1 && variants.FirstOrDefault()?.Type == VariantType.UINT) {
                     var character = Characters.Value.FirstOrDefault(c => c.Id.Value == (uint)variants.First().Value!);
                     if (character is not null) {
+                        CoreACPlugin.Log.LogDebug($"Selecting: {character.Name.Value}");
                         SelectedCharacter.Value.Name.Value = character.Name.Value;
                         SelectedCharacter.Value.Id.Value = character.Id.Value;
                         _modelConstructor.Handle.DirtyAllVariables();

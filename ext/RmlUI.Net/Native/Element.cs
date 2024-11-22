@@ -53,6 +53,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetAttributeString")]
         public static extern IntPtr GetAttributeString(IntPtr element, string attributeName, string defaultValue);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetAttributeString")]
+        public static extern IntPtr SetAttributeString(IntPtr element, string attributeName, string value);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetPropertyString")]
         public static extern IntPtr GetPropertyString(IntPtr element, string propertyName);
 
@@ -61,5 +64,23 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetPropertyById")]
         public static extern IntPtr GetPropertyById(IntPtr element, int propertyId);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetProperty")]
+        public static extern IntPtr SetProperty(IntPtr element, string propertyName, string value);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetElementTypeName")]
+        public static extern IntPtr GetElementTypeName(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_AppendChild")]
+        public static extern IntPtr AppendChild(IntPtr element, IntPtr elementToAppend, bool addToDom);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_AppendChildTag")]
+        public static extern IntPtr AppendChildTag(IntPtr element, string tagName, bool addToDom);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_ScrollTo")]
+        public static extern IntPtr ScrollTo(IntPtr element, float x, float y, int behavior);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetClass")]
+        public static extern IntPtr SetClass(IntPtr element, string className, bool enable);
     }
 }

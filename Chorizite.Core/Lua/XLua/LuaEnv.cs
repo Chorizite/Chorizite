@@ -404,9 +404,15 @@ namespace XLua
             {
 #endif
                 if (disposed) return;
-                
+
+                translator.methodWrapsCache._evtHandlerDelegates.Clear(); //clear all event handler deleg
                 customLoaders.Clear();
-                Tick();
+                for (var i = 0; i < 10; i++) {
+                    GC();
+                    Tick();
+                    System.GC.Collect();
+                    System.GC.WaitForPendingFinalizers();
+                }
 
                 if (!translator.AllDelegateBridgeReleased())
                 {
@@ -414,7 +420,6 @@ namespace XLua
                 }
                 
                 ObjectTranslatorPool.Instance.Remove(L);
-
                 LuaAPI.lua_close(L);
                 translator = null;
 

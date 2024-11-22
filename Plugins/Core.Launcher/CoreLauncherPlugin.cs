@@ -59,7 +59,7 @@ namespace Core.Launcher {
             _settings.SimpleLoginScreenModel ??= new SimpleLoginScreenModel();
 
             CoreUI.RegisterUIModel("SimpleLoginScreen", _settings.SimpleLoginScreenModel);
-            RegisterScreen(LauncherScreen.Simple, Path.Combine(AssemblyDirectory, "assets", "Simple.rml"));
+            RegisterScreen(LauncherScreen.Simple, Path.Combine(AssemblyDirectory, "assets", "screens", "Simple.rml"));
         }
 
         LauncherSettings ISerializeSettings<LauncherSettings>.SerializeBeforeUnload() => _settings;

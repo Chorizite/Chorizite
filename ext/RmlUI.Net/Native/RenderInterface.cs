@@ -15,7 +15,8 @@ namespace RmlUiNet.Native
             OnGenerateTexture onGenerateTexture,
             OnReleaseTexture onReleaseTexture,
             OnEnableScissorRegion onEnableScissorRegion,
-            OnSetScissorRegion onSetScissorRegion
+            OnSetScissorRegion onSetScissorRegion,
+            OnSetTransform onSetTransform
         );
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -41,7 +42,10 @@ namespace RmlUiNet.Native
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void OnSetScissorRegion(int x, int y, int width, int height);
-    
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void OnSetTransform(IntPtr transform);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_RenderInterface_Test")]
         public static extern IntPtr Test(IntPtr renderInterface);
     }

@@ -23,12 +23,10 @@ namespace ACUI.Lib {
         private readonly Context Context;
         private readonly ILogger Log;
 
-        public FontManager FontManager { get; }
         public Screen? CurrentScreen => _currentScreen;
 
         internal PanelManager(Context ctx, ACSystemInterface rmlSystemInterface, IRenderInterface render, ILogger log) {
             Log = log;
-            FontManager = new FontManager(log);
             Context = ctx;
             Render = render;
             _rmlSystemInterface = rmlSystemInterface;
@@ -132,7 +130,6 @@ namespace ACUI.Lib {
             _currentScreen = null;
             _modalPanel?.Dispose();
             _modalPanel = null;
-            FontManager.Dispose();
         }
 
         internal void ShowModalConfirmation(string text, IEnumerable<string> buttons, Action<string> callback) {

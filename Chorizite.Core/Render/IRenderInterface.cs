@@ -84,5 +84,11 @@ namespace Chorizite.Core.Render {
         /// <param name="width"></param>
         /// <param name="height"></param>
         public void SetScissorRegion(int x, int y, int width, int height);
+
+        /// <summary>
+        /// Set a transform to be used when rendering geometry via <see cref="RenderGeometry(nint, Matrix4x4, ITexture?)"/>
+        /// </summary>
+        /// <param name="transform"></param>
+        void SetTransform(Matrix4x4 transform);
     }
 }

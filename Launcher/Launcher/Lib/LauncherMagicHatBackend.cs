@@ -9,9 +9,14 @@ using Chorizite.Common;
 using DatReaderWriter.DBObjs;
 using NAudio.Wave;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Chorizite.Core;
 
 namespace Launcher.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
+        private readonly ILogger _log;
+        private readonly AudioPlaybackEngine _engine;
+        private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
+
         /// <inheritdoc/>
         public IRenderInterface Renderer { get; }
 
@@ -22,19 +27,30 @@ namespace Launcher.Lib {
 
         /// <inheritdoc/>
         public IInputManager Input { get; }
+        /// <inheritdoc/>
         public IDatReaderInterface DatReader { get; }
-
-        private readonly ILogger _log;
-        private readonly AudioPlaybackEngine _engine;
 
         /// <summary>
         /// The <see cref="SDLInputManager"/> used by this backend
         /// </summary>
         public SDLInputManager SDLInput { get; }
 
-        WeakEvent<LogMessageEventArgs> IChoriziteBackend._OnLogMessage { get; } = new();
+        /// <inheritdoc/>
+        public event EventHandler<LogMessageEventArgs>? OnLogMessage {
+            add { _OnLogMessage.Subscribe(value); }
+            remove { _OnLogMessage.Unsubscribe(value); }
+        }
+        WeakEvent<LogMessageEventArgs> _OnLogMessage { get; } = new();
 
-        private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
+        /// <summary>
+        /// Handle a log message.
+        /// </summary>
+        /// <param name="logLevel"></param>
+        /// <param name="message"></param>
+        public virtual void HandleLogMessage(LogMessageEventArgs evt) => _OnLogMessage.Invoke(this, evt);
+
+        /// <inheritdoc/>
+        public ChoriziteEnvironment Environment => ChoriziteEnvironment.Launcher;
 
         public static IChoriziteBackend Create(IContainer container) {
             var renderer = new OpenGLRenderer(container.Resolve<ILogger<OpenGLRenderer>>(), container.Resolve<IDatReaderInterface>());
@@ -67,10 +83,8 @@ namespace Launcher.Lib {
         public void PlaySound(uint soundId) {
             try {
                 if (DatReader.TryGet<Wave>(soundId, out var sound)) {
-                    var file = Path.GetTempFileName();
-                    using var stream = new FileStream(file, FileMode.Create);
-
-                    var binaryWriter = new BinaryWriter(stream);
+                    var stream = new MemoryStream();
+                    using var binaryWriter = new BinaryWriter(stream, System.Text.Encoding.Default, true);
 
                     binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
 
@@ -97,15 +111,16 @@ namespace Launcher.Lib {
                     binaryWriter.Write(sound.Data);
                     binaryWriter.Flush();
                     binaryWriter.Close();
+                    stream.Position = 0;
 
-                    ReadBitRate(file, out var numChannels, out var sampleRate, out var bitRate);
+                    ReadBitRate(stream, out var numChannels, out var sampleRate, out var bitRate);
 
                     if (!_audioEngines.TryGetValue(sampleRate, out var _engine)) {
                         _engine = new AudioPlaybackEngine(sampleRate, numChannels);
                         _audioEngines.Add(sampleRate, _engine);
                     }
 
-                    _engine.PlaySound(file);
+                    _engine.PlaySound(stream);
                 }
                 else {
                     _log.LogDebug($"Sound {soundId:X8} not found");
@@ -116,9 +131,9 @@ namespace Launcher.Lib {
             }
 
         }
-        public static bool ReadBitRate(string filePath, out int numChannels, out int sampleRate, out int bitRate) {
-            using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            using (BinaryReader reader = new BinaryReader(fs)) {
+
+        private static bool ReadBitRate(Stream stream, out int numChannels, out int sampleRate, out int bitRate) {
+            using (BinaryReader reader = new BinaryReader(stream, System.Text.Encoding.Default, true)) {
                 // Skip RIFF header (4 bytes) and file size (4 bytes)
                 reader.BaseStream.Position = 8;
 
@@ -152,6 +167,7 @@ namespace Launcher.Lib {
                 // Calculate bit rate
                 bitRate = byteRate * 8;
 
+                stream.Position = 0;
                 return true;
             }
         }

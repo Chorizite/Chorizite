@@ -417,9 +417,12 @@ namespace Chorizite.Core.Render {
             uint id = 0;
 
             if (value.StartsWith("0x")) {
-                uint.TryParse(value.Replace("0x", ""), NumberStyles.HexNumber, null, out id);
+                if (!uint.TryParse(value.Replace("0x", ""), NumberStyles.HexNumber, null, out id)) {
+                    ChoriziteStatics.Log?.LogWarning($"Failed to parse dat id: {value}");
+                }
             }
             else if (!uint.TryParse(value, out id)) {
+                ChoriziteStatics.Log?.LogWarning($"Failed to parse dat id: {value}");
                 return 0;
             }
 

@@ -16,6 +16,12 @@
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);XLUA_GENERAL</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Render\nulltexture.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Render\nulltexture.jpg" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" />
@@ -49,6 +55,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Lua\LuaScripts\init.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Lua\LuaScripts\xlua\util.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="runtimes\win-x86\native\xlua.dll">

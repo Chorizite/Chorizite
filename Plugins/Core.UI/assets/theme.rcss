@@ -1,6 +1,7 @@
 ﻿/* reset */
 body {
   display: block;
+	font-family: Tahoma;
 }
 
 div {
