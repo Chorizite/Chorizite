@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Autofac;
+using Chorizite.Core.Backend;
+using Chorizite.Core.Plugins;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -10,7 +14,7 @@ using System.Threading.Tasks;
 using XLua;
 
 namespace Chorizite.Core.Lua {
-    public class LuaContext : LuaEnv {
+    public partial class LuaContext : LuaEnv {
         private static Regex _luaDocExceptionRe = new Regex("""\[string "([^:]+\.rml):(\d+)"\]:(\d+)""", RegexOptions.Singleline);
         private static List<LuaContext> _contexts = new List<LuaContext>();
         private class TimeoutEntry {
@@ -24,6 +28,7 @@ namespace Chorizite.Core.Lua {
         private LuaFunction _originalRequire;
         private bool _isDisposed;
         private List<TimeoutEntry> _timeoutQueue = new();
+        private List<LuaCoroutine> _luaThreads = new();
 
         public LuaContext() : base() {
             _contexts.Add(this);
@@ -60,7 +65,12 @@ namespace Chorizite.Core.Lua {
             return null!;
         }
 
+        public void SetGlobal(string name, object? value) {
+            Global.Set(name, value);
+        }
+
         private void InitGlobals() {
+            Global.Set("context", this);
             Global.Set("__sleep", Sleep);
             Global.Set("print", Print);
             Global.Set("setTimeout", SetTimeout);
@@ -77,32 +87,67 @@ namespace Chorizite.Core.Lua {
         }
 
         protected void Update() {
-            var items = _timeoutQueue.Where(x => x.Expiration <= DateTime.Now).ToArray();
-            foreach (var item in items) {
-                _timeoutQueue.Remove(item);
+            // coroutines (threads)
+            var threads = _luaThreads.ToArray();
+            foreach (var thread in threads) {
                 try {
-                    item.Callback();
+                    if (!thread.Update()) {
+                        _luaThreads.Remove(thread);
+                    }
+                }
+                catch (LuaException ex) {
+                    _luaThreads.Remove(thread);
+                    _log.LogError(FormatDocumentException(ex));
                 }
                 catch (Exception ex) {
+                    _luaThreads.Remove(thread);
+                    _log.LogError(ex, "Error resuming coroutine");
+                }
+            }
+
+            // timeouts
+            var timeouts = _timeoutQueue.Where(x => x.Expiration <= DateTime.Now).ToArray();
+            foreach (var timeout in timeouts) {
+                _timeoutQueue.Remove(timeout);
+                try {
+                    timeout.Callback();
+                }
+                catch (LuaException ex) {
                     _log.LogError(FormatDocumentException(ex));
+                }
+                catch (Exception ex) {
+                    _log.LogError(ex, "Error running timeout callback");
                 }
             }
 
             Tick();
         }
 
-        public string FormatDocumentException(Exception ex) {
-            return FormatStackTraces(ex.Message);
+        public Task ThreadToTask(LuaThread thread, params object[] args) {
+            var co = new LuaCoroutine(thread, this, _log);
+            return co.Task;
         }
 
-        private string FormatStackTraces(string message) {
+        public Task AddManagedCoroutine(LuaThread thread) {
+            var co = new LuaCoroutine(thread, this, _log);
+            if (co.Update()) {
+                _luaThreads.Add(co);
+            }
+            return co.Task;
+        }
+
+        public string FormatDocumentException(Exception ex, int lineOffset = 0) {
+            return FormatStackTraces(ex.Message, lineOffset).TrimEnd();
+        }
+
+        private string FormatStackTraces(string message, int lineOffset = 0) {
             var lines = message?.Split('\n') ?? Array.Empty<string>();
             var strBuilder = new StringBuilder();
             foreach (var line in lines) {
                 if (_luaDocExceptionRe.IsMatch(line)) {
                     var m = _luaDocExceptionRe.Match(line);
                     if (int.TryParse(m.Groups[2].Value, out var docLine) && int.TryParse(m.Groups[3].Value, out var luaLine)) {
-                        strBuilder.AppendLine(line.Replace(m.Groups[0].Value, $"{m.Groups[1].Value}:{docLine + luaLine - 1}: {m.Groups[4].Value}"));
+                        strBuilder.AppendLine(line.Replace(m.Groups[0].Value, $"{m.Groups[1].Value}:{docLine + luaLine - 1 + lineOffset}: {m.Groups[4].Value}"));
                         continue;
                     }
                 }
@@ -131,11 +176,30 @@ namespace Chorizite.Core.Lua {
             return $"{obj}";
         }
 
-        private object? Require(string module) {
-            return module switch {
-                "backend" => ChoriziteStatics.Backend,
-                _ => _originalRequire.Call(module),
-            };
+        private object? Require(object module) {
+            if (module is null) {
+                return null;
+            }
+            else if (module is Type moduleType) {
+                _log.LogDebug($"Loading module: {moduleType}");
+                return ChoriziteStatics.Scope.Resolve(moduleType);
+            }
+            else if (module is string modulePath) {
+                if (modulePath.StartsWith("plugins.") && !modulePath.EndsWith(".lua")) {
+                    var lib = modulePath.Substring("plugins.".Length);
+                    var pluginManager = ChoriziteStatics.Scope.Resolve<IPluginManager>();
+                    return pluginManager?.GetPlugin<IPluginCore>(lib);
+                }
+
+                return modulePath switch {
+                    "backend" => ChoriziteStatics.Backend,
+                    _ => _originalRequire.Call(modulePath),
+                };
+            }
+
+            _log.LogWarning($"Unknown module: [{module?.GetType().Name}] {module}");
+
+            return null;
         }
 
         private void SetTimeout(Action cb, int timeoutInMilliseconds = 1) {
@@ -148,7 +212,13 @@ namespace Chorizite.Core.Lua {
 
         private void Print(params object[] args) {
             var message = string.Join(" ", args.Select(a => FormatStackTraces(FormatLuaResult([ a ])).TrimEnd()));
-            File.AppendAllText(@"D:\projects\Chorizite\bin\net8.0\data\logs\log.txt", $"[LUA] {message}\n");
+            _log.LogDebug(message);
+            if (ChoriziteStatics.Backend.Environment == ChoriziteEnvironment.Client) {
+                try {
+                    (ChoriziteStatics.Backend as IClientBackend)?.AddChatText(message, ChatType.WorldBroadcast);
+                }
+                catch { }
+            }
         }
 
         /// <summary>
@@ -157,21 +227,20 @@ namespace Chorizite.Core.Lua {
         /// <param name="ms"></param>
         /// <returns></returns>
         public async Task Sleep(int ms) {
-            try {
-                await Task.Delay(ms, cancellationTokenSource.Token);
-            }
-            catch (TaskCanceledException) {
-            }
+            await Task.Delay(ms, cancellationTokenSource.Token);
         }
 
         public override void Dispose(bool disposing) {
             if (_isDisposed) return;
             _isDisposed = true;
 
+            _luaThreads.Clear();
             _timeoutQueue.Clear();
             _contexts.Remove(this);
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
+            PreDispose();
+            /*
             FullGc();
 
             for (int i = 0; i < 100; i++) {
@@ -183,7 +252,8 @@ namespace Chorizite.Core.Lua {
                 System.GC.WaitForPendingFinalizers();
                 System.GC.Collect();
             }
-
+            */
+            DoString("require('xlua.util')[0].print_func_ref_by_csharp()");
             _originalRequire = null!;
 
             try {

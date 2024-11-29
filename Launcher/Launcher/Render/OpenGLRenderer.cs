@@ -136,7 +136,7 @@ namespace Launcher.Render {
             SDL_SysWMinfo wmInfo = new();
             SDL_VERSION(out var version);
             SDL_GetWindowWMInfo(SDLWindowHandle, ref wmInfo);
-            Native.MakeWindowTransparent(wmInfo.info.win.window);
+            //Native.MakeWindowTransparent(wmInfo.info.win.window);
 
             HWND = wmInfo.info.win.window;
 
@@ -178,7 +178,7 @@ namespace Launcher.Render {
 
             GL.glBindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-            GL.glClearColor(255f, 0f, 255f, 0f);
+            GL.glClearColor(0f, 0f, 0f, 0f);
             GL.glClear((uint)(AttribMask.ColorBufferBit | AttribMask.DepthBufferBit | AttribMask.StencilBufferBit));
 
             GL.glEnable(EnableCap.Blend);

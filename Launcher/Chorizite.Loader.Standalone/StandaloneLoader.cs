@@ -43,6 +43,7 @@ namespace Chorizite.Loader.Standalone {
                 NetHooks.Init();
                 ACClientHooks.Init();
                 ChatHooks.Init();
+                UIHooks.Init();
             }
             catch (Exception ex) {
                 Log.LogError(ex, "Failed to initialize hooks");

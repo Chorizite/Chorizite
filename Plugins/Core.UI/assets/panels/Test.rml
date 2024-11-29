@@ -1,0 +1,45 @@
+<rml>
+	<head>
+    <title>Testing</title>
+		<link type="text/template" href="../templates/tabpanel.rml" />
+		<style>
+      body {
+        font-size: 33px;
+        min-width: 300px;
+      }
+
+      .inner {
+        padding: 4px;
+        background-color: #000000dd;
+      }
+      
+      div#actions {
+        flex: 1;
+        text-align: right;
+      }
+      
+      div#actions button {
+        padding: 3px 6px;
+      }
+
+      ul {
+        display: block;
+        padding: 4px;
+      }
+
+      li {
+        display: block;
+      }
+
+      div form {
+        padding: 6px;
+        display: flex;
+      }
+    </style>
+	</head>
+	<body class="window" template="tabpanel">
+    <div class="inner">
+      <div id="app" />
+    </div>
+	</body>
+</rml>

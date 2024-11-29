@@ -104,14 +104,19 @@ namespace RmlUiNet
         /// <param name="name"></param>
         /// <returns></returns>
         string GetAttribute(string name);
-        Element AppendChild(Element child, bool addToDom);
-        Element AppendChildTag(string tagName, bool addToDom);
+        Element AppendChild(Element child, bool addToDom = true);
+        Element AppendChildTag(string tagName, bool addToDom = true);
         void ScrollTo(float x, float y, ScrollBehavior behavior);
         void AddClass(string className);
         void RemoveClass(string className);
         void SetAttribute(string attributeName, string value);
         void SetProperty(string propertyName, string value);
         void AddEventListener(string name, Action<Event> action);
+        string GetInnerRml();
+        Element GetParentNode();
+        void ReplaceChild(Element elementToinsert, Element elementToReplace);
+        Element? QuerySelector(string selector);
+        bool HasClass(string className);
     }
 
     public abstract class Element<T> : RmlBase<T>, Element
@@ -143,6 +148,11 @@ namespace RmlUiNet
         {
         }
 
+        public override bool Equals(object? obj)
+        {
+            return obj is Element el && el.GetInnerRml() == GetInnerRml();
+        }
+
         /// <summary>
         /// Adds an event listener to this element.
         /// </summary>
@@ -154,14 +164,21 @@ namespace RmlUiNet
             Native.Element.AddEventListener(NativePtr, name, eventListener.NativePtr, inCapturePhase);
         }
 
-        private class ElementEventListener : EventListener
+        internal class ElementEventListener : EventListener
         {
-            private Dictionary<string, List<Action<Event>>> _handlers = [];
+            internal Dictionary<string, List<Action<Event>>> _handlers = [];
+            private Element _owningElement;
+
+            public ElementEventListener(Element ownerDocument) : base()
+            {
+                _owningElement = ownerDocument;
+            }
 
             public void AddHandler(string eventName, Action<Event> handler) {
                 if (!_handlers.TryGetValue(eventName.ToLower(), out var handlers)) {
                     handlers = new();
                     _handlers[eventName.ToLower()] = handlers;
+                    _owningElement.AddEventListener(eventName.ToLower(), this);
                 }
                 handlers.Add(handler);
             }
@@ -179,14 +196,25 @@ namespace RmlUiNet
                     handlers.ForEach(handler => handler.Invoke(ev));
                 }
             }
+
+            public override void Dispose()
+            {
+                foreach (var evtName in _handlers.Keys.ToArray()) {
+                    _owningElement.RemoveEventListener(evtName.ToLower(), this);
+                }
+                _handlers.Clear();
+                _handlers = null;
+                base.Dispose();
+            }
         }
 
-        private ElementEventListener? _eventListener;
-
         public void AddEventListener(string name, Action<Event> action) {
-            _eventListener ??= new();
-            _eventListener.AddHandler(name.ToLower(), action);
-            AddEventListener(name.ToLower(), _eventListener);
+            if (!OwnerDocument._elementEventListeners.TryGetValue(this, out var eventListener))
+            {
+                eventListener = new(this);
+                OwnerDocument._elementEventListeners.Add(this, eventListener);
+            }
+            eventListener.AddHandler(name.ToLower(), action);
         }
 
         /// <summary>
@@ -217,10 +245,14 @@ namespace RmlUiNet
             return Util.GetOrThrowElementByTypeName(elementPtr, elementType);
         }
 
+        public bool HasClass(string className) {
+            return Native.Element.HasClass(NativePtr, className);
+        }
+
         internal string GetElementTypeName()
         {
             var typePtr = Native.Element.GetElementTypeName(NativePtr);
-            return Marshal.PtrToStringAnsi(typePtr);
+            return Marshal.PtrToStringAnsi(typePtr) ?? "Unknown";
         }
 
         /// <summary>
@@ -229,7 +261,7 @@ namespace RmlUiNet
         /// <param name="child"></param>
         /// <param name="addToDom"></param>
         /// <returns></returns>
-        public Element AppendChild(Element child, bool addToDom) {
+        public Element AppendChild(Element child, bool addToDom = true) {
             var nativeElement = Native.Element.AppendChild(NativePtr, child.NativePtr, addToDom);
             var typePtr = Native.Element.GetElementTypeName(nativeElement);
             var elementType = Marshal.PtrToStringAnsi(typePtr);
@@ -267,6 +299,18 @@ namespace RmlUiNet
         public void SetInnerRml(string rml)
         {
             Native.Element.SetInnerRml(NativePtr, rml);
+        }
+
+        /// <summary>
+        /// Get the markup content of this element
+        /// </summary>
+        /// <returns></returns>
+        public string GetInnerRml()
+        {
+            var strPtr = Native.Element.GetInnerRml(NativePtr);
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue ?? "";
         }
 
         public void AddClass(string className)
@@ -357,6 +401,45 @@ namespace RmlUiNet
 
         public void SetAttribute(string attributeName, string value) {
             Native.Element.SetAttributeString(NativePtr, attributeName, value);
+        }
+
+        public Element GetParentNode()
+        {
+            var elementPtr = Native.Element.GetParentNode(NativePtr);
+            var nativeElementType = Native.Element.GetElementTypeName(elementPtr);
+            var elementType = Marshal.PtrToStringAnsi(nativeElementType);
+
+            if (null == elementType)
+            {
+                return null;
+            }
+
+            return Util.GetOrThrowElementByTypeName(elementPtr, elementType);
+        }
+
+        public void ReplaceChild(Element elementToinsert, Element elementToReplace)
+        {
+            Native.Element.ReplaceChild(NativePtr, elementToinsert.NativePtr, elementToReplace.NativePtr);
+        }
+
+        public Element? QuerySelector(string selector)
+        {
+            var elementPtr = Native.Element.QuerySelector(NativePtr, selector);
+            if (elementPtr == IntPtr.Zero) return null;
+            var nativeElementType = Native.Element.GetElementTypeName(elementPtr);
+            var elementType = Marshal.PtrToStringAnsi(nativeElementType);
+
+            if (null == elementType)
+            {
+                return null;
+            }
+
+            return Util.GetOrThrowElementByTypeName(elementPtr, elementType);
+        }
+
+        public override void Dispose()
+        {
+            base.Dispose();
         }
 
         #endregion

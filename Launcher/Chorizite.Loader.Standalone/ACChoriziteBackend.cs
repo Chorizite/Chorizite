@@ -104,6 +104,30 @@ namespace Chorizite.Loader.Standalone {
             remove { _OnScreenChanged.Unsubscribe(value); }
         }
 
+        private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragStart = new WeakEvent<GameObjectDragDropEventArgs>();
+        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragStart {
+            add { _OnGameObjectDragStart.Subscribe(value); }
+            remove { _OnGameObjectDragStart.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragEnd = new WeakEvent<GameObjectDragDropEventArgs>();
+        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragEnd {
+            add { _OnGameObjectDragEnd.Subscribe(value); }
+            remove { _OnGameObjectDragEnd.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<ShowTooltipEventArgs> _OnShowTooltip = new WeakEvent<ShowTooltipEventArgs>();
+        public event EventHandler<ShowTooltipEventArgs>? OnShowTooltip {
+            add { _OnShowTooltip.Subscribe(value); }
+            remove { _OnShowTooltip.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<EventArgs> _OnHideTooltip = new WeakEvent<EventArgs>();
+        public event EventHandler<EventArgs>? OnHideTooltip {
+            add { _OnHideTooltip.Subscribe(value); }
+            remove { _OnHideTooltip.Unsubscribe(value); }
+        }
+
         public static IChoriziteBackend Create(IContainer container) {
             var renderer = new DX9RenderInterface(StandaloneLoader.UnmanagedD3DPtr, container.Resolve<ILogger<DX9RenderInterface>>(), container.Resolve<IDatReaderInterface>());
             var input = new Win32InputManager(container.Resolve<ILogger<Win32InputManager>>());
@@ -118,22 +142,6 @@ namespace Chorizite.Loader.Standalone {
             Input = input;
             Log = log;
             DatReader = datReader;
-        }
-
-        internal void HandleC2SPacketData(byte[] bytes) {
-            _OnC2SData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ClientToServer, bytes));
-        }
-
-        internal void HandleS2CPacketData(byte[] bytes) {
-            _OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
-        }
-
-        internal void HandleChatTextAdded(ChatTextAddedEventArgs eventArgs) {
-            _OnChatTextAdded?.Invoke(this, eventArgs);
-        }
-
-        internal void HandleChatTextInput(ChatInputEventArgs eventArgs) {
-            _OnChatInput?.Invoke(this, eventArgs);
         }
 
         public bool EnterGame(uint characterId) {
@@ -240,6 +248,13 @@ namespace Chorizite.Loader.Standalone {
             }
         }
 
+        private static delegate* unmanaged[Thiscall]<ClientCommunicationSystem*, PStringBase<ushort>*, int, int> ClientCommunicationSystem_OnChatCommand = (delegate* unmanaged[Thiscall]<ClientCommunicationSystem*, PStringBase<ushort>*, int, int>)0x005821A0;
+        public void InvokeChat(string text, int windowId = 1) {
+            if (ChatHooks.ClientCommunicationSystem == null) return;
+            var pstring = (PStringBase<ushort>)text;
+            ClientCommunicationSystem_OnChatCommand(ChatHooks.ClientCommunicationSystem, &pstring, windowId);
+        }
+
         private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
         private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
 
@@ -247,6 +262,40 @@ namespace Chorizite.Loader.Standalone {
             CleanupNet(*Client.m_instance);
             Cleanup(*Client.m_instance);
         }
+
+        #region internal event callers
+        internal void HandleC2SPacketData(byte[] bytes) {
+            _OnC2SData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ClientToServer, bytes));
+        }
+
+        internal void HandleS2CPacketData(byte[] bytes) {
+            _OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
+        }
+
+        internal void HandleChatTextAdded(ChatTextAddedEventArgs eventArgs) {
+            _OnChatTextAdded?.Invoke(this, eventArgs);
+        }
+
+        internal void HandleChatTextInput(ChatInputEventArgs eventArgs) {
+            _OnChatInput?.Invoke(this, eventArgs);
+        }
+
+        internal void HandleGameObjectDragStart(GameObjectDragDropEventArgs eventArgs) {
+            _OnGameObjectDragStart?.Invoke(this, eventArgs);
+        }
+
+        internal void HandleGameObjectDragEnd(GameObjectDragDropEventArgs eventArgs) {
+            _OnGameObjectDragEnd?.Invoke(this, eventArgs);
+        }
+
+        internal void HandleShowTooltip(ShowTooltipEventArgs showTooltipEventArgs) {
+            _OnShowTooltip?.Invoke(this, showTooltipEventArgs);
+        }
+
+        internal void HandleHideTooltip(EventArgs empty) {
+            _OnHideTooltip?.Invoke(this, empty);
+        }
+        #endregion // internal event callers
 
         public void Dispose() {
             Renderer?.Dispose();

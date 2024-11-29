@@ -34,7 +34,7 @@ namespace Chorizite.ACProtocol.Types {
         /// </summary>
         public AttributeCache Attributes;
 
-        public Dictionary<Skill, Skill> Skills = new();
+        public Dictionary<SkillId, Skill> Skills = new();
 
         public Body Body;
 
@@ -76,7 +76,7 @@ namespace Chorizite.ACProtocol.Types {
                 Attributes.Read(reader);
             }
             if (Flags.HasFlag(ACQualitiesFlags.Skills)) {
-                Skills = reader.ReadPackableHashTable<Skill, Skill>();
+                Skills = reader.ReadPackableHashTable<SkillId, Skill>();
             }
             if (Flags.HasFlag(ACQualitiesFlags.Body)) {
                 Body = new Body();

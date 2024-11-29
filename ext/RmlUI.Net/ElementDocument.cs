@@ -7,6 +7,9 @@ namespace RmlUiNet
     {
         private bool _isCustomElement;
         private Native.ElementDocument.OnLoadInlineScript? _onLoadInlineScript;
+
+        internal Dictionary<Element, ElementEventListener> _elementEventListeners = [];
+
         #region Properties
 
         #endregion
@@ -55,6 +58,34 @@ namespace RmlUiNet
             Native.ElementDocument.AddStyleSheetContainer(NativePtr, container.NativePtr);
         }
 
+        /// <summary>
+        /// Set the title of the document.
+        /// </summary>
+        /// <param name="title"></param>
+        public void SetTitle(string title) {
+            Native.ElementDocument.SetTitle(NativePtr, title);
+        }
+
+        /// <summary>
+        /// Get the title of the document.
+        /// </summary>
+        /// <returns></returns>
+        public string GetTitle()
+        {
+            var strPtr = Native.ElementDocument.GetTitle(NativePtr);
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue ?? "";
+        }
+
+        public string GetSourceURL()
+        {
+            var strPtr = Native.ElementDocument.GetSourceURL(NativePtr);
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue ?? "";
+        }
+
         /*
         /// <summary>
         /// Create an element with the given tag name.
@@ -85,6 +116,12 @@ namespace RmlUiNet
 
         public override void Dispose()
         {
+            var listeners = _elementEventListeners.ToArray();
+            foreach (var kv in listeners)
+            {
+                kv.Value.Dispose();
+            }
+            _elementEventListeners.Clear();
             if (_isCustomElement)
             {
                 Native.ElementDocument.Free(NativePtr);

@@ -53,8 +53,16 @@ namespace Chorizite.Core.Render {
         /// </summary>
         /// <param name="file">The bitmap file path for the texture.</param>
         public BitmapTexture(string file) : base() {
-            using var img = Image.Load(file);
-            Bitmap = img.CloneAs<Rgba32>();
+            if (!System.IO.File.Exists(file)) {
+                ChoriziteStatics.Log.LogError($"Could not find texture file: {file}");
+                using Stream stream = typeof(BitmapTexture).Assembly.GetManifestResourceStream("Chorizite.Core.Render.nulltexture.jpg");
+                using var img = Image.Load(stream);
+                Bitmap = img.CloneAs<Rgba32>();
+            }
+            else {
+                using var img = Image.Load(file);
+                Bitmap = img.CloneAs<Rgba32>();
+            }
             CreateTexture();
         }
 
@@ -251,6 +259,27 @@ namespace Chorizite.Core.Render {
                     break;
                 default:
                     throw new Exception($"Unknown pixel format: {texture.Format}");
+            }
+            
+            if (image.Width <= 32 && image.Height <= 32) {
+                var recolored = new Image<Rgba32>(32, 32);
+                for (int x = 0; x < image.Width; x++) {
+                    for (int y = 0; y < image.Height; y++) {
+                        Color gotColor = image[x, y];
+                        if (gotColor == BORDER_COLOR_MASK) {
+                            //recolored[x, y] = uieffect[x, y];
+                            recolored[x, y] = Color.Transparent;
+                        }
+                        else if (gotColor == BACKGROUND_COLOR_MASK) {
+                            recolored[x, y] = Color.Transparent;
+                        }
+                        else {
+                            recolored[x, y] = gotColor;
+                        }
+                    }
+                }
+                image.Dispose();
+                return recolored;
             }
 
             return image;

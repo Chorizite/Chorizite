@@ -80,12 +80,40 @@ namespace ACUI.Lib {
         /// <param name="name">The name of the panel</param>
         /// <param name="rmlFilePath">The rml file of the panel</param>
         /// <returns></returns>
+        public Panel CreatePanelFromSource(string name, string rmlFilePath) {
+            if (_panels.Remove(name, out var panel)) {
+                panel.Dispose();
+            }
+
+            panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
+            _panels.Add(name, panel);
+
+            return panel;
+        }
+
+        /// <summary>
+        /// Create a panel
+        /// </summary>
+        /// <param name="name">The name of the panel</param>
+        /// <param name="rmlFilePath">The rml file of the panel</param>
+        /// <returns></returns>
         public Panel CreatePanel(string name, string rmlFilePath) {
             if (_panels.Remove(name, out var panel)) {
                 panel.Dispose();
             }
 
             panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
+            _panels.Add(name, panel);
+
+            return panel;
+        }
+
+        public Panel CreatePanelFromString(string name, string rmlContents) {
+            if (_panels.Remove(name, out var panel)) {
+                panel.Dispose();
+            }
+            Log.LogDebug($"Loading panel {name} [source text] 123");
+            panel = new Panel(name, rmlContents, Context, _rmlSystemInterface, Log, true);
             _panels.Add(name, panel);
 
             return panel;

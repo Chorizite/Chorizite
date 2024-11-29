@@ -26,6 +26,15 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_CreateTextNode")]
         public static extern IntPtr CreateTextNode(IntPtr document, string text);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_SetTitle")]
+        public static extern IntPtr SetTitle(IntPtr document, string title);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_GetTitle")]
+        public static extern IntPtr GetTitle(IntPtr document);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_GetSourceURL")]
+        public static extern IntPtr GetSourceURL(IntPtr document);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_Free")]
         public static extern void Free(IntPtr document);
 

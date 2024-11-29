@@ -13,6 +13,18 @@ RMLUI_CAPI void rml_ElementDocument_Hide(Rml::ElementDocument* document) {
     document->Hide();
 }
 
+RMLUI_CAPI void rml_ElementDocument_SetTitle(Rml::ElementDocument* document, const char* title) {
+    document->SetTitle(title);
+}
+
+RMLUI_CAPI const char* rml_ElementDocument_GetTitle(Rml::ElementDocument* document) {
+    return strdup(document->GetTitle().c_str());
+}
+
+RMLUI_CAPI const char* rml_ElementDocument_GetSourceURL(Rml::ElementDocument* document) {
+    return strdup(document->GetSourceURL().c_str());
+}
+
 RMLUI_CAPI Rml::ElementPtr* rml_ElementDocument_CreateElement(Rml::ElementDocument* document, const char* name) {
     return &document->CreateElement(name);
 }

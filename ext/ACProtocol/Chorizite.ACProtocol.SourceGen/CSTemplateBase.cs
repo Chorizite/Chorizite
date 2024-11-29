@@ -429,8 +429,10 @@ namespace Chorizite.ACProtocol.SourceGen {
                     return "reader.ReadByte()";
                 case "string":
                     return "reader.ReadString16L()";
-                case "WString":
+                case "String32L":
                     return "reader.ReadString32L()";
+                case "WString":
+                    return "reader.ReadWString()";
                 case "PackedWORD":
                     return "reader.ReadPackedWORD()";
                 case "DataID":

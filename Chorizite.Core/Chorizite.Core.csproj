@@ -48,12 +48,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Lua\LuaScripts\framework\AsyncTask.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Lua\LuaScripts\framework\System.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Lua\LuaScripts\init.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

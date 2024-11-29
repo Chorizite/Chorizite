@@ -3,7 +3,8 @@
 namespace Core.AC.Lib.Panels {
     public enum GamePanel {
         Logs,
-        Chat
+        Chat,
+        Tooltip
     }
 
     /// <summary>

@@ -98,8 +98,8 @@ namespace Chorizite.ACProtocol.Messages.C2S {
                     switch((int)BlobDispatchType) {
                         case 0x01:
                             RoomId = reader.ReadUInt32();
-                            DisplayName = reader.ReadString32L();
-                            Text = reader.ReadString32L();
+                            DisplayName = reader.ReadWString();
+                            Text = reader.ReadWString();
                             ExtraDataSize = reader.ReadUInt32();
                             SpeakerId = reader.ReadUInt32();
                             HResult = reader.ReadInt32();
@@ -114,7 +114,7 @@ namespace Chorizite.ACProtocol.Messages.C2S {
                             ResponseId = reader.ReadUInt32();
                             MethodId = reader.ReadUInt32();
                             RoomId = reader.ReadUInt32();
-                            Text = reader.ReadString32L();
+                            Text = reader.ReadWString();
                             ExtraDataSize = reader.ReadUInt32();
                             SpeakerId = reader.ReadUInt32();
                             HResult = reader.ReadInt32();

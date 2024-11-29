@@ -23,6 +23,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetInnerRml")]
         public static extern void SetInnerRml(IntPtr element, string rml);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetInnerRml")]
+        public static extern IntPtr GetInnerRml(IntPtr element);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_Focus")]
         public static extern bool Focus(IntPtr element);
 
@@ -82,5 +85,17 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetClass")]
         public static extern IntPtr SetClass(IntPtr element, string className, bool enable);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetParentNode")]
+        public static extern IntPtr GetParentNode(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_ReplaceChild")]
+        public static extern void ReplaceChild(IntPtr element, IntPtr elementToInsert, IntPtr elementToReplace);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_QuerySelector")]
+        public static extern IntPtr QuerySelector(IntPtr element, string selector);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_HasClass")]
+        public static extern bool HasClass(IntPtr element, string className);
     }
 }

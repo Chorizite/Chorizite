@@ -6,7 +6,7 @@
         position: absolute;
         top: 90px;
         left: 90px;
-        font-family: Palatino Linotype;
+        font-family: Tahoma;
       }
 
       .window {
@@ -49,11 +49,16 @@
         margin-right: 24px;
       }
     </style>
+    <script type="">
+      -- set the fake tabpanel #window-title el to the documents title
+      document:GetElementById("window-title"):SetInnerRml(document:GetTitle())
+      print("SET DOCUMENT TITLE:", document:GetTitle())
+    </script>
 	</head>
 	<body class="window">
   	<div id="title-bar">
       <handle move_target="#document">
-        <span id="title">Testing</span>
+        <span id="window-title">Testing</span>
         <div id="window-close"></div>
       </handle>
     </div>

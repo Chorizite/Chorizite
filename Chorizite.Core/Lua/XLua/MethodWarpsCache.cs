@@ -503,6 +503,7 @@ namespace XLua
                                 return LuaAPI.luaL_error(L, "invalid #" + (start_idx + 2) + ", needed:" + eventInfo.EventHandlerType);
                             }
                             _evtHandlerDelegates.Add(handlerDelegate);
+                            
                             switch (LuaAPI.lua_tostring(L, start_idx + 1))
                             {
                                 case "+":

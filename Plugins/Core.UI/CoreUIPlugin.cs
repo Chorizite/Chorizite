@@ -16,13 +16,24 @@ using System.IO;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 using Core.UI.Lib.Fonts;
-using XLua;
+using Chorizite.Core.Dats;
+using Cortex.Net.Api;
+using Core.UI.Lib.RmlUi.VDom;
+using System.Xml.Linq;
+using System.Linq;
+using Cortex.Net;
 
 namespace Core.UI {
     /// <summary>
     /// This is the main plugin class. When your plugin is loaded, Startup() is called, and when it's unloaded Shutdown() is called.
     /// </summary>
     public class CoreUIPlugin : IPluginCore, ISerializeState<UIState> {
+        internal static ILogger Log;
+        internal static Context? RmlContext;
+        internal readonly IChoriziteBackend Backend;
+        internal ScriptableDocumentInstancer ScriptableDocumentInstancer;
+        internal readonly IPluginManager PluginManager;
+
         private Dictionary<string, UIDataModel> _models = [];
         private readonly Dictionary<string, string> _gameScreenRmls = [];
         private readonly Dictionary<string, Panel> _gamePanelRmls = [];
@@ -34,18 +45,17 @@ namespace Core.UI {
         private bool _isDebugging;
         private UIState _state;
 
-        internal static ILogger Log;
-        internal readonly IChoriziteBackend Backend;
+        private readonly IDatReaderInterface _dat;
+        private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
+        private RenderObjElementInstancer _renderObjInstancer;
+        private bool _needsViewportUpdate;
+        private Panel? _panel;
+
+        public PanelManager PanelManager { get; private set; }
 
         public FontManager FontManager { get; }
 
-        internal readonly IPluginManager PluginManager;
-        private ScriptableDocumentInstancer _scriptableDocumentInstancer;
-        private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
-        internal static Context? RmlContext;
-        private bool _needsViewportUpdate;
-
-        public PanelManager PanelManager { get; private set; }
+        public Context? Context => RmlContext;
 
         /// <summary>
         /// The current screen
@@ -70,12 +80,13 @@ namespace Core.UI {
         }
         private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, ILogger log) : base(manifest) {
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, IDatReaderInterface dat, ILogger log) : base(manifest) {
             Instance = this;
             Log = log;
             PluginManager = pluginManager;
             Backend = ChoriziteBackend;
             FontManager = new FontManager(Log);
+            _dat = dat;
 
             var rmlUINativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
             Log?.LogTrace($"Manually pre-loading {rmlUINativePath}");
@@ -88,8 +99,98 @@ namespace Core.UI {
 
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
             Backend.Renderer.OnGraphicsPostReset += Renderer_OnGraphicsPostReset;
-            
-            RegisterPanel("Breakout", Path.Combine(AssemblyDirectory, "assets", "panels", "Breakout.rml"));
+
+            _panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
+
+            _panel.OnAfterReload += Panel_OnAfterReload;
+
+            MakeReactive();
+        }
+
+        private void Panel_OnAfterReload(object? sender, EventArgs e) {
+            MakeReactive();
+        }
+
+        // Observable state class
+        [Observable]
+        public class AppState {
+            public string Title { get; set; }
+
+            public ICollection<TodoItem> Todos { get; set; }
+
+            public AppState() {
+
+            }
+
+            [Action]
+            public void AddTodo(string text) {
+                Log.LogDebug($"Adding todo: {text}");
+                Todos.Add(new TodoItem { Text = text, IsCompleted = false });
+            }
+
+            [Action]
+            public void ToggleTodo(TodoItem todo) {
+                todo.IsCompleted = !todo.IsCompleted;
+            }
+
+            [Action]
+            public void RemoveTodo(TodoItem todo) {
+                Todos.Remove(todo);
+            }
+        }
+
+        // Observable Todo Item
+        [Observable]
+        public class TodoItem {
+            public string Text { get; set; }
+
+            public bool IsCompleted { get; set; }
+        }
+
+        private void MakeReactive() {
+            try {
+                var doc = _panel?.ScriptableDocument;
+                if (doc is null) return;
+
+                // Create a reactive state
+                var state = new AppState {
+                    Title = "My Reactive Todo List"
+                };
+
+                // Initial todos
+                state.AddTodo("Learn Cortex.Net");
+                state.AddTodo("Build a Virtual DOM");
+
+                var TodoApp = () => new VirtualNode("div", new() {
+                        { "class", "todo-app" }
+                    }, [
+                    // Title
+                    new VirtualNode("h1", text: state.Title ?? "Todo List"),
+                
+                    // Todo list
+                    new VirtualNode("ul", children: state.Todos.Select(todo =>
+                        new VirtualNode("li",
+                            new() {
+                                { "class", todo.IsCompleted ? "completed" : "" }
+                            },
+                            text: todo.Text)
+                    ).ToList()),
+
+                    // Add todo button (for demonstration)
+                    new VirtualNode("button",
+                        new() {
+                            { "onclick", new Action<Event>((evt) => SharedState.GlobalState.RunInAction(() => state.AddTodo("New Todo"))) }
+                        },
+                        text: "Add Todo")
+                ]);
+
+                doc.Mount("#app", () => TodoApp());
+
+                Log.LogWarning("Reactive state manager initialized");
+            }
+            catch (Exception e) {
+                Log.LogError(e, "Failed to create reactive state manager");
+            }
         }
 
         private void Renderer_OnGraphicsPostReset(object? sender, EventArgs e) {
@@ -131,7 +232,7 @@ namespace Core.UI {
                 Log?.LogError($"Could not find RML file {rmlFilePath}");
                 return false;
             }
-                
+
             // TODO: allow multiple screens
             if (_gameScreenRmls.ContainsKey(name)) {
                 _gameScreenRmls[name] = rmlFilePath;
@@ -179,10 +280,26 @@ namespace Core.UI {
         }
 
 
-        public bool RegisterPanel(string name, string rmlFilePath) {
+        public bool RegisterPanelFromString(string name, string rmlContents) {
+            UnregisterPanel(name, null);
+
+            var panel = PanelManager.CreatePanelFromString(name, rmlContents);
+
+            // TODO: allow multiple panels
+            if (_gamePanelRmls.ContainsKey(name)) {
+                _gamePanelRmls[name] = panel;
+            }
+            else {
+                _gamePanelRmls.Add(name, panel);
+            }
+
+            return true;
+        }
+
+        public Panel? RegisterPanel(string name, string rmlFilePath) {
             if (!File.Exists(rmlFilePath)) {
                 Log?.LogError($"Could not find RML file {rmlFilePath}");
-                return false;
+                return null;
             }
 
             UnregisterPanel(name, rmlFilePath);
@@ -197,14 +314,11 @@ namespace Core.UI {
                 _gamePanelRmls.Add(name, panel);
             }
 
-            return true;
+            return panel;
         }
 
-        public void UnregisterPanel(string name, string rmlFilePath) {
-            if (_gamePanelRmls.TryGetValue(name, out var panel) && panel?.File == rmlFilePath) {
-                _gamePanelRmls.Remove(name);
-            }
-
+        public void UnregisterPanel(string name, string? rmlFilePath) {
+            _gamePanelRmls.Remove(name);
             PanelManager.DestroyPanel(name);
         }
 
@@ -213,12 +327,12 @@ namespace Core.UI {
         }
 
         public void TogglePanelVisibility(string name, bool visible) {
-            
+
         }
 
         #endregion
 
-        private void ToggleDebugger() {
+        internal void ToggleDebugger() {
             if (!_didInitRml || RmlContext is null) return;
 
             if (_isDebugging) {
@@ -260,8 +374,9 @@ namespace Core.UI {
                         .AddParser("string", "none")
                         .GetId();
 
-                    _scriptableDocumentInstancer = new ScriptableDocumentInstancer(Backend, Log);
-                    _scriptableEventListenerInstancer = new ScriptableEventListenerInstancer(_scriptableDocumentInstancer, Log);
+                    ScriptableDocumentInstancer = new ScriptableDocumentInstancer(Backend, Log);
+                    _scriptableEventListenerInstancer = new ScriptableEventListenerInstancer(ScriptableDocumentInstancer, Log);
+                    _renderObjInstancer = new RenderObjElementInstancer(Backend, _dat, Log);
 
                     RmlContext = Rml.CreateContext("viewport", size);
 
@@ -272,6 +387,11 @@ namespace Core.UI {
                     _rmlInput = new RmlInputManager(Backend.Input, RmlContext, Log);
                     PanelManager = new PanelManager(RmlContext, _rmlSystemInterface, Backend.Renderer, Log);
                     _themePlugin = new ThemePlugin(PanelManager, Backend, Log);
+
+
+                    _didInitRml = true;
+                    ToggleDebugger();
+
                     Rml.RegisterPlugin(_themePlugin);
 
                     LoadDefaultFonts();
@@ -280,8 +400,6 @@ namespace Core.UI {
                     foreach (var fontFile in fontFiles) {
                         Rml.LoadFontFace(fontFile);
                     }
-
-                    _didInitRml = true;
                 }
                 else {
                     throw new Exception("Unable to initialize RmlUi");
@@ -322,6 +440,8 @@ namespace Core.UI {
                     _needsViewportUpdate = false;
                 }
                 PanelManager?.Update();
+                ScriptableDocumentInstancer?.Update();
+                _renderObjInstancer?.Update();
                 RmlContext?.Update();
                 RmlContext?.Render();
             }
@@ -346,10 +466,11 @@ namespace Core.UI {
             if (_didInitRml) {
                 Rml.Shutdown();
             }
-            _scriptableDocumentInstancer?.Dispose();
+            ScriptableDocumentInstancer?.Dispose();
             _scriptableEventListenerInstancer?.Dispose();
+            _renderObjInstancer?.Dispose();
             _rmlRenderInterface?.Dispose();
-            _rmlSystemInterface?.Dispose(); 
+            _rmlSystemInterface?.Dispose();
 
             _didInitRml = false;
         }

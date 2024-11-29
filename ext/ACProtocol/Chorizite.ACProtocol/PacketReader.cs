@@ -119,9 +119,6 @@ namespace Chorizite.ACProtocol {
                     if (msg != null) {
                         messages.Add(msg);
                     }
-                    else {
-                        _log?.LogError($"Failed to process message: {FormatBytes(frag.Data.Skip((int)messageReader.BaseStream.Position).ToArray())}");
-                    }
                 }
                 return frag;
             }

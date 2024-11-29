@@ -71,7 +71,7 @@ namespace Chorizite.ACProtocol.Types {
                             FileId = reader.ReadUInt32();
                             break;
                         case 0x01:
-                            Value_a = reader.ReadString32L();
+                            Value_a = reader.ReadWString();
                             break;
                     }
                     Unknown_1b = reader.ReadUInt32();

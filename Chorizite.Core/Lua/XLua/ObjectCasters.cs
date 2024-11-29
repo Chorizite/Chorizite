@@ -243,6 +243,7 @@ namespace XLua
             //special type
             castersMap[typeof(LuaTable)] = getLuaTable;
             castersMap[typeof(LuaFunction)] = getLuaFunction;
+            castersMap[typeof(LuaThread)] = getLuaThread;
         }
 
         private static object charCaster(RealStatePtr L, int idx, object target)
@@ -338,6 +339,8 @@ namespace XLua
             LuaTypes type = (LuaTypes)LuaAPI.lua_type(L, idx);
             switch (type)
             {
+                case LuaTypes.LUA_TTHREAD:
+                    return getLuaThread(L, idx, null);
                 case LuaTypes.LUA_TNUMBER:
                     {
                         if (LuaAPI.lua_isint64(L, idx))
@@ -405,19 +408,24 @@ namespace XLua
             return new LuaTable(LuaAPI.luaL_ref(L), translator.luaEnv);
         }
 
-        private object getLuaFunction(RealStatePtr L, int idx, object target)
-        {
-            if (LuaAPI.lua_type(L, idx) == LuaTypes.LUA_TUSERDATA)
-            {
+        private object getLuaFunction(RealStatePtr L, int idx, object target) {
+            if (LuaAPI.lua_type(L, idx) == LuaTypes.LUA_TUSERDATA) {
                 object obj = translator.SafeGetCSObj(L, idx);
                 return (obj != null && obj is LuaFunction) ? obj : null;
             }
-            if (!LuaAPI.lua_isfunction(L, idx))
-            {
+            if (!LuaAPI.lua_isfunction(L, idx)) {
                 return null;
             }
             LuaAPI.lua_pushvalue(L, idx);
             return new LuaFunction(LuaAPI.luaL_ref(L), translator.luaEnv);
+        }
+
+        private object getLuaThread(RealStatePtr L, int idx, object target) {
+            if (LuaAPI.lua_type(L, idx) != LuaTypes.LUA_TTHREAD) {
+                return null;
+            }
+            LuaAPI.lua_pushvalue(L, idx);
+            return new LuaThread(LuaAPI.luaL_ref(L), translator.luaEnv);
         }
 
         public void AddCaster(Type type, ObjectCast oc)

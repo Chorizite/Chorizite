@@ -1,0 +1,26 @@
+﻿<rml>
+	<head>
+    <title>Tooltip</title>
+	<style>
+      body {
+        font-size: 14px;
+        font-family: Tahoma;
+        padding: 4px;
+        background-color: #000000dd;
+        border: 1px white;
+        left: -10000px;
+        top: -10000px;
+      }
+      .house {
+        decorator: image(dat://0x060014F3);
+        width: 64px;
+        height: 64px;
+      }
+    </style>
+	</head>
+	<body data-model="Tooltip">
+    <div class="house"></div>
+    <div>Text: {{ Text }}</div>
+    <div>Id: {{ ObjectId }}</div>
+	</body>
+</rml>
