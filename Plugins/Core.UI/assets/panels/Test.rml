@@ -1,6 +1,6 @@
 <rml>
 	<head>
-    <title>Testing</title>
+    <title>TODO</title>
 		<link type="text/template" href="../templates/tabpanel.rml" />
 		<style>
       body {
@@ -11,6 +11,10 @@
       .inner {
         padding: 4px;
         background-color: #000000dd;
+      }
+
+      body h1 {
+        margin: 5px;
       }
       
       div#actions {
@@ -28,10 +32,33 @@
       }
 
       li {
-        display: block;
+        display: flex;
       }
 
-      div form {
+      li input {
+        width: 30px;
+      }
+
+      li span {
+        flex: 100%;
+      }
+
+      li.completed {
+        color: #666;
+      }
+
+      li button {
+        margin-top: -4px;
+        height: 16px;
+        width: 8px;
+        opacity: 0;
+      }
+      
+      li:hover button {
+        opacity: 1;
+      }
+
+      .actions {
         padding: 6px;
         display: flex;
       }

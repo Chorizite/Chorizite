@@ -107,7 +107,6 @@
         font-size: 22px;
         font-weight: bold;
         display: inline-block;
-        click-sound: 0x0A0003B3;
     }
     </style>
   </head>

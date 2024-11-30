@@ -4,84 +4,90 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using static RmlUiNet.Native.VariableDefinition;
 
 namespace Core.UI.Lib.RmlUi.VDom {
     // Virtual DOM diffing and patching
     public class VirtualDom {
-        // Diff two virtual DOM trees and generate a list of patch operations
+        // Diff two virtual DOM trees and generate a list of changed nodes
         public static List<PatchOperation> Diff(VirtualNode? oldTree, VirtualNode newTree) {
             var patches = new List<PatchOperation>();
 
             if (oldTree == null) {
                 // If old tree is null, replace entire tree
-                patches.Add(new PatchOperation(newTree.Id) {
+                var patch = new PatchOperation() {
                     Type = PatchOperation.OperationType.Replace,
                     NewNode = newTree,
-                });
+                };
+                patches.Add(patch);
                 return patches;
             }
 
             // Recursive diff
-            DiffRecursive(oldTree, newTree, patches, 0);
+            DiffRecursive(oldTree, newTree, patches);
 
             return patches;
         }
 
-        private static void DiffRecursive(VirtualNode oldNode, VirtualNode newNode, List<PatchOperation> patches, int index) {
+        private static void DiffRecursive(VirtualNode oldNode, VirtualNode newNode, List<PatchOperation> patches) {
+            newNode.Element = oldNode.Element;
             // If nodes are completely different, replace
             if (!AreNodesCompatible(oldNode, newNode)) {
-                patches.Add(new PatchOperation(oldNode.Id) {
+                patches.Add(new PatchOperation() {
                     Type = PatchOperation.OperationType.Replace,
                     NewNode = newNode,
-                    Index = index
+                    OldNode = oldNode
                 });
                 return;
             }
 
             // Check for prop changes
             if (!ArePropsEqual(oldNode.Props, newNode.Props)) {
-                patches.Add(new PatchOperation(oldNode.Id) {
+                var oldProps = string.Join(",", oldNode.Props.Keys.Select(k => $"{k}:{oldNode.Props[k]}").ToArray());
+                var newProps = string.Join(",", newNode.Props.Keys.Select(k => $"{k}:{newNode.Props[k]}").ToArray());
+                patches.Add(new PatchOperation() {
                     Type = PatchOperation.OperationType.UpdateProps,
                     NewNode = newNode,
-                    Index = index
+                    OldNode = oldNode
                 });
             }
 
             // Check for text changes
             if (oldNode.Text != newNode.Text) {
-                patches.Add(new PatchOperation(oldNode.Id) {
+                patches.Add(new PatchOperation() {
                     Type = PatchOperation.OperationType.UpdateText,
                     NewNode = newNode,
-                    Index = index
+                    OldNode = oldNode
                 });
             }
 
-            // Recursively diff children
-            int childIndex = 0;
-            int maxChildren = Math.Max(oldNode.Children.Count, newNode.Children.Count);
+            var oldNodeChildren = oldNode.Children.ToList();
+            var newNodeChildren = newNode.Children.ToList();
 
-            for (int i = 0; i < maxChildren; i++) {
-                if (i >= oldNode.Children.Count) {
-                    // New child added
-                    patches.Add(new PatchOperation(oldNode.Id) {
-                        Type = PatchOperation.OperationType.Add,
-                        NewNode = newNode.Children.ElementAt(i),
-                        Index = index
-                    });
-                }
-                else if (i >= newNode.Children.Count) {
-                    // Child removed
-                    patches.Add(new PatchOperation(oldNode.Children.ElementAt(i).Id) {
-                        Type = PatchOperation.OperationType.Remove,
-                        Index = index
-                    });
-                }
-                else {
-                    // Recursively diff children
-                    DiffRecursive(oldNode.Children.ElementAt(i), newNode.Children.ElementAt(i), patches, childIndex);
-                }
+            var childCount = Math.Min(oldNodeChildren.Count, newNodeChildren.Count);
 
-                childIndex++;
+            foreach (var i in Enumerable.Range(0, childCount)) {
+                DiffRecursive(oldNodeChildren[i], newNodeChildren[i], patches);
+            }
+
+            // Remove children that were in the old node but not in the new node
+            foreach (var removedChild in oldNodeChildren.Skip(childCount)) {
+                patches.Add(new PatchOperation() {
+                    Type = PatchOperation.OperationType.Remove,
+                    NewNode = null,
+                    OldNode = removedChild,
+                    Parent = oldNode
+                });
+            }
+
+            // Add children that are in the new node but not in the old node
+            foreach (var addedChild in newNodeChildren.Skip(childCount)) {
+                patches.Add(new PatchOperation() {
+                    Type = PatchOperation.OperationType.Add,
+                    NewNode = addedChild,
+                    OldNode = null,
+                    Parent = oldNode
+                });
             }
         }
 
@@ -95,111 +101,75 @@ namespace Core.UI.Lib.RmlUi.VDom {
             if (oldProps == null || newProps == null) return false;
 
             return oldProps.Count == newProps.Count &&
-                   oldProps.Keys.All(k => newProps.ContainsKey(k) && oldProps[k].Equals(newProps[k]));
+                   oldProps.Keys.All(k => {
+                       if (string.IsNullOrEmpty(k)) return false;
+                       if (newProps is null || !newProps.ContainsKey(k)) return false;
+
+                       return oldProps[k]?.Equals(newProps[k]) == true;
+                   });
         }
 
-        public static void Patch(Element el, VirtualNode node, List<PatchOperation> patches) {
-            if (patches == null || patches.Count == 0)
-                return;
+        public static void Patch(PatchOperation patch) {
+            var newNode = patch.NewNode;
+            var oldNode = patch.OldNode;
+            var parentNode = patch.Parent;
 
-            // Apply patches
-            ApplyPatchesRecursive(el, node, patches);
-        }
+            CoreUIPlugin.Log.LogDebug($"Patch[{patch.Type}] Old:{oldNode?.ToString()} New:{newNode?.ToString()}");
 
-        private static void ApplyPatchesRecursive(Element el, VirtualNode node, List<PatchOperation> patches) {
-            // Find patches specifically for this node
-            var nodePatches = patches
-                .Where(p => IsNodeMatchForPatch(node, p))
-                .ToList();
-            CoreUIPlugin.Log.LogDebug($"Found {nodePatches.Count} patches for node {node?.Id}({node?.Type}) el({el?.TagName}) -> {node?.Element?.TagName}");
+            switch (patch.Type) {
+                case PatchOperation.OperationType.Replace:
+                    newNode.UpdateElement(oldNode.Element.GetParentNode().AppendChildTag(newNode.Type));
+                    newNode.Element.GetParentNode().ReplaceChild(newNode.Element, oldNode.Element);
+                    break;
 
-            // Apply node-level patches
-            foreach (var patch in nodePatches) {
-                switch (patch.Type) {
-                    case PatchOperation.OperationType.Replace:
-                        node.Element.GetParentNode().ReplaceChild(patch.NewNode.Element, el);
-                        node.Parent.Children[node.GetIndexInParent()] = patch.NewNode;
-                        break;
-
-                    case PatchOperation.OperationType.UpdateProps:
-                        if (patch.NewNode?.Props is not null) {
-                            var toUpdate = new Dictionary<string, object>(patch.NewNode.Props);
-                            var updated = new List<string>();
-                            foreach (var prop in toUpdate) {
-                                updated.Add(prop.Key);
-                                CoreUIPlugin.Log.LogDebug($"UNHANDLED Updating property {prop.Key} to {prop.Value}");
-                                // TODO: handle actions
-                                if (prop.Value is Action<Event> action) {
-                                    el.AddEventListener(prop.Key, action);
+                case PatchOperation.OperationType.UpdateProps:
+                    if (newNode?.Props is not null) {
+                        var toUpdate = new Dictionary<string, object>(newNode.Props);
+                        var updated = new List<string>();
+                        foreach (var prop in toUpdate) {
+                            updated.Add(prop.Key);
+                            if (prop.Value is Action<Event> action) {
+                                var evtName = (prop.Key.StartsWith("on") ? prop.Key.Substring(2) : prop.Key).ToLower();
+                                if (oldNode.Props?.TryGetValue(prop.Key, out var oldAction) == true && oldAction is Action<Event> oldActionEvt) {
+                                    CoreUIPlugin.Log.LogDebug($"\t Removing event listener: {evtName} on {newNode.Type}({newNode.Text})");
+                                    oldNode.Element.RemoveEventListener(evtName, oldActionEvt);
+                                }
+                                newNode.Element.AddEventListener(evtName, action);
+                                CoreUIPlugin.Log.LogDebug($"\t Adding event listener: {evtName} on {newNode.Type}({newNode.Text})");
+                            }
+                            else {
+                                var propValue = prop.Value?.ToString();
+                                if (!string.IsNullOrEmpty(propValue)) {
+                                    if (oldNode.Props?.TryGetValue(prop.Key, out var oldPropValue) == true && oldPropValue?.ToString() == propValue) continue;
+                                    newNode.Element.SetAttribute(prop.Key, propValue);
                                 }
                                 else {
-                                    var propValue = prop.Value?.ToString();
-                                    if (!string.IsNullOrEmpty(propValue)) {
-                                        if (node.Props.ContainsKey(prop.Key)) {
-                                            node.Props[prop.Key] = propValue;
-                                        }
-                                        else {
-                                            node.Props.Add(prop.Key, propValue);
-                                        }
-                                        el.SetAttribute(prop.Key, propValue);
-                                    }
-                                }
-                            }
-
-                            if (node?.Props?.Keys is not null) {
-                                // Remove properties that no longer exist
-                                foreach (var prop in node.Props.Keys.Except(updated).ToArray()) {
-                                    node.Props.Remove(prop);
-                                    CoreUIPlugin.Log.LogDebug($"UNHANDLED Removing property {prop}");
-                                    //el.SetAttributeValue(prop, null);
+                                    newNode.Element.RemoveAttribute(prop.Key);
                                 }
                             }
                         }
-                        break;
 
-                    case PatchOperation.OperationType.UpdateText:
-                        CoreUIPlugin.Log.LogDebug($"UNHANDLED UpdateText {patch?.NewNode?.Text} on {el?.TagName}");
-                        //el.SetInnerRml(patch.NewNode.Text);
-                        //el.Value = patch.NewNode.Text;
-                        break;
+                        if (oldNode.Props?.Keys is not null) {
+                            // Remove properties that no longer exist
+                            foreach (var prop in oldNode.Props.Keys.Except(updated).ToArray()) {
+                                newNode.Element.RemoveAttribute(prop);
+                            }
+                        }
+                    }
+                    break;
 
-                    case PatchOperation.OperationType.Add:
-                        node.Children.Add(patch.NewNode);
-                        patch.NewNode.UpdateElement(el.AppendChildTag(patch.NewNode.Type));
-                        break;
+                case PatchOperation.OperationType.UpdateText:
+                    newNode.Element.SetInnerRml(newNode.Text);
+                    break;
 
-                    case PatchOperation.OperationType.Remove:
-                        CoreUIPlugin.Log.LogDebug($"UNHANDLED Removing ");
-                        int removeIndex = node.GetIndexInParent();
-                        //el.Descendants().ElementAt(removeIndex).Remove();
-                        break;
-                }
+                case PatchOperation.OperationType.Add:
+                    newNode.UpdateElement(parentNode.Element.AppendChildTag(patch.NewNode.Type));
+                    break;
+
+                case PatchOperation.OperationType.Remove:
+                    parentNode.Element.RemoveChild(oldNode.Element);
+                    break;
             }
-
-            // Recursively patch children
-            for (int i = 0; i < node?.Children.Count; i++) {
-                try {
-                    ApplyPatchesRecursive(node.Children.ElementAt(i).Element, node.Children.ElementAt(i), patches);
-                }
-                catch(Exception ex) {
-                    CoreUIPlugin.Log.LogDebug(ex.ToString());
-                }
-            }
-        }
-
-        // Helper method to determine if a patch applies to a specific node
-        private static bool IsNodeMatchForPatch(VirtualNode node, PatchOperation patch) {
-            return node?.Id == patch.NodeId || (node is null && patch.NodeId == 0);
-        }
-
-        // Helper method to find an element at a specific index
-        private static XElement FindElementAtIndex(XElement root, int index) {
-            if (index == 0) return root;
-
-            var flattenedElements = root.Descendants().ToList();
-            return index > 0 && index <= flattenedElements.Count
-                ? flattenedElements[index - 1]
-                : null;
         }
 
         // Deep clone a virtual node
@@ -209,23 +179,6 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 new Dictionary<string, object>(node.Props),
                 node.Children.Select(CloneNode).ToList(),
                 node.Text
-            );
-        }
-
-        // Helper method to convert XElement to VirtualNode
-        public static VirtualNode VNodeFromXElement(XElement element) {
-            var props = element.Attributes()
-                .ToDictionary(attr => attr.Name.LocalName, attr => (object)attr.Value);
-
-            var children = element.Elements()
-                .Select(VNodeFromXElement)
-                .ToList();
-
-            return new VirtualNode(
-                element.Name.LocalName,
-                props,
-                children,
-                element.Value
             );
         }
     }

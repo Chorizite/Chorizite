@@ -1,3 +1,4 @@
+using RmlUiNet.Native;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Tracing;
@@ -117,11 +118,15 @@ namespace RmlUiNet
         void ReplaceChild(Element elementToinsert, Element elementToReplace);
         Element? QuerySelector(string selector);
         bool HasClass(string className);
+        void RemoveChild(Element child);
+        void RemoveEventListener(string name, Action<Event> action);
+        void RemoveAttribute(string prop);
     }
 
     public abstract class Element<T> : RmlBase<T>, Element
         where T : class
     {
+        private ElementEventListener _listener;
         #region Properties
 
         public string TagName => Marshal.PtrToStringAnsi(Native.Element.GetTagName(NativePtr));
@@ -134,7 +139,6 @@ namespace RmlUiNet
                 var elementType = Marshal.PtrToStringAnsi(
                     Native.Element.GetOwnerDocument(NativePtr, out var elementPtr)
                 );
-
                 return Util.GetOrThrowElementByTypeName(elementPtr, elementType) as ElementDocument;
             }
         }
@@ -169,13 +173,15 @@ namespace RmlUiNet
             internal Dictionary<string, List<Action<Event>>> _handlers = [];
             private Element _owningElement;
 
-            public ElementEventListener(Element ownerDocument) : base()
+            public ElementEventListener(Element owningElement) : base()
             {
-                _owningElement = ownerDocument;
+                _owningElement = owningElement;
             }
 
-            public void AddHandler(string eventName, Action<Event> handler) {
-                if (!_handlers.TryGetValue(eventName.ToLower(), out var handlers)) {
+            public void AddHandler(string eventName, Action<Event> handler)
+            {
+                if (!_handlers.TryGetValue(eventName.ToLower(), out var handlers))
+                {
                     handlers = new();
                     _handlers[eventName.ToLower()] = handlers;
                     _owningElement.AddEventListener(eventName.ToLower(), this);
@@ -193,8 +199,18 @@ namespace RmlUiNet
             public override void ProcessEvent(Event ev)
             {
                 if (_handlers.TryGetValue(ev.Id.ToString().ToLower(), out var handlers)) {
-                    handlers.ForEach(handler => handler.Invoke(ev));
+                    handlers.ToList().ForEach(handler => handler.Invoke(ev));
                 }
+            }
+
+            public override void OnAttach(Element element)
+            {
+                base.OnAttach(element);
+            }
+
+            public override void OnDetach(Element element)
+            {
+                base.OnDetach(element);
             }
 
             public override void Dispose()
@@ -208,13 +224,15 @@ namespace RmlUiNet
             }
         }
 
-        public void AddEventListener(string name, Action<Event> action) {
-            if (!OwnerDocument._elementEventListeners.TryGetValue(this, out var eventListener))
-            {
-                eventListener = new(this);
-                OwnerDocument._elementEventListeners.Add(this, eventListener);
-            }
-            eventListener.AddHandler(name.ToLower(), action);
+        public void AddEventListener(string name, Action<Event> action)
+        {
+            _listener ??= new ElementEventListener(this);
+            _listener.AddHandler(name.ToLower(), action);
+        }
+
+        public void RemoveEventListener(string name, Action<Event> action)
+        {
+            _listener?.RemoveHandler(name.ToLower(), action);
         }
 
         /// <summary>
@@ -280,6 +298,10 @@ namespace RmlUiNet
             var typePtr = Native.Element.GetElementTypeName(nativeElement);
             var elementType = Marshal.PtrToStringAnsi(typePtr);
             return Util.GetOrThrowElementByTypeName(nativeElement, elementType);
+        }
+
+        public void RemoveChild(Element child) { 
+            Native.Element.RemoveChild(NativePtr, child.NativePtr);
         }
 
         /// <summary>
@@ -435,6 +457,11 @@ namespace RmlUiNet
             }
 
             return Util.GetOrThrowElementByTypeName(elementPtr, elementType);
+        }
+
+        public void RemoveAttribute(string prop)
+        {
+            Native.Element.RemoveAttribute(NativePtr, prop);
         }
 
         public override void Dispose()

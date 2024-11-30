@@ -18,10 +18,10 @@ namespace Core.UI.Lib.RmlUi.VDom {
         public OperationType Type { get; set; }
         public VirtualNode? NewNode { get; set; }
         public int Index { get; set; }
-        public uint NodeId { get; internal set; }
+        public VirtualNode Parent { get; internal set; }
+        public VirtualNode OldNode { get; internal set; }
 
-        public PatchOperation(uint nodeId) {
-            NodeId = nodeId;
+        public PatchOperation() {
         }
     }
 }

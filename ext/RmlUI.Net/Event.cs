@@ -22,26 +22,26 @@ namespace RmlUiNet {
         /// <summary>
         /// The current element in the propagation.
         /// </summary>
-        public Element CurrentElement {
+        public Element? CurrentElement {
             get {
                 var elementType = Marshal.PtrToStringAnsi(
                     Native.Event.GetCurrentElement(NativePtr, out var elementPtr)
                 );
 
-                return Util.GetOrThrowElementByTypeName(elementPtr, elementType);
+                return Util.GetElementByTypeName(elementPtr, elementType);
             }
         }
 
         /// <summary>
         /// The target element of this event.
         /// </summary>
-        public Element TargetElement {
+        public Element? TargetElement {
             get {
                 var elementType = Marshal.PtrToStringAnsi(
                     Native.Event.GetTargetElement(NativePtr, out var elementPtr)
                 );
 
-                return Util.GetOrThrowElementByTypeName(elementPtr, elementType);
+                return Util.GetElementByTypeName(elementPtr, elementType);
             }
         }
 

@@ -22,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" ExcludeAssets="runtime" />
     <PackageReference Include="Cortex.Net" Version="0.4.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" ExcludeAssets="runtime" />
     <PackageReference Include="NSIS-Tool" Version="3.10.0">
       <PrivateAssets>all</PrivateAssets>

@@ -282,6 +282,7 @@ button {
 	margin: 0px 2px;
 	text-align: center;
 	decorator: ninepatch(button-primary, button-primary-inner);
+  click-sound: 0x0A0003B3;
 }
 
 button:hover {
@@ -335,11 +336,11 @@ button.small[disabled] {
 input.radio,
 input.checkbox
 {
-	width: 24dp;
-	height: 24dp;
-	vertical-align: -12dp;
-	margin: 2px;
 	display: inline-block;
+	width: 30dp;
+  padding: 0;
+  margin: 0;
+}
 }
 
 input.radio

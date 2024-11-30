@@ -8,8 +8,6 @@ namespace RmlUiNet
         private bool _isCustomElement;
         private Native.ElementDocument.OnLoadInlineScript? _onLoadInlineScript;
 
-        internal Dictionary<Element, ElementEventListener> _elementEventListeners = [];
-
         #region Properties
 
         #endregion
@@ -116,12 +114,6 @@ namespace RmlUiNet
 
         public override void Dispose()
         {
-            var listeners = _elementEventListeners.ToArray();
-            foreach (var kv in listeners)
-            {
-                kv.Value.Dispose();
-            }
-            _elementEventListeners.Clear();
             if (_isCustomElement)
             {
                 Native.ElementDocument.Free(NativePtr);

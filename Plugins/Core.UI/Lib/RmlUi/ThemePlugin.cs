@@ -97,7 +97,6 @@ namespace Core.UI.Lib.RmlUi {
         }
 
         public override void OnDocumentLoad(ElementDocument document) {
-            _log.LogDebug($"OnDocumentLoad FROM PLUGIN: {document.GetSourceURL()}");
             _documents.TryAdd(document.NativePtr, document);
             document.AddStyleSheetContainer(_styleSheetContainer);
             base.OnDocumentLoad(document);

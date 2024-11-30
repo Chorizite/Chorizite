@@ -99,7 +99,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
             _scripts.Add(new ScriptContext(context, source_path, source_line));
         }
 
-        public void Mount(string selector, Func<VirtualNode> virtualNode) {
+        public void Mount(Func<VirtualNode> virtualNode, string selector) {
             var el = QuerySelector(selector) ?? throw new Exception($"Could not find element with selector '{selector}' to mount to");
             if (virtualNode is null) throw new ArgumentNullException(nameof(virtualNode));
 
@@ -117,16 +117,16 @@ namespace Core.UI.Lib.RmlUi.Elements {
                         var patches = VirtualDom.Diff(currentVDom, newVDom);
                         if (patches != null && patches.Count > 0) {
                             foreach (var patch in patches) {
-                                CoreUIPlugin.Log.LogDebug($"\t Patch: {patch.NodeId} {patch.Type}");
+                                VirtualDom.Patch(patch);
                             }
-                            VirtualDom.Patch(currentVDom.Element, currentVDom, patches);
                         }
+                        currentVDom = newVDom;
                     }
                 }
                 catch (Exception e) {
                     CoreUIPlugin.Log.LogError(e, "Failed to patch ui from state");
                 }
-                CoreUIPlugin.Log.LogWarning($"\n{el.GetInnerRml()}");
+                CoreUIPlugin.Log.LogWarning($"\n{el.GetInnerRml()}\n\n");
             });
         }
 

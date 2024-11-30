@@ -174,6 +174,10 @@ RMLUI_CAPI Rml::Element* rml_Element_GetPreviousSibling(Rml::Element *element) {
     return element->GetPreviousSibling();
 }
 
+RMLUI_CAPI void rml_Element_RemoveChild(Rml::Element *element, Rml::Element *element_to_remove) {
+    element->RemoveChild(element_to_remove);
+}
+
 RMLUI_CAPI float rml_Element_GetScrollHeight(Rml::Element *element) {
     return element->GetScrollHeight();
 }
@@ -253,6 +257,23 @@ RMLUI_CAPI bool rml_Element_Matches(Rml::Element *element, const char* selector)
 RMLUI_CAPI void rml_Element_RemoveAttribute(Rml::Element *element, const char* attr) {
 	element->RemoveAttribute(attr);
 }
+
+RMLUI_CAPI void rml_Element_SetInnerText(Rml::Element *element, const char* text) {
+    /*
+    const int num_children = element->GetNumChildren();
+
+	for (int i = 0; i < num_children; i++)
+	{
+		Rml::Element* child = element->GetChild(i);
+		if (child->GetTagName() == "#text") {
+            child->GetParentNode()->RemoveChild(child);
+        }
+    }
+
+    element->GetOwnerDocument()->CreateElement("#text");
+    */
+}
+
 RMLUI_CAPI void rml_Element_ScrollIntoView(Rml::Element *element) {
 	element->ScrollIntoView();
 }

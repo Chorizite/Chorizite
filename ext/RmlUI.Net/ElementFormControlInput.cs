@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace RmlUiNet
 {
@@ -15,6 +16,16 @@ namespace RmlUiNet
         {
             return GetOrCreateCache(ptr, ptr => new ElementFormControlInput(ptr, false));
         }
+
+        public string GetValue()
+        {
+            var strPtr = Native.ElementFormControlInput.GetValue(NativePtr);
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue ?? "";
+        }
+
+        public void SetValue(string value) => Native.ElementFormControlInput.SetValue(NativePtr, value);
 
         #endregion
     }

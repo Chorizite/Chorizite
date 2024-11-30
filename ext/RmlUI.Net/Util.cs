@@ -43,7 +43,7 @@ namespace RmlUiNet
             var element = GetElementByTypeName(elementPtr, elementType);
 
             if (null == element) {
-                throw new UnknownElementTypeException(elementType);
+                throw new Exception(elementType);
             }
 
             return element;
