@@ -10,14 +10,13 @@ using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core.Render;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chorizite.Core {
     internal static class ChoriziteStatics {

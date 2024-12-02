@@ -22,6 +22,8 @@ using Core.UI.Lib.RmlUi.VDom;
 using System.Xml.Linq;
 using System.Linq;
 using Cortex.Net;
+using Chorizite.Core.Render;
+using System.Threading.Tasks;
 
 namespace Core.UI {
     /// <summary>
@@ -46,6 +48,7 @@ namespace Core.UI {
         private UIState _state;
 
         private readonly IDatReaderInterface _dat;
+
         private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
         private RenderObjElementInstancer _renderObjInstancer;
         private bool _needsViewportUpdate;
@@ -114,37 +117,39 @@ namespace Core.UI {
         // Observable state class
         [Observable]
         public class AppState {
+            private int _nextTodoId = 1;
+            private ReactiveHelpers _rx;
+
             public string Title { get; set; }
 
             public ICollection<TodoItem> Todos { get; set; }
 
-            public AppState() {
-
+            public AppState(ReactiveHelpers rx) {
+                _rx = rx;
             }
 
             [Action]
             public void AddTodo(string text, bool isCompleted = false) {
-                Log.LogInformation($"Adding todo {text}");
-                Todos.Add(new TodoItem { Text = text, IsCompleted = isCompleted });
-
-                Log.LogInformation(ToString());
+                Todos.Add(_rx.CreateState(() => new TodoItem { Id = _nextTodoId++, Text = text, IsCompleted = isCompleted }));
+                TaskCount = Todos.Count;
             }
 
             [Action]
             public void ToggleTodo(TodoItem todo) {
                 if (todo is null) return;
-                Log.LogInformation($"Toggling todo {todo.Text} to {!todo.IsCompleted}");
                 todo.IsCompleted = !todo.IsCompleted;
+            }
 
-                Log.LogInformation(ToString());
+            [Action]
+            public void CompleteTodo(TodoItem todo, bool isCompleted = true) {
+                if (todo is null) return;
+                todo.IsCompleted = isCompleted;
             }
 
             [Action]
             public void RemoveTodo(TodoItem todo) {
-                Log.LogInformation($"Removing todo {todo.Text}");
                 Todos.Remove(todo);
-
-                Log.LogInformation(ToString());
+                TaskCount = Todos.Count;
             }
 
             public override string ToString() {
@@ -155,48 +160,52 @@ namespace Core.UI {
         // Observable Todo Item
         [Observable]
         public class TodoItem {
+            public int Id { get; set; }
+
             public string Text { get; set; }
 
             public bool IsCompleted { get; set; }
         }
 
+        public static int TaskCount = 0;
+
         private void MakeReactive() {
             try {
                 var doc = _panel?.ScriptableDocument;
                 if (doc is null) return;
-
+                var rx = doc.Rx;
                 // Create a reactive state
-                var state = new AppState {
+                var state = rx.CreateState(() => new AppState(rx) {
                     Title = "My Reactive Todo List"
-                };
+                });
 
                 // Initial todos
                 state.AddTodo("Learn Cortex.Net", true);
                 state.AddTodo("Build a Virtual DOM");
 
-                var nextTodoId = 0;
-
+                var nextTodoId = 1;
                 var AddTodo = new Action<Event>((evt) => {
-                    var text = (doc.GetElementById("new-todo-text") as ElementFormControlInput)?.GetValue();
-                    (doc.GetElementById("new-todo-text") as ElementFormControlInput)?.SetValue("");
-                    if (!string.IsNullOrEmpty(text)) {
-                        state.AddTodo(text);
+                    if (doc.GetElementById("new-todo-text") is ElementFormControlInput input) {
+                        var text = input.GetValue();
+                        if (!string.IsNullOrEmpty(text)) state.AddTodo(text);
+                        else state.AddTodo($"Blank todo {nextTodoId++}");
+                        input.SetValue("");
                     }
                 });
 
-                var TodoApp = () => new VirtualNode("div", children: [
+                var TodoApp = (AppState state) => rx.Div(children: [
                     // Title
-                    new VirtualNode("h1", text: state.Title ?? "Todo List"),
+                    rx.H1(text: state.Title ?? "Todo List"),
 
                     // form
-                    new VirtualNode("div", new() {
+                    rx.Div(new() {
                             { "class", "actions" }
                         }, children: [
-                        new VirtualNode("input", new() {
+                        rx.Input(new() {
                                 { "id", "new-todo-text" },
                                 { "type", "text" }
                             }),
-                        new VirtualNode("button", new() {
+                        rx.Button(new() {
                                 { "onclick", AddTodo }
                             },
                             text: "Add Todo")
@@ -204,19 +213,23 @@ namespace Core.UI {
                     ),
                 
                     // Todo list
-                    new VirtualNode("ul", children: state.Todos.Select(todo =>
-                        new VirtualNode("li",
-                            new() {
-                                { "class", todo.IsCompleted ? "completed" : "" },
-                                { "onclick", (Action<Event>)((e) => state.ToggleTodo(todo)) }
+                    rx.Ul(children: state.Todos.Select(todo =>
+                        rx.Li(new() {
+                                { "key", todo.Id },
+                                { "class", todo.IsCompleted ? "completed" : "" }
                             }, children: [
-                                new VirtualNode("input", new() {
+                                rx.Input(new() {
                                         { "type", "checkbox" },
-                                        { "checked", todo.IsCompleted ? "checked" : null },
+                                        { "checked", todo.IsCompleted },
+                                        { "onchange", (Action<Event>)((e) => {
+                                            todo.IsCompleted = (e.TargetElement as ElementFormControlInput).HasAttribute("checked");
+                                        }) },
                                     }
                                 ),
-                                new VirtualNode("span", text: todo.Text),
-                                new VirtualNode("button", new() {
+                                rx.Span(new(){
+                                        { "onclick", (Action<Event>)((e) => state.ToggleTodo(todo)) },
+                                }, text: todo.Text),
+                                rx.Button(new() {
                                         { "class", "small" },
                                         { "onclick", (Action<Event>)((e) => state.RemoveTodo(todo)) }
                                     },
@@ -226,7 +239,7 @@ namespace Core.UI {
                     ).ToList())
                 ]);
 
-                doc.Mount(() => TodoApp(), "#app");
+                doc.Mount(() => TodoApp(state), "#app");
 
                 Log.LogWarning("Reactive state manager initialized");
             }

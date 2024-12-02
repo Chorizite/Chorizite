@@ -29,6 +29,8 @@
       ul {
         display: block;
         padding: 4px;
+        max-height: 300px;
+        overflow-y: auto;
       }
 
       li {
@@ -62,10 +64,12 @@
         padding: 6px;
         display: flex;
       }
+
     </style>
 	</head>
 	<body class="window" template="tabpanel">
     <div class="inner">
+      <span id="render-time">Render Time: 0ms</span>
       <div id="app" />
     </div>
 	</body>

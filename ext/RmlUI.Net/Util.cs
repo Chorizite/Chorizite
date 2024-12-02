@@ -43,7 +43,7 @@ namespace RmlUiNet
             var element = GetElementByTypeName(elementPtr, elementType);
 
             if (null == element) {
-                throw new Exception(elementType);
+                throw new Exception($"Element type not supported[IntPtr: {elementPtr:X8}]: {elementType} ({elementType == "class Rml::ElementFormControlInput"})");
             }
 
             return element;

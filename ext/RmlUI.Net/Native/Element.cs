@@ -101,6 +101,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_HasClass")]
         public static extern bool HasClass(IntPtr element, string className);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_HasAttribute")]
+        public static extern bool HasAttribute(IntPtr element, string attributeName);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_RemoveAttribute")]
         public static extern void RemoveAttribute(IntPtr element, string attributeName);
     }

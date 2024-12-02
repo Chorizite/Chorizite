@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Core.UI.Lib.Extensions;
+using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
@@ -43,8 +44,6 @@ namespace Core.UI.Lib.RmlUi.VDom {
 
             // Check for prop changes
             if (!ArePropsEqual(oldNode.Props, newNode.Props)) {
-                var oldProps = string.Join(",", oldNode.Props.Keys.Select(k => $"{k}:{oldNode.Props[k]}").ToArray());
-                var newProps = string.Join(",", newNode.Props.Keys.Select(k => $"{k}:{newNode.Props[k]}").ToArray());
                 patches.Add(new PatchOperation() {
                     Type = PatchOperation.OperationType.UpdateProps,
                     NewNode = newNode,
@@ -64,30 +63,65 @@ namespace Core.UI.Lib.RmlUi.VDom {
             var oldNodeChildren = oldNode.Children.ToList();
             var newNodeChildren = newNode.Children.ToList();
 
-            var childCount = Math.Min(oldNodeChildren.Count, newNodeChildren.Count);
+            if (oldNodeChildren.FirstOrDefault()?.Props.ContainsKey("key") == true && newNodeChildren.FirstOrDefault()?.Props.ContainsKey("key") == true) {
+                // remove children that were in the old node but not in the new node
+                foreach (var child in oldNodeChildren) {
+                    if (!newNodeChildren.Any(c => c.Props["key"].Equals(child.Props["key"]))) {
+                        patches.Add(new PatchOperation() {
+                            Type = PatchOperation.OperationType.Remove,
+                            NewNode = null,
+                            OldNode = child,
+                            Parent = oldNode
+                        });
+                    }
+                }
 
-            foreach (var i in Enumerable.Range(0, childCount)) {
-                DiffRecursive(oldNodeChildren[i], newNodeChildren[i], patches);
+                // Add children that are in the new node but not in the old node
+                foreach (var addedChild in newNodeChildren) {
+                    if (!oldNodeChildren.Any(c => c.Props["key"].Equals(addedChild.Props["key"]))) {
+                        patches.Add(new PatchOperation() {
+                            Type = PatchOperation.OperationType.Add,
+                            NewNode = addedChild,
+                            OldNode = null,
+                            Parent = oldNode
+                        });
+                    }
+                }
+
+                // compare children that are in both nodes
+                foreach (var child in oldNodeChildren) {
+                    var matchingChild = newNodeChildren.FirstOrDefault(c => c.Props["key"].Equals(child.Props["key"]));
+                    if (matchingChild != null) {
+                        DiffRecursive(child, matchingChild, patches);
+                    }
+                }
             }
+            else {
+                var childCount = Math.Min(oldNodeChildren.Count, newNodeChildren.Count);
 
-            // Remove children that were in the old node but not in the new node
-            foreach (var removedChild in oldNodeChildren.Skip(childCount)) {
-                patches.Add(new PatchOperation() {
-                    Type = PatchOperation.OperationType.Remove,
-                    NewNode = null,
-                    OldNode = removedChild,
-                    Parent = oldNode
-                });
-            }
+                foreach (var i in Enumerable.Range(0, childCount)) {
+                    DiffRecursive(oldNodeChildren[i], newNodeChildren[i], patches);
+                }
 
-            // Add children that are in the new node but not in the old node
-            foreach (var addedChild in newNodeChildren.Skip(childCount)) {
-                patches.Add(new PatchOperation() {
-                    Type = PatchOperation.OperationType.Add,
-                    NewNode = addedChild,
-                    OldNode = null,
-                    Parent = oldNode
-                });
+                // Remove children that were in the old node but not in the new node
+                foreach (var removedChild in oldNodeChildren.Skip(childCount)) {
+                    patches.Add(new PatchOperation() {
+                        Type = PatchOperation.OperationType.Remove,
+                        NewNode = null,
+                        OldNode = removedChild,
+                        Parent = oldNode
+                    });
+                }
+
+                // Add children that are in the new node but not in the old node
+                foreach (var addedChild in newNodeChildren.Skip(childCount)) {
+                    patches.Add(new PatchOperation() {
+                        Type = PatchOperation.OperationType.Add,
+                        NewNode = addedChild,
+                        OldNode = null,
+                        Parent = oldNode
+                    });
+                }
             }
         }
 
@@ -103,6 +137,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
             return oldProps.Count == newProps.Count &&
                    oldProps.Keys.All(k => {
                        if (string.IsNullOrEmpty(k)) return false;
+                       if (oldProps[k] is Action<Event> && newProps[k] is Action<Event>) return true;
                        if (newProps is null || !newProps.ContainsKey(k)) return false;
 
                        return oldProps[k]?.Equals(newProps[k]) == true;
@@ -113,73 +148,49 @@ namespace Core.UI.Lib.RmlUi.VDom {
             var newNode = patch.NewNode;
             var oldNode = patch.OldNode;
             var parentNode = patch.Parent;
+            try {
+                switch (patch.Type) {
+                    case PatchOperation.OperationType.Replace:
+                        newNode.UpdateElement(oldNode.Element.DocEl.GetParentNode().AppendChildTag(newNode.Type));
+                        newNode.Element.DocEl.GetParentNode().ReplaceChild(newNode.Element.DocEl, oldNode.Element.DocEl);
+                        break;
 
-            CoreUIPlugin.Log.LogDebug($"Patch[{patch.Type}] Old:{oldNode?.ToString()} New:{newNode?.ToString()}");
-
-            switch (patch.Type) {
-                case PatchOperation.OperationType.Replace:
-                    newNode.UpdateElement(oldNode.Element.GetParentNode().AppendChildTag(newNode.Type));
-                    newNode.Element.GetParentNode().ReplaceChild(newNode.Element, oldNode.Element);
-                    break;
-
-                case PatchOperation.OperationType.UpdateProps:
-                    if (newNode?.Props is not null) {
-                        var toUpdate = new Dictionary<string, object>(newNode.Props);
-                        var updated = new List<string>();
-                        foreach (var prop in toUpdate) {
-                            updated.Add(prop.Key);
-                            if (prop.Value is Action<Event> action) {
-                                var evtName = (prop.Key.StartsWith("on") ? prop.Key.Substring(2) : prop.Key).ToLower();
-                                if (oldNode.Props?.TryGetValue(prop.Key, out var oldAction) == true && oldAction is Action<Event> oldActionEvt) {
-                                    CoreUIPlugin.Log.LogDebug($"\t Removing event listener: {evtName} on {newNode.Type}({newNode.Text})");
-                                    oldNode.Element.RemoveEventListener(evtName, oldActionEvt);
-                                }
-                                newNode.Element.AddEventListener(evtName, action);
-                                CoreUIPlugin.Log.LogDebug($"\t Adding event listener: {evtName} on {newNode.Type}({newNode.Text})");
+                    case PatchOperation.OperationType.UpdateProps:
+                        if (newNode?.Props is not null) {
+                            var toUpdate = new Dictionary<string, object>(newNode.Props);
+                            var updated = new List<string>();
+                            foreach (var prop in toUpdate) {
+                                updated.Add(prop.Key);
+                                oldNode.Props.TryGetValue(prop.Key, out var oldValue);
+                                newNode.UpdateProp(prop.Key, prop.Value, oldValue);
                             }
-                            else {
-                                var propValue = prop.Value?.ToString();
-                                if (!string.IsNullOrEmpty(propValue)) {
-                                    if (oldNode.Props?.TryGetValue(prop.Key, out var oldPropValue) == true && oldPropValue?.ToString() == propValue) continue;
-                                    newNode.Element.SetAttribute(prop.Key, propValue);
-                                }
-                                else {
-                                    newNode.Element.RemoveAttribute(prop.Key);
+
+                            if (oldNode.Props?.Keys is not null) {
+                                // Remove properties that no longer exist
+                                foreach (var prop in oldNode.Props.Keys.Except(updated).ToArray()) {
+                                    newNode.UpdateProp(prop, null, oldNode.Props[prop]);
                                 }
                             }
                         }
+                        break;
 
-                        if (oldNode.Props?.Keys is not null) {
-                            // Remove properties that no longer exist
-                            foreach (var prop in oldNode.Props.Keys.Except(updated).ToArray()) {
-                                newNode.Element.RemoveAttribute(prop);
-                            }
-                        }
-                    }
-                    break;
+                    case PatchOperation.OperationType.UpdateText:
+                        newNode.Element.DocEl.SetInnerRml(newNode.Text);
+                        break;
 
-                case PatchOperation.OperationType.UpdateText:
-                    newNode.Element.SetInnerRml(newNode.Text);
-                    break;
+                    case PatchOperation.OperationType.Add:
+                        newNode.UpdateElement(parentNode.Element.DocEl.AppendChildTag(patch.NewNode.Type));
+                        break;
 
-                case PatchOperation.OperationType.Add:
-                    newNode.UpdateElement(parentNode.Element.AppendChildTag(patch.NewNode.Type));
-                    break;
-
-                case PatchOperation.OperationType.Remove:
-                    parentNode.Element.RemoveChild(oldNode.Element);
-                    break;
+                    case PatchOperation.OperationType.Remove:
+                        parentNode.Element.DocEl.RemoveChild(oldNode.Element.DocEl);
+                        oldNode.Dispose();
+                        break;
+                }
             }
-        }
-
-        // Deep clone a virtual node
-        private static VirtualNode CloneNode(VirtualNode node) {
-            return new VirtualNode(
-                node.Type,
-                new Dictionary<string, object>(node.Props),
-                node.Children.Select(CloneNode).ToList(),
-                node.Text
-            );
+            catch (Exception ex) {
+                CoreUIPlugin.Log.LogError($"Failed to run patch {patch.Type} on Old: {oldNode} New: {newNode} Parent: {parentNode} {ex}");
+            }
         }
     }
 }

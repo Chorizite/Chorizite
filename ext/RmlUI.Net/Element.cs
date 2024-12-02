@@ -121,6 +121,7 @@ namespace RmlUiNet
         void RemoveChild(Element child);
         void RemoveEventListener(string name, Action<Event> action);
         void RemoveAttribute(string prop);
+        bool HasAttribute(string attributeName);
     }
 
     public abstract class Element<T> : RmlBase<T>, Element
@@ -263,8 +264,14 @@ namespace RmlUiNet
             return Util.GetOrThrowElementByTypeName(elementPtr, elementType);
         }
 
-        public bool HasClass(string className) {
+        public bool HasClass(string className)
+        {
             return Native.Element.HasClass(NativePtr, className);
+        }
+
+        public bool HasAttribute(string attributeName)
+        {
+            return Native.Element.HasAttribute(NativePtr, attributeName);
         }
 
         internal string GetElementTypeName()

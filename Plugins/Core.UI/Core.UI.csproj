@@ -22,8 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" ExcludeAssets="runtime" />
     <PackageReference Include="Cortex.Net" Version="0.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.11" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="NSIS-Tool" Version="3.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -91,5 +90,20 @@
   <PropertyGroup>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
-
+  <Target Name="DeleteFiles" AfterTargets="Build">
+     <ItemGroup>
+       <FilesToDelete Include="$(OutDir)\Microsoft.AspNetCore.*" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.Extensions.DependencyInjection*" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.Extensions.Options*" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.Extensions.Primitives*" />
+       <FilesToDelete Include="$(OutDir)\System.Diagnostics.DiagnosticSource.dll" />
+       <FilesToDelete Include="$(OutDir)\System.IO.Pipelines.dll" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.JSInterop.dll" />
+     </ItemGroup>
+     <Message Text="Deleting Files @(FilesToDelete)" />
+     <Delete Files="@(FilesToDelete)">
+       <Output TaskParameter="DeletedFiles" ItemName="FilesDeleted" />
+     </Delete>
+     <Message Text="Files deleted: @(FilesDeleted)" />
+  </Target>
 </Project>

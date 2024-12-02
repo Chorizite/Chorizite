@@ -34,6 +34,12 @@ namespace RmlUiNet
                 value = createInstance(ptr);
                 _cache.Add(ptr, value);
             }
+            if (value is not T && value.GetType() == typeof(ElementGeneric))
+            {
+                _cache.Remove(ptr);
+                value = createInstance(ptr);
+                _cache.Add(ptr, value);
+            }
 
             return value as T;
         }

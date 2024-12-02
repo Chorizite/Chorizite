@@ -36,14 +36,17 @@ namespace Core.UI.Lib.RmlUi.Elements {
         }
 
         public LuaContext LuaContext { get; private set; }
-        public ISharedState Rx { get; private set; }
+        public ISharedState SharedState { get; private set; }
+        public ReactiveHelpers Rx { get; private set; }
 
         public ScriptableDocumentElement(IChoriziteBackend backend, ILogger logger) : base() {
             _log = logger;
             _backend = backend;
+            Rx = new ReactiveHelpers(this);
 
-            Rx = SharedState.GlobalState;//new SharedState();
-            Rx.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex}");
+            SharedState = new SharedState();
+            SharedState.Configuration.EnforceActions = EnforceAction.Never;
+            SharedState.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex}");
             
 
             LuaContext = new LuaContext();
@@ -99,21 +102,21 @@ namespace Core.UI.Lib.RmlUi.Elements {
             _scripts.Add(new ScriptContext(context, source_path, source_line));
         }
 
-        public void Mount(Func<VirtualNode> virtualNode, string selector) {
+        public void Mount(Func<Func<VirtualNode>> virtualNode, string selector) {
             var el = QuerySelector(selector) ?? throw new Exception($"Could not find element with selector '{selector}' to mount to");
             if (virtualNode is null) throw new ArgumentNullException(nameof(virtualNode));
 
             VirtualNode? currentVDom = null;
 
-            SharedState.GlobalState.Autorun((r) => {
+            SharedState.Autorun((r) => {
                 try {
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
                     if (currentVDom is null) {
-                        currentVDom = virtualNode();
+                        currentVDom = virtualNode()();
                         currentVDom.UpdateElement(el.AppendChildTag(currentVDom.Type));
                     }
                     else {
-                        var newVDom = virtualNode();
-                        CoreUIPlugin.Log.LogDebug($"Rendering reactive state");
+                        var newVDom = virtualNode()();
                         var patches = VirtualDom.Diff(currentVDom, newVDom);
                         if (patches != null && patches.Count > 0) {
                             foreach (var patch in patches) {
@@ -122,11 +125,11 @@ namespace Core.UI.Lib.RmlUi.Elements {
                         }
                         currentVDom = newVDom;
                     }
+                    el.OwnerDocument.GetElementById("render-time")?.SetInnerRml($"Rendered {CoreUIPlugin.TaskCount} tasks in {(double)sw.ElapsedTicks / (double)TimeSpan.TicksPerMillisecond:N4}ms");
                 }
                 catch (Exception e) {
                     CoreUIPlugin.Log.LogError(e, "Failed to patch ui from state");
                 }
-                CoreUIPlugin.Log.LogWarning($"\n{el.GetInnerRml()}\n\n");
             });
         }
 

@@ -1,4 +1,5 @@
-﻿using Cortex.Net.Api;
+﻿using Core.UI.Lib.Extensions;
+using Cortex.Net.Api;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -11,7 +12,7 @@ using System.Xml.Linq;
 
 namespace Core.UI.Lib.RmlUi.VDom {
     // Represents a node in the Virtual DOM
-    public class VirtualNode : IEquatable<VirtualNode> {
+    public class VirtualNode : IEquatable<VirtualNode>, IDisposable {
         private List<Action<Event>> _eventHandlers = [];
 
         public string Type { get; set; }
@@ -20,17 +21,14 @@ namespace Core.UI.Lib.RmlUi.VDom {
         public string Text { get; set; }
         public VirtualNode Parent { get; set; }
 
-        [Computed]
-        public bool HasChildren => Children != null && Children.Count > 0;
+        public WrappedElement? Element { get; internal set; }
 
-        public Element? Element { get; internal set; }
-
-        public VirtualNode(string type, Dictionary<string, object> props = null, List<VirtualNode> children = null, string text = null) {
+        public VirtualNode(string type, Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) {
             Type = type;
             Props = props ?? new Dictionary<string, object>();
-            Children = children ?? new List<VirtualNode>();
+            Children = children?.Select(x => x()).ToList() ?? new List<VirtualNode>();
             Text = text;
-            
+
             // Set parent references for children
             foreach (var child in Children) {
                 child.Parent = this;
@@ -76,21 +74,47 @@ namespace Core.UI.Lib.RmlUi.VDom {
             return children.IndexOf(this);
         }
 
+        internal void UpdateProp(string key, object? value, object? oldValue) {
+            if (value?.Equals(oldValue) == true) {
+                return;
+            }
+            if (Element is null) {
+                CoreUIPlugin.Log.LogWarning($"Element is null, skipping prop update on {ToString()}: {key}={value}");
+                return;
+            }
+
+            if (value is Action<Event> || oldValue is Action<Event>) {
+                var evtName = key.StartsWith("on") ? key.Substring(2) : key;
+                if (value is Action<Event> action) {
+                    Element.SetEventListener(evtName.ToLower(), action);
+                }
+                else {
+                    Element.RemoveEventListener(evtName.ToLower());
+                }
+            }
+            else if (value is bool boolValue) {
+                if (boolValue) Element.DocEl.SetAttribute(key, "true");
+                else Element.DocEl.RemoveAttribute(key);
+            }
+            else if (value is not null && value.ToString() is not null) {
+                if (!string.IsNullOrEmpty(value.ToString())) {
+                    Element.DocEl.SetAttribute(key, value.ToString()!);
+                }
+                else {
+                    Element.DocEl.RemoveAttribute(key);
+                }
+            }
+            else if (oldValue != null) {
+                Element.DocEl.RemoveAttribute(key);
+            }
+        }
+
         internal void UpdateElement(Element element) {
-            Element = element;
+            Element = WrappedElement.GetOrCreate(element);
 
             // Add properties as attributes
             foreach (var prop in Props) {
-                if (prop.Value is Action<Event> action) {
-                    var evtName = prop.Key.StartsWith("on") ? prop.Key.Substring(2) : prop.Key;
-                    element.AddEventListener(evtName.ToLower(), action);
-                }
-                else {
-                    var val = prop.Value?.ToString();
-                    if (!string.IsNullOrEmpty(val)) {
-                        element.SetAttribute(prop.Key, val);
-                    }
-                }
+                UpdateProp(prop.Key, prop.Value, null);
             }
 
             // Add text content if exists
@@ -100,13 +124,21 @@ namespace Core.UI.Lib.RmlUi.VDom {
 
             // Recursively add children
             foreach (var child in Children) {
-                var childEl = Element.AppendChildTag(child.Type);
+                var childEl = Element.DocEl.AppendChildTag(child.Type);
                 child.UpdateElement(childEl);
             }
         }
 
         public override string ToString() {
             return $"<{Type} {string.Join(" ", Props.Select(kvp => $"{kvp.Key}=\"{kvp.Value}\""))}>{Text}</{Type}>";
+        }
+
+        public void Dispose() {
+            Element?.Dispose();
+            foreach (var child in Children) {
+                child.Dispose();
+            }
+            Children.Clear();
         }
     }
 }

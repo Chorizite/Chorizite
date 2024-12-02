@@ -93,6 +93,7 @@ namespace Core.AC {
         }
 
         private void ClientBackend_OnShowTooltip(object? sender, ShowTooltipEventArgs e) {
+            return;
             _tooltip = RegisterPanel(GamePanel.Tooltip, Path.Combine(AssemblyDirectory, "assets", "panels", "Tooltip.rml"));
             _tooltip.ScriptableDocument?.LuaContext.SetGlobal("tooltip", e);
             var x = (ClientBackend as IChoriziteBackend)?.Input.MouseX + 15;
@@ -104,6 +105,7 @@ namespace Core.AC {
         }
 
         private void ClientBackend_OnHideTooltip(object? sender, EventArgs e) {
+            return;
             CoreUI.PanelManager.DestroyPanel("Tooltip");
             _tooltip = null;
         }

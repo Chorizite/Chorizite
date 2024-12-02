@@ -14,7 +14,13 @@ namespace RmlUiNet
 
         internal static ElementFormControlInput? Create(IntPtr ptr)
         {
-            return GetOrCreateCache(ptr, ptr => new ElementFormControlInput(ptr, false));
+            var res = GetOrCreateCache(ptr, ptr => new ElementFormControlInput(ptr, false));
+
+            if (res is null)
+            {
+                throw new Exception($"GET OR CREATE BU CREATE NULL {ptr:X8}");
+            }
+            return res;
         }
 
         public string GetValue()
