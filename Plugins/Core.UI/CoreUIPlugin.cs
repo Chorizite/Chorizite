@@ -24,6 +24,7 @@ using System.Linq;
 using Cortex.Net;
 using Chorizite.Core.Render;
 using System.Threading.Tasks;
+using Cortex.Net.Types;
 
 namespace Core.UI {
     /// <summary>
@@ -103,11 +104,9 @@ namespace Core.UI {
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
             Backend.Renderer.OnGraphicsPostReset += Renderer_OnGraphicsPostReset;
 
-            _panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
-
-            _panel.OnAfterReload += Panel_OnAfterReload;
-
-            MakeReactive();
+            //_panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
+            //_panel.OnAfterReload += Panel_OnAfterReload;
+            //MakeReactive();
         }
 
         private void Panel_OnAfterReload(object? sender, EventArgs e) {
@@ -169,11 +168,30 @@ namespace Core.UI {
 
         public static int TaskCount = 0;
 
+        private class MyEnhancer : IEnhancer {
+            public T Enhance<T>(T newValue, T originalValue, string name) {
+                return newValue;
+            }
+        }
+
         private void MakeReactive() {
             try {
+                return;
                 var doc = _panel?.ScriptableDocument;
                 if (doc is null) return;
                 var rx = doc.Rx;
+
+
+                var x = doc.SharedState.Observable(() => new ObservableObject("test", new MyEnhancer(), doc.SharedState));
+                x.AddObservableProperty("title", "My Reactive Todo List");
+                x.Change += (s, e) => {
+                    Log.LogDebug($"Changing: {e.Key} ({x.Read<string>(e.Key)})");
+                };
+                x.Changed += (s, e) => {
+                    Log.LogDebug($"Changed: {e.Key} ({x.Read<string>(e.Key)})");
+                };
+                x.Write("title", "New Title");
+                return;
                 // Create a reactive state
                 var state = rx.CreateState(() => new AppState(rx) {
                     Title = "My Reactive Todo List"

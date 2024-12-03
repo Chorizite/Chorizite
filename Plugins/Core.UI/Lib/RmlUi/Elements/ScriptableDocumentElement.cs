@@ -3,21 +3,26 @@ using Chorizite.Core.Lua;
 using Core.UI.Lib.RmlUi.VDom;
 using Cortex.Net;
 using Cortex.Net.Api;
+using Cortex.Net.Core;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
+using RoyT.TrueType.Tables.Kern;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using XLua;
+using static Core.UI.Lib.RmlUi.Elements.ScriptableDocumentElement;
 
 namespace Core.UI.Lib.RmlUi.Elements {
     public partial class ScriptableDocumentElement : ElementDocument {
+        private List<MyObservable> _observables = [];
         private readonly ILogger _log;
         private readonly IChoriziteBackend _backend;
         private LuaTable _luaState;
@@ -46,15 +51,27 @@ namespace Core.UI.Lib.RmlUi.Elements {
 
             SharedState = new SharedState();
             SharedState.Configuration.EnforceActions = EnforceAction.Never;
-            SharedState.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex}");
-            
+            SharedState.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex.ExceptionObject}");
+
 
             LuaContext = new LuaContext();
             LuaContext.Global.Set("document", this);
+            LuaContext.Global.Set("__Rx", Rx);
             LuaContext.Global.Set("d", PretendJQuery);
+
+            LuaContext.AddLoader(UIModulesLoader);
 
             AddEventListener("click", HandleClick);
             AddEventListener("load", HandleLoad);
+        }
+
+        private byte[] UIModulesLoader(ref string filepath) {
+            var rxPath = Path.Combine(CoreUIPlugin.Instance.AssemblyDirectory, "lua", "rx.lua");
+            if (filepath == "rx" && File.Exists(rxPath)) {
+                return File.ReadAllBytes(rxPath);
+            }
+
+            return null;
         }
 
         internal Element? PretendJQuery(string selector) {
@@ -102,13 +119,21 @@ namespace Core.UI.Lib.RmlUi.Elements {
             _scripts.Add(new ScriptContext(context, source_path, source_line));
         }
 
+        public MyObservable Observable(string name = "[anonymous]", MyObservable parent = null) {
+            var observable = new MyObservable(SharedState, name, parent);
+            _observables.Add(observable);
+            return observable;
+        }
+
+        private List<IDisposable> _mounts = [];
+        internal Reaction? _currentReaction;
         public void Mount(Func<Func<VirtualNode>> virtualNode, string selector) {
             var el = QuerySelector(selector) ?? throw new Exception($"Could not find element with selector '{selector}' to mount to");
             if (virtualNode is null) throw new ArgumentNullException(nameof(virtualNode));
 
             VirtualNode? currentVDom = null;
 
-            SharedState.Autorun((r) => {
+            _mounts.Add(SharedState.Autorun((r) => {
                 try {
                     var sw = System.Diagnostics.Stopwatch.StartNew();
                     if (currentVDom is null) {
@@ -125,15 +150,21 @@ namespace Core.UI.Lib.RmlUi.Elements {
                         }
                         currentVDom = newVDom;
                     }
+
                     el.OwnerDocument.GetElementById("render-time")?.SetInnerRml($"Rendered {CoreUIPlugin.TaskCount} tasks in {(double)sw.ElapsedTicks / (double)TimeSpan.TicksPerMillisecond:N4}ms");
                 }
                 catch (Exception e) {
-                    CoreUIPlugin.Log.LogError(e, "Failed to patch ui from state");
+                    CoreUIPlugin.Log.LogError($"Failed to patch ui from state: {LuaContext.FormatDocumentException(e)}");
                 }
-            });
+            }));
         }
 
         public override void Dispose() {
+            foreach (var mount in _mounts) {
+                mount.Dispose();
+            }
+            SharedState = null;
+            _observables.Clear();
             LuaContext?.Dispose();
             base.Dispose();
             LuaContext = null;

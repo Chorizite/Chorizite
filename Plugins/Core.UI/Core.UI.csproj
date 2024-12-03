@@ -83,9 +83,15 @@
     <None Update="assets\theme.rcss">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="lua\rx.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lua\" />
   </ItemGroup>
   <PropertyGroup>
     <EnableDynamicLoading>true</EnableDynamicLoading>

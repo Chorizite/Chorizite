@@ -1,5 +1,8 @@
 ﻿using Core.UI.Lib.Extensions;
+using Core.UI.Lib.RmlUi.Elements;
+using Cortex.Net;
 using Cortex.Net.Api;
+using Cortex.Net.Core;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -9,11 +12,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using XLua;
 
 namespace Core.UI.Lib.RmlUi.VDom {
     // Represents a node in the Virtual DOM
     public class VirtualNode : IEquatable<VirtualNode>, IDisposable {
         private List<Action<Event>> _eventHandlers = [];
+        private ScriptableDocumentElement _doc;
 
         public string Type { get; set; }
         public Dictionary<string, object> Props { get; set; } = new();
@@ -22,8 +27,10 @@ namespace Core.UI.Lib.RmlUi.VDom {
         public VirtualNode Parent { get; set; }
 
         public WrappedElement? Element { get; internal set; }
+        public bool IsDirty { get; internal set; }
 
-        public VirtualNode(string type, Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) {
+        public VirtualNode(ScriptableDocumentElement doc, string type, Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) {
+            _doc = doc;
             Type = type;
             Props = props ?? new Dictionary<string, object>();
             Children = children?.Select(x => x()).ToList() ?? new List<VirtualNode>();
@@ -83,7 +90,15 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 return;
             }
 
-            if (value is Action<Event> || oldValue is Action<Event>) {
+            if (value is string stringValue) {
+                if (!string.IsNullOrEmpty(stringValue)) {
+                    Element.DocEl.SetAttribute(key, stringValue);
+                }
+                else {
+                    Element.DocEl.RemoveAttribute(key);
+                }
+            }
+            else if (value is Action<Event> || oldValue is Action<Event>) {
                 var evtName = key.StartsWith("on") ? key.Substring(2) : key;
                 if (value is Action<Event> action) {
                     Element.SetEventListener(evtName.ToLower(), action);
@@ -92,17 +107,26 @@ namespace Core.UI.Lib.RmlUi.VDom {
                     Element.RemoveEventListener(evtName.ToLower());
                 }
             }
-            else if (value is bool boolValue) {
-                if (boolValue) Element.DocEl.SetAttribute(key, "true");
-                else Element.DocEl.RemoveAttribute(key);
+            else if (value is LuaFunction || oldValue is LuaFunction) {
+                var evtName = key.StartsWith("on") ? key.Substring(2) : key;
+                if (value is LuaFunction action) {
+                    Element.SetEventListener(evtName.ToLower(), (e) => action.Call(e));
+                }
+                else {
+                    Element.RemoveEventListener(evtName.ToLower());
+                }
             }
-            else if (value is not null && value.ToString() is not null) {
-                if (!string.IsNullOrEmpty(value.ToString())) {
-                    Element.DocEl.SetAttribute(key, value.ToString()!);
+            else if (value is bool boolValue) {
+                if (boolValue) {
+                    Element.DocEl.SetAttribute(key, key);
                 }
                 else {
                     Element.DocEl.RemoveAttribute(key);
                 }
+            }
+            else if (value is not null) {
+                if (!string.IsNullOrEmpty(value.ToString())) Element.DocEl.SetAttribute(key, value.ToString());
+                else Element.DocEl.RemoveAttribute(key);
             }
             else if (oldValue != null) {
                 Element.DocEl.RemoveAttribute(key);
@@ -130,7 +154,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
         }
 
         public override string ToString() {
-            return $"<{Type} {string.Join(" ", Props.Select(kvp => $"{kvp.Key}=\"{kvp.Value}\""))}>{Text}</{Type}>";
+            return $"<{Type}{(Props.Count > 0 ? " " : "")}{string.Join(" ", Props.Select(kvp => $"{kvp.Key}=\"{kvp.Value}\""))}>{Text}</{Type}>";
         }
 
         public void Dispose() {

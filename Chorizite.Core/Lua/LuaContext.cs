@@ -240,19 +240,16 @@ namespace Chorizite.Core.Lua {
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
             PreDispose();
-            /*
+            
             FullGc();
 
-            for (int i = 0; i < 100; i++) {
-                if (i == 50) {
-                    DoString("require('xlua.util')[0].print_func_ref_by_csharp()");
-                }
+            for (int i = 0; i < 10; i++) {
                 GC();
                 Tick();
                 System.GC.WaitForPendingFinalizers();
                 System.GC.Collect();
             }
-            */
+            
             DoString("require('xlua.util')[0].print_func_ref_by_csharp()");
             _originalRequire = null!;
 
