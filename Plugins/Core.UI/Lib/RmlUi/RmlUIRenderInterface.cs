@@ -11,6 +11,8 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Core.UI;
+using Microsoft.Extensions.Logging;
 
 namespace ACUI.Lib.RmlUi {
     public unsafe class RmlUIRenderInterface : RenderInterface {
@@ -54,6 +56,7 @@ namespace ACUI.Lib.RmlUi {
         }
 
         public override IntPtr LoadTexture(ref Vector2i textureDimensions, string source) {
+            CoreUIPlugin.Log.LogDebug($"Loading texture: {source}");
             var texture = _renderer.LoadTexture(source, out var dim);
             textureDimensions = new Vector2i((int)dim.X, (int)dim.Y);
 
@@ -74,6 +77,16 @@ namespace ACUI.Lib.RmlUi {
 
         public override void SetScissorRegion(int x, int y, int width, int height) {
             _renderer.SetScissorRegion(x, y, width, height);
+        }
+
+        public override void SetTransform(IntPtr transform) {
+            if (transform == IntPtr.Zero) {
+                _renderer.SetTransform(Matrix4x4.Identity);
+            }
+            else {
+                var matrix = Marshal.PtrToStructure<Matrix4x4>(transform);
+                _renderer.SetTransform(matrix);
+            }
         }
 
         public override void Dispose() {

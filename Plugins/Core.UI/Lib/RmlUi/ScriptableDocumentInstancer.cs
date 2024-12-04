@@ -4,9 +4,10 @@ using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Core.UI.Lib.RmlUi {
-    internal class ScriptableDocumentInstancer : ElementInstancer {
+    public class ScriptableDocumentInstancer : ElementInstancer {
         private readonly Dictionary<IntPtr, ScriptableDocumentElement> _elements = [];
         private ILogger _log;
         private readonly IChoriziteBackend _backend;
@@ -20,7 +21,15 @@ namespace Core.UI.Lib.RmlUi {
             if (_elements.TryGetValue(ptr, out var document)) {
                 return document;
             }
+            return _elements.Values.FirstOrDefault();
             return null;
+        }
+
+        internal void Update() {
+            var docs = _elements.Values.ToArray();
+            foreach (var doc in docs) {
+                doc.Update();
+            }
         }
 
         public override IntPtr OnInstanceElement(Element parent, string tag, XMLAttributes attributes) {

@@ -21,13 +21,15 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" ExcludeAssets="runtime" />
+    <PackageReference Include="Cortex.Net" Version="0.4.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="NSIS-Tool" Version="3.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="RoyT.TrueType" Version="0.2.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" ExcludeAssets="runtime" />
+    <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.42" ExcludeAssets="runtime" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Chorizite.Common\Chorizite.Common.csproj" ExcludeAssets="runtime">
@@ -51,21 +53,66 @@
     <None Update="assets\acsprites.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="assets\coin.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="assets\LatoLatin-Regular.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\panel.9.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\panels\Breakout.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\panels\Logs.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\panels\Test.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\panels\todo.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\pizza.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="assets\scroll-vert-bg.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="assets\templates\tabpanel.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="assets\theme.rcss">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="lua\rx.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lua\" />
+  </ItemGroup>
   <PropertyGroup>
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
-
+  <Target Name="DeleteFiles" AfterTargets="Build">
+     <ItemGroup>
+       <FilesToDelete Include="$(OutDir)\Microsoft.AspNetCore.*" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.Extensions.DependencyInjection*" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.Extensions.Options*" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.Extensions.Primitives*" />
+       <FilesToDelete Include="$(OutDir)\System.Diagnostics.DiagnosticSource.dll" />
+       <FilesToDelete Include="$(OutDir)\System.IO.Pipelines.dll" />
+       <FilesToDelete Include="$(OutDir)\Microsoft.JSInterop.dll" />
+     </ItemGroup>
+     <Message Text="Deleting Files @(FilesToDelete)" />
+     <Delete Files="@(FilesToDelete)">
+       <Output TaskParameter="DeletedFiles" ItemName="FilesDeleted" />
+     </Delete>
+     <Message Text="Files deleted: @(FilesDeleted)" />
+  </Target>
 </Project>

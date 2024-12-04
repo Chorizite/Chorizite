@@ -30,6 +30,12 @@ namespace RmlUiNet
         Auto
     }
 
+    public enum ScrollBehavior {
+        Auto,
+        Smooth,
+        Instant
+    }
+
     public enum VariantType {
         NONE = '-',
         BOOL = 'B',

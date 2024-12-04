@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Chorizite.Core.Lib {
+namespace Chorizite.Common {
     public abstract class EatableEventArgs : EventArgs {
         /// <summary>
         /// Set to true to eat this event.

@@ -65,6 +65,9 @@ namespace Launcher.Lib {
             WCA_ACCENT_POLICY = 19
         }
 
+        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
+        internal static extern IntPtr GetForegroundWindow();
+
         [DllImport("user32.dll")]
         internal static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 

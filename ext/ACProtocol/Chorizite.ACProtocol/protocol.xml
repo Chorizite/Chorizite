@@ -5481,7 +5481,7 @@
           <field type="AttributeCache" name="Attributes" text="The character attributes" />
         </mask>
         <mask value="ACQualitiesFlags.Skills">
-          <field type="PackableHashTable" genericKey="Skill" genericValue="Skill" name="Skills" />
+          <field type="PackableHashTable" genericKey="SkillId" genericValue="Skill" name="Skills" />
         </mask>
         <mask value="ACQualitiesFlags.Body" text="May not be in prod or sent to client?">
           <field type="Body" name="Body" />

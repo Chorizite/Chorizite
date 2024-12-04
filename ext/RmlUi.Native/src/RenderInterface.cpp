@@ -27,6 +27,8 @@ typedef void(*onEnableScissorRegion)(bool enable);
 
 typedef void(*onSetScissorRegion)(Rml::Rectanglei region);
 
+typedef void(*onSetTransform)(const Rml::Matrix4f* transform);
+
 class RenderInterface : Rml::RenderInterface {
 private:
     ::onCompileGeometry m_onCompileGeometry;
@@ -37,6 +39,7 @@ private:
     ::onReleaseTexture m_onReleaseTexture;
     ::onEnableScissorRegion m_onEnableScissorRegion;
     ::onSetScissorRegion m_onSetScissorRegion;
+    ::onSetTransform m_onSetTransform;
 
 public:
     explicit RenderInterface(::onCompileGeometry onCompileGeometry,
@@ -46,7 +49,8 @@ public:
                                 ::onGenerateTexture onGenerateTexture,
                                 ::onReleaseTexture onReleaseTexture,
                                 ::onEnableScissorRegion onEnableScissorRegion,
-                                ::onSetScissorRegion onSetScissorRegion) {
+                                ::onSetScissorRegion onSetScissorRegion,
+                                ::onSetTransform onSetTransform) {
         m_onCompileGeometry = onCompileGeometry;
         m_onRenderGeometry = onRenderGeometry;
         m_onReleaseGeometry = onReleaseGeometry;
@@ -55,6 +59,7 @@ public:
         m_onReleaseTexture = onReleaseTexture;
         m_onEnableScissorRegion = onEnableScissorRegion;
         m_onSetScissorRegion = onSetScissorRegion;
+        m_onSetTransform = onSetTransform;
     }
 
     Rml::CompiledGeometryHandle CompileGeometry(Rml::Span<const Rml::Vertex> vertices, Rml::Span<const int> indices) override {
@@ -88,6 +93,10 @@ public:
     void SetScissorRegion(Rml::Rectanglei region) override {
         (*m_onSetScissorRegion)(region);
     }
+
+    void SetTransform(const Rml::Matrix4f* transform) override {
+        (*m_onSetTransform)(transform);
+    }
 };
 
 RMLUI_CAPI void *rml_RenderInterface_New(::onCompileGeometry onCompileGeometry,
@@ -97,8 +106,9 @@ RMLUI_CAPI void *rml_RenderInterface_New(::onCompileGeometry onCompileGeometry,
                                             ::onGenerateTexture onGenerateTexture,
                                             ::onReleaseTexture onReleaseTexture,
                                             ::onEnableScissorRegion onEnableScissorRegion,
-                                            ::onSetScissorRegion onSetScissorRegion) {
-    return new RenderInterface(onCompileGeometry, onRenderGeometry, onReleaseGeometry, onLoadTexture, onGenerateTexture, onReleaseTexture, onEnableScissorRegion, onSetScissorRegion);
+                                            ::onSetScissorRegion onSetScissorRegion,
+                                            ::onSetTransform onSetTransform) {
+    return new RenderInterface(onCompileGeometry, onRenderGeometry, onReleaseGeometry, onLoadTexture, onGenerateTexture, onReleaseTexture, onEnableScissorRegion, onSetScissorRegion, onSetTransform);
 }
 
 RMLUI_CAPI void rml_RenderInterface_Test(Rml::RenderInterface* render) {

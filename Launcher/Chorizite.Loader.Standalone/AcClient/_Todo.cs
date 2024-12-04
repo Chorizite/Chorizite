@@ -74,6 +74,19 @@ namespace AcClient {
     public unsafe struct BaseProperty {
         public BasePropertyDesc* m_pcPropertyDesc;
         public BasePropertyValue* m_pcPropertyValue;
+
+        public PStringBase<byte>* GetGroupName() {
+            return ((delegate* unmanaged[Thiscall]<ref BaseProperty, PStringBase<byte>*>)0x00429A10)(ref this);
+        }
+        public PStringBase<byte>* GetPropertyName(BaseProperty* This) {
+            return ((delegate* unmanaged[Thiscall]<ref BaseProperty, PStringBase<byte>*>)0x00429A00)(ref this);
+        }
+        public byte InqPropertyName(PStringBase<byte>* name) {
+            return ((delegate* unmanaged[Thiscall]<ref BaseProperty, PStringBase<byte>*, byte>)0x00429A20)(ref this, name);
+        }
+        public byte InqEnum(int* val) {
+            return ((delegate* unmanaged[Thiscall]<ref BaseProperty, int*, byte>)0x00429940)(ref this, val);
+        }
     };
     public unsafe struct BasePropertyDesc {
         public Turbine_RefCount _ref;
@@ -105,6 +118,10 @@ namespace AcClient {
         public UInt32 m_nMaxElements;
         public PStringBase<Char> m_strHelp;
         public Single m_fPredictionTimeout;
+
+        public byte BasePropertyDesc_InqEnum(int* val, PStringBase<byte>* name) {
+            return ((delegate* unmanaged[Thiscall]<ref BasePropertyDesc, int*, PStringBase<byte>*, byte>)0x0042A500)(ref this, val, name);
+        }
     };
     public unsafe struct PropertyInheritanceType {
         // Enums:
@@ -154,6 +171,10 @@ namespace AcClient {
 
     public unsafe struct BasePropertyValue {
         public Turbine_RefCount _ref;
+
+        public byte GetValueAsString(BasePropertyDesc* desc, PStringBase<byte>* name, byte format) {
+            return ((delegate* unmanaged[Thiscall]<ref BasePropertyValue, BasePropertyDesc*, PStringBase<byte>*, byte, byte>)0x0042B860)(ref this, desc, name, format);
+        }
     };
 
     public unsafe struct PropertyCollectionVtbl {

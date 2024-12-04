@@ -1,5 +1,8 @@
 ﻿using ACUI.Lib.RmlUi;
+using Chorizite.Common;
 using Chorizite.Core.Lib;
+using Core.UI.Lib.RmlUi;
+using Core.UI.Lib.RmlUi.Elements;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -22,12 +25,15 @@ namespace Core.UI.Lib {
         private ACSystemInterface _rmlSystemInterface;
 
         internal IntPtr NativePtr { get; private set; }
+
+        private ScriptableDocumentElement? _scriptableDoc;
         internal bool NeedsReload;
 
         /// <summary>
         /// Whether or not the ui document should reload on file changes
         /// </summary>
         public bool LiveReload { get; set; } = true;
+        public bool IsSource { get; }
 
         /// <summary>
         /// The filename of the ui document
@@ -49,20 +55,43 @@ namespace Core.UI.Lib {
         /// </summary>
         public int Height => _doc is null ? 0 : (int)_doc.GetClientHeight();
 
-        internal UIDocument(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log) {
+        public event EventHandler<EventArgs> OnAfterReload {
+            add => _onAfterReload.Subscribe(value);
+            remove => _onAfterReload.Unsubscribe(value);
+        }
+        private WeakEvent<EventArgs> _onAfterReload = new();
+
+        public ScriptableDocumentElement? ScriptableDocument => CoreUIPlugin.Instance.ScriptableDocumentInstancer.GetDocument(NativePtr);
+
+        internal UIDocument(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log, bool isSource = false) {
             Name = name;
             _log = log;
-            _docFile = PathHelpers.TryMakeDevPath(filename);
+            IsSource = isSource;
+            _docFile = IsSource ? filename : PathHelpers.TryMakeDevPath(filename);
             Context = context;
             _rmlSystemInterface = rmlSystemInterface;
 
             LoadDoc();
 
-            if (LiveReload) {
+            if (!IsSource && LiveReload) {
                 _fileWatcher = new FileWatcher(Path.GetDirectoryName(_docFile), Path.GetFileName(_docFile), (file) => {
                     NeedsReload = true;
                 });
             }
+        }
+
+        /// <summary>
+        /// Hide the document
+        /// </summary>
+        public void Hide() {
+            _doc?.Hide();
+        }
+
+        /// <summary>
+        /// Show the document
+        /// </summary>
+        public void Show() {
+            _doc?.Show();
         }
 
         private void LoadDoc() {
@@ -71,12 +100,16 @@ namespace Core.UI.Lib {
             }
             _log?.LogTrace($"Loading document {Name} {_docFile}");
 
-            if (!System.IO.File.Exists(_docFile)) {
-                throw new Exception($"Unable to find document {_docFile}");
+            if (IsSource) {
+                _doc = Context.LoadDocumentFromMemory(_docFile, $"server://TODO_SERVERNAME/{Name}.rml");
             }
+            else {
+                if (!System.IO.File.Exists(_docFile)) {
+                    throw new Exception($"Unable to find document {_docFile}");
+                }
 
-            _doc = Context.LoadDocument(_docFile);
-
+                _doc = Context.LoadDocument(_docFile);
+            }
             if (_doc is null) {
                 throw new Exception($"Unable to create RmlUi document {Name} {_docFile}");
             }
@@ -85,10 +118,14 @@ namespace Core.UI.Lib {
                 _rmlSystemInterface.HasNewFontsLoaded = false;
                 _log?.LogDebug($"New fonts were loaded, reloading document {Name} {_docFile}");
                 _doc?.Dispose();
-                _doc = Context.LoadDocument(_docFile);
+                LoadDoc();
+                return;
             }
 
             NativePtr = _doc.NativePtr;
+            _scriptableDoc = CoreUIPlugin.Instance.ScriptableDocumentInstancer.GetDocument(NativePtr);
+            _scriptableDoc.Panel = this;
+
             _doc.Show();
         }
 
@@ -105,6 +142,8 @@ namespace Core.UI.Lib {
                 NeedsReload = false;
                 _log.LogDebug($"Reloading document {Name} {_docFile}");
                 LoadDoc();
+                Context.Update();
+                _onAfterReload.Invoke(this, EventArgs.Empty);
             }
         }
 

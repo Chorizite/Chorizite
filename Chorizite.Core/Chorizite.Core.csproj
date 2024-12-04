@@ -16,13 +16,19 @@
     <Nullable>enable</Nullable>
     <DefineConstants>$(DefineConstants);XLUA_GENERAL</DefineConstants>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Render\nulltexture.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Render\nulltexture.jpg" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" />
     <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.42" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
   </ItemGroup>
 
@@ -42,13 +48,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Lua\LuaScripts\framework\AsyncTask.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Lua\LuaScripts\framework\System.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Update="Lua\LuaScripts\init.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Lua\LuaScripts\xlua\util.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="runtimes\win-x86\native\xlua.dll">

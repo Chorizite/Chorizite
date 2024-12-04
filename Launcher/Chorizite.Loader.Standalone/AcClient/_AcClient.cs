@@ -2,6 +2,42 @@
 
 namespace AcClient {
     // This is the home for all of the "fundamental" pieces.
+    public unsafe struct EnumPropertyValue {
+        public BasePropertyValue basePropertyValue;
+        public uint m_value;
+
+        public  byte GetValueAsString(BasePropertyDesc* desc, PStringBase<byte>* name, byte format) {
+            return ((delegate* unmanaged[Thiscall]<ref EnumPropertyValue, BasePropertyDesc*, PStringBase<byte>*, byte, byte>)0x0042B860)(ref this, desc, name, format);
+        }
+    }
+    public unsafe struct BoolPropertyValue {
+        public BasePropertyValue basePropertyValue;
+        public bool m_value;
+
+        public byte InqBool(byte* val) {
+            return ((delegate* unmanaged[Thiscall]<ref BoolPropertyValue, byte*, byte>)0x00423AF0)(ref this, val);
+        }
+    }
+    public unsafe struct LongIntegerPropertyValue {
+        public BasePropertyValue basePropertyValue;
+        public long m_value;
+    }
+    public unsafe struct IntegerPropertyValue {
+        public BasePropertyValue basePropertyValue;
+        public int m_value;
+    }
+    public unsafe struct DataFilePropertyValue {
+        public BasePropertyValue basePropertyValue;
+        public uint m_value;
+    }
+    public unsafe struct ArrayPropertyValue {
+        public BasePropertyValue basePropertyValue;
+        public SmartArray<BaseProperty> m_value;
+    }
+    public unsafe struct StringInfoPropertyValue {
+        public BasePropertyValue basePropertyValue;
+        public StringInfo m_value;
+    }
 
     public unsafe struct _Vtbl {
         public static delegate* unmanaged[Thiscall]<Int32*, UInt32, void*> __vecDelDtor; //   void *(__thiscall *__vecDelDtor)(PackObj *this, UInt32);

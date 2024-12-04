@@ -43,7 +43,7 @@ namespace RmlUiNet
             var element = GetElementByTypeName(elementPtr, elementType);
 
             if (null == element) {
-                throw new UnknownElementTypeException(elementType);
+                throw new Exception($"Element type not supported[IntPtr: {elementPtr:X8}]: {elementType} ({elementType == "class Rml::ElementFormControlInput"})");
             }
 
             return element;
@@ -73,7 +73,13 @@ namespace RmlUiNet
                 return ElementTabSet.Create(elementPtr);
             } else if (elementType == "class Rml::ElementText") {
                 return ElementText.Create(elementPtr);
-            } else if (elementType == "class Rml::Element") {
+            }
+            else if (elementType == "class Rml::Element")
+            {
+                return ElementGeneric.Create(elementPtr);
+            }
+            else if (elementType == "class Rml::ElementLabel")
+            {
                 return ElementGeneric.Create(elementPtr);
             }
 

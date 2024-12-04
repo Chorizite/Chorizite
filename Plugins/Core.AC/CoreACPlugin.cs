@@ -18,27 +18,39 @@ using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 using Core.AC.Lib.Screens;
 using Core.AC.Lib.Panels;
+using ACUI.Lib;
+using Core.AC.API;
 
 namespace Core.AC {
-    public class CoreACPlugin : IPluginCore, IScreenProvider<GameScreen>, IPanelProvider<GamePanel>, ISerializeState<ACState> {
+    public class CoreACPlugin : IPluginCore, IScreenProvider<GameScreen>, IPanelProvider<GamePanel>, ISerializeState<PluginState> {
         private readonly Dictionary<GameScreen, string> _registeredGameScreens = [];
         private readonly Dictionary<GamePanel, string> _registeredGamePanels = [];
-        private ACState _state;
+        private readonly Dictionary<GamePanel, string> _registeredCustomPanels = [];
+        private PluginState _state;
+        private Panel? _tooltip;
 
         internal static ILogger Log;
         internal static CoreACPlugin Instance;
+        private TooltipModel _tooltipModel;
+
         internal CoreUIPlugin CoreUI { get; }
         internal NetworkParser Net { get; }
         internal IClientBackend ClientBackend { get; }
 
-        public GameInterface Game { get; private set; }
+        JsonTypeInfo<PluginState> ISerializeState<PluginState>.TypeInfo => SourceGenerationContext.Default.PluginState;
 
+        /// <summary>
+        /// Client API entry point
+        /// </summary>
+        public Game Game => _state.Game;
+
+        /// <summary>
+        /// The current <see cref="GameScreen"/> being shown
+        /// </summary>
         public GameScreen CurrentScreen {
             get => _state.CurrentScreen;
             set => SetScreen(value);
         }
-
-        JsonTypeInfo<ACState> ISerializeState<ACState>.TypeInfo => SourceGenerationContext.Default.ACState;
 
         /// <summary>
         /// Screen changed
@@ -61,19 +73,40 @@ namespace Core.AC {
         }
 
         private void Init() {
-            Game = new GameInterface(Log, Net.Messages);
+            _tooltipModel = new TooltipModel();
 
             CoreUI.RegisterUIModel("CharSelectScreen", _state.CharSelectModel);
             CoreUI.RegisterUIModel("DatPatchScreen", _state.DatPatchModel);
+            CoreUI.RegisterUIModel("Tooltip", _tooltipModel);
 
             RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "screens", "CharSelect.rml"));
             RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "screens", "DatPatch.rml"));
 
-            RegisterPanel(GamePanel.Logs, Path.Combine(AssemblyDirectory, "assets", "panels", "Logs.rml"));
+
+            //RegisterPanel(GamePanel.Logs, Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
 
             ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
 
+            _tooltip = RegisterPanel(GamePanel.Tooltip, Path.Combine(AssemblyDirectory, "assets", "panels", "Tooltip.rml"));
+            ClientBackend.OnShowTooltip += ClientBackend_OnShowTooltip;
+            ClientBackend.OnHideTooltip += ClientBackend_OnHideTooltip;
+
             SetScreen(_state.CurrentScreen, true);
+        }
+
+        private void ClientBackend_OnShowTooltip(object? sender, ShowTooltipEventArgs e) {
+            if (_tooltip is null) return;
+            _tooltip.ScriptableDocument?.LuaContext.SetGlobal("tooltip", e);
+            var x = (ClientBackend as IChoriziteBackend)?.Input.MouseX + 15;
+            var y = (ClientBackend as IChoriziteBackend)?.Input.MouseY;
+            _tooltip.ScriptableDocument?.SetAttribute("style", "left: " + x + "px; top: " + y + "px;");
+            _tooltip.Show();
+
+            e.Eat = true;
+        }
+
+        private void ClientBackend_OnHideTooltip(object? sender, EventArgs e) {
+            //_tooltip?.Hide();
         }
 
         private void SetScreen(GameScreen value, bool force = false) {
@@ -87,12 +120,15 @@ namespace Core.AC {
         }
 
         #region State / Settings Serialization
-        ACState ISerializeState<ACState>.SerializeBeforeUnload() => _state;
+        PluginState ISerializeState<PluginState>.SerializeBeforeUnload() => _state;
 
-        void ISerializeState<ACState>.DeserializeAfterLoad(ACState? state) {
-            _state = state ?? new ACState();
+        void ISerializeState<PluginState>.DeserializeAfterLoad(PluginState? state) {
+            _state = state ?? new PluginState();
             _state.CharSelectModel ??= new CharSelectScreenModel();
             _state.DatPatchModel ??= new DatPatchScreenModel();
+            _state.Game ??= new Game();
+
+            Log.LogDebug($"Initializing CoreACPlugin: {Game.AccountName} // {Game.ServerName} // {Game.State}");
 
             Init();
         }
@@ -129,8 +165,30 @@ namespace Core.AC {
         #endregion // ScreenProvider
 
         #region PanelProvider
-        /// <inheritdoc/>
-        public bool RegisterPanel(GamePanel panel, string rmlPath) {
+        public bool RegisterPanelFromString(string panelName, string rmlContents) {
+            _registeredCustomPanels.TryAdd(CustomPanelFromName(panelName), panelName);
+            return RegisterPanelFromString(CustomPanelFromName(panelName), rmlContents);
+        }
+
+        public bool RegisterPanelFromString(GamePanel panel, string rmlContents) {
+            if (_registeredGamePanels.TryGetValue(panel, out var existingRmlPath)) {
+                CoreUI.UnregisterPanel(panel.ToString(), existingRmlPath);
+                _registeredGamePanels[panel] = rmlContents;
+            }
+            else {
+                _registeredGamePanels.Add(panel, rmlContents);
+            }
+
+            var panelName = panel.ToString();
+            if (_registeredCustomPanels.TryGetValue(panel, out var customPanelName)) {
+                panelName = customPanelName;
+            }
+
+            return CoreUI.RegisterPanelFromString(panelName, rmlContents);
+        }
+
+         /// <inheritdoc/>
+        public Panel? RegisterPanel(GamePanel panel, string rmlPath) {
             if (_registeredGamePanels.TryGetValue(panel, out var existingRmlPath)) {
                 CoreUI.UnregisterPanel(panel.ToString(), existingRmlPath);
                 _registeredGamePanels[panel] = rmlPath;
@@ -143,16 +201,25 @@ namespace Core.AC {
         }
 
         /// <inheritdoc/>
-        public void UnregisterPanel(GamePanel panel, string rmlPath) {
-            if (_registeredGamePanels.TryGetValue(panel, out var rmlFile) && rmlFile == rmlPath) {
-                _registeredGamePanels.Remove(panel);
+        public void UnregisterPanel(GamePanel panel, string? rmlPath) {
+            _registeredGamePanels.Remove(panel);
+
+            var panelName = panel.ToString();
+            if (_registeredCustomPanels.TryGetValue(panel, out var customPanelName)) {
+                panelName = customPanelName;
             }
 
-            CoreUI.UnregisterPanel(panel.ToString(), rmlPath);
+            CoreUI.UnregisterPanel(panelName, rmlPath);
         }
 
         /// <inheritdoc/>
-        public GamePanel CustomPanelFromName(string name) => GamePanelHelpers.FromString(name);
+        public GamePanel CustomPanelFromName(string name) {
+            var customGamePanel = GamePanelHelpers.FromString(name);
+            if (!_registeredCustomPanels.ContainsKey(customGamePanel)) {
+                _registeredCustomPanels.Add(customGamePanel, name);
+            }
+            return customGamePanel;
+        }
 
         /// <inheritdoc/>
         public bool IsPanelVisible(GamePanel panel) => CoreUI.IsPanelVisible(panel.ToString());
@@ -163,6 +230,8 @@ namespace Core.AC {
 
         protected override void Dispose() {
             ClientBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
+            ClientBackend.OnShowTooltip -= ClientBackend_OnShowTooltip;
+            ClientBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
 
             CoreUI.Screen = "None";
 
@@ -178,9 +247,11 @@ namespace Core.AC {
 
             CoreUI.UnregisterUIModel("CharSelectScreen", _state.CharSelectModel);
             CoreUI.UnregisterUIModel("DatPatchScreen", _state.DatPatchModel);
+            CoreUI.UnregisterUIModel("Tooltip", _tooltipModel);
 
             _state.CharSelectModel.Dispose();
             _state.DatPatchModel.Dispose();
+            _tooltipModel.Dispose();
 
             Game.Dispose();
             Instance = null!;

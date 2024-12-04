@@ -14,6 +14,7 @@ namespace RmlUiNet
         private Native.RenderInterface.OnReleaseTexture _onReleaseTexture;
         private Native.RenderInterface.OnEnableScissorRegion _onEnableScissorRegion;
         private Native.RenderInterface.OnSetScissorRegion _onSetScissorRegion;
+        private Native.RenderInterface.OnSetTransform _onSetTransform;
 
         internal static RenderInterface? Create(IntPtr nativePtr) {
             return GetOrCreateCache(nativePtr, ptr => new RenderInterface(ptr));
@@ -33,6 +34,7 @@ namespace RmlUiNet
             _onReleaseTexture = ReleaseTexture;
             _onEnableScissorRegion = EnableScissorRegion;
             _onSetScissorRegion = SetScissorRegion;
+            _onSetTransform = SetTransform;
 
             NativePtr = Native.RenderInterface.Create(
                 _onCompileGeometry,
@@ -42,7 +44,8 @@ namespace RmlUiNet
                 _onGenerateTexture,
                 _onReleaseTexture,
                 _onEnableScissorRegion,
-                _onSetScissorRegion
+                _onSetScissorRegion,
+                _onSetTransform
             );
 
             ManuallyRegisterCache(NativePtr, this);
@@ -83,6 +86,11 @@ namespace RmlUiNet
         }
 
         public virtual void SetScissorRegion(int x, int y, int width, int height)
+        {
+
+        }
+
+        public virtual void SetTransform(IntPtr transform)
         {
 
         }

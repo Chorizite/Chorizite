@@ -397,6 +397,14 @@ namespace XLua
             System.GC.WaitForPendingFinalizers();
         }
 
+        internal virtual void PreDispose() {
+            translator.methodWrapsCache._evtHandlerDelegates.Clear(); //clear all event handler deleg
+            GC();
+            Tick();
+            System.GC.Collect();
+            System.GC.WaitForPendingFinalizers();
+        }
+
         public virtual void Dispose(bool dispose)
         {
 #if THREAD_SAFE || HOTFIX_ENABLE
@@ -404,9 +412,15 @@ namespace XLua
             {
 #endif
                 if (disposed) return;
-                
+            
+                PreDispose();
                 customLoaders.Clear();
-                Tick();
+                for (var i = 0; i < 10; i++) {
+                    GC();
+                    Tick();
+                    System.GC.Collect();
+                    System.GC.WaitForPendingFinalizers();
+                }
 
                 if (!translator.AllDelegateBridgeReleased())
                 {
@@ -414,7 +428,6 @@ namespace XLua
                 }
                 
                 ObjectTranslatorPool.Instance.Remove(L);
-
                 LuaAPI.lua_close(L);
                 translator = null;
 

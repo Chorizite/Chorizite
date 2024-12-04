@@ -5,6 +5,7 @@ using System.Text;
 using Chorizite.ACProtocol.Enums;
 using Chorizite.ACProtocol.Messages;
 using Chorizite.ACProtocol.Types;
+using Chorizite.Common;
 
 namespace Chorizite.ACProtocol {
     /// <summary>
@@ -116,7 +117,7 @@ namespace Chorizite.ACProtocol {
     /// <summary>
     /// Contains data about an unknown fragment
     /// </summary>
-    public class UnknownMessageEventArgs {
+    public class UnknownMessageEventArgs : EatableEventArgs {
         public MessageDirection Direction { get; }
         public uint OpCode { get; }
         public byte[] RawData { get; }

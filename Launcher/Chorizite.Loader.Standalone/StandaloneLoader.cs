@@ -43,6 +43,7 @@ namespace Chorizite.Loader.Standalone {
                 NetHooks.Init();
                 ACClientHooks.Init();
                 ChatHooks.Init();
+                UIHooks.Init();
             }
             catch (Exception ex) {
                 Log.LogError(ex, "Failed to initialize hooks");
@@ -51,14 +52,19 @@ namespace Chorizite.Loader.Standalone {
         }
 
         public static void Startup(int unmanagedD3DPtr) {
-            UnmanagedD3DPtr = unmanagedD3DPtr;
-            Config = new ChoriziteConfig(ChoriziteEnvironment.Client, _pluginDirectory, _dataDirectory, _logDirectory, Environment.CurrentDirectory);
-            ChoriziteInstance = new Chorizite<ACChoriziteBackend>(Config);
+            try {
+                UnmanagedD3DPtr = unmanagedD3DPtr;
+                Config = new ChoriziteConfig(ChoriziteEnvironment.Client, _pluginDirectory, _dataDirectory, _logDirectory, Environment.CurrentDirectory);
+                ChoriziteInstance = new Chorizite<ACChoriziteBackend>(Config);
 
-            Backend = (ChoriziteInstance.Backend as ACChoriziteBackend)!;
-            Render = (ChoriziteInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface)!;
-            Input = (ChoriziteInstance.Scope.Resolve<IInputManager>() as Win32InputManager)!;
-            Net = ChoriziteInstance.Scope.Resolve<NetworkParser>();
+                Backend = (ChoriziteInstance.Backend as ACChoriziteBackend)!;
+                Render = (ChoriziteInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface)!;
+                Input = (ChoriziteInstance.Scope.Resolve<IInputManager>() as Win32InputManager)!;
+                Net = ChoriziteInstance.Scope.Resolve<NetworkParser>();
+            }
+            catch (Exception ex) {
+                Log.LogError(ex, "Failed to initialize Chorizite");
+            }
         }
     }
 }

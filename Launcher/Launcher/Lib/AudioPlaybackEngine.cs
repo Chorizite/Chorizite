@@ -19,27 +19,17 @@ namespace Launcher.Lib {
             outputDevice.Play();
         }
 
-        public void PlaySound(string fileName) {
-            var input = new AudioFileReader(fileName);
-            AddMixerInput(new AutoDisposeFileReader(input));
-        }
-
-        private ISampleProvider ConvertToRightChannelCount(ISampleProvider input) {
-            if (input.WaveFormat.Channels == mixer.WaveFormat.Channels) {
-                return input;
-            }
-            if (input.WaveFormat.Channels == 1 && mixer.WaveFormat.Channels == 2) {
-                return new MonoToStereoSampleProvider(input);
-            }
-            throw new NotImplementedException("Not yet implemented this channel count conversion");
+        public void PlaySound(Stream fileName) {
+            var input = new WaveFileReader(fileName);
+            AddMixerInput(new AutoDisposeWaveReader(input));
         }
 
         public void PlaySound(CachedSound sound) {
             AddMixerInput(new CachedSoundSampleProvider(sound));
         }
 
-        private void AddMixerInput(ISampleProvider input) {
-            mixer.AddMixerInput(ConvertToRightChannelCount(input));
+        private void AddMixerInput(IWaveProvider input) {
+            mixer.AddMixerInput(input);
         }
 
         public void Dispose() {
@@ -63,7 +53,7 @@ namespace Launcher.Lib {
             }
         }
     }
-    class CachedSoundSampleProvider : ISampleProvider {
+    class CachedSoundSampleProvider : IWaveProvider {
         private readonly CachedSound cachedSound;
         private long position;
 
@@ -71,7 +61,7 @@ namespace Launcher.Lib {
             this.cachedSound = cachedSound;
         }
 
-        public int Read(float[] buffer, int offset, int count) {
+        public int Read(byte[] buffer, int offset, int count) {
             var availableSamples = cachedSound.AudioData.Length - position;
             var samplesToCopy = Math.Min(availableSamples, count);
             Array.Copy(cachedSound.AudioData, position, buffer, offset, samplesToCopy);
@@ -81,15 +71,15 @@ namespace Launcher.Lib {
 
         public WaveFormat WaveFormat { get { return cachedSound.WaveFormat; } }
     }
-    class AutoDisposeFileReader : ISampleProvider {
-        private readonly AudioFileReader reader;
+    class AutoDisposeWaveReader : IWaveProvider {
+        private readonly WaveFileReader reader;
         private bool isDisposed;
-        public AutoDisposeFileReader(AudioFileReader reader) {
+        public AutoDisposeWaveReader(WaveFileReader reader) {
             this.reader = reader;
             this.WaveFormat = reader.WaveFormat;
         }
 
-        public int Read(float[] buffer, int offset, int count) {
+        public int Read(byte[] buffer, int offset, int count) {
             if (isDisposed)
                 return 0;
             int read = reader.Read(buffer, offset, count);

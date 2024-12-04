@@ -16,13 +16,27 @@ using System.IO;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 using Core.UI.Lib.Fonts;
-using XLua;
+using Chorizite.Core.Dats;
+using Cortex.Net.Api;
+using Core.UI.Lib.RmlUi.VDom;
+using System.Xml.Linq;
+using System.Linq;
+using Cortex.Net;
+using Chorizite.Core.Render;
+using System.Threading.Tasks;
+using Cortex.Net.Types;
 
 namespace Core.UI {
     /// <summary>
     /// This is the main plugin class. When your plugin is loaded, Startup() is called, and when it's unloaded Shutdown() is called.
     /// </summary>
     public class CoreUIPlugin : IPluginCore, ISerializeState<UIState> {
+        internal static ILogger Log;
+        internal static Context? RmlContext;
+        internal readonly IChoriziteBackend Backend;
+        internal ScriptableDocumentInstancer ScriptableDocumentInstancer;
+        internal readonly IPluginManager PluginManager;
+
         private Dictionary<string, UIDataModel> _models = [];
         private readonly Dictionary<string, string> _gameScreenRmls = [];
         private readonly Dictionary<string, Panel> _gamePanelRmls = [];
@@ -34,18 +48,18 @@ namespace Core.UI {
         private bool _isDebugging;
         private UIState _state;
 
-        internal static ILogger Log;
-        internal readonly IChoriziteBackend Backend;
+        private readonly IDatReaderInterface _dat;
+
+        private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
+        private RenderObjElementInstancer _renderObjInstancer;
+        private bool _needsViewportUpdate;
+        private Panel? _panel;
+
+        public PanelManager PanelManager { get; private set; }
 
         public FontManager FontManager { get; }
 
-        internal readonly IPluginManager PluginManager;
-        private ScriptableDocumentInstancer _scriptableDocumentInstancer;
-        private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
-        internal static Context? RmlContext;
-        private bool _needsViewportUpdate;
-
-        public PanelManager PanelManager { get; private set; }
+        public Context? Context => RmlContext;
 
         /// <summary>
         /// The current screen
@@ -70,12 +84,13 @@ namespace Core.UI {
         }
         private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, ILogger log) : base(manifest) {
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, IDatReaderInterface dat, ILogger log) : base(manifest) {
             Instance = this;
             Log = log;
             PluginManager = pluginManager;
             Backend = ChoriziteBackend;
             FontManager = new FontManager(Log);
+            _dat = dat;
 
             var rmlUINativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
             Log?.LogTrace($"Manually pre-loading {rmlUINativePath}");
@@ -88,6 +103,156 @@ namespace Core.UI {
 
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
             Backend.Renderer.OnGraphicsPostReset += Renderer_OnGraphicsPostReset;
+
+            _panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
+            _panel.OnAfterReload += Panel_OnAfterReload;
+            MakeReactive();
+        }
+
+        private void Panel_OnAfterReload(object? sender, EventArgs e) {
+            MakeReactive();
+        }
+
+        // Observable state class
+        [Observable]
+        public class AppState {
+            private int _nextTodoId = 1;
+            private ReactiveHelpers _rx;
+
+            public string Title { get; set; }
+
+            public ICollection<TodoItem> Todos { get; set; }
+
+            public AppState(ReactiveHelpers rx) {
+                _rx = rx;
+            }
+
+            [Action]
+            public void AddTodo(string text, bool isCompleted = false) {
+                Todos.Add(_rx.CreateState(() => new TodoItem { Id = _nextTodoId++, Text = text, IsCompleted = isCompleted }));
+                TaskCount = Todos.Count;
+            }
+
+            [Action]
+            public void ToggleTodo(TodoItem todo) {
+                if (todo is null) return;
+                todo.IsCompleted = !todo.IsCompleted;
+            }
+
+            [Action]
+            public void CompleteTodo(TodoItem todo, bool isCompleted = true) {
+                if (todo is null) return;
+                todo.IsCompleted = isCompleted;
+            }
+
+            [Action]
+            public void RemoveTodo(TodoItem todo) {
+                Todos.Remove(todo);
+                TaskCount = Todos.Count;
+            }
+
+            public override string ToString() {
+                return $"{Title}:\n{string.Join("\n", Todos.Select(x => $"\t[{(x.IsCompleted ? "x" : " ")}] {x.Text}"))}";
+            }
+        }
+
+        // Observable Todo Item
+        [Observable]
+        public class TodoItem {
+            public int Id { get; set; }
+
+            public string Text { get; set; }
+
+            public bool IsCompleted { get; set; }
+        }
+
+        public static int TaskCount = 0;
+
+        private class MyEnhancer : IEnhancer {
+            public T Enhance<T>(T newValue, T originalValue, string name) {
+                return newValue;
+            }
+        }
+
+        private void MakeReactive() {
+            try {
+                return;
+                var doc = _panel?.ScriptableDocument;
+                if (doc is null) return;
+                var rx = doc.Rx;
+
+                // Create a reactive state
+                var state = rx.CreateState(() => new AppState(rx) {
+                    Title = "My Reactive Todo List"
+                });
+
+                // Initial todos
+                state.AddTodo("Learn Cortex.Net", true);
+                state.AddTodo("Build a Virtual DOM");
+
+                var nextTodoId = 1;
+                var AddTodo = new Action<Event>((evt) => {
+                    if (doc.GetElementById("new-todo-text") is ElementFormControlInput input) {
+                        var text = input.GetValue();
+                        if (!string.IsNullOrEmpty(text)) state.AddTodo(text);
+                        else state.AddTodo($"Blank todo {nextTodoId++}");
+                        input.SetValue("");
+                    }
+                });
+
+                var TodoApp = (AppState state) => rx.Div(children: [
+                    // Title
+                    rx.H1(text: state.Title ?? "Todo List"),
+
+                    // form
+                    rx.Div(new() {
+                            { "class", "actions" }
+                        }, children: [
+                        rx.Input(new() {
+                                { "id", "new-todo-text" },
+                                { "type", "text" }
+                            }),
+                        rx.Button(new() {
+                                { "onclick", AddTodo }
+                            },
+                            text: "Add Todo")
+                        ]
+                    ),
+                
+                    // Todo list
+                    rx.Ul(children: state.Todos.Select(todo =>
+                        rx.Li(new() {
+                                { "key", todo.Id },
+                                { "class", todo.IsCompleted ? "completed" : "" }
+                            }, children: [
+                                rx.Input(new() {
+                                        { "type", "checkbox" },
+                                        { "checked", todo.IsCompleted },
+                                        { "onchange", (Action<Event>)((e) => {
+                                            todo.IsCompleted = (e.TargetElement as ElementFormControlInput).HasAttribute("checked");
+                                        }) },
+                                    }
+                                ),
+                                rx.Span(new(){
+                                        { "onclick", (Action<Event>)((e) => state.ToggleTodo(todo)) },
+                                }, text: todo.Text),
+                                rx.Button(new() {
+                                        { "class", "small" },
+                                        { "onclick", (Action<Event>)((e) => state.RemoveTodo(todo)) }
+                                    },
+                                    text: "x"
+                                )
+                            ])
+                    ).ToList())
+                ]);
+
+                doc.Mount(() => TodoApp(state), "#app");
+
+                Log.LogWarning("Reactive state manager initialized");
+            }
+            catch (Exception e) {
+                Log.LogError(e, "Failed to create reactive state manager");
+            }
         }
 
         private void Renderer_OnGraphicsPostReset(object? sender, EventArgs e) {
@@ -129,7 +294,7 @@ namespace Core.UI {
                 Log?.LogError($"Could not find RML file {rmlFilePath}");
                 return false;
             }
-                
+
             // TODO: allow multiple screens
             if (_gameScreenRmls.ContainsKey(name)) {
                 _gameScreenRmls[name] = rmlFilePath;
@@ -177,10 +342,26 @@ namespace Core.UI {
         }
 
 
-        public bool RegisterPanel(string name, string rmlFilePath) {
+        public bool RegisterPanelFromString(string name, string rmlContents) {
+            UnregisterPanel(name, null);
+
+            var panel = PanelManager.CreatePanelFromString(name, rmlContents);
+
+            // TODO: allow multiple panels
+            if (_gamePanelRmls.ContainsKey(name)) {
+                _gamePanelRmls[name] = panel;
+            }
+            else {
+                _gamePanelRmls.Add(name, panel);
+            }
+
+            return true;
+        }
+
+        public Panel? RegisterPanel(string name, string rmlFilePath) {
             if (!File.Exists(rmlFilePath)) {
                 Log?.LogError($"Could not find RML file {rmlFilePath}");
-                return false;
+                return null;
             }
 
             UnregisterPanel(name, rmlFilePath);
@@ -195,14 +376,11 @@ namespace Core.UI {
                 _gamePanelRmls.Add(name, panel);
             }
 
-            return true;
+            return panel;
         }
 
-        public void UnregisterPanel(string name, string rmlFilePath) {
-            if (_gamePanelRmls.TryGetValue(name, out var panel) && panel?.File == rmlFilePath) {
-                _gamePanelRmls.Remove(name);
-            }
-
+        public void UnregisterPanel(string name, string? rmlFilePath) {
+            _gamePanelRmls.Remove(name);
             PanelManager.DestroyPanel(name);
         }
 
@@ -211,12 +389,12 @@ namespace Core.UI {
         }
 
         public void TogglePanelVisibility(string name, bool visible) {
-            
+
         }
 
         #endregion
 
-        private void ToggleDebugger() {
+        internal void ToggleDebugger() {
             if (!_didInitRml || RmlContext is null) return;
 
             if (_isDebugging) {
@@ -258,8 +436,9 @@ namespace Core.UI {
                         .AddParser("string", "none")
                         .GetId();
 
-                    _scriptableDocumentInstancer = new ScriptableDocumentInstancer(Backend, Log);
-                    _scriptableEventListenerInstancer = new ScriptableEventListenerInstancer(_scriptableDocumentInstancer, Log);
+                    ScriptableDocumentInstancer = new ScriptableDocumentInstancer(Backend, Log);
+                    _scriptableEventListenerInstancer = new ScriptableEventListenerInstancer(ScriptableDocumentInstancer, Log);
+                    _renderObjInstancer = new RenderObjElementInstancer(Backend, _dat, Log);
 
                     RmlContext = Rml.CreateContext("viewport", size);
 
@@ -270,6 +449,11 @@ namespace Core.UI {
                     _rmlInput = new RmlInputManager(Backend.Input, RmlContext, Log);
                     PanelManager = new PanelManager(RmlContext, _rmlSystemInterface, Backend.Renderer, Log);
                     _themePlugin = new ThemePlugin(PanelManager, Backend, Log);
+
+
+                    _didInitRml = true;
+                    ToggleDebugger();
+
                     Rml.RegisterPlugin(_themePlugin);
 
                     LoadDefaultFonts();
@@ -278,8 +462,6 @@ namespace Core.UI {
                     foreach (var fontFile in fontFiles) {
                         Rml.LoadFontFace(fontFile);
                     }
-
-                    _didInitRml = true;
                 }
                 else {
                     throw new Exception("Unable to initialize RmlUi");
@@ -320,6 +502,9 @@ namespace Core.UI {
                     _needsViewportUpdate = false;
                 }
                 PanelManager?.Update();
+                ScriptableDocumentInstancer?.Update();
+                _renderObjInstancer?.Update();
+                _themePlugin.Update();
                 RmlContext?.Update();
                 RmlContext?.Render();
             }
@@ -331,23 +516,24 @@ namespace Core.UI {
         private void ShutdownRmlUI() {
             Log?.LogDebug($"ShutdownRmlUI");
 
+            RmlContext?.Dispose();
+
+            if (_didInitRml) {
+                Rml.Shutdown();
+            }
+
             _rmlInput?.Dispose();
 
             foreach (var model in _models.Values) {
                 model.Dispose();
             }
             _models.Clear();
-
-            RmlContext?.Dispose();
             _themePlugin?.Dispose();
-
-            if (_didInitRml) {
-                Rml.Shutdown();
-            }
-            _scriptableDocumentInstancer?.Dispose();
+            ScriptableDocumentInstancer?.Dispose();
             _scriptableEventListenerInstancer?.Dispose();
+            _renderObjInstancer?.Dispose();
             _rmlRenderInterface?.Dispose();
-            _rmlSystemInterface?.Dispose(); 
+            _rmlSystemInterface?.Dispose();
 
             _didInitRml = false;
         }

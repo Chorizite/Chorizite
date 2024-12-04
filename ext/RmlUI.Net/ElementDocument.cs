@@ -1,52 +1,25 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace RmlUiNet
 {
     public class ElementDocument : Element<ElementDocument>
     {
-        private List<Action> _loadHandlers = [];
         private bool _isCustomElement;
         private Native.ElementDocument.OnLoadInlineScript? _onLoadInlineScript;
-        private MyEventListener _eventListener;
+        private Native.ElementDocument.OnLoadExternalScript? _onLoadExternalScript;
+
         #region Properties
 
         #endregion
 
         #region Methods
-
-        private class MyEventListener : EventListener
-        {
-            private List<Action> _handlers;
-
-            public MyEventListener(List<Action> handlers) : base() {
-                _handlers = handlers;
-            }
-
-            public override void ProcessEvent(Event ev)
-            {
-                foreach (var handler in _handlers) {
-                    try
-                    {
-                        handler();
-                    }
-                    catch { }
-                }
-            }
-
-            public override void Dispose()
-            {
-                _handlers = null;
-                base.Dispose();
-            }
-        }
-
         public ElementDocument() : base(IntPtr.Zero, false) {
             _isCustomElement = true;
             _onLoadInlineScript = OnLoadInlineScript;
+            _onLoadExternalScript = OnLoadExternalScript;
 
-            NativePtr = Native.ElementDocument.Create(_onLoadInlineScript);
-            _eventListener = new MyEventListener(_loadHandlers);
-            AddEventListener("load", _eventListener);
+            NativePtr = Native.ElementDocument.Create(_onLoadInlineScript, _onLoadExternalScript);
         }
 
         protected ElementDocument(IntPtr ptr, bool automaticallyRegisterInCache)
@@ -54,12 +27,14 @@ namespace RmlUiNet
         {
         }
 
-        public void OnLoad(Action onLoad) {
-            _loadHandlers.Add(onLoad);
+        public virtual void OnLoadInlineScript(string context, string source_path, int source_line)
+        {
+
         }
 
-        public virtual void OnLoadInlineScript(string context, string source_path, int source_line) {
-        
+        public virtual void OnLoadExternalScript(string source_path)
+        {
+
         }
 
         /// <summary>
@@ -90,6 +65,46 @@ namespace RmlUiNet
         }
 
         /// <summary>
+        /// Set the title of the document.
+        /// </summary>
+        /// <param name="title"></param>
+        public void SetTitle(string title) {
+            Native.ElementDocument.SetTitle(NativePtr, title);
+        }
+
+        /// <summary>
+        /// Get the title of the document.
+        /// </summary>
+        /// <returns></returns>
+        public string GetTitle()
+        {
+            var strPtr = Native.ElementDocument.GetTitle(NativePtr);
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue ?? "";
+        }
+
+        public string GetSourceURL()
+        {
+            var strPtr = Native.ElementDocument.GetSourceURL(NativePtr);
+            var strValue = Marshal.PtrToStringAnsi(strPtr);
+            Marshal.FreeHGlobal(strPtr);
+            return strValue ?? "";
+        }
+
+        /*
+        /// <summary>
+        /// Create an element with the given tag name.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public IntPtr CreateElement(string tagName)
+        {
+            return Native.ElementDocument.CreateElement(NativePtr, tagName);
+        }
+        */
+
+        /// <summary>
         /// Close the document.
         /// </summary>
         /// <remarks>
@@ -109,10 +124,6 @@ namespace RmlUiNet
         {
             if (_isCustomElement)
             {
-                RemoveEventListener("load", _eventListener);
-                _eventListener.Dispose();
-                _eventListener = null;
-                _loadHandlers = null;
                 Native.ElementDocument.Free(NativePtr);
             }
             base.Dispose();

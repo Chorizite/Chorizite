@@ -386,9 +386,5 @@ namespace XLua
         {
             return "table :" + luaReference;
         }
-
-        internal void Set(string v, object print) {
-            throw new NotImplementedException();
-        }
     }
 }

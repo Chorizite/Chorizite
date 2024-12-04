@@ -30,6 +30,10 @@ namespace Core.Launcher.UIModels {
                 CoreLauncherPlugin.Instance?.LauncherBackend.LaunchClient(ClientPath.Value, Server.Value, Username.Value, Password.Value);
             });
 
+            BindAction("test", (evt, variants) => {
+                CoreLauncherPlugin.Log?.LogDebug("test");
+            });
+
             BindAction("exit", (evt, variants) => {
                 CoreLauncherPlugin.Instance?.LauncherBackend.Exit();
             });

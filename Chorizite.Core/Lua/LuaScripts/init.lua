@@ -1,47 +1,56 @@
 ﻿-- global lua init, this is called each time a lua script is loaded in a new LuaEnv
-require('framework.System')
-local TaskAwaiter = require('framework.AsyncTask')
-
+local _sleep = __sleep
+__sleep = nil
+      
+--- create a managed coroutine
+--- (coroutine.resume will be called automatically for you until the thread is dead)
+function coroutine.create_managed(func)
+    local co = coroutine.create(func)
+    context:AddManagedCoroutine(co)
+    return co
+end
+      
+--- await a task / async function
+function await(task)
+    assert(task ~= nil,"The task is nil")
+    assert(type(task) == 'userdata' or type(task) == 'thread', "The task is should be a userdata Task or a lua thread")
+    if (type(task) == 'thread') then
+        -- convert the lua thread to a task
+        task = context:AddManagedTask(task)
+    end
+            
+    assert(task:GetType():IsAssignableTo(typeof(CS.System.Threading.Tasks.Task)), "The task is not castable to System.Threading.Task")
+                      
+    -- bail early if the tast is already completed
+    if task.IsCompleted then
+        return task.Result
+    end
+                        
+    -- yield the task, this will wait to resume the coroutine until the task is completed
+    coroutine.yield(task)
+                
+    if type(task.Result) == 'userdata' and task.Result:GetType():ToString() == 'System.Object[]' then
+        if task.Result.Length == 0 then
+            return
+        end
+        local res = {}
+        for i=0,task.Result.Length-1 do
+            table.insert(res, task.Result[i])
+        end
+        return table.unpack(res)
+    end
+      
+    return task.Result
+end
+      
+--- wrap a function into an async function that supports await / yielding
+function async(func)
+    return function(...)
+        return context:AddManagedCoroutine(coroutine.create(func), ...)
+    end
+end
+      
+--- sleep for a number of milliseconds
 function sleep(milliseconds)
-	local result = __sleep(milliseconds);
-	local status, awaiter
-	if type(result)=='table' and iskindof(result,"TaskAwaiter") then	
-		awaiter = result
-	elseif type(result) == 'userdata' or type(result) == 'table' then
-		status, awaiter = pcall(result.GetAwaiter,result)
-		if not status then
-			error("The parameter of the await() is error,not found the GetAwaiter() in the "..tostring(result))
-		end
-	else
-		error("The parameter of the await() is error, this is a function, please enter a table or userdata")
-	end
-	
-	if awaiter.IsCompleted then
-		local value = awaiter:GetResult()
-		if type(value) == 'table' and awaiter.Packaged then
-			return table.unpack(value)
-		else
-			return value
-		end
-	end
-	
-	local id = coroutine.running()
-	local isYielded = false
-	awaiter:OnCompleted(function()			
-			if isYielded then
-				coroutine.resume(id)
-			end
-		end)
-	
-	if not awaiter.IsCompleted then
-		isYielded = true
-		coroutine.yield()
-	end
-	
-	local value = awaiter:GetResult()
-	if type(value) == 'table' and awaiter.Packaged then
-		return table.unpack(value)
-	else
-		return value
-	end
+    coroutine.yield(_sleep(milliseconds))
 end

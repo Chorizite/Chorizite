@@ -451,6 +451,8 @@ namespace XLua
             return delegateCache[type];
         }
 
+        internal List<object> _evtHandlerDelegates = [];
+
         public LuaCSFunction GetEventWrap(Type type, string eventName)
         {
             if (!methodsCache.ContainsKey(type))
@@ -500,6 +502,8 @@ namespace XLua
                             {
                                 return LuaAPI.luaL_error(L, "invalid #" + (start_idx + 2) + ", needed:" + eventInfo.EventHandlerType);
                             }
+                            _evtHandlerDelegates.Add(handlerDelegate);
+                            
                             switch (LuaAPI.lua_tostring(L, start_idx + 1))
                             {
                                 case "+":

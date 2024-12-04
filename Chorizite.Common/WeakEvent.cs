@@ -5,13 +5,17 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Chorizite.Common {
-    public class WeakEvent<TEventArgs> {
+    public class WeakEvent {
+        public static ILogger? Log { get; set; }
+
+    }
+
+    public class WeakEvent<TEventArgs> : WeakEvent {
         private readonly List<WeakReference<EventHandler<TEventArgs>>> _listeners = [];
 
         // Keep the delegates alive with their target. This prevent anonymous delegates from being garbage collected prematurely.
         private readonly ConditionalWeakTable<object, List<object>> _delegateKeepAlive = new();
 
-        public static ILogger? Log { get; set; }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         public void Subscribe(EventHandler<TEventArgs> handler) {

@@ -23,6 +23,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetInnerRml")]
         public static extern void SetInnerRml(IntPtr element, string rml);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetInnerRml")]
+        public static extern IntPtr GetInnerRml(IntPtr element);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_Focus")]
         public static extern bool Focus(IntPtr element);
 
@@ -53,6 +56,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetAttributeString")]
         public static extern IntPtr GetAttributeString(IntPtr element, string attributeName, string defaultValue);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetAttributeString")]
+        public static extern IntPtr SetAttributeString(IntPtr element, string attributeName, string value);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetPropertyString")]
         public static extern IntPtr GetPropertyString(IntPtr element, string propertyName);
 
@@ -61,5 +67,44 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetPropertyById")]
         public static extern IntPtr GetPropertyById(IntPtr element, int propertyId);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetProperty")]
+        public static extern IntPtr SetProperty(IntPtr element, string propertyName, string value);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetElementTypeName")]
+        public static extern IntPtr GetElementTypeName(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_AppendChild")]
+        public static extern IntPtr AppendChild(IntPtr element, IntPtr elementToRemove, bool addToDom);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_AppendChildTag")]
+        public static extern IntPtr AppendChildTag(IntPtr element, string tagName, bool addToDom);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_RemoveChild")]
+        public static extern void RemoveChild(IntPtr element, IntPtr elementToAppend);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_ScrollTo")]
+        public static extern IntPtr ScrollTo(IntPtr element, float x, float y, int behavior);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_SetClass")]
+        public static extern IntPtr SetClass(IntPtr element, string className, bool enable);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_GetParentNode")]
+        public static extern IntPtr GetParentNode(IntPtr element);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_ReplaceChild")]
+        public static extern void ReplaceChild(IntPtr element, IntPtr elementToInsert, IntPtr elementToReplace);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_QuerySelector")]
+        public static extern IntPtr QuerySelector(IntPtr element, string selector);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_HasClass")]
+        public static extern bool HasClass(IntPtr element, string className);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_HasAttribute")]
+        public static extern bool HasAttribute(IntPtr element, string attributeName);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_RemoveAttribute")]
+        public static extern void RemoveAttribute(IntPtr element, string attributeName);
     }
 }

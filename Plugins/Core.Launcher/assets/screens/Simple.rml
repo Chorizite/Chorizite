@@ -10,6 +10,8 @@
         height: 232dp;
         display: block;
         background: #FF00FF;
+        width: 800dp;
+        height: 600dp;
       }
 
       .window {
@@ -105,7 +107,6 @@
         font-size: 22px;
         font-weight: bold;
         display: inline-block;
-        click-sound: 0x0A0003B3;
     }
     </style>
   </head>
@@ -138,6 +139,7 @@
           </label>
           <div class="actions">
             <button id="launch-button" data-event-click="launch()">Launch</button>
+            <button id="test-button" data-event-click="test()">test</button>
           </div>
         </div>
       </div>

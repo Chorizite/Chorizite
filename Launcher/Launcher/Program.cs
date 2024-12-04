@@ -46,7 +46,9 @@ namespace Launcher {
                 Input.Update();
                 Renderer.Update();
                 Renderer.Render();
-                Thread.Sleep(10);
+                if (!Renderer.HasFocus) {
+                    Thread.Sleep(20);
+                }
             }
 
             Input?.HandleShutdown();

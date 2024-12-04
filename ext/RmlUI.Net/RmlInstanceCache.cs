@@ -30,11 +30,18 @@ namespace RmlUiNet
                 return default;
             }
 
-            if (!_cache.ContainsKey(ptr)) {
-                _cache.Add(ptr, createInstance(ptr));
+            if (!_cache.TryGetValue(ptr, out IRmlBase? value)) {
+                value = createInstance(ptr);
+                _cache.Add(ptr, value);
+            }
+            if (value is not T && value.GetType() == typeof(ElementGeneric))
+            {
+                _cache.Remove(ptr);
+                value = createInstance(ptr);
+                _cache.Add(ptr, value);
             }
 
-            return _cache[ptr] as T;
+            return value as T;
         }
 
         public void ManuallyRegisterCache(IntPtr ptr, IRmlBase instance)

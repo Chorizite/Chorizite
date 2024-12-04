@@ -1149,7 +1149,75 @@ namespace AcClient {
 
 
 
+    public enum UIElement_SmartBoxWrapper_SearchReason : int {
+        sr_None = 0x0,
+        sr_MouseOver = 0x1,
+        sr_Select = 0x2,
+        sr_Examine = 0x3,
+        sr_Use = 0x4,
+        sr_Drop = 0x5,
+        sr_Drag = 0x6,
+        sr_TargetedUse = 0x7,
+    };
 
+    public unsafe struct UIElement_SmartBoxWrapper {
+        public gmNoticeHandler b;
+        public UIElement_Field a;
+        public uint m_cFlipCount;
+        public double m_timeNextFlip;
+        public uint m_iidUnderMouse;
+        public uint m_iidSelectedObject;
+        public UIElement_SmartBoxWrapper_SearchReason m_SearchReason;
+        public bool m_fMouseMovementActive;
+        public bool m_fMouseMovementInProgress;
+        public SECTION_3D m_CurrentSection;
+        public uint m_dropItemID;
+        public uint m_targetMode;
+        public UIElement* m_dragIcon;
+    }
+
+    public unsafe struct VividTargetIndicator {
+        public gmNoticeHandler gmNoticeHandler;
+        public QualityChangeHandler qualityChangeHandler;
+        public uint m_idSelectedTarget;
+        public RGBAColor m_clrSelectedObjectColor;
+        public uint m_vtiCurrent;
+        public RGBAColor m_clrOnScreen;
+        public RGBAColor m_clrOffScreen;
+        public SmartArray<PTR<RenderSurface>> m_rgSourceImages;
+        public UIElement* m_pOffScreen;
+        public UIElement* m_pOnScreen;
+        public SmartArray<PTR<UIElement>> m_rgOnScreenCorners;
+        public bool m_bDisplayOn;
+        public bool m_bEnabled;
+    };
+
+    public unsafe struct gmSmartBoxUI {
+        public UIElement_SmartBoxWrapper* m_pSmartBoxWrapper;
+        public SmartBox* m_pSmartBox;
+        public CPhysicsObj* teleportObj;
+        public double gameVDist;
+        public TeleportAnimState teleportAnimState;
+        public double teleportRotationStartTime;
+        public double teleportRotationDuration;
+        public double teleportRotationStartAngle;
+        public double teleportRotationEndAngle;
+        public double teleportTransitionStartTime;
+        public double teleportRotationCurAngle;
+        public float teleportCurVDist;
+        public UIElement_Text* m_pFPSDisplay;
+        public UIElement_Viewport* m_pPortalSpace;
+        public VividTargetIndicator m_vti;
+        public uint m_eWindowID;
+        public UIElement* m_pTopBorder;
+        public UIElement* m_pLeftBorder;
+        public UIElement* m_pBottomBorder;
+        public UIElement* m_pRightBorder;
+        public UIElement* m_pTopLeftCorner;
+        public UIElement* m_pTopRightCorner;
+        public UIElement* m_pBottomLeftCorner;
+        public UIElement* m_pBottomRightCorner;
+    };
 
 
 
@@ -1641,7 +1709,6 @@ namespace AcClient {
         public UIElement a0;
         public sbyte m_rolloverStateChange;
         public UInt32 m_oldState;
-        public int padding;
         public override string ToString() => $"a0(UIElement):{a0}, m_rolloverStateChange:{m_rolloverStateChange:X2}, m_oldState:{m_oldState:X8}";
 
         // Functions:
@@ -1667,6 +1734,7 @@ namespace AcClient {
         // UIElement_Field.DynamicCast:
         public UIElement* DynamicCast(UInt32 i_eType) => ((delegate* unmanaged[Thiscall]<ref UIElement_Field, UInt32, UIElement*>)0x004726A0)(ref this, i_eType); // .text:004722E0 ; UIElement *__thiscall UIElement_Field::DynamicCast(UIElement_Field *this, unsigned int i_eType) .text:004722E0 ?DynamicCast@UIElement_Field@@UAEPAVUIElement@@K@Z
     }
+
     public unsafe struct UIElement_UIItem {
         // Struct:
         public UIElement_Field a0;
@@ -3240,7 +3308,7 @@ namespace AcClient {
         // UIElementManager.DrawRegionWithObject:
         public void DrawRegionWithObject(UIElement* i_pElementWithObject, UIObject** io_pPrevObject) => ((delegate* unmanaged[Thiscall]<ref UIElementManager, UIElement*, UIObject**, void>)0x0045AD80)(ref this, i_pElementWithObject, io_pPrevObject); // .text:0045AC70 ; void __thiscall UIElementManager::DrawRegionWithObject(UIElementManager *this, UIElement *i_pElementWithObject, UIObject **io_pPrevObject) .text:0045AC70 ?DrawRegionWithObject@UIElementManager@@QAEXPAVUIElement@@AAPAVUIObject@@@Z
 
-        
+
         //public static ClientCombatSystem* GetCombatSystem() => ((delegate* unmanaged[Cdecl]<ClientCombatSystem*>)0x0056B210)(); // .text:0056A4D0 ; ClientCombatSystem *__cdecl ClientCombatSystem::GetCombatSystem() .text:0056A4D0 ?GetCombatSystem@ClientCombatSystem@@SAPAV1@XZ
 
         // UIElementManager.GetElement:

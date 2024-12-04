@@ -105,7 +105,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static IntPtr WndProcImpl(IntPtr hwnd, uint uMsg, IntPtr wParam, IntPtr lParam) {
-            if (StandaloneLoader.Input.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam)) {
+            if (StandaloneLoader.Input?.HandleWindowMessage((int)hwnd, (WindowMessageType)uMsg, (int)wParam, (int)lParam) == true) {
                 return IntPtr.Zero;
             }
             return _windowProcHook.OriginalFunction.Invoke(hwnd, uMsg, wParam, lParam);

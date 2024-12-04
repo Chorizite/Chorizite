@@ -40,7 +40,7 @@ namespace Launcher {
             var cbase = Marshal.AllocHGlobal(entryPointParams.Length * sizeof(EntryPointParameters));
             var ccur = cbase;
             for (int i = 0; i < entryPointParams.Length; i++, ccur += sizeof(EntryPointParameters)) {
-                Console.WriteLine($"Injecting: {entryPointParams[i].dll_path} {entryPointParams[i].entry_point}");
+                Launcher.Program.Log.LogDebug($"Injecting: {entryPointParams[i].dll_path} {entryPointParams[i].entry_point}");
                 Marshal.StructureToPtr(entryPointParams[i], ccur, false);
             }
 

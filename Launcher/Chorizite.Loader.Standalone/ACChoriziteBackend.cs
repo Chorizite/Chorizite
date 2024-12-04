@@ -20,16 +20,29 @@ using ChatType = Chorizite.Core.Backend.ChatType;
 using System.Text;
 using System.Linq;
 using SharpDX;
+using DatReaderWriter.DBObjs;
+using System.IO;
+using System.Collections.Generic;
+using SharpDX.Multimedia;
+using NAudio.Wave;
+using WaveFormat = NAudio.Wave.WaveFormat;
+using NAudio.Wave.SampleProviders;
+using Chorizite.Loader.Standalone.Lib;
 
 namespace Chorizite.Loader.Standalone {
     public unsafe class ACChoriziteBackend : IClientBackend, IChoriziteBackend {
+        private readonly AudioPlaybackEngine _engine;
+        private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
         private int _previousGameScreen = (int)UIMode.None;
 
         public IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
 
         public IInputManager Input { get; }
+        public ILogger Log { get; }
         public Win32InputManager Win32Input { get; }
+        /// <inheritdoc/>
+        public IDatReaderInterface DatReader { get; }
 
         public int GameScreen {
             get => ((IntPtr)UIFlow.m_instance == IntPtr.Zero || *UIFlow.m_instance is null) ? 0 : (int)(*UIFlow.m_instance)->_curMode;
@@ -46,7 +59,20 @@ namespace Chorizite.Loader.Standalone {
             }
         }
 
-        WeakEvent<LogMessageEventArgs> IChoriziteBackend._OnLogMessage { get; } = new();
+        public event EventHandler<LogMessageEventArgs>? OnLogMessage {
+            add { _OnLogMessage.Subscribe(value); }
+            remove { _OnLogMessage.Unsubscribe(value); }
+        }
+        WeakEvent<LogMessageEventArgs> _OnLogMessage { get; } = new();
+
+        /// <summary>
+        /// Handle a log message.
+        /// </summary>
+        /// <param name="logLevel"></param>
+        /// <param name="message"></param>
+        public virtual void HandleLogMessage(LogMessageEventArgs evt) => _OnLogMessage.Invoke(this, evt);
+
+        public ChoriziteEnvironment Environment => ChoriziteEnvironment.Client;
 
         private readonly WeakEvent<PacketDataEventArgs> _OnC2SData = new WeakEvent<PacketDataEventArgs>();
         public event EventHandler<PacketDataEventArgs>? OnC2SData {
@@ -78,20 +104,166 @@ namespace Chorizite.Loader.Standalone {
             remove { _OnScreenChanged.Unsubscribe(value); }
         }
 
+        private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragStart = new WeakEvent<GameObjectDragDropEventArgs>();
+        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragStart {
+            add { _OnGameObjectDragStart.Subscribe(value); }
+            remove { _OnGameObjectDragStart.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragEnd = new WeakEvent<GameObjectDragDropEventArgs>();
+        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragEnd {
+            add { _OnGameObjectDragEnd.Subscribe(value); }
+            remove { _OnGameObjectDragEnd.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<ShowTooltipEventArgs> _OnShowTooltip = new WeakEvent<ShowTooltipEventArgs>();
+        public event EventHandler<ShowTooltipEventArgs>? OnShowTooltip {
+            add { _OnShowTooltip.Subscribe(value); }
+            remove { _OnShowTooltip.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<EventArgs> _OnHideTooltip = new WeakEvent<EventArgs>();
+        public event EventHandler<EventArgs>? OnHideTooltip {
+            add { _OnHideTooltip.Subscribe(value); }
+            remove { _OnHideTooltip.Unsubscribe(value); }
+        }
+
         public static IChoriziteBackend Create(IContainer container) {
             var renderer = new DX9RenderInterface(StandaloneLoader.UnmanagedD3DPtr, container.Resolve<ILogger<DX9RenderInterface>>(), container.Resolve<IDatReaderInterface>());
             var input = new Win32InputManager(container.Resolve<ILogger<Win32InputManager>>());
 
-            return new ACChoriziteBackend(renderer, input);
+            return new ACChoriziteBackend(renderer, input, container.Resolve<ILogger<ACChoriziteBackend>>(), container.Resolve<IDatReaderInterface>());
         }
 
-        private ACChoriziteBackend(DX9RenderInterface renderer, Win32InputManager input) {
+        private ACChoriziteBackend(DX9RenderInterface renderer, Win32InputManager input, ILogger log, IDatReaderInterface datReader) {
             DX9Renderer = renderer;
             Renderer = renderer;
             Win32Input = input;
             Input = input;
+            Log = log;
+            DatReader = datReader;
         }
 
+        public bool EnterGame(uint characterId) {
+            // Todo: check that it is a valid character id
+            if ((*UIFlow.m_instance)->_curMode != UIMode.CharacterManagementUI) {
+                return false;
+            }
+            return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
+        }
+
+        public void AddChatText(string text, ChatType type = ChatType.Default) {
+            ChatHooks.AddChatText(text, (eChatTypes)type);
+        }
+
+        public void PlaySound(uint soundId) {
+            try {
+                if (DatReader.TryGet<Wave>(soundId, out var sound)) {
+                    var stream = new MemoryStream();
+                    using var binaryWriter = new BinaryWriter(stream, System.Text.Encoding.Default, true);
+
+                    binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
+
+                    uint filesize = (uint)(sound.Data.Length + 36); // 36 is added for all the extra we're adding for the WAV header format
+                    binaryWriter.Write(filesize);
+
+                    binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));
+
+                    binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("fmt"));
+                    binaryWriter.Write((byte)0x20); // Null ending to the fmt
+
+                    binaryWriter.Write((int)0x10); // 16 ... length of all the above
+
+                    // AC audio headers start at Format Type,
+                    // and are usually 18 bytes, with some exceptions
+                    // notably objectID A000393 which is 30 bytes
+
+                    // WAV headers are always 16 bytes from Format Type to end of header,
+                    // so this extra data is truncated here.
+                    binaryWriter.Write(sound.Header.Take(16).ToArray());
+
+                    binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("data"));
+                    binaryWriter.Write((uint)sound.Data.Length);
+                    binaryWriter.Write(sound.Data);
+                    binaryWriter.Flush();
+                    binaryWriter.Close();
+                    stream.Position = 0;
+
+                    ReadBitRate(stream, out var numChannels, out var sampleRate, out var bitRate);
+
+                    if (!_audioEngines.TryGetValue(sampleRate, out var _engine)) {
+                        _engine = new AudioPlaybackEngine(sampleRate, numChannels);
+                        _audioEngines.Add(sampleRate, _engine);
+                    }
+
+                    _engine.PlaySound(stream);
+                }
+                else {
+                    Log.LogDebug($"Sound {soundId:X8} not found");
+                }
+            }
+            catch (Exception ex) {
+                Log.LogError(ex, $"Failed to play sound {soundId:X8}");
+            }
+
+        }
+
+        private static bool ReadBitRate(Stream stream, out int numChannels, out int sampleRate, out int bitRate) {
+            using (BinaryReader reader = new BinaryReader(stream, System.Text.Encoding.Default, true)) {
+                // Skip RIFF header (4 bytes) and file size (4 bytes)
+                reader.BaseStream.Position = 8;
+
+                // Read WAVE format marker (4 bytes)
+                string format = new string(reader.ReadChars(4));
+                if (format != "WAVE") {
+                    throw new InvalidDataException("Not a valid WAV file");
+                }
+
+                // Read "fmt " chunk marker (4 bytes)
+                string fmtMarker = new string(reader.ReadChars(4));
+                if (fmtMarker != "fmt ") {
+                    throw new InvalidDataException("Cannot find fmt chunk");
+                }
+
+                // Read chunk size (4 bytes)
+                int chunkSize = reader.ReadInt32();
+
+                // Read audio format (2 bytes)
+                short audioFormat = reader.ReadInt16();
+
+                // Read number of channels (2 bytes)
+                numChannels = reader.ReadInt16();
+
+                // Read sample rate (4 bytes)
+                sampleRate = reader.ReadInt32();
+
+                // Read byte rate (4 bytes)
+                int byteRate = reader.ReadInt32();
+
+                // Calculate bit rate
+                bitRate = byteRate * 8;
+
+                stream.Position = 0;
+                return true;
+            }
+        }
+
+        private static delegate* unmanaged[Thiscall]<ClientCommunicationSystem*, PStringBase<ushort>*, int, int> ClientCommunicationSystem_OnChatCommand = (delegate* unmanaged[Thiscall]<ClientCommunicationSystem*, PStringBase<ushort>*, int, int>)0x005821A0;
+        public void InvokeChat(string text, int windowId = 1) {
+            if (ChatHooks.ClientCommunicationSystem == null) return;
+            var pstring = (PStringBase<ushort>)text;
+            ClientCommunicationSystem_OnChatCommand(ChatHooks.ClientCommunicationSystem, &pstring, windowId);
+        }
+
+        private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
+        private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
+
+        public void Exit() {
+            CleanupNet(*Client.m_instance);
+            Cleanup(*Client.m_instance);
+        }
+
+        #region internal event callers
         internal void HandleC2SPacketData(byte[] bytes) {
             _OnC2SData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ClientToServer, bytes));
         }
@@ -108,29 +280,22 @@ namespace Chorizite.Loader.Standalone {
             _OnChatInput?.Invoke(this, eventArgs);
         }
 
-        public bool EnterGame(uint characterId) {
-            // Todo: check that it is a valid character id
-            if ((*UIFlow.m_instance)->_curMode != UIMode.CharacterManagementUI) {
-                return false;
-            }
-            return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
+        internal void HandleGameObjectDragStart(GameObjectDragDropEventArgs eventArgs) {
+            _OnGameObjectDragStart?.Invoke(this, eventArgs);
         }
 
-        public void AddChatText(string text, ChatType type = ChatType.Default) {
-            ChatHooks.AddChatText(text, (eChatTypes)type);
+        internal void HandleGameObjectDragEnd(GameObjectDragDropEventArgs eventArgs) {
+            _OnGameObjectDragEnd?.Invoke(this, eventArgs);
         }
 
-        public void PlaySound(uint soundId) {
-            
+        internal void HandleShowTooltip(ShowTooltipEventArgs showTooltipEventArgs) {
+            _OnShowTooltip?.Invoke(this, showTooltipEventArgs);
         }
 
-        private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
-        private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
-
-        public void Exit() {
-            CleanupNet(*Client.m_instance);
-            Cleanup(*Client.m_instance);
+        internal void HandleHideTooltip(EventArgs empty) {
+            _OnHideTooltip?.Invoke(this, empty);
         }
+        #endregion // internal event callers
 
         public void Dispose() {
             Renderer?.Dispose();

@@ -11,6 +11,7 @@ using System.Reflection;
 using Chorizite.Common;
 using Chorizite.Common;
 using Launcher.Lib;
+using System.Runtime.InteropServices;
 
 namespace Launcher.Render {
     unsafe public class OpenGLRenderer : IRenderInterface {
@@ -54,8 +55,9 @@ namespace Launcher.Render {
             }
         }
 
-        public int Width { get; protected set; } = 440;
-        public int Height { get; protected set; } = 240;
+        public int Width { get; protected set; } = 800;
+        public int Height { get; protected set; } = 600;
+        public bool HasFocus => Native.GetForegroundWindow() == HWND;
         public List<string> Extensions { get; } = [];
         public Vector2 ViewportSize => new(Width, Height);
 
@@ -134,7 +136,7 @@ namespace Launcher.Render {
             SDL_SysWMinfo wmInfo = new();
             SDL_VERSION(out var version);
             SDL_GetWindowWMInfo(SDLWindowHandle, ref wmInfo);
-            Native.MakeWindowTransparent(wmInfo.info.win.window);
+            //Native.MakeWindowTransparent(wmInfo.info.win.window);
 
             HWND = wmInfo.info.win.window;
 
@@ -156,7 +158,6 @@ namespace Launcher.Render {
         }
 
         public void Resize(int width, int height) {
-            return;
             if (width > 0 && height > 0) {
                 if (Width != width) {
                     Width = width;
@@ -177,7 +178,7 @@ namespace Launcher.Render {
 
             GL.glBindFramebuffer(FramebufferTarget.Framebuffer, 0);
 
-            GL.glClearColor(255f, 0f, 255f, 0f);
+            GL.glClearColor(0f, 0f, 0f, 0f);
             GL.glClear((uint)(AttribMask.ColorBufferBit | AttribMask.DepthBufferBit | AttribMask.StencilBufferBit));
 
             GL.glEnable(EnableCap.Blend);
@@ -203,7 +204,7 @@ namespace Launcher.Render {
         }
 
         public unsafe IntPtr CompileGeometry(IEnumerable<VertexPositionColorTexture> vertices, IEnumerable<int> indices) {
-            _log?.LogTrace($"CompileGeometry: verts: {vertices.Count()} inds: {indices.Count()}");
+            //_log?.LogTrace($"CompileGeometry: verts: {vertices.Count()} inds: {indices.Count()}");
 
             var verts = vertices.ToArray();
             var vSize = VertexPositionColorTexture.Size;
@@ -250,6 +251,7 @@ namespace Launcher.Render {
         }
 
         private bool _x = false;
+        private Matrix4x4 _transform = Matrix4x4.Identity;
 
         public void RenderGeometry(IntPtr geometry, Matrix4x4 translation, ITexture? texture) {
             var geom = _geometryBuffers[geometry];
@@ -260,11 +262,11 @@ namespace Launcher.Render {
                 }
                 GL.glBindTexture(TextureTarget.Texture2d, (uint)dxTexture.TexturePtr);
                 TextureShader.SetActive();
-                TextureShader.SetUniform("xWorld", translation);
+                TextureShader.SetUniform("xWorld", translation * _transform);
             }
             else {
                 ColorShader.SetActive();
-                ColorShader.SetUniform("xWorld", translation);
+                ColorShader.SetUniform("xWorld", translation * _transform);
                 GL.glBindTexture(TextureTarget.Texture2d, 0);
             }
 
@@ -276,7 +278,7 @@ namespace Launcher.Render {
         }
 
         public void ReleaseGeometry(IntPtr geometry) {
-            _log?.LogTrace($"ReleaseGeometry: 0x{geometry:X8}");
+            //_log?.LogTrace($"ReleaseGeometry: 0x{geometry:X8}");
             if (_geometryBuffers.TryGetValue(geometry, out var geom)) {
                 _geometryBuffers.Remove(geometry);
                 geom.Dispose();
@@ -284,7 +286,7 @@ namespace Launcher.Render {
         }
 
         public ITexture GenerateTexture(byte[] source, Vector2 dimensions) {
-            _log?.LogTrace($"Generate texture: {dimensions.X}x{dimensions.Y}");
+            //_log?.LogTrace($"Generate texture: {dimensions.X}x{dimensions.Y}");
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
 
@@ -295,7 +297,7 @@ namespace Launcher.Render {
 
         public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
-                _log?.LogTrace($"LoadTexture: {source}");
+                //_log?.LogTrace($"LoadTexture: {source}");
                 ManagedGLTexture texture;
 
                 if (_datFileRegex.IsMatch(source)) {
@@ -325,7 +327,7 @@ namespace Launcher.Render {
         }
 
         public void ReleaseTexture(ITexture textureHandle) {
-            _log?.LogTrace($"Disping texture: 0x{textureHandle.TexturePtr:X8}");
+            //_log?.LogTrace($"Disping texture: 0x{textureHandle.TexturePtr:X8}");
             textureHandle.Dispose();
             _textures.Remove((ManagedGLTexture)textureHandle);
         }
@@ -340,7 +342,11 @@ namespace Launcher.Render {
         }
 
         public void SetScissorRegion(int left, int top, int right, int bottom) {
-           GL.glScissor(left, top, right - left, bottom - top);
+            GL.glScissor(left, (int)ViewportSize.Y - top - (bottom - top), right - left, (bottom - top));
+        }
+
+        public void SetTransform(Matrix4x4 transform) {
+            _transform = transform;
         }
 
         public void Dispose() {

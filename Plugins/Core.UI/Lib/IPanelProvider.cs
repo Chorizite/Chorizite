@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ACUI.Lib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Core.UI.Lib {
         /// <param name="panel"></param>
         /// <param name="rmlPath"></param>
         /// <returns></returns>
-        public bool RegisterPanel(T panel, string rmlPath);
+        public Panel? RegisterPanel(T panel, string rmlPath);
 
         /// <summary>
         /// Unregisters a panel with the core UI.

@@ -1,21 +1,22 @@
 ﻿using Autofac;
+using Chorizite.Common;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Dats;
 using Chorizite.Core.Input;
 using Chorizite.Core.Lib;
 using Chorizite.Core.Logging;
+using Chorizite.Core.Lua;
 using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core.Render;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chorizite.Core {
     internal static class ChoriziteStatics {
@@ -24,6 +25,10 @@ namespace Chorizite.Core {
         internal static ILifetimeScope Scope { get; set; }
         internal static IChoriziteBackend Backend { get; set; }
         internal static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(Chorizite<>))!.Location)!;
+
+        internal static void HandleLogMessage(LogMessageEventArgs logMessageEvent) {
+            Backend?.HandleLogMessage(logMessageEvent);
+        }
 
         internal static ChoriziteLogger MakeLogger(string name) {
             return new ChoriziteLogger(name, Config.LogDirectory);
@@ -66,6 +71,8 @@ namespace Chorizite.Core {
             builder.RegisterGeneric(MakeGenericLogger)
                 .As(typeof(ILogger<>))
                 .IfNotRegistered(typeof(ILogger<>));
+
+            WeakEvent.Log = ChoriziteStatics.MakeLogger("WeakEvent");
 
             builder.Register(c => {
                     var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
@@ -158,6 +165,17 @@ namespace Chorizite.Core {
             _pluginManager.LoadPluginManifests();
 
             _pluginManager.StartPlugins();
+
+            Backend.Renderer.OnRender2D += OnRender2D;
+        }
+
+        private void OnRender2D(object? sender, EventArgs e) {
+            try {
+                LuaContext.UpdateAll();
+            }
+            catch (Exception ex) {
+                _log?.LogError(ex, "Error in OnRender2D");
+            }
         }
 
         private Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args) {
@@ -212,6 +230,7 @@ namespace Chorizite.Core {
 
 
         public void Dispose() {
+            Backend.Renderer.OnRender2D -= OnRender2D;
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             _pluginManager?.Dispose();
             _renderInterface?.Dispose();

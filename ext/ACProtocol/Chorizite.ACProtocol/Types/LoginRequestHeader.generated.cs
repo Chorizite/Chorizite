@@ -62,7 +62,7 @@ namespace Chorizite.ACProtocol.Types {
             AccountToLoginAs = reader.ReadString16L();
             switch((int)AuthType) {
                 case 0x00000002:
-                    Password = reader.ReadString32L();
+                    Password = reader.ReadWString();
                     break;
                 case 0x40000002:
                     GlsTicket = reader.ReadString16L();

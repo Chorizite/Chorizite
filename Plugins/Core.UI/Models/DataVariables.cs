@@ -156,7 +156,7 @@ namespace Core.UI.Models {
         public DataVariable(T value, [System.Runtime.CompilerServices.CallerMemberName] string memberName = "") : base() {
             Definition = new VariableDefinition<T>(memberName, value);
             base.Definition = Definition;
-            //Definition.PropertyChanged += (_, e) => PropertyChanged?.Invoke(this, e);
+            Definition.PropertyChanged += (_, e) => PropertyChanged?.Invoke(this, e);
             CreateNative(Definition);
         }
     }

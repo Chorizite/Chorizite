@@ -3,12 +3,14 @@ using System;
 
 namespace Chorizite.Core.Backend {
     public class LogMessageEventArgs : EventArgs {
-        public string Message { get; set; }
-        public LogLevel LogLevel { get; set; }
+        public string Name { get; }
+        public LogLevel Level { get; }
+        public string Message { get; }
 
-        public LogMessageEventArgs(LogLevel logLevel, string message) {
-            LogLevel = logLevel;
-            Message = message;
+        public LogMessageEventArgs(string name, LogLevel logLevel, string v) {
+            Name = name;
+            Level = logLevel;
+            Message = v;
         }
     }
 }

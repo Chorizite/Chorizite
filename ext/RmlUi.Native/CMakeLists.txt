@@ -36,6 +36,7 @@ add_library(${PROJECT_NAME} SHARED
 
     "src/Element.cpp"
     "src/ElementDocument.cpp"
+    "src/ElementFormControlInput.cpp"
     "src/ElementCustom.cpp"
     "src/ElementInstancer.cpp"
 

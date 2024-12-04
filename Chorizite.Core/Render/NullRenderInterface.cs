@@ -89,6 +89,10 @@ namespace Chorizite.Core.Render {
 
         }
 
+        public void SetTransform(Matrix4x4 transform) {
+
+        }
+
         public void Dispose() {
         }
     }

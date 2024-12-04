@@ -58,11 +58,16 @@ namespace Chorizite.Loader.Standalone.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static int ClientCommunicationSystem_OnChatCommand_Impl(ClientCommunicationSystem* This, PStringBase<ushort>* text, int chatWindowId) {
-            var eventArgs = new ChatInputEventArgs(text->ToString(), (ChatWindowId)chatWindowId);
-            StandaloneLoader.Backend.HandleChatTextInput(eventArgs);
+            try {
+                var eventArgs = new ChatInputEventArgs(text->ToString(), (ChatWindowId)chatWindowId);
+                StandaloneLoader.Backend.HandleChatTextInput(eventArgs);
 
-            if (eventArgs.Eat) {
-                return 0;
+                if (eventArgs.Eat) {
+                    return 0;
+                }
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, $"ClientCommunicationSystem_OnChatCommand Error: {ex.Message}");
             }
 
             return _ClientCommunicationSystem_OnChatCommandHook!.OriginalFunction(This, text, chatWindowId);

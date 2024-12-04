@@ -28,6 +28,10 @@ RMLUI_CAPI const char *rml_Element_GetElementByID(Rml::Element *element, const c
     return nullptr;
 }
 
+RMLUI_CAPI const char *rml_Element_GetElementTypeName(Rml::Element *element) {
+    return rmlui_type_name(*element);
+}
+
 RMLUI_CAPI const char *rml_Element_GetOwnerDocument(Rml::Element *element, Rml::Element **foundElement) {
     *foundElement = element->GetOwnerDocument();
 
@@ -35,7 +39,7 @@ RMLUI_CAPI const char *rml_Element_GetOwnerDocument(Rml::Element *element, Rml::
 }
 
 RMLUI_CAPI const char* rml_Element_GetInnerRml(Rml::Element *element) {
-    return element->GetInnerRML().c_str();
+    return strdup(element->GetInnerRML().c_str());
 }
 
 RMLUI_CAPI void rml_Element_SetInnerRml(Rml::Element *element, const char* rml) {
@@ -162,8 +166,16 @@ RMLUI_CAPI Rml::Element* rml_Element_GetParentNode(Rml::Element *element) {
     return element->GetParentNode();
 }
 
+RMLUI_CAPI void rml_Element_ReplaceChild(Rml::Element *element, Rml::Element *inserted_element, Rml::Element *replaced_element) {
+    element->ReplaceChild(inserted_element->GetParentNode()->RemoveChild(inserted_element), replaced_element);
+}
+
 RMLUI_CAPI Rml::Element* rml_Element_GetPreviousSibling(Rml::Element *element) {
     return element->GetPreviousSibling();
+}
+
+RMLUI_CAPI void rml_Element_RemoveChild(Rml::Element *element, Rml::Element *element_to_remove) {
+    element->RemoveChild(element_to_remove);
 }
 
 RMLUI_CAPI float rml_Element_GetScrollHeight(Rml::Element *element) {
@@ -182,8 +194,12 @@ RMLUI_CAPI float rml_Element_GetScrollWidth(Rml::Element *element) {
     return element->GetScrollWidth();
 }
 
-RMLUI_CAPI Rml::Element* rml_Element_AppendChild(Rml::Element *element, bool add_to_dom) {
-    return element->AppendChild(Rml::ElementPtr(element), add_to_dom);
+RMLUI_CAPI Rml::Element* rml_Element_AppendChild(Rml::Element *element, Rml::Element *element_to_append, bool add_to_dom) {
+    return element->AppendChild(element_to_append->GetParentNode()->RemoveChild(element_to_append), add_to_dom);
+}
+
+RMLUI_CAPI Rml::Element* rml_Element_AppendChildTag(Rml::Element *element, const char* tagName, bool add_to_dom) {
+    return element->AppendChild(element->GetOwnerDocument()->CreateElement(tagName), add_to_dom);
 }
 
 RMLUI_CAPI Rml::Element* rml_Element_Closest(Rml::Element *element, const char* selectors) {
@@ -200,6 +216,10 @@ RMLUI_CAPI bool rml_Element_HasAttribute(Rml::Element *element, const char* attr
 
 RMLUI_CAPI bool rml_Element_HasChildNodes(Rml::Element *element) {
 	return element->HasChildNodes();
+}
+
+RMLUI_CAPI bool rml_Element_HasClass(Rml::Element *element, const char* class_name) {
+	return element->IsClassSet(class_name);
 }
 
 RMLUI_CAPI bool rml_Element_InsertBefore(Rml::Element *element, Rml::Element *element_to_add, Rml::Element *adjacent_element) {
@@ -237,12 +257,29 @@ RMLUI_CAPI bool rml_Element_Matches(Rml::Element *element, const char* selector)
 RMLUI_CAPI void rml_Element_RemoveAttribute(Rml::Element *element, const char* attr) {
 	element->RemoveAttribute(attr);
 }
+
+RMLUI_CAPI void rml_Element_SetInnerText(Rml::Element *element, const char* text) {
+    /*
+    const int num_children = element->GetNumChildren();
+
+	for (int i = 0; i < num_children; i++)
+	{
+		Rml::Element* child = element->GetChild(i);
+		if (child->GetTagName() == "#text") {
+            child->GetParentNode()->RemoveChild(child);
+        }
+    }
+
+    element->GetOwnerDocument()->CreateElement("#text");
+    */
+}
+
 RMLUI_CAPI void rml_Element_ScrollIntoView(Rml::Element *element) {
 	element->ScrollIntoView();
 }
 
-RMLUI_CAPI void rml_Element_ScrollTo(Rml::Element *element, Rml::Vector2f offset, Rml::ScrollBehavior behavior) {
-	element->ScrollTo(offset, behavior);
+RMLUI_CAPI void rml_Element_ScrollTo(Rml::Element *element, float x, float y, Rml::ScrollBehavior behavior) {
+	element->ScrollTo(Rml::Vector2f(x, y), behavior);
 }
 
 RMLUI_CAPI const Rml::Box* rml_Element_GetBox(Rml::Element *element) {

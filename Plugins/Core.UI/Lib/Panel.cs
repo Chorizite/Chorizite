@@ -17,5 +17,9 @@ namespace ACUI.Lib {
         internal Panel(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log) : base(name, filename, context, rmlSystemInterface, log) {
 
         }
+
+        internal Panel(string name, string rmlContents, Context context, ACSystemInterface rmlSystemInterface, ILogger log, bool isSource) : base(name, rmlContents, context, rmlSystemInterface, log, isSource) {
+
+        }
     }
 }
