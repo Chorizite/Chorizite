@@ -21,25 +21,22 @@ namespace Core.UI.Lib.RmlUi.VDom {
         private ScriptableDocumentElement _doc;
 
         public string Type { get; set; }
-        public Dictionary<string, object> Props { get; set; } = new();
-        public List<VirtualNode> Children { get; set; } = new();
+        public Dictionary<string, object> Props { get; set; }
+        public List<VirtualNode> Children { get; } = [];
         public string Text { get; set; }
         public VirtualNode Parent { get; set; }
 
         public WrappedElement? Element { get; internal set; }
         public bool IsDirty { get; internal set; }
+        internal List<Func<VirtualNode>> ChildrenBuilder { get; set; }
 
         public VirtualNode(ScriptableDocumentElement doc, string type, Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) {
             _doc = doc;
             Type = type;
-            Props = props ?? new Dictionary<string, object>();
-            Children = children?.Select(x => x()).ToList() ?? new List<VirtualNode>();
+            Props = props ?? [];
             Text = text;
-
-            // Set parent references for children
-            foreach (var child in Children) {
-                child.Parent = this;
-            }
+            Children.AddRange(children?.Select(c => c()) ?? []);
+            Children.ForEach(c => c.Parent = this);
         }
 
         public bool Equals(VirtualNode? other) {

@@ -55,8 +55,8 @@ namespace Launcher.Render {
             }
         }
 
-        public int Width { get; protected set; } = 400;
-        public int Height { get; protected set; } = 300;
+        public int Width { get; protected set; } = 800;
+        public int Height { get; protected set; } = 600;
         public bool HasFocus => Native.GetForegroundWindow() == HWND;
         public List<string> Extensions { get; } = [];
         public Vector2 ViewportSize => new(Width, Height);

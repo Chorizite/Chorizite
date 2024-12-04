@@ -10,8 +10,8 @@
         height: 232dp;
         display: block;
         background: #FF00FF;
-        width: 400dp;
-        height: 300dp;
+        width: 800dp;
+        height: 600dp;
       }
 
       .window {
@@ -138,7 +138,6 @@
             <input type="text" data-value="ClientPath" />
           </label>
           <div class="actions">
-            <div dd-text="test"></div>
             <button id="launch-button" data-event-click="launch()">Launch</button>
             <button id="test-button" data-event-click="test()">test</button>
           </div>

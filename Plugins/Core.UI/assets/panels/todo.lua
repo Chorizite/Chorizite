@@ -34,7 +34,7 @@ local state = rx:CreateState({
 local TodoApp = function(state)
   return rx:Div({
     -- title
-    rx:H1((state.Title or "Todo List") .. " (" .. tostring(#state.Todos) .. " todo)"),
+    rx:H1((state.Title or "Todo List") .. " (" .. tostring(#state.Todos) .. " todos)"),
 
     -- form
     rx:Div({ class = "actions" }, {

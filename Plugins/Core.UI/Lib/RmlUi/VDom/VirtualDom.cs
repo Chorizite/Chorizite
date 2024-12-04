@@ -60,13 +60,15 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 });
             }
 
-            var oldNodeChildren = oldNode.Children.ToList();
-            var newNodeChildren = newNode.Children.ToList();
+            var oldNodeChildren = oldNode.Children;
+            var newNodeChildren = newNode.Children;
 
             if (oldNodeChildren.FirstOrDefault()?.Props.ContainsKey("key") == true && newNodeChildren.FirstOrDefault()?.Props.ContainsKey("key") == true) {
+                var oldNodeKeys = oldNodeChildren.ToDictionary(c => c.Props["key"]?.ToString() ?? "", c => c);
+                var newNodeKeys = newNodeChildren.ToDictionary(c => c.Props["key"]?.ToString() ?? "", c => c);
                 // remove children that were in the old node but not in the new node
                 foreach (var child in oldNodeChildren) {
-                    if (!newNodeChildren.Any(c => c.Props["key"].Equals(child.Props["key"]))) {
+                    if (!newNodeKeys.ContainsKey(child.Props["key"].ToString())) {
                         patches.Add(new PatchOperation() {
                             Type = PatchOperation.OperationType.Remove,
                             NewNode = null,
@@ -78,7 +80,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
 
                 // Add children that are in the new node but not in the old node
                 foreach (var addedChild in newNodeChildren) {
-                    if (!oldNodeChildren.Any(c => c.Props["key"].Equals(addedChild.Props["key"]))) {
+                    if (!oldNodeKeys.ContainsKey(addedChild.Props["key"].ToString())) {
                         patches.Add(new PatchOperation() {
                             Type = PatchOperation.OperationType.Add,
                             NewNode = addedChild,
@@ -90,9 +92,8 @@ namespace Core.UI.Lib.RmlUi.VDom {
 
                 // compare children that are in both nodes
                 foreach (var child in oldNodeChildren) {
-                    var matchingChild = newNodeChildren.FirstOrDefault(c => c.Props["key"].Equals(child.Props["key"]));
-                    if (matchingChild != null) {
-                        DiffRecursive(child, matchingChild, patches);
+                    if (newNodeKeys.TryGetValue(child.Props["key"].ToString(), out var matchingNode)) {
+                        DiffRecursive(child, matchingNode, patches);
                     }
                 }
             }
