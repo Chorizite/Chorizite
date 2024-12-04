@@ -18,7 +18,7 @@ namespace RmlUiNet.Native
         public static extern void Close(IntPtr document);
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_New")]
-        public static extern IntPtr Create(OnLoadInlineScript? onLoadInlineScript);
+        public static extern IntPtr Create(OnLoadInlineScript? onLoadInlineScript, OnLoadExternalScript? onLoadExternalScript);
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_CreateElement")]
         public static extern IntPtr CreateElement(IntPtr document, string name);
@@ -40,5 +40,8 @@ namespace RmlUiNet.Native
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void OnLoadInlineScript(string context, string source_path, int source_line);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void OnLoadExternalScript(string source_path);
     }
 }

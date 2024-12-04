@@ -1,4 +1,5 @@
 ﻿using Chorizite.Core.Backend;
+using Chorizite.Core.Lib;
 using Chorizite.Core.Lua;
 using Core.UI.Lib.RmlUi.VDom;
 using Cortex.Net;
@@ -27,6 +28,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
         private readonly IChoriziteBackend _backend;
         private LuaTable _luaState;
         private List<ScriptContext> _scripts = new List<ScriptContext>();
+        private List<FileWatcher> _scriptWatchers = new List<FileWatcher>();
 
         private struct ScriptContext {
             public string Source;
@@ -40,9 +42,12 @@ namespace Core.UI.Lib.RmlUi.Elements {
             }
         }
 
+        internal UIDocument Panel { get; set; }
+
         public LuaContext LuaContext { get; private set; }
         public ISharedState SharedState { get; private set; }
         public ReactiveHelpers Rx { get; private set; }
+        public string DocumentDirectory => Path.GetDirectoryName(GetSourceURL());
 
         public ScriptableDocumentElement(IChoriziteBackend backend, ILogger logger) : base() {
             _log = logger;
@@ -52,7 +57,6 @@ namespace Core.UI.Lib.RmlUi.Elements {
             SharedState = new SharedState();
             SharedState.Configuration.EnforceActions = EnforceAction.Never;
             SharedState.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex.ExceptionObject}");
-
 
             LuaContext = new LuaContext();
             LuaContext.Global.Set("document", this);
@@ -115,8 +119,20 @@ namespace Core.UI.Lib.RmlUi.Elements {
         }
 
         public override void OnLoadInlineScript(string context, string source_path, int source_line) {
-            // delay loading inline scripts until the document is loaded
             _scripts.Add(new ScriptContext(context, source_path, source_line));
+        }
+
+        public override void OnLoadExternalScript(string source_path) {
+            source_path = source_path.Replace('|', ':');
+            if (File.Exists(source_path)) {
+                _scripts.Add(new ScriptContext(File.ReadAllText(source_path), source_path, 0));
+                _scriptWatchers.Add(new FileWatcher(Path.GetDirectoryName(source_path), Path.GetFileName(source_path), (e) => {
+                    Panel.NeedsReload = true;
+                }));
+            }
+            else {
+                CoreUIPlugin.Log.LogError($"Failed to find external script: {source_path} in {GetSourceURL()}");
+            }
         }
 
         public MyObservable Observable(string name = "[anonymous]", MyObservable parent = null) {
@@ -160,9 +176,14 @@ namespace Core.UI.Lib.RmlUi.Elements {
         }
 
         public override void Dispose() {
+            foreach (var watcher in _scriptWatchers) {
+                watcher.Dispose();
+            }
+            _scriptWatchers.Clear();
             foreach (var mount in _mounts) {
                 mount.Dispose();
             }
+            _mounts.Clear();
             SharedState = null;
             _observables.Clear();
             LuaContext?.Dispose();

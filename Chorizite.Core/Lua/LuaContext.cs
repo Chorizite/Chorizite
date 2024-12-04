@@ -181,7 +181,6 @@ namespace Chorizite.Core.Lua {
                 return null;
             }
             else if (module is Type moduleType) {
-                _log.LogDebug($"Loading module: {moduleType}");
                 return ChoriziteStatics.Scope.Resolve(moduleType);
             }
             else if (module is string modulePath) {
@@ -193,7 +192,7 @@ namespace Chorizite.Core.Lua {
 
                 return modulePath switch {
                     "backend" => ChoriziteStatics.Backend,
-                    _ => _originalRequire.Call(modulePath),
+                    _ => _originalRequire.Call(modulePath).FirstOrDefault(),
                 };
             }
 
@@ -250,7 +249,7 @@ namespace Chorizite.Core.Lua {
                 System.GC.Collect();
             }
             
-            DoString("require('xlua.util')[0].print_func_ref_by_csharp()");
+            DoString("require('xlua.util').print_func_ref_by_csharp()");
             _originalRequire = null!;
 
             try {

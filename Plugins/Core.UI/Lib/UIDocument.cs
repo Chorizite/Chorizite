@@ -25,6 +25,8 @@ namespace Core.UI.Lib {
         private ACSystemInterface _rmlSystemInterface;
 
         internal IntPtr NativePtr { get; private set; }
+
+        private ScriptableDocumentElement? _scriptableDoc;
         internal bool NeedsReload;
 
         /// <summary>
@@ -78,6 +80,20 @@ namespace Core.UI.Lib {
             }
         }
 
+        /// <summary>
+        /// Hide the document
+        /// </summary>
+        public void Hide() {
+            _doc?.Hide();
+        }
+
+        /// <summary>
+        /// Show the document
+        /// </summary>
+        public void Show() {
+            _doc?.Show();
+        }
+
         private void LoadDoc() {
             if (_doc is not null) {
                 UnloadDoc();
@@ -107,6 +123,9 @@ namespace Core.UI.Lib {
             }
 
             NativePtr = _doc.NativePtr;
+            _scriptableDoc = CoreUIPlugin.Instance.ScriptableDocumentInstancer.GetDocument(NativePtr);
+            _scriptableDoc.Panel = this;
+
             _doc.Show();
         }
 

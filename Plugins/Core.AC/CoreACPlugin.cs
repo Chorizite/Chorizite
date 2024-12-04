@@ -83,9 +83,11 @@ namespace Core.AC {
             RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "screens", "DatPatch.rml"));
 
 
-            RegisterPanel(GamePanel.Logs, Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
+            //RegisterPanel(GamePanel.Logs, Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
 
             ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
+
+            _tooltip = RegisterPanel(GamePanel.Tooltip, Path.Combine(AssemblyDirectory, "assets", "panels", "Tooltip.rml"));
             ClientBackend.OnShowTooltip += ClientBackend_OnShowTooltip;
             ClientBackend.OnHideTooltip += ClientBackend_OnHideTooltip;
 
@@ -93,21 +95,18 @@ namespace Core.AC {
         }
 
         private void ClientBackend_OnShowTooltip(object? sender, ShowTooltipEventArgs e) {
-            return;
-            _tooltip = RegisterPanel(GamePanel.Tooltip, Path.Combine(AssemblyDirectory, "assets", "panels", "Tooltip.rml"));
+            if (_tooltip is null) return;
             _tooltip.ScriptableDocument?.LuaContext.SetGlobal("tooltip", e);
             var x = (ClientBackend as IChoriziteBackend)?.Input.MouseX + 15;
             var y = (ClientBackend as IChoriziteBackend)?.Input.MouseY;
             _tooltip.ScriptableDocument?.SetAttribute("style", "left: " + x + "px; top: " + y + "px;");
-            _tooltip.ScriptableDocument?.Show();
+            _tooltip.Show();
 
             e.Eat = true;
         }
 
         private void ClientBackend_OnHideTooltip(object? sender, EventArgs e) {
-            return;
-            CoreUI.PanelManager.DestroyPanel("Tooltip");
-            _tooltip = null;
+            //_tooltip?.Hide();
         }
 
         private void SetScreen(GameScreen value, bool force = false) {

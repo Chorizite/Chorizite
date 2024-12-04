@@ -1,4 +1,5 @@
-﻿using Core.UI.Lib.Fonts;
+﻿using Core.UI;
+using Core.UI.Lib.Fonts;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
@@ -76,6 +77,10 @@ namespace ACUI.Lib.RmlUi {
                 return file;
             }
             path = System.IO.Path.GetDirectoryName(path);
+            if (path is null) {
+                return file;
+            }
+
             string newPath;
             if (System.IO.Path.DirectorySeparatorChar == '\\') {
                 newPath = base.JoinPath(path.Replace(@"/", @"\"), file.Replace(@"/", @"\"));

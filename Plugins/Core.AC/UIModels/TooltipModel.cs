@@ -7,12 +7,16 @@ using Core.UI.Lib.Serialization;
 using System.Text.Json.Serialization;
 using Chorizite.Core.Backend;
 using System;
+using Microsoft.Extensions.Logging;
+using ChatType = Chorizite.Core.Backend.ChatType;
 
 namespace Core.AC.UIModels {
     [JsonConverter(typeof(UIDataModelJsonConverter))]
     public class TooltipModel : UIDataModel {
         public DataVariable<string> Text { get; } = new("");
         public DataVariable<uint> ObjectId { get; } = new(0);
+        public DataVariable<uint> IconId { get; } = new(0);
+        public DataVariable<string> IconPath { get; } = new("red");
 
         public TooltipModel() : base() {
 
@@ -23,7 +27,8 @@ namespace Core.AC.UIModels {
         private void ClientBackend_OnShowTooltip(object? sender, ShowTooltipEventArgs e) {
             Text.Value = e.Text;
             ObjectId.Value = e.ObjectId;
-            CoreACPlugin.Instance.ClientBackend.AddChatText(e.Text);
+            IconId.Value = e.IconId;
+            IconPath.Value = $"red";
         }
 
         private void ClientBackend_OnHideTooltip(object? sender, EventArgs e) {

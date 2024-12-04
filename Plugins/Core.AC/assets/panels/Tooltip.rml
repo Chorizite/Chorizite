@@ -1,7 +1,7 @@
 ﻿<rml>
 	<head>
     <title>Tooltip</title>
-	<style>
+	  <style>
       body {
         font-size: 14px;
         font-family: Tahoma;
@@ -11,16 +11,13 @@
         left: -10000px;
         top: -10000px;
       }
-      .house {
-        decorator: image(dat://0x060014F3);
+      .icon {
         width: 64px;
         height: 64px;
       }
     </style>
 	</head>
 	<body data-model="Tooltip">
-    <div class="house"></div>
-    <div>Text: {{ Text }}</div>
-    <div>Id: {{ ObjectId }}</div>
+    <div dd-text="test"></div>
 	</body>
 </rml>

@@ -463,7 +463,7 @@ namespace Core.UI {
 
 
                     _didInitRml = true;
-                    ToggleDebugger();
+                    //ToggleDebugger();
 
                     Rml.RegisterPlugin(_themePlugin);
 
@@ -515,6 +515,7 @@ namespace Core.UI {
                 PanelManager?.Update();
                 ScriptableDocumentInstancer?.Update();
                 _renderObjInstancer?.Update();
+                _themePlugin.Update();
                 RmlContext?.Update();
                 RmlContext?.Render();
             }

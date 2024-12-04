@@ -20,9 +20,15 @@ namespace Chorizite.Core.Backend {
         /// </summary>
         public uint ObjectId { get; init; }
 
-        public ShowTooltipEventArgs(string text, uint objectId) {
+        /// <summary>
+        /// The icon id
+        /// </summary>
+        public uint IconId { get; init; }
+
+        public ShowTooltipEventArgs(string text, uint objectId, uint iconId) {
             Text = text;
             ObjectId = objectId;
+            IconId = iconId;
         }
     }
 }

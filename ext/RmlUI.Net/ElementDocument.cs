@@ -7,6 +7,7 @@ namespace RmlUiNet
     {
         private bool _isCustomElement;
         private Native.ElementDocument.OnLoadInlineScript? _onLoadInlineScript;
+        private Native.ElementDocument.OnLoadExternalScript? _onLoadExternalScript;
 
         #region Properties
 
@@ -16,8 +17,9 @@ namespace RmlUiNet
         public ElementDocument() : base(IntPtr.Zero, false) {
             _isCustomElement = true;
             _onLoadInlineScript = OnLoadInlineScript;
+            _onLoadExternalScript = OnLoadExternalScript;
 
-            NativePtr = Native.ElementDocument.Create(_onLoadInlineScript);
+            NativePtr = Native.ElementDocument.Create(_onLoadInlineScript, _onLoadExternalScript);
         }
 
         protected ElementDocument(IntPtr ptr, bool automaticallyRegisterInCache)
@@ -25,8 +27,14 @@ namespace RmlUiNet
         {
         }
 
-        public virtual void OnLoadInlineScript(string context, string source_path, int source_line) {
-        
+        public virtual void OnLoadInlineScript(string context, string source_path, int source_line)
+        {
+
+        }
+
+        public virtual void OnLoadExternalScript(string source_path)
+        {
+
         }
 
         /// <summary>

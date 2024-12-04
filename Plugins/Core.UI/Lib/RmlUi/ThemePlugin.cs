@@ -51,6 +51,9 @@ namespace Core.UI.Lib.RmlUi {
             _backend.Renderer.OnRender2D -= Renderer_OnRender2D;
         }
 
+        internal void Update() {
+        }
+
         private void DocWatcher_Changed(object sender, FileSystemEventArgs e) {
             _needsThemeLoad = true;
             _backend.Renderer.OnRender2D += Renderer_OnRender2D;

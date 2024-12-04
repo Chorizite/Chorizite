@@ -55,8 +55,8 @@ namespace Launcher.Render {
             }
         }
 
-        public int Width { get; protected set; } = 800;
-        public int Height { get; protected set; } = 600;
+        public int Width { get; protected set; } = 400;
+        public int Height { get; protected set; } = 300;
         public bool HasFocus => Native.GetForegroundWindow() == HWND;
         public List<string> Extensions { get; } = [];
         public Vector2 ViewportSize => new(Width, Height);
@@ -342,7 +342,7 @@ namespace Launcher.Render {
         }
 
         public void SetScissorRegion(int left, int top, int right, int bottom) {
-           GL.glScissor(left, (int)ViewportSize.Y - top, right - left, -(bottom - top));
+            GL.glScissor(left, (int)ViewportSize.Y - top - (bottom - top), right - left, (bottom - top));
         }
 
         public void SetTransform(Matrix4x4 transform) {

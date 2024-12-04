@@ -73,7 +73,13 @@ namespace RmlUiNet
                 return ElementTabSet.Create(elementPtr);
             } else if (elementType == "class Rml::ElementText") {
                 return ElementText.Create(elementPtr);
-            } else if (elementType == "class Rml::Element") {
+            }
+            else if (elementType == "class Rml::Element")
+            {
+                return ElementGeneric.Create(elementPtr);
+            }
+            else if (elementType == "class Rml::ElementLabel")
+            {
                 return ElementGeneric.Create(elementPtr);
             }
 

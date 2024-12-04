@@ -71,6 +71,9 @@
     <None Update="assets\panels\Test.rml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="assets\panels\todo.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="assets\pizza.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

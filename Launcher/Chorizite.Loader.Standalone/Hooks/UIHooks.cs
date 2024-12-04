@@ -93,8 +93,13 @@ namespace Chorizite.Loader.Standalone.Hooks {
         internal static int GetFirstChildElement(ref UIElement This) => ((delegate* unmanaged[Thiscall]<ref UIElement, int>)0x00464110)(ref This);
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static int UIElementManager_StartTooltip_Impl(UIElementManager* This, StringInfo* strInfo, UIElement* el, int a, uint b, int c) {
-
-            var eventArgs = new ShowTooltipEventArgs(strInfo->m_LiteralValue.ToString(), GetHoveredObjectId());
+            var objectId = GetHoveredObjectId();
+            var physicsObj = CPhysicsObj.GetObjectA(objectId);
+            uint iconId = 0;
+            if (physicsObj != null) {
+                physicsObj->weenie_obj->InqIconID(&iconId);
+            }
+            var eventArgs = new ShowTooltipEventArgs(strInfo->m_LiteralValue.ToString(), objectId, iconId);
             StandaloneLoader.Backend.HandleShowTooltip(eventArgs);
 
             _showingTooltip = true;
