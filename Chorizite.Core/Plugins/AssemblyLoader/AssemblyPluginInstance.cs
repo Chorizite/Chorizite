@@ -237,7 +237,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 LoadContext.Dispose();
                 LoadContext = null!;
 
-                for (int i = 0; (i < 10); i++) {
+                for (int i = 0; (i < 50); i++) {
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
                 }
@@ -287,7 +287,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                     serializedObj = JsonSerializer.Deserialize(jsonState, jsonTypeInfo);
                 }
                 catch (Exception ex) {
-                    _log.LogError($"Unable to deserialize state for plugin: {Name} ({serializedType.Name}): {ex.Message}");
+                    _log.LogError(ex, $"Unable to deserialize state for plugin: {Name} ({serializedType.Name}): {ex.Message}");
                 }
             }
 
@@ -366,7 +366,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TrySerializeState() {
-            TrySerializeType(typeof(ISerializeState<>));
+            TrySerializeType(typeof(ISerializeState<>), Path.Combine(PluginInstance.DataDirectory, "state.json"));
         }
 
         public override void Dispose() {

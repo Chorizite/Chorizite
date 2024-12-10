@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum HookGroupType : uint {
         Undef = 0x0,

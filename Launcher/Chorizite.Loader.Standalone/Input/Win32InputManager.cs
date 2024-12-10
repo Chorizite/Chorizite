@@ -20,7 +20,7 @@ namespace Chorizite.Loader.Standalone.Input {
         static extern short VkKeyScanA(byte charCode);
 
         /// <inheritdoc/>
-        public bool MouseIsOverWindow { get; private set; }
+        public bool MouseIsOverWindow { get; private set; } = true;
 
         /// <inheritdoc/>
         public int MouseX { get; private set; }
@@ -41,6 +41,13 @@ namespace Chorizite.Loader.Standalone.Input {
             remove { _OnMouseDown.Unsubscribe(value); }
         }
         private readonly WeakEvent<MouseDownEventArgs> _OnMouseDown = new();
+
+        /// <inheritdoc/>
+        public event EventHandler<MouseWheelEventArgs>? OnMouseWheel {
+            add { _OnMouseWheel.Subscribe(value); }
+            remove { _OnMouseWheel.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseWheelEventArgs> _OnMouseWheel = new();
 
         /// <inheritdoc/>
         public event EventHandler<MouseUpEventArgs>? OnMouseUp {
@@ -87,7 +94,14 @@ namespace Chorizite.Loader.Standalone.Input {
 
         public bool IsKeyPressed(Key key) {
             var state = GetKeyState((VirtualKeyStates)key);
-            return (state & 0xFF) > 0 || (state >> 4 & 0xFF) > 0;
+            switch (key) {
+                case Key.NUMLOCK:
+                case Key.SCROLL:
+                case Key.CAPITAL:
+                    return (state & 0xFF) > 0 || (state >> 4 & 0xFF) > 0;
+                default:
+                    return (state >> 4 & 0xFF) > 0;
+            }
         }
 
         public bool HandleWindowMessage(int hwnd, WindowMessageType type, int wParam, int lParam) {
@@ -118,10 +132,6 @@ namespace Chorizite.Loader.Standalone.Input {
                     eatableEvent = new KeyPressEventArgs(((char)wParam).ToString());
                     _OnKeyPress.Invoke(this, (KeyPressEventArgs)eatableEvent);
                     break;
-            }
-
-            if (!MouseIsOverWindow) {
-                return false;
             }
 
             switch (type) {
@@ -158,8 +168,8 @@ namespace Chorizite.Loader.Standalone.Input {
                     _OnMouseUp.Invoke(this, (MouseUpEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.MOUSEWHEEL:
-                    //eatableEvent = new MouseWheelEventArgs(HIWORD(wParam) / 120);
-                    //_OnMouseWheel.Invoke(this, (MouseWheelEventArgs)eatableEvent);
+                    eatableEvent = new MouseWheelEventArgs(LOWORD(wParam) / 120, HIWORD(wParam) / 120);
+                    _OnMouseWheel.Invoke(this, (MouseWheelEventArgs)eatableEvent);
                     break;
                 case WindowMessageType.MOUSEMOVE:
                     MouseX = LOWORD(lParam);

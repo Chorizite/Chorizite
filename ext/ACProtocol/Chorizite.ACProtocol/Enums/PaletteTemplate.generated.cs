@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum PaletteTemplate : int {
         Undef = 0,

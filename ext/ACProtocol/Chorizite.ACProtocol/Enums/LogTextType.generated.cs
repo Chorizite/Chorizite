@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     /// <summary>
     /// The LogTextType indicates the kind of text going to the chat area.

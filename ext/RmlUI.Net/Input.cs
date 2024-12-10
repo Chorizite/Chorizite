@@ -229,8 +229,10 @@ namespace RmlUiNet.Input
         KI_RMETA = 176
     }
 
+    [Flags]
     public enum KeyModifier : byte
     {
+        None = 0,
         KM_CTRL = 1 << 0,       // Set if at least one Ctrl key is depressed.
         KM_SHIFT = 1 << 1,      // Set if at least one Shift key is depressed.
         KM_ALT = 1 << 2,        // Set if at least one Alt key is depressed.

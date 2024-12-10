@@ -247,6 +247,30 @@ namespace RmlUiNet
             Native.Element.RemoveEventListener(NativePtr, name, eventListener.NativePtr, inCapturePhase);
         }
 
+        public bool DispatchEvent(string event_id, Dictionary<string, object> parameters, bool interruptible, bool bubbles)
+        {
+            var dict = Native.RmlDictionary.Create();
+            List<IntPtr> variants = [];
+            try {
+                foreach (var kv in parameters) {
+                    var variant = Util.ToVariant(kv.Value);
+
+                    if (variant is not null)
+                    {
+                        variants.Add(variant.NativePtr);
+                        Native.RmlDictionary.Insert(dict, kv.Key, variant.NativePtr);
+                    }
+                }
+                return Native.Element.DispatchEvent(NativePtr, event_id, dict, interruptible, bubbles);
+            }
+            finally {
+                foreach (var variant in variants) {
+                    Native.Variant.Free(variant);
+                }
+                Native.RmlDictionary.Free(dict);
+            }
+        }
+
         /// <summary>
         /// Get a child element by its ID.
         /// </summary>

@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     /// <summary>
     /// Client to Server message opcodes

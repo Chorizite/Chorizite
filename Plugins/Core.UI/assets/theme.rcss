@@ -112,8 +112,8 @@ form {
 	button-primary-disabled: 0px 138px 151px 46px;
 	button-primary-disabled-inner: 8px 146px 135px 30px;
 	tab: 153px 0px 32px 25px;
-	tab-active: 153px 25px 32px 25px;
-	tab-active-inner: 167px 38px 5px 6px;
+	tab-selected: 153px 25px 32px 25px;
+	tab-selected-inner: 167px 38px 5px 6px;
 	tab-inner: 166px 13px 6px 6px;
 	panel: 152px 52px 64px 64px;
 	panel-inner: 158px 58px 52px 52px;
@@ -179,6 +179,11 @@ form {
 	window-minimize-active: 87px 234px 16px 16px;
 	input-bg: 195px 29px 20px 20px;
 	input-bg-inner: 200px 34px 10px 10px;
+	tab-hovered: 166px 247px 32px 25px;
+	tab-active: 166px 272px 32px 25px;
+	tab-active-inner: 178px 285px 8px 7px;
+	tab-hovered-inner: 177px 257px 10px 9px;
+	tab-header-bg: 200px 247px 10px 25px;
 }
 
 /* Force the tabset element to a fixed size. */
@@ -192,6 +197,8 @@ tabset
 tabset tabs
 {
 	display: block;
+	decorator: image( tab-header-bg );
+	padding: 4dp 4dp 0 4dp;
 }
 
 /* Force each tab to only take up 50 pixels across the tabs element. */
@@ -200,12 +207,21 @@ tabset tab
 	display: inline-block;
 	decorator: ninepatch(tab, tab-inner);
 	padding: 6px 12px;
+	cursor: 0x06004d69;
 }
 
 /* Force each tab to only take up 50 pixels across the tabs element. */
+tabset tab:hover
+{
+	decorator: ninepatch(tab-hovered, tab-hovered-inner);
+}
 tabset tab:active
 {
 	decorator: ninepatch(tab-active, tab-active-inner);
+}
+tabset tab:selected
+{
+	decorator: ninepatch(tab-selected, tab-selected-inner);
 }
 
 /* Display the panel container as a block element 180 pixels high; it will
@@ -237,6 +253,7 @@ scrollbarvertical sliderbar {
 	width: 16px;
 	min-height: 46px;
 	decorator: tiled-vertical( scroll-bar-vert-top, scroll-bar-vert-mid, scroll-bar-vert-bottom );
+	cursor: 0x06004d69;
 }
 
 scrollbarvertical sliderbar:hover {
@@ -251,6 +268,7 @@ scrollbarvertical sliderarrowdec {
 	width: 16px;
 	height: 16px;
 	decorator: image( scroll-up-button );
+	cursor: 0x06004d69;
 }
 
 scrollbarvertical sliderarrowdec:hover {
@@ -264,7 +282,8 @@ scrollbarvertical sliderarrowdec:active {
 scrollbarvertical sliderarrowinc {
 	width: 16px;
 	height: 16px;
-	decorator: image( scroll-down-button )
+	decorator: image( scroll-down-button );
+	cursor: 0x06004d69;
 }
 
 scrollbarvertical sliderarrowinc:hover {
@@ -277,12 +296,13 @@ scrollbarvertical sliderarrowinc:active {
 
 button {
 	display: inline-block;
-	cursor: image(cursor-active);
+	cursor: 0x06004d69;
 	padding: 8px;
 	margin: 0px 2px;
 	text-align: center;
 	decorator: ninepatch(button-primary, button-primary-inner);
   click-sound: 0x0A0003B3;
+	cursor: 0x06004d69;
 }
 
 button:hover {
@@ -298,7 +318,7 @@ button[disabled] {
 }
 
 button.secondary {
-	padding: 10px 8px 6px 8px;
+	padding: 6px 8px 6px 8px;
 	decorator: ninepatch(button-secondary, button-secondary-inner);
 }
 

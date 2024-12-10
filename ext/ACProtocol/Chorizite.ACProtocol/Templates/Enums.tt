@@ -1,6 +1,6 @@
 ﻿<#@ assembly name="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" #>
-<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\System.CodeDom.dll" #>
-<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\Chorizite.ACProtocol.SourceGen.dll" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\$(Configuration)\netstandard2.0\System.CodeDom.dll" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\$(Configuration)\netstandard2.0\Chorizite.ACProtocol.SourceGen.dll" #>
 <#@ template language="c#" hostspecific="true" inherits="Chorizite.ACProtocol.SourceGen.CSTemplateBase" #>
 <#@ output extension=".cs" #>
 <#@include file="MultipleOutputHelper.ttinclude"#>
@@ -10,9 +10,11 @@
     SetupMessageParser(this.Host.ResolvePath("../protocol.xml"));
     
     foreach (var kv in this.MessageReader.ACEnums) { 
+        if (kv.Value.Shared) continue;
+
         manager.StartNewFile($"../Enums/{kv.Key}.generated.cs"); 
         PrintLocalModificationWarning();
-        WriteLine("using System;");
+        WriteLine("using System;\n");
         WriteLine("namespace Chorizite.ACProtocol.Enums {");
         using (new IndentHelper(this)) {
             WriteSummary(kv.Value.Text);

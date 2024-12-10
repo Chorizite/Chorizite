@@ -43,10 +43,12 @@ add_library(${PROJECT_NAME} SHARED
     "src/Variant.cpp"
     "src/VariableDefinition.cpp"
     "src/StructHandle.cpp"
+    "src/Dictionary.cpp"
     "src/DataVariable.cpp"
     "src/DataModelHandle.cpp"
     "src/DataModelConstructor.cpp"
     "src/Event.cpp"
+    "src/EventInstancer.cpp"
     "src/EventListener.h"
     "src/EventListenerInstancer.cpp"
 

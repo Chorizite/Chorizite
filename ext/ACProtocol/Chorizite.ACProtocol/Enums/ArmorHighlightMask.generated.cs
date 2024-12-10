@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     /// <summary>
     /// The ArmorHighlightMask selects which armor attributes highlighting is applied to.

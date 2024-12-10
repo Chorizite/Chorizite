@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     /// <summary>
     /// The movement (forward, side, turn) for a character or monster.

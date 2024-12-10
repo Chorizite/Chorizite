@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum MessageDirection : ushort {
         Undef = 0x00,

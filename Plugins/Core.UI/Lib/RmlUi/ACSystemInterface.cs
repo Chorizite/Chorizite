@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace ACUI.Lib.RmlUi {
@@ -16,6 +17,9 @@ namespace ACUI.Lib.RmlUi {
         public override double ElapsedTime => (DateTime.UtcNow - _start).TotalSeconds;
 
         internal bool HasNewFontsLoaded { get; set; }
+        public bool HasKeyboardFocus { get; private set; }
+        public string WantedCursor { get; private set; }
+
         private List<string> _loadedFonts = [];
 
         public ACSystemInterface(FontManager fontManager, ILogger? logger) {
@@ -89,6 +93,49 @@ namespace ACUI.Lib.RmlUi {
                 newPath = base.JoinPath(path, file);
             }
             return newPath;
+        }
+
+        public override void SetMouseCursor(string cursor) {
+            WantedCursor = cursor;
+
+            if (WantedCursor?.StartsWith("0x") == true && WantedCursor.Length > 2) {
+                var hotX = 0;
+                var hotY = 0;
+                uint cursorDid = 0;
+                var parts = WantedCursor.Substring(2).Split(' ');
+                // try parse hex string to uint
+                if (!uint.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out cursorDid)) {
+                    CoreUIPlugin.Log.LogError($"Invalid cursor did: {WantedCursor}");
+                    return;
+                }
+
+                if (parts.Length > 1 && !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out hotX)) {
+                    CoreUIPlugin.Log.LogError($"Invalid hotX: {parts[1]}");
+                }
+
+                if (parts.Length > 2 && !int.TryParse(parts[2], NumberStyles.Integer, CultureInfo.InvariantCulture, out hotY)) {
+                    CoreUIPlugin.Log.LogError($"Invalid hotX: {parts[2]}");
+                }
+                CoreUIPlugin.Instance.Backend.SetCursorDid(cursorDid, hotX, hotY);
+                return;
+            }
+            CoreUIPlugin.Instance.Backend.SetCursorDid(0);
+        }
+
+        public override void SetClipboardText(string text) {
+            CoreUIPlugin.Instance.Backend.SetClipboardText(text);
+        }
+
+        public override string GetClipboardText() {
+            return CoreUIPlugin.Instance.Backend.GetClipboardText() ?? "";
+        }
+
+        public override void ActivateKeyboard(float caretX, float caretY, float lineHeight) {
+            HasKeyboardFocus = true;
+        }
+
+        public override void DeactivateKeyboard() {
+            HasKeyboardFocus = false;
         }
     }
 }

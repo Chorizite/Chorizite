@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum EnchantmentMask : uint {
         Multiplicative = 0x03912021,

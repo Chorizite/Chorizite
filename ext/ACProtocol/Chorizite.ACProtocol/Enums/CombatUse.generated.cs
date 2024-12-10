@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum CombatUse : byte {
         None = 0x00,

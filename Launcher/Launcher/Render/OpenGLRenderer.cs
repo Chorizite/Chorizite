@@ -117,6 +117,7 @@ namespace Launcher.Render {
                 _log.LogError($"SDL_Init failed: {SDL_GetError()}");
             }
 
+            SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
             SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
             SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_DEPTH_SIZE, 24);
             SDL_GL_SetAttribute(SDL_GLattr.SDL_GL_STENCIL_SIZE, 8);

@@ -29,6 +29,10 @@ RMLUI_CAPI void rml_LoadFontFace(const char *fileName, bool fallbackFace, Rml::S
     Rml::LoadFontFace(fileName, fallbackFace, weight);
 }
 
+RMLUI_CAPI Rml::EventId rml_RegisterEventType(const char* type, bool interruptible, bool bubbles, Rml::DefaultActionPhase default_action_phase) {
+    return Rml::RegisterEventType(type, interruptible, bubbles, default_action_phase);
+}
+
 RMLUI_CAPI Rml::EventListener *rml_CreateEventListener(::onProcessEvent onProcessEvent, ::onAttachEvent onAttachEvent, ::onDetachEvent onDetachEvent) {
     return new EventListenerProxy(onProcessEvent, onAttachEvent, onDetachEvent);
 }
@@ -57,6 +61,10 @@ RMLUI_CAPI std::string* rml_CreateString(const char* value) {
     auto str = new Rml::String(value);
     dataModelPool[str] = *str;
     return str;
+}
+
+RMLUI_CAPI void rml_Log(Rml::Log::Type type,  char* message) {
+    Rml::Log::Message(type, message);
 }
 
 RMLUI_CAPI void rml_UpdateString(std::string* str, const char* new_value) {

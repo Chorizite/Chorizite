@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 namespace RmlUiNet {
 
     public class Event : RmlBase<Event> {
+        private Dictionary<string, object>? _parameters = null;
         /// <summary>
         /// The event id.
         /// </summary>
@@ -61,6 +62,32 @@ namespace RmlUiNet {
         public bool IsImmediatePropagating => Native.Event.IsImmediatePropagating(NativePtr);
 
         public Event(IntPtr ptr, bool automaticallyRegisterInCache = false) : base(ptr, automaticallyRegisterInCache) {
+        }
+
+        public Dictionary<string, object> Parameters {
+            get
+            {
+                if (_parameters is not null) return _parameters;
+                _parameters = [];
+                var parameters = Native.Event.GetParameters(NativePtr);
+                var keys = Native.RmlDictionary.RetrieveKeys(parameters);
+                foreach (var key in keys)
+                {
+                    var variant = new Variant(Native.RmlDictionary.Get(parameters, key));
+                    try
+                    {
+                        if (variant?.Value is not null)
+                        {
+                            _parameters.TryAdd(key, variant.Value);
+                        }
+                    }
+                    finally
+                    {
+                        Native.Variant.Free(variant.NativePtr);
+                    }
+                }
+                return _parameters;
+            }
         }
 
         /// <summary>

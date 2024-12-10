@@ -3,6 +3,15 @@ using System.Runtime.InteropServices;
 
 namespace RmlUiNet
 {
+
+    [Flags]
+    public enum DefaultActionPhase : int {
+        None = 0,
+        Capture = 1,
+        Target = 2,
+        Bubble = 4
+    }
+
     public enum ModalFlag
     {
         /// <summary>Remove modal state.</summary>

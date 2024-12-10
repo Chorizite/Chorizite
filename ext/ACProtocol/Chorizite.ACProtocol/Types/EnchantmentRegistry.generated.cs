@@ -13,6 +13,7 @@ using System.Numerics;
 using System.IO;
 using System.Collections.Generic;
 using Chorizite.ACProtocol.Enums;
+using Chorizite.Common.Enums;
 using Chorizite.ACProtocol.Extensions;
 namespace Chorizite.ACProtocol.Types {
     /// <summary>

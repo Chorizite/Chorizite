@@ -35,6 +35,32 @@ namespace RmlUiNet {
             Native.Context.SetDimensions(NativePtr, x, y);
         }
 
+        public Element? GetFocusElement()
+        {
+            var ptr = Native.Context.GetFocusElement(NativePtr);
+            if (ptr == IntPtr.Zero) return null;
+            var typePtr = Native.Element.GetElementTypeName(ptr);
+            if (typePtr == IntPtr.Zero) return null;
+            var elementType = Marshal.PtrToStringAnsi(typePtr);
+            if (string.IsNullOrEmpty(elementType)) return null;
+            return Util.GetElementByTypeName(ptr, elementType);
+        }
+
+        public Element? GetRootElement()
+        {
+            var ptr = Native.Context.GetRootElement(NativePtr);
+            if (ptr == IntPtr.Zero) return null;
+            var typePtr = Native.Element.GetElementTypeName(ptr);
+            if (typePtr == IntPtr.Zero) return null;
+            var elementType = Marshal.PtrToStringAnsi(typePtr);
+            if (string.IsNullOrEmpty(elementType)) return null;
+            return Util.GetElementByTypeName(ptr, elementType);
+        }
+
+        public void UnfocusDocument(ElementDocument document) {
+            Native.Context.UnfocusDocument(NativePtr, document.NativePtr);
+        }
+
         public void Render() {
             Native.Context.Render(NativePtr);
         }
@@ -132,9 +158,21 @@ namespace RmlUiNet {
             return DataModelConstructor.GetOrCreateCache(ptr, ptr => new DataModelConstructor(ptr));
         }
 
-        public DataModelConstructor? GetDataModel(string name) {
+        public DataModelConstructor? GetDataModel(string name)
+        {
             var ptr = Native.Context.GetDataModel(NativePtr, name);
             return DataModelConstructor.GetOrCreateCache(ptr, ptr => new DataModelConstructor(ptr));
+        }
+
+        public Element? GetHoverElement()
+        {
+            var ptr = Native.Context.GetHoverElement(NativePtr);
+            if (ptr == IntPtr.Zero) return null;
+            var typePtr = Native.Element.GetElementTypeName(ptr);
+            if (typePtr == IntPtr.Zero) return null;
+            var elementType = Marshal.PtrToStringAnsi(typePtr);
+            if (string.IsNullOrEmpty(elementType)) return null;
+            return Util.GetElementByTypeName(ptr, elementType);
         }
 
         public bool RemoveDataModel(string name) {

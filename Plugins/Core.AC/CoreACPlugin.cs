@@ -20,6 +20,7 @@ using Core.AC.Lib.Screens;
 using Core.AC.Lib.Panels;
 using ACUI.Lib;
 using Core.AC.API;
+using Chorizite.Core.Dats;
 
 namespace Core.AC {
     public class CoreACPlugin : IPluginCore, IScreenProvider<GameScreen>, IPanelProvider<GamePanel>, ISerializeState<PluginState> {
@@ -36,9 +37,12 @@ namespace Core.AC {
         internal CoreUIPlugin CoreUI { get; }
         internal NetworkParser Net { get; }
         internal IClientBackend ClientBackend { get; }
+        internal IChoriziteBackend ChoriziteBackend { get; }
+        internal IDatReaderInterface Dat { get; }
+        internal DragDropManager DragDropManager { get; private set; }
 
         JsonTypeInfo<PluginState> ISerializeState<PluginState>.TypeInfo => SourceGenerationContext.Default.PluginState;
-
+        
         /// <summary>
         /// Client API entry point
         /// </summary>
@@ -61,18 +65,21 @@ namespace Core.AC {
         }
         private readonly WeakEvent<ScreenChangedEventArgs> _OnScreenChanged = new();
 
-        protected CoreACPlugin(AssemblyPluginManifest manifest, IClientBackend clientBackend, IPluginManager pluginManager, NetworkParser net, CoreUIPlugin coreUI, ILogger log) : base(manifest) {
+        protected CoreACPlugin(AssemblyPluginManifest manifest, IChoriziteBackend choriziteBackend, IClientBackend clientBackend, IPluginManager pluginManager, NetworkParser net, CoreUIPlugin coreUI, IDatReaderInterface dat, ILogger log) : base(manifest) {
             Instance = this;
             Log = log;
             Net = net;
             CoreUI = coreUI;
             ClientBackend = clientBackend;
+            ChoriziteBackend = choriziteBackend;
+            Dat = dat;
 
             // since this plugin is ISerializeState<ACState>, we wait to do full initialization until after loading state.
             // ISerializeState{ACState}.DeserializeAfterLoad(ACState?) is now responsible for calling Init()
         }
 
         private void Init() {
+            DragDropManager = new DragDropManager();
             _tooltipModel = new TooltipModel();
 
             CoreUI.RegisterUIModel("CharSelectScreen", _state.CharSelectModel);
@@ -87,7 +94,7 @@ namespace Core.AC {
 
             ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
 
-            _tooltip = RegisterPanel(GamePanel.Tooltip, Path.Combine(AssemblyDirectory, "assets", "panels", "Tooltip.rml"));
+            //_tooltip = RegisterPanel(GamePanel.Tooltip, Path.Combine(AssemblyDirectory, "assets", "panels", "Tooltip.rml"));
             ClientBackend.OnShowTooltip += ClientBackend_OnShowTooltip;
             ClientBackend.OnHideTooltip += ClientBackend_OnHideTooltip;
 
@@ -232,6 +239,8 @@ namespace Core.AC {
             ClientBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
             ClientBackend.OnShowTooltip -= ClientBackend_OnShowTooltip;
             ClientBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
+
+            DragDropManager.Dispose();
 
             CoreUI.Screen = "None";
 

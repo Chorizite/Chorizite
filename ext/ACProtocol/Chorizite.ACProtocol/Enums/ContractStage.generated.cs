@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     /// <summary>
     /// Stage a contract is in.  Values 4+ appear to provide contract specific update messages

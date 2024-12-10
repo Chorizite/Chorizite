@@ -6,6 +6,10 @@ RMLUI_CAPI Rml::EventId rml_Event_GetId(Rml::Event *ev) {
     return ev->GetId();
 }
 
+RMLUI_CAPI const Rml::Dictionary& rml_Event_GetParameters(Rml::Event* ev) {
+    return ev->GetParameters();
+}
+
 RMLUI_CAPI Rml::EventPhase rml_Event_GetPhase(Rml::Event *ev) {
     return ev->GetPhase();
 }

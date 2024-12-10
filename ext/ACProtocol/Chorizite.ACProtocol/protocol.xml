@@ -436,7 +436,7 @@
       <value value="0xF753" name="Movement_AutonomousPosition" />
       <value value="0xF7C9" name="Movement_Jump_NonAutonomous" />
     </enum>
-    <enum name="WeenieType" parent="uint">
+    <enum name="WeenieType" parent="uint" shared="true">
       <value name="Undef" value="0" />
       <value name="Generic" value="1" />
       <value name="Clothing" value="2" />
@@ -1016,17 +1016,17 @@
       <value value="0x0020" name="OrientationHasNoY" text="orientation quaternion has no y component" />
       <value value="0x0040" name="OrientationHasNoZ" text="orientation quaternion has no z component" />
     </enum>
-    <enum name="AttackHeight" parent="uint" text="Height of the attack.  TODO these need to be verified.">
+    <enum name="AttackHeight" parent="uint" text="Height of the attack.  TODO these need to be verified." shared="true">
       <value value="0x01" name="High" />
       <value value="0x02" name="Medium" />
       <value value="0x03" name="Low" />
     </enum>
-    <enum name="ContainerProperties" parent="uint" text="Container properties of an item">
+    <enum name="ContainerProperties" parent="uint" text="Container properties of an item" shared="true">
       <value value="0x00" name="None" />
       <value value="0x01" name="Container" />
       <value value="0x02" name="Foci" />
     </enum>
-    <enum name="AttackType" parent="uint">
+    <enum name="AttackType" parent="uint" shared="true">
       <value name="Undef" value="0x0" />
       <value name="Punch" value="0x0001" />
       <value name="Thrust" value="0x0002" />
@@ -1044,7 +1044,7 @@
       <value name="OffhandDoubleThrust" value="0x2000" />
       <value name="OffhandTripleThrust" value="0x4000" />
     </enum>
-    <enum name="ItemType" parent="uint" text="The objects type information" mask="true">
+    <enum name="ItemType" parent="uint" text="The objects type information" mask="true" shared="true">
       <value value="0x00000001" name="MeleeWeapon" />
       <value value="0x00000002" name="Armor" />
       <value value="0x00000004" name="Clothing" />
@@ -1077,7 +1077,7 @@
       <value value="0x40000000" name="TinkeringMaterial" />
       <value value="0x80000000" name="Gameboard" />
     </enum>
-    <enum name="SkillId" parent="int" text="The Skill identifies a specific Character skill.">
+    <enum name="SkillId" parent="int" text="The Skill identifies a specific Character skill." shared="true">
       <value value="0x01" name="Axe" />
       <value value="0x02" name="Bow" />
       <value value="0x03" name="Crossbow" />
@@ -1132,12 +1132,12 @@
       <value value="0x35" name="Challenge" />
       <value value="0x36" name="Summoning" />
     </enum>
-    <enum name="SkillAdvancementClass" parent="uint" text="The SkillAdvancementClass identifies whether a skill is untrained, trained or specialized.">
+    <enum name="SkillAdvancementClass" parent="uint" shared="true" text="The SkillAdvancementClass identifies whether a skill is untrained, trained or specialized.">
       <value value="0x01" name="Untrained" />
       <value value="0x02" name="Trained" />
       <value value="0x03" name="Specialized" />
     </enum>
-    <enum name="PropertyAttribute2nd" parent="ushort">
+    <enum name="PropertyAttribute2nd" parent="ushort" shared="true">
       <value value="0x00" name="Undef" />
       <value value="0x01" name="MaxHealth" />
       <value value="0x02" name="Health" />
@@ -1146,173 +1146,172 @@
       <value value="0x05" name="MaxMana" />
       <value value="0x06" name="Mana" />
     </enum>
-    <enum name="EmoteType" parent="uint" text="The EmoteType identifies the type of emote action">
-      <value value="0x00" name="Invalid_EmoteType" />
-      <value value="0x00" name="Invalid_VendorEmoteType" />
-      <value value="0x01" name="Act_EmoteType" />
-      <value value="0x02" name="AwardXP_EmoteType" />
-      <value value="0x03" name="Give_EmoteType" />
-      <value value="0x04" name="MoveHome_EmoteType" />
-      <value value="0x05" name="Motion_EmoteType" />
-      <value value="0x06" name="Move_EmoteType" />
-      <value value="0x07" name="PhysScript_EmoteType" />
-      <value value="0x08" name="Say_EmoteType" />
-      <value value="0x09" name="Sound_EmoteType" />
-      <value value="0x0A" name="Tell_EmoteType" />
-      <value value="0x0B" name="Turn_EmoteType" />
-      <value value="0x0C" name="TurnToTarget_EmoteType" />
-      <value value="0x0D" name="TextDirect_EmoteType" />
-      <value value="0x0E" name="CastSpell_EmoteType" />
-      <value value="0x0F" name="Activate_EmoteType" />
-      <value value="0x10" name="WorldBroadcast_EmoteType" />
-      <value value="0x11" name="LocalBroadcast_EmoteType" />
-      <value value="0x12" name="DirectBroadcast_EmoteType" />
-      <value value="0x13" name="CastSpellInstant_EmoteType" />
-      <value value="0x14" name="UpdateQuest_EmoteType" />
-      <value value="0x15" name="InqQuest_EmoteType" />
-      <value value="0x16" name="StampQuest_EmoteType" />
-      <value value="0x17" name="StartEvent_EmoteType" />
-      <value value="0x18" name="StopEvent_EmoteType" />
-      <value value="0x19" name="BLog_EmoteType" />
-      <value value="0x1A" name="AdminSpam_EmoteType" />
-      <value value="0x1B" name="TeachSpell_EmoteType" />
-      <value value="0x1C" name="AwardSkillXP_EmoteType" />
-      <value value="0x1D" name="AwardSkillPoints_EmoteType" />
-      <value value="0x1E" name="InqQuestSolves_EmoteType" />
-      <value value="0x1F" name="EraseQuest_EmoteType" />
-      <value value="0x20" name="DecrementQuest_EmoteType" />
-      <value value="0x21" name="IncrementQuest_EmoteType" />
-      <value value="0x22" name="AddCharacterTitle_EmoteType" />
-      <value value="0x23" name="InqBoolStat_EmoteType" />
-      <value value="0x24" name="InqIntStat_EmoteType" />
-      <value value="0x25" name="InqFloatStat_EmoteType" />
-      <value value="0x26" name="InqStringStat_EmoteType" />
-      <value value="0x27" name="InqAttributeStat_EmoteType" />
-      <value value="0x28" name="InqRawAttributeStat_EmoteType" />
-      <value value="0x29" name="InqSecondaryAttributeStat_EmoteType" />
-      <value value="0x2A" name="InqRawSecondaryAttributeStat_EmoteType" />
-      <value value="0x2B" name="InqSkillStat_EmoteType" />
-      <value value="0x2C" name="InqRawSkillStat_EmoteType" />
-      <value value="0x2D" name="InqSkillTrained_EmoteType" />
-      <value value="0x2E" name="InqSkillSpecialized_EmoteType" />
-      <value value="0x2F" name="AwardTrainingCredits_EmoteType" />
-      <value value="0x30" name="InflictVitaePenalty_EmoteType" />
-      <value value="0x31" name="AwardLevelProportionalXP_EmoteType" />
-      <value value="0x32" name="AwardLevelProportionalSkillXP_EmoteType" />
-      <value value="0x33" name="InqEvent_EmoteType" />
-      <value value="0x34" name="ForceMotion_EmoteType" />
-      <value value="0x35" name="SetIntStat_EmoteType" />
-      <value value="0x36" name="IncrementIntStat_EmoteType" />
-      <value value="0x37" name="DecrementIntStat_EmoteType" />
-      <value value="0x38" name="CreateTreasure_EmoteType" />
-      <value value="0x39" name="ResetHomePosition_EmoteType" />
-      <value value="0x3A" name="InqFellowQuest_EmoteType" />
-      <value value="0x3B" name="InqFellowNum_EmoteType" />
-      <value value="0x3C" name="UpdateFellowQuest_EmoteType" />
-      <value value="0x3D" name="StampFellowQuest_EmoteType" />
-      <value value="0x3E" name="AwardNoShareXP_EmoteType" />
-      <value value="0x3F" name="SetSanctuaryPosition_EmoteType" />
-      <value value="0x40" name="TellFellow_EmoteType" />
-      <value value="0x41" name="FellowBroadcast_EmoteType" />
-      <value value="0x42" name="LockFellow_EmoteType" />
-      <value value="0x43" name="Goto_EmoteType" />
-      <value value="0x44" name="PopUp_EmoteType" />
-      <value value="0x45" name="SetBoolStat_EmoteType" />
-      <value value="0x46" name="SetQuestCompletions_EmoteType" />
-      <value value="0x47" name="InqNumCharacterTitles_EmoteType" />
-      <value value="0x48" name="Generate_EmoteType" />
-      <value value="0x49" name="PetCastSpellOnOwner_EmoteType" />
-      <value value="0x4A" name="TakeItems_EmoteType" />
-      <value value="0x4B" name="InqYesNo_EmoteType" />
-      <value value="0x4C" name="InqOwnsItems_EmoteType" />
-      <value value="0x4D" name="DeleteSelf_EmoteType" />
-      <value value="0x4E" name="KillSelf_EmoteType" />
-      <value value="0x4F" name="UpdateMyQuest_EmoteType" />
-      <value value="0x50" name="InqMyQuest_EmoteType" />
-      <value value="0x51" name="StampMyQuest_EmoteType" />
-      <value value="0x52" name="InqMyQuestSolves_EmoteType" />
-      <value value="0x53" name="EraseMyQuest_EmoteType" />
-      <value value="0x54" name="DecrementMyQuest_EmoteType" />
-      <value value="0x55" name="IncrementMyQuest_EmoteType" />
-      <value value="0x56" name="SetMyQuestCompletions_EmoteType" />
-      <value value="0x57" name="MoveToPos_EmoteType" />
-      <value value="0x58" name="LocalSignal_EmoteType" />
-      <value value="0x59" name="InqPackSpace_EmoteType" />
-      <value value="0x5A" name="RemoveVitaePenalty_EmoteType" />
-      <value value="0x5B" name="SetEyeTexture_EmoteType" />
-      <value value="0x5C" name="SetEyePalette_EmoteType" />
-      <value value="0x5D" name="SetNoseTexture_EmoteType" />
-      <value value="0x5E" name="SetNosePalette_EmoteType" />
-      <value value="0x5F" name="SetMouthTexture_EmoteType" />
-      <value value="0x60" name="SetMouthPalette_EmoteType" />
-      <value value="0x61" name="SetHeadObject_EmoteType" />
-      <value value="0x62" name="SetHeadPalette_EmoteType" />
-      <value value="0x63" name="TeleportTarget_EmoteType" />
-      <value value="0x64" name="TeleportSelf_EmoteType" />
-      <value value="0x65" name="StartBarber_EmoteType" />
-      <value value="0x66" name="InqQuestBitsOn_EmoteType" />
-      <value value="0x67" name="InqQuestBitsOff_EmoteType" />
-      <value value="0x68" name="InqMyQuestBitsOn_EmoteType" />
-      <value value="0x69" name="InqMyQuestBitsOff_EmoteType" />
-      <value value="0x6A" name="SetQuestBitsOn_EmoteType" />
-      <value value="0x6B" name="SetQuestBitsOff_EmoteType" />
-      <value value="0x6C" name="SetMyQuestBitsOn_EmoteType" />
-      <value value="0x6D" name="SetMyQuestBitsOff_EmoteType" />
-      <value value="0x6E" name="UntrainSkill_EmoteType" />
-      <value value="0x6F" name="SetAltRacialSkills_EmoteType" />
-      <value value="0x70" name="SpendLuminance_EmoteType" />
-      <value value="0x71" name="AwardLuminance_EmoteType" />
-      <value value="0x72" name="InqInt64Stat_EmoteType" />
-      <value value="0x73" name="SetInt64Stat_EmoteType" />
-      <value value="0x74" name="OpenMe_EmoteType" />
-      <value value="0x75" name="CloseMe_EmoteType" />
-      <value value="0x76" name="SetFloatStat_EmoteType" />
-      <value value="0x77" name="AddContract_EmoteType" />
-      <value value="0x78" name="RemoveContract_EmoteType" />
-      <value value="0x79" name="InqContractsFull_EmoteType" />
+    <enum name="EmoteType" parent="uint" text="The EmoteType identifies the type of emote action" shared="true">
+      <value value="0x00" name="Invalid" />
+      <value value="0x01" name="Act" />
+      <value value="0x02" name="AwardXP" />
+      <value value="0x03" name="Give" />
+      <value value="0x04" name="MoveHome" />
+      <value value="0x05" name="Motion" />
+      <value value="0x06" name="Move" />
+      <value value="0x07" name="PhysScript" />
+      <value value="0x08" name="Say" />
+      <value value="0x09" name="Sound" />
+      <value value="0x0A" name="Tell" />
+      <value value="0x0B" name="Turn" />
+      <value value="0x0C" name="TurnToTarget" />
+      <value value="0x0D" name="TextDirect" />
+      <value value="0x0E" name="CastSpell" />
+      <value value="0x0F" name="Activate" />
+      <value value="0x10" name="WorldBroadcast" />
+      <value value="0x11" name="LocalBroadcast" />
+      <value value="0x12" name="DirectBroadcast" />
+      <value value="0x13" name="CastSpellInstant" />
+      <value value="0x14" name="UpdateQuest" />
+      <value value="0x15" name="InqQuest" />
+      <value value="0x16" name="StampQuest" />
+      <value value="0x17" name="StartEvent" />
+      <value value="0x18" name="StopEvent" />
+      <value value="0x19" name="BLog" />
+      <value value="0x1A" name="AdminSpam" />
+      <value value="0x1B" name="TeachSpell" />
+      <value value="0x1C" name="AwardSkillXP" />
+      <value value="0x1D" name="AwardSkillPoints" />
+      <value value="0x1E" name="InqQuestSolves" />
+      <value value="0x1F" name="EraseQuest" />
+      <value value="0x20" name="DecrementQuest" />
+      <value value="0x21" name="IncrementQuest" />
+      <value value="0x22" name="AddCharacterTitle" />
+      <value value="0x23" name="InqBoolStat" />
+      <value value="0x24" name="InqIntStat" />
+      <value value="0x25" name="InqFloatStat" />
+      <value value="0x26" name="InqStringStat" />
+      <value value="0x27" name="InqAttributeStat" />
+      <value value="0x28" name="InqRawAttributeStat" />
+      <value value="0x29" name="InqSecondaryAttributeStat" />
+      <value value="0x2A" name="InqRawSecondaryAttributeStat" />
+      <value value="0x2B" name="InqSkillStat" />
+      <value value="0x2C" name="InqRawSkillStat" />
+      <value value="0x2D" name="InqSkillTrained" />
+      <value value="0x2E" name="InqSkillSpecialized" />
+      <value value="0x2F" name="AwardTrainingCredits" />
+      <value value="0x30" name="InflictVitaePenalty" />
+      <value value="0x31" name="AwardLevelProportionalXP" />
+      <value value="0x32" name="AwardLevelProportionalSkillXP" />
+      <value value="0x33" name="InqEvent" />
+      <value value="0x34" name="ForceMotion" />
+      <value value="0x35" name="SetIntStat" />
+      <value value="0x36" name="IncrementIntStat" />
+      <value value="0x37" name="DecrementIntStat" />
+      <value value="0x38" name="CreateTreasure" />
+      <value value="0x39" name="ResetHomePosition" />
+      <value value="0x3A" name="InqFellowQuest" />
+      <value value="0x3B" name="InqFellowNum" />
+      <value value="0x3C" name="UpdateFellowQuest" />
+      <value value="0x3D" name="StampFellowQuest" />
+      <value value="0x3E" name="AwardNoShareXP" />
+      <value value="0x3F" name="SetSanctuaryPosition" />
+      <value value="0x40" name="TellFellow" />
+      <value value="0x41" name="FellowBroadcast" />
+      <value value="0x42" name="LockFellow" />
+      <value value="0x43" name="Goto" />
+      <value value="0x44" name="PopUp" />
+      <value value="0x45" name="SetBoolStat" />
+      <value value="0x46" name="SetQuestCompletions" />
+      <value value="0x47" name="InqNumCharacterTitles" />
+      <value value="0x48" name="Generate" />
+      <value value="0x49" name="PetCastSpellOnOwner" />
+      <value value="0x4A" name="TakeItems" />
+      <value value="0x4B" name="InqYesNo" />
+      <value value="0x4C" name="InqOwnsItems" />
+      <value value="0x4D" name="DeleteSelf" />
+      <value value="0x4E" name="KillSelf" />
+      <value value="0x4F" name="UpdateMyQuest" />
+      <value value="0x50" name="InqMyQuest" />
+      <value value="0x51" name="StampMyQuest" />
+      <value value="0x52" name="InqMyQuestSolves" />
+      <value value="0x53" name="EraseMyQuest" />
+      <value value="0x54" name="DecrementMyQuest" />
+      <value value="0x55" name="IncrementMyQuest" />
+      <value value="0x56" name="SetMyQuestCompletions" />
+      <value value="0x57" name="MoveToPos" />
+      <value value="0x58" name="LocalSignal" />
+      <value value="0x59" name="InqPackSpace" />
+      <value value="0x5A" name="RemoveVitaePenalty" />
+      <value value="0x5B" name="SetEyeTexture" />
+      <value value="0x5C" name="SetEyePalette" />
+      <value value="0x5D" name="SetNoseTexture" />
+      <value value="0x5E" name="SetNosePalette" />
+      <value value="0x5F" name="SetMouthTexture" />
+      <value value="0x60" name="SetMouthPalette" />
+      <value value="0x61" name="SetHeadObject" />
+      <value value="0x62" name="SetHeadPalette" />
+      <value value="0x63" name="TeleportTarget" />
+      <value value="0x64" name="TeleportSelf" />
+      <value value="0x65" name="StartBarber" />
+      <value value="0x66" name="InqQuestBitsOn" />
+      <value value="0x67" name="InqQuestBitsOff" />
+      <value value="0x68" name="InqMyQuestBitsOn" />
+      <value value="0x69" name="InqMyQuestBitsOff" />
+      <value value="0x6A" name="SetQuestBitsOn" />
+      <value value="0x6B" name="SetQuestBitsOff" />
+      <value value="0x6C" name="SetMyQuestBitsOn" />
+      <value value="0x6D" name="SetMyQuestBitsOff" />
+      <value value="0x6E" name="UntrainSkill" />
+      <value value="0x6F" name="SetAltRacialSkills" />
+      <value value="0x70" name="SpendLuminance" />
+      <value value="0x71" name="AwardLuminance" />
+      <value value="0x72" name="InqInt64Stat" />
+      <value value="0x73" name="SetInt64Stat" />
+      <value value="0x74" name="OpenMe" />
+      <value value="0x75" name="CloseMe" />
+      <value value="0x76" name="SetFloatStat" />
+      <value value="0x77" name="AddContract" />
+      <value value="0x78" name="RemoveContract" />
+      <value value="0x79" name="InqContractsFull" />
     </enum>
-    <enum name="EmoteCategory" parent="uint" text="The EmoteCategory identifies the category of an emote.">
-      <value value="0x00" name="Invalid_EmoteCategory" />
-      <value value="0x01" name="Refuse_EmoteCategory" />
-      <value value="0x02" name="Vendor_EmoteCategory" />
-      <value value="0x03" name="Death_EmoteCategory" />
-      <value value="0x04" name="Portal_EmoteCategory" />
-      <value value="0x05" name="HeartBeat_EmoteCategory" />
-      <value value="0x06" name="Give_EmoteCategory" />
-      <value value="0x07" name="Use_EmoteCategory" />
-      <value value="0x08" name="Activation_EmoteCategory" />
-      <value value="0x09" name="Generation_EmoteCategory" />
-      <value value="0x0A" name="PickUp_EmoteCategory" />
-      <value value="0x0B" name="Drop_EmoteCategory" />
-      <value value="0x0C" name="QuestSuccess_EmoteCategory" />
-      <value value="0x0D" name="QuestFailure_EmoteCategory" />
-      <value value="0x0E" name="Taunt_EmoteCategory" />
-      <value value="0x0F" name="WoundedTaunt_EmoteCategory" />
-      <value value="0x10" name="KillTaunt_EmoteCategory" />
-      <value value="0x11" name="NewEnemy_EmoteCategory" />
-      <value value="0x12" name="Scream_EmoteCategory" />
-      <value value="0x13" name="Homesick_EmoteCategory" />
-      <value value="0x14" name="ReceiveCritical_EmoteCategory" />
-      <value value="0x15" name="ResistSpell_EmoteCategory" />
-      <value value="0x16" name="TestSuccess_EmoteCategory" />
-      <value value="0x17" name="TestFailure_EmoteCategory" />
-      <value value="0x18" name="HearChat_EmoteCategory" />
-      <value value="0x19" name="Wield_EmoteCategory" />
-      <value value="0x1A" name="UnWield_EmoteCategory" />
-      <value value="0x1B" name="EventSuccess_EmoteCategory" />
-      <value value="0x1C" name="EventFailure_EmoteCategory" />
-      <value value="0x1D" name="TestNoQuality_EmoteCategory" />
-      <value value="0x1E" name="QuestNoFellow_EmoteCategory" />
-      <value value="0x1F" name="TestNoFellow_EmoteCategory" />
-      <value value="0x20" name="GotoSet_EmoteCategory" />
-      <value value="0x21" name="NumFellowsSuccess_EmoteCategory" />
-      <value value="0x22" name="NumFellowsFailure_EmoteCategory" />
-      <value value="0x23" name="NumCharacterTitlesSuccess_EmoteCategory" />
-      <value value="0x24" name="NumCharacterTitlesFailure_EmoteCategory" />
-      <value value="0x25" name="ReceiveLocalSignal_EmoteCategory" />
-      <value value="0x26" name="ReceiveTalkDirect_EmoteCategory" />
+    <enum name="EmoteCategory" parent="uint" text="The EmoteCategory identifies the category of an emote." shared="true">
+      <value value="0x00" name="Invalid" />
+      <value value="0x01" name="Refuse" />
+      <value value="0x02" name="Vendor" />
+      <value value="0x03" name="Death" />
+      <value value="0x04" name="Portal" />
+      <value value="0x05" name="HeartBeat" />
+      <value value="0x06" name="Give" />
+      <value value="0x07" name="Use" />
+      <value value="0x08" name="Activation" />
+      <value value="0x09" name="Generation" />
+      <value value="0x0A" name="PickUp" />
+      <value value="0x0B" name="Drop" />
+      <value value="0x0C" name="QuestSuccess" />
+      <value value="0x0D" name="QuestFailure" />
+      <value value="0x0E" name="Taunt" />
+      <value value="0x0F" name="WoundedTaunt" />
+      <value value="0x10" name="KillTaunt" />
+      <value value="0x11" name="NewEnemy" />
+      <value value="0x12" name="Scream" />
+      <value value="0x13" name="Homesick" />
+      <value value="0x14" name="ReceiveCritical" />
+      <value value="0x15" name="ResistSpell" />
+      <value value="0x16" name="TestSuccess" />
+      <value value="0x17" name="TestFailure" />
+      <value value="0x18" name="HearChat" />
+      <value value="0x19" name="Wield" />
+      <value value="0x1A" name="UnWield" />
+      <value value="0x1B" name="EventSuccess" />
+      <value value="0x1C" name="EventFailure" />
+      <value value="0x1D" name="TestNoQuality" />
+      <value value="0x1E" name="QuestNoFellow" />
+      <value value="0x1F" name="TestNoFellow" />
+      <value value="0x20" name="GotoSet" />
+      <value value="0x21" name="NumFellowsSuccess" />
+      <value value="0x22" name="NumFellowsFailure" />
+      <value value="0x23" name="NumCharacterTitlesSuccess" />
+      <value value="0x24" name="NumCharacterTitlesFailure" />
+      <value value="0x25" name="ReceiveLocalSignal" />
+      <value value="0x26" name="ReceiveTalkDirect" />
     </enum>
-    <enum name="CharacterOptions1" parent="uint" text="The CharacterOptions1 word contains character options." mask="true">
+    <enum name="CharacterOptions1" parent="uint" text="The CharacterOptions1 word contains character options." mask="true" shared="true">
       <value name="AutoRepeatAttack" value="0x00000002" />
       <value name="IgnoreAllegianceRequests" value="0x00000004" />
       <value name="IgnoreFellowshipRequests" value="0x00000008" />
@@ -1345,7 +1344,7 @@
       <value name="HearAllegianceChat" value="0x40000000" />
       <value name="UseCraftSuccessDialog" value="0x80000000" />
     </enum>
-    <enum name="CharacterOptions2" parent="uint" text="The CharacterOptions2 word contains additional character options." mask="true">
+    <enum name="CharacterOptions2" parent="uint" text="The CharacterOptions2 word contains additional character options." mask="true" shared="true">
       <value name="PersistentAtDay" value="0x00000001" />
       <value name="DisplayDateOfBirth" value="0x00000002" />
       <value name="DisplayChessRank" value="0x00000004" />
@@ -1373,7 +1372,7 @@
       <value name="LockUI" value="0x01000000" />
       <value name="HearPKDeath" value="0x02000000" />
     </enum>
-    <enum name="SpellBookFilterOptions" parent="uint" text="The various options for filtering the spellbook" mask="true">
+    <enum name="SpellBookFilterOptions" parent="uint" text="The various options for filtering the spellbook" mask="true" shared="true">
       <value value="0x00000000" name="None" />
       <value value="0x00000001" name="Creature" />
       <value value="0x00000002" name="Item" />
@@ -1390,7 +1389,7 @@
       <value value="0x00001000" name="Level9" />
       <value value="0x00002000" name="Void" />
     </enum>
-    <enum name="EquipMask" parent="uint" text="The EquipMask value describes the equipment slots an item uses." mask="true">
+    <enum name="EquipMask" parent="uint" text="The EquipMask value describes the equipment slots an item uses." mask="true" shared="true">
       <value value="0x00000001" name="Head" />
       <value value="0x00000002" name="ChestUnderwear" />
       <value value="0x00000004" name="AbdomenUnderwear" />
@@ -1417,13 +1416,13 @@
       <value value="0x00800000" name="Ammunition" />
       <value value="0x01000000" name="Wand" />
     </enum>
-    <enum name="FriendsUpdateType" parent="uint" text="The type of the friend change event." mask="true">
+    <enum name="FriendsUpdateType" parent="uint" text="The type of the friend change event." mask="true" shared="true">
       <value value="0x0000" name="Full" />
       <value value="0x0001" name="Added" />
       <value value="0x0002" name="Removed" />
       <value value="0x0004" name="LoginChange" />
     </enum>
-    <enum name="AllegianceOfficerLevel" parent="uint" text="The permission levels that can be given to an allegiance officer">
+    <enum name="AllegianceOfficerLevel" parent="uint" text="The permission levels that can be given to an allegiance officer" shared="true">
       <value value="0x01" name="Speaker" />
       <value value="0x02" name="Seneschal" />
       <value value="0x03" name="Castellan" />
@@ -1443,7 +1442,7 @@
       <value value="0x04" name="StorageOpen" />
       <value value="0x05" name="StorageClosed" />
     </enum>
-    <enum name="AttributeId" parent="uint" text="The AttributeId identifies a specific Character attribute.">
+    <enum name="AttributeId" parent="uint" text="The AttributeId identifies a specific Character attribute." shared="true">
       <value value="0x01" name="Strength" />
       <value value="0x02" name="Endurance" />
       <value value="0x03" name="Quickness" />
@@ -1451,23 +1450,23 @@
       <value value="0x05" name="Focus" />
       <value value="0x06" name="Self" />
     </enum>
-    <enum name="VitalId" parent="uint" text="The VitalId identifies a specific Character vital (secondary attribute).">
+    <enum name="VitalId" parent="uint" text="The VitalId identifies a specific Character vital (secondary attribute)." shared="true">
       <value value="0x01" name="MaximumHealth" />
       <value value="0x03" name="MaximumStamina" />
       <value value="0x05" name="MaximumMana" />
     </enum>
-    <enum name="CurVitalId" parent="uint" text="The CurVitalId identifies a specific Character vital (secondary attribute).">
+    <enum name="CurVitalId" parent="uint" text="The CurVitalId identifies a specific Character vital (secondary attribute)." shared="true">
       <value value="0x02" name="CurrentHealth" />
       <value value="0x04" name="CurrentStamina" />
       <value value="0x06" name="CurrentMana" />
     </enum>
-    <enum name="CombatMode" parent="uint" text="The combat mode for a character or monster." mask="true">
+    <enum name="CombatMode" parent="uint" text="The combat mode for a character or monster." mask="true" shared="true">
       <value value="0x1" name="NonCombat" />
       <value value="0x2" name="Melee" />
       <value value="0x4" name="Missle" />
       <value value="0x8" name="Magic" />
     </enum>
-    <enum name="Sound" parent="int">
+    <enum name="Sound" parent="int" shared="true">
       <value name="Invalid" value="0x00" />
       <value name="Speak1" value="0x01" />
       <value name="Random" value="0x02" />
@@ -1734,7 +1733,7 @@
       <value value="0x20000000" name="WieldOnUse" text="wield on use" />
       <value value="0x40000000" name="WieldLeft" text="wield left" />
     </enum>
-    <enum name="AmmoType" parent="ushort" text="The AmmoType value describes the type of ammunition a missile weapon uses." mask="true">
+    <enum name="AmmoType" parent="ushort" text="The AmmoType value describes the type of ammunition a missile weapon uses." mask="true" shared="true">
       <value value="0x0000" name="ThrownWeapon" />
       <value value="0x0001" name="Arrow" />
       <value value="0x0002" name="Bolt" />
@@ -1758,7 +1757,7 @@
       <value value="0x00400000" name="TargetNoApproach" text="target don't approach" />
       <value value="0x00800000" name="TargetObjectSelf" text="target object self" />
     </enum>
-    <enum name="CoverageMask" parent="uint" text="The CoverageMask value describes what parts of the body an item protects." mask="true">
+    <enum name="CoverageMask" parent="uint" text="The CoverageMask value describes what parts of the body an item protects." mask="true" shared="true">
       <value value="0x00000002" name="UpperLegsUnderwear" />
       <value value="0x00000004" name="LowerLegsUnderwear" />
       <value value="0x00000008" name="ChestUnderwear" />
@@ -1775,14 +1774,14 @@
       <value value="0x00008000" name="Hands" />
       <value value="0x00010000" name="Feet" />
     </enum>
-    <enum name="HookType" parent="ushort" text="The HookType identifies the types of dwelling hooks." mask="true">
+    <enum name="HookType" parent="ushort" text="The HookType identifies the types of dwelling hooks." mask="true" shared="true">
       <value value="0x0001" name="Floor" />
       <value value="0x0002" name="Wall" />
       <value value="0x0004" name="Ceiling" />
       <value value="0x0008" name="Yard" />
       <value value="0x0010" name="Roof" />
     </enum>
-    <enum name="MaterialType" parent="uint" text="The MaterialType identifies the material an object is made of.">
+    <enum name="MaterialType" parent="uint" text="The MaterialType identifies the material an object is made of." shared="true">
       <value value="0x00000001" name="Ceramic" />
       <value value="0x00000002" name="Porcelain" />
       <value value="0x00000004" name="Linen" />
@@ -2382,7 +2381,7 @@
       <value value="0x17" name="EnterGameCharacterLocked" text="Id_CHAR_ERROR_ENTER_GAME_CHARACTER_LOCKED" />
       <value value="0x18" name="SubscriptionExpired" text="Id_CHAR_ERROR_SUBSCRIPTION_EXPIRED" />
     </enum>
-    <enum name="PhysicsState" parent="uint" text="The state flags for an object" mask="true">
+    <enum name="PhysicsState" parent="uint" text="The state flags for an object" mask="true" shared="true">
       <value value="0x00000000" name="None" />
       <value value="0x00000001" name="Static" />
       <value value="0x00000004" name="Ethereal" />
@@ -2413,10 +2412,10 @@
       <value value="0x03" name="ClientToServerMessage" />
       <value value="0x05" name="AckClientToServerMessage" />
     </enum>
-    <enum name="DatFileType" parent="long" text="The DatFileType identifies the dat file to be used.">
-      <value value="0x01" name="client_portal" />
-      <value value="0x02" name="client_cell_1" />
-      <value value="0x03" name="client_local_English" />
+    <enum name="DatFileType" parent="long" text="The DatFileType identifies the dat file to be used." shared="true">
+      <value value="0x01" name="Portal" />
+      <value value="0x02" name="Cell" />
+      <value value="0x03" name="Local" />
     </enum>
     <enum name="CompressionType" parent="byte" text="The CompressionType identifies the type of data compression used.">
       <value value="0x00" name="None" />
@@ -2433,7 +2432,7 @@
       <value value="0x0080" name="Stamina" />
       <value value="0x0100" name="Mana" />
     </enum>
-    <enum name="DamageType" parent="uint" text="The DamageType identifies the type of damage." mask="true">
+    <enum name="DamageType" parent="uint" text="The DamageType identifies the type of damage." mask="true" shared="true">
       <value value="0x01" name="Slashing" />
       <value value="0x02" name="Piercing" />
       <value value="0x04" name="Bludgeoning" />
@@ -2574,14 +2573,14 @@
       <value value="0x01" name="None" />
       <value value="0x02" name="Run" />
     </enum>
-    <enum name="RadarBehavior" parent="byte" text="Radar behavior">
+    <enum name="RadarBehavior" parent="byte" text="Radar behavior" shared="true">
       <value value="0x00" name="Undefined" />
       <value value="0x01" name="ShowNever" />
       <value value="0x02" name="ShowMovement" />
       <value value="0x03" name="ShowAttacking" />
       <value value="0x04" name="ShowAlways" />
     </enum>
-    <enum name="Gender" parent="byte" text="Gender of a player">
+    <enum name="Gender" parent="byte" text="Gender of a player" shared="true">
       <value value="0x00" name="Invalid" />
       <value value="0x01" name="Male" />
       <value value="0x02" name="Female" />
@@ -2592,7 +2591,7 @@
       <value value="0x02" name="EldrytchWeb" />
       <value value="0x04" name="RadiantBlood" />
     </enum>
-    <enum name="CreatureType" parent="uint" text="Creature type">
+    <enum name="CreatureType" parent="uint" text="Creature type" shared="true">
       <value name="Olthoi" value="1" />
       <value name="Banderling" value="2" />
       <value name="Drudge" value="3" />
@@ -2751,7 +2750,7 @@
       <value name="Relative" value="1" />
       <value name="Absolute" value="2" />
     </enum>
-    <enum name="ImbuedEffectType" parent="uint">
+    <enum name="ImbuedEffectType" parent="uint" shared="true">
       <value name="Undef" value="0" />
       <value name="CriticalStrike" value="0x0001" />
       <value name="CripplingBlow" value="0x0002" />
@@ -2850,7 +2849,7 @@
       <value name="InActive" value="0" />
       <value name="Active" value="1" />
     </enum>
-    <enum name="UiEffects" parent="uint" mask="true">
+    <enum name="UiEffects" parent="uint" mask="true" shared="true">
       <value name="Undef" value="0x0000" />
       <value name="Magical" value="0x0001" />
       <value name="Poisoned" value="0x0002" />
@@ -2866,7 +2865,7 @@
       <value name="Piercing" value="0x0800" />
       <value name="Nether" value="0x1000" />
     </enum>
-    <enum name="PlayerKillerStatus" mask="true" parent="ushort">
+    <enum name="PlayerKillerStatus" mask="true" parent="ushort" shared="true">
       <value name="Undef" value="0x00" />
       <value name="Protected" value="0x01" />
       <value name="NPK" value="0x02" />
@@ -2881,7 +2880,7 @@
       <value name="Vendor" value="RubberGlue" />
       <value name="Baelzharon" value="Free" />
     </enum>
-    <enum name="PortalBitmask" parent="int">
+    <enum name="PortalBitmask" parent="int" shared="true">
       <value name="Undef" value="0x00" />
       <value name="NotPassable" value="0x00" />
       <value name="Unrestricted" value="0x01" />
@@ -2895,7 +2894,7 @@
       <value name="NoVitae" value="0x100" />
       <value name="NoNewAccounts" value="0x200" />
     </enum>
-    <enum name="WieldRequirement" parent="int">
+    <enum name="WieldRequirement" parent="int" shared="true">
       <value name="Undef" value="0" />
       <value name="Skill" value="1" />
       <value name="RawSkill" value="2" />
@@ -3006,7 +3005,7 @@
       <value name="DyeSpringPurple" value="92" />
       <value name="DyeSpringBlack" value="93" />
     </enum>
-    <enum name="SummoningMastery" parent="int">
+    <enum name="SummoningMastery" parent="int" shared="true">
       <value name="Undef" value="0" />
       <value name="Primalist" value="1" />
       <value name="Necromancer" value="2" />
@@ -3337,7 +3336,7 @@
       <value name="Contract_321_Kill__Tou_Tou_Shadows" value="321" />
       <value name="Contract_322_Kill__Tou_Tou_Void_Lords" value="322" />
     </enum>
-    <enum name="PropertyInt64" parent="uint" text="The PropertyInt64 identifies a specific Character or Object int64 property.">
+    <enum name="PropertyInt64" parent="uint" text="The PropertyInt64 identifies a specific Character or Object int64 property." shared="true">
       <value value="0x0001" name="TotalExperience" sendoncreate="true" />
       <value value="0x0002" name="AvailableExperience" sendoncreate="true" />
       <value value="0x0003" name="AugmentationCost" />
@@ -3347,7 +3346,7 @@
       <value value="0x0007" name="MaximumLuminance" sendoncreate="true" />
       <value value="0x0008" name="InteractionReqs" />
     </enum>
-    <enum name="PropertyBool" parent="uint" text="The PropertyBool identifies a specific Character or Object boolean property.">
+    <enum name="PropertyBool" parent="uint" text="The PropertyBool identifies a specific Character or Object boolean property." shared="true">
       <value name="Undef" value="0" />
       <value name="Stuck" value="1" server="true" />
       <value name="Open" value="2" />
@@ -3480,7 +3479,7 @@
       <value name="NoOlthoiTalk" value="129" sendoncreate="true" />
       <value name="AutowieldLeft" value="130" />
     </enum>
-    <enum name="PropertyDataId" parent="uint" text="The DataPropertyId identifies a specific Character or Object data property.">
+    <enum name="PropertyDataId" parent="uint" text="The DataPropertyId identifies a specific Character or Object data property." shared="true">
       <value name="Setup" value="1" server="true" />
       <value name="MotionTable" value="2" sendoncreate="true" />
       <value name="SoundTable" value="3" server="true" />
@@ -3543,7 +3542,7 @@
       <value name="RedSurgeSpell" value="60" server="true" />
       <value name="OlthoiDeathTreasureType" value="61" server="true" />
     </enum>
-    <enum name="PropertyInt" parent="uint" text="The PropertyInt identifies a specific Character or Object int property.">
+    <enum name="PropertyInt" parent="uint" text="The PropertyInt identifies a specific Character or Object int property." shared="true">
       <value name="ItemType" value="1" server="true" enum="ItemType" />
       <value name="CreatureType" value="2" enum="CreatureType" />
       <value name="PaletteTemplate" value="3" server="true" enum="PaletteTemplate" />
@@ -3935,7 +3934,7 @@
       <value name="GearOverpowerResist" value="389" sendoncreate="true" />
       <value name="Enlightenment" value="390" sendoncreate="true" />
     </enum>
-    <enum name="PropertyInstanceId" parent="uint" text="The PropertyInstanceId identifies a specific Character or Object instance property.">
+    <enum name="PropertyInstanceId" parent="uint" text="The PropertyInstanceId identifies a specific Character or Object instance property." shared="true">
       <value name="Owner" value="1" />
       <value name="Container" value="2" />
       <value name="Wielder" value="3" />
@@ -3982,7 +3981,7 @@
       <value name="PetOwner" value="44" />
       <value name="PetDevice" value="45" server="true" />
     </enum>
-    <enum name="PropertyPosition" parent="uint" text="The PropertyPosition identifies a specific Character or Object position property.">
+    <enum name="PropertyPosition" parent="uint" text="The PropertyPosition identifies a specific Character or Object position property." shared="true">
       <value name="Location" value="1" text="Current Position" />
       <value name="Destination" value="2" text="May be used to store where we are headed when we teleport (?)" />
       <value name="Instantiation" value="3" text="Where will we pop into the world (?)" />
@@ -4011,7 +4010,7 @@
       <value name="RelativeDestination" value="26" text="Position data is relative to Location" />
       <value name="TeleportedCharacter" value="27" text="Admin - Position to return player to when using @telereturn which is where a character was at time of admin using @teletome" />
     </enum>
-    <enum name="PropertyString" parent="uint" text="The PropertyString identifies a specific Character or Object string property.">
+    <enum name="PropertyString" parent="uint" text="The PropertyString identifies a specific Character or Object string property." shared="true">
       <value name="Name" value="1" sendoncreate="true"  />
       <value name="Title" value="2" />
       <value name="Sex" value="3" />
@@ -4065,7 +4064,7 @@
       <value name="UseSendsSignal" value="51" />
       <value name="GearPlatingName" value="52" />
     </enum>
-    <enum name="PropertyFloat" parent="uint" text="The PropertyFloat identifies a specific Character or Object float property.">
+    <enum name="PropertyFloat" parent="uint" text="The PropertyFloat identifies a specific Character or Object float property." shared="true">
       <value name="Undef" value="0" />
       <value name="HeartbeatInterval" value="1" />
       <value name="HeartbeatTimestamp" value="2" />
@@ -4419,7 +4418,7 @@
       <value name="ParagonCaster" value="139" />
       <value name="ParagonMelee" value="140" />
     </enum>
-    <enum name="RadarColor" parent="byte" text="Radar Color">
+    <enum name="RadarColor" parent="byte" text="Radar Color" shared="true">
       <value name="Default" value="0x00" />
       <value name="Blue" value="0x01" />
       <value name="Gold" value="0x02" />
@@ -4438,7 +4437,7 @@
       <value name="Vitae" value="0x0004" />
       <value name="Cooldowns" value="0x0008" />
     </enum>
-    <enum name="SpellCategory" parent="ushort">
+    <enum name="SpellCategory" parent="ushort" shared="true">
       <value name="Undef" value="0" />
       <value name="StrengthRaising" value="1" />
       <value name="StrengthLowering" value="2" />
@@ -5169,7 +5168,7 @@
       <value name="GauntletCriticalDamageRatingRaising" value="732" />
       <value name="GauntletCriticalDamageReductionRatingRaising" value="733" />
     </enum>
-    <enum name="HeritageGroup" parent="byte" text="Heritage of a player">
+    <enum name="HeritageGroup" parent="byte" text="Heritage of a player" shared="true">
       <value value="0x00" name="Invalid" />
       <value value="0x01" name="Aluvian" />
       <value value="0x02" name="Gharundim" />
@@ -5209,7 +5208,7 @@
       <value value="0x04" name="Shield" />
       <value value="0x05" name="TwoHanded" />
     </enum>
-    <enum name="WieldType" parent="byte" text="the type of wieldable item this is">
+    <enum name="WieldType" parent="byte" text="the type of wieldable item this is" shared="true">
       <value value="0x00000000" name="Invalid" />
       <value value="0x00000001" name="MeleeWeapon" />
       <value value="0x00000002" name="Armor" />
@@ -5249,7 +5248,7 @@
       <value value="0x03912021" name="Vitae" />
       <value value="0x03912021" name="Cooldown" />
     </enum>
-    <enum name="EnchantmentTypeFlags" parent="uint" mask="true">
+    <enum name="EnchantmentTypeFlags" parent="uint" mask="true" shared="true">
       <value value="0x0000000" name="Undef" />
       <value value="0x0000001" name="Attribute" />
       <value value="0x0000002" name="SecondAtt" />
@@ -5272,7 +5271,7 @@
       <value value="0x2000000" name="Beneficial" />
       <value value="0x00000FF" name="StatTypes" />
     </enum>
-    <enum name="ParentLocation" parent="uint">
+    <enum name="ParentLocation" parent="uint" shared="true">
       <value value="0x0000000" name="None" />
       <value value="0x0000001" name="RightHand" />
       <value value="0x0000002" name="LeftHand" />
@@ -5284,7 +5283,7 @@
       <value value="0x0000008" name="LeftWeapon" />
       <value value="0x0000009" name="LeftUnarmed" />
     </enum>
-    <enum name="Placement" parent="uint">
+    <enum name="Placement" parent="uint" shared="true">
       <value value="0x0000000" name="Default" />
       <value value="0x0000001" name="RightHandCombat" />
       <value value="0x0000002" name="RightHandNonCombat" />

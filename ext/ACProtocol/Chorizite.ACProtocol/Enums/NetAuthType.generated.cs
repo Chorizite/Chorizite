@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum NetAuthType : uint {
         Undef = 0x00000000,

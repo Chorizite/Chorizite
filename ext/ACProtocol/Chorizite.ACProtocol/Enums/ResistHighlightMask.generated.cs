@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     /// <summary>
     /// The ResistHighlightMask selects which wand attributes highlighting is applied to.

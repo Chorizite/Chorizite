@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     /// <summary>
     /// The ChatDisplayMask identifies that types of chat that are displayed in each chat window. 

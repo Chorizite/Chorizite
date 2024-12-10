@@ -9,7 +9,7 @@
         width: 432dp;
         height: 232dp;
         display: block;
-        background: #FF00FF;
+        background: black;
         width: 800dp;
         height: 600dp;
       }
@@ -19,6 +19,7 @@
         decorator: ninepatch(panel, panel-inner);
         position: absolute;
         padding: 4px 4px 4px 4px;
+        padding-top: 50px;
       }
 
       .window-inner {
@@ -100,6 +101,13 @@
     .actions {
       padding-top: 14px;
       text-align: center;
+    }
+
+    .actions image {
+      display: block;
+      background-color: red;
+      width: 32px;
+      height: 32px;
     }
 
     .actions button {

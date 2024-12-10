@@ -14,12 +14,19 @@ namespace ACUI.Lib {
     /// Represents a panel in the UI. Multiple panels can be loaded and displayed at the same time.
     /// </summary>
     public class Panel : UIDocument {
+
+        public bool IsGhost { get; set; }
+
         internal Panel(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log) : base(name, filename, context, rmlSystemInterface, log) {
 
         }
 
         internal Panel(string name, string rmlContents, Context context, ACSystemInterface rmlSystemInterface, ILogger log, bool isSource) : base(name, rmlContents, context, rmlSystemInterface, log, isSource) {
 
+        }
+
+        public void BringToFront() {
+            ScriptableDocument?.PullToFront();
         }
     }
 }

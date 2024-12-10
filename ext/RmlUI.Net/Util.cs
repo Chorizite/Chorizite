@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using RmlUiNet.Exceptions;
+using RmlUiNet.Native;
 
 namespace RmlUiNet
 {
@@ -83,6 +84,39 @@ namespace RmlUiNet
                 return ElementGeneric.Create(elementPtr);
             }
 
+            return null;
+        }
+
+        public static Variant? ToVariant(object value)
+        {
+            if (value is string stringValue)
+            {
+                return new Variant(Native.Variant.CreateString(stringValue));
+            }
+            else if (value is int intValue)
+            {
+                return new Variant(Native.Variant.CreateInt(intValue));
+            }
+            else if (value is uint uintValue)
+            {
+                return new Variant(Native.Variant.CreateUInt(uintValue));
+            }
+            else if (value is float floatValue)
+            {
+                return new Variant(Native.Variant.CreateFloat(floatValue));
+            }
+            else if (value is double doubleValue)
+            {
+                return new Variant(Native.Variant.CreateDouble(doubleValue));
+            }
+            else if (value is bool boolValue)
+            {
+                return new Variant(Native.Variant.CreateBool(boolValue));
+            }
+            else
+            {
+                Rml.Log($"Unsupport variant value type: {value?.GetType().Name ?? "null"}, must be one of: string, int, uint, float, double, bool.", LogType.Error);
+            }
             return null;
         }
     }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Chorizite.Core.Input {
     public enum Key : int {
+        NONE = 0x00,
         ///<summary>
         ///Left mouse button
         ///</summary>

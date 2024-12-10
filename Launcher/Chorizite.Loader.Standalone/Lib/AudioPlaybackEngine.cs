@@ -42,7 +42,6 @@ namespace Chorizite.Loader.Standalone.Lib {
         public WaveFormat WaveFormat { get; private set; }
         public CachedSound(string audioFileName) {
             using (var audioFileReader = new AudioFileReader(audioFileName)) {
-                // TODO: could add resampling in here if required
                 WaveFormat = audioFileReader.WaveFormat;
                 var wholeFile = new List<float>((int)(audioFileReader.Length / 4));
                 var readBuffer = new float[audioFileReader.WaveFormat.SampleRate * audioFileReader.WaveFormat.Channels];

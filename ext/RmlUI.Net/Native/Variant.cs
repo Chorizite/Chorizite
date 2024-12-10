@@ -46,5 +46,8 @@ namespace RmlUiNet.Native {
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Variant_GetAsBool")]
         public static extern bool GetAsBool(IntPtr variant, bool defaultValue);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Variant_Free")]
+        public static extern void Free(IntPtr variant);
     }
 }

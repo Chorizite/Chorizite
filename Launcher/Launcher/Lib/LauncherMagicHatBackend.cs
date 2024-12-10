@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Chorizite.Common;
 using DatReaderWriter.DBObjs;
 using NAudio.Wave;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using Chorizite.Core;
 
 namespace Launcher.Lib {
@@ -78,6 +77,13 @@ namespace Launcher.Lib {
 
         public void Exit() {
             Program.Exit();
+        }
+        public void SetClipboardText(string text) {
+            Native.SetClipboardText(text);
+        }
+
+        public string? GetClipboardText() {
+            return Native.GetClipboardText();
         }
 
         public void PlaySound(uint soundId) {
@@ -174,6 +180,10 @@ namespace Launcher.Lib {
 
         public void Minimize() {
             Native.ShowWindow(GLRenderer.HWND, 2);
+        }
+
+        public void SetCursorDid(uint did, int hotX = 0, int hotY = 0, bool makeDefault = false) {
+            
         }
 
         public void Dispose() {

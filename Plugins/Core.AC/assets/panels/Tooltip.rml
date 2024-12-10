@@ -17,7 +17,7 @@
       }
     </style>
 	</head>
-	<body data-model="Tooltip">
-    <div dd-text="test"></div>
+	<body>
+    <div dd-text="test">test</div>
 	</body>
 </rml>

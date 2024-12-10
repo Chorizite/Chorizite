@@ -42,6 +42,10 @@ namespace RmlUiNet
             return Native.Rml.LoadFontFace(fileName, fallbackFace, weight);
         }
 
+        public static EventId RegisterEventType(string type, bool interruptible, bool bubbles, DefaultActionPhase defaultActionPhase) {
+            return Native.Rml.RegisterEventType(type, interruptible, bubbles, defaultActionPhase);
+        }
+
         public static Context? CreateContext(string name, Vector2i dimensions, RenderInterface? renderInterface = null)
         {
             return Context.Create(name, dimensions, renderInterface);
@@ -53,6 +57,10 @@ namespace RmlUiNet
 
         public static void RegisterPlugin(Plugin plugin) {
             Native.Rml.RegisterPlugin(plugin.NativePtr);
+        }
+
+        public static void Log(string message, LogType type = LogType.Always) {
+            Native.Rml.Log(type, message);
         }
 
         public static RenderInterface GetRenderInterface() {

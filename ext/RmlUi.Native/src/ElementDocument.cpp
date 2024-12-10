@@ -13,6 +13,10 @@ RMLUI_CAPI void rml_ElementDocument_Hide(Rml::ElementDocument* document) {
     document->Hide();
 }
 
+RMLUI_CAPI void rml_ElementDocument_PullToFront(Rml::ElementDocument* document) {
+    document->PullToFront();
+}
+
 RMLUI_CAPI void rml_ElementDocument_SetTitle(Rml::ElementDocument* document, const char* title) {
     document->SetTitle(title);
 }

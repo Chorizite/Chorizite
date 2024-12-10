@@ -32,5 +32,8 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Event_IsImmediatePropagating")]
         public static extern bool IsImmediatePropagating(IntPtr ev);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Event_GetParameters")]
+        public static extern IntPtr GetParameters(IntPtr element);
     }
 }

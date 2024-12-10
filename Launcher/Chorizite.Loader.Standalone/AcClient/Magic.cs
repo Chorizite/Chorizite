@@ -385,8 +385,8 @@ namespace AcClient {
     public unsafe struct CSpellBase {
         // Struct:
         public PackObj a0;
-        public AC1Legacy.PStringBase<char> _name;
-        public AC1Legacy.PStringBase<char> _desc;
+        public AC1Legacy.PStringBase<byte> _name;
+        public AC1Legacy.PStringBase<byte> _desc;
         public UInt32 _school;
         public UInt32 _iconID;
         public UInt32 _category;

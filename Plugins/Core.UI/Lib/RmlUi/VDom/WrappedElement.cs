@@ -1,4 +1,5 @@
-﻿using RmlUiNet;
+﻿using Microsoft.Extensions.Logging;
+using RmlUiNet;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,9 @@ namespace Core.UI.Lib.RmlUi.VDom {
         internal void SetEventListener(string eventName, Action<Event> action) {
             if (!_eventCache.Remove(eventName, out var oldEventAction)) {
                 Action<Event> listener = (e) => {
+                    if (e.Id == RmlUiNet.EventId.DragDrop && e.Parameters.TryGetValue("ObjectName", out var drop)) {
+                        CoreUIPlugin.Log.LogDebug($"OBJET NAME Event: {drop}");
+                    }
                     if (_eventCache.TryGetValue(eventName, out var eventAction)) {
                         eventAction(e);
                     }
