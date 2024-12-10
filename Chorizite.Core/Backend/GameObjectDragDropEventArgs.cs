@@ -44,16 +44,22 @@ namespace Chorizite.Core.Backend {
         public uint Id { get; init; }
 
         /// <summary>
+        /// The icon data
+        /// </summary>
+        public IconData IconData { get; init; }
+
+        /// <summary>
         /// True if the object is a spell
         /// </summary>
         public bool IsSpell { get; init; }
 
-        public GameObjectDragDropEventArgs(string name, uint id, DragDropFlags flags, bool isDropping, bool isSpell) {
+        public GameObjectDragDropEventArgs(string name, uint id, DragDropFlags flags, bool isDropping, bool isSpell, IconData iconData) {
             IsDropping = isDropping;
             Flags = flags;
             Name = name;
             Id = id;
             IsSpell = isSpell;
+            IconData = iconData;
         }
     }
 }

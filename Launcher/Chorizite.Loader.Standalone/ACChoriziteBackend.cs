@@ -156,6 +156,17 @@ namespace Chorizite.Loader.Standalone {
             ChatHooks.AddChatText(text, (eChatTypes)type);
         }
 
+        public void ClearDragandDrop() {
+            if (UIElementManager.s_pInstance is not null) {
+                UIElementManager.s_pInstance->StopDragandDrop();
+            }
+        }
+
+        public void SetCursorDid(uint did, int hotX = 0, int hotY = 0, bool makeDefault = false) {
+            UIHooks.CursorDid = did;
+            UIElementManager.s_pInstance->SetCursor(did, hotX, hotY, (byte)(makeDefault ? 1 : 0));
+        }
+
         public void PlaySound(uint soundId) {
             try {
                 if (DatReader.TryGet<Wave>(soundId, out var sound)) {
@@ -257,6 +268,14 @@ namespace Chorizite.Loader.Standalone {
 
         private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
         private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
+
+        public void SetClipboardText(string text) {
+            Native.SetClipboardText(text);
+        }
+
+        public string? GetClipboardText() {
+            return Native.GetClipboardText();
+        }
 
         public void Exit() {
             CleanupNet(*Client.m_instance);

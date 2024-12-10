@@ -22,9 +22,6 @@ using Core.UI.Lib.RmlUi.VDom;
 using System.Xml.Linq;
 using System.Linq;
 using Cortex.Net;
-using Chorizite.Core.Render;
-using System.Threading.Tasks;
-using Cortex.Net.Types;
 
 namespace Core.UI {
     /// <summary>
@@ -41,7 +38,7 @@ namespace Core.UI {
         private readonly Dictionary<string, string> _gameScreenRmls = [];
         private readonly Dictionary<string, Panel> _gamePanelRmls = [];
         private RmlUIRenderInterface? _rmlRenderInterface;
-        private ACSystemInterface? _rmlSystemInterface;
+        internal ACSystemInterface? _rmlSystemInterface;
         private ThemePlugin _themePlugin;
         private RmlInputManager? _rmlInput;
         private bool _didInitRml;
@@ -51,6 +48,7 @@ namespace Core.UI {
         private readonly IDatReaderInterface _dat;
 
         private ScriptableEventListenerInstancer _scriptableEventListenerInstancer;
+        private ScriptableEventInstancer _eventInstancer;
         private RenderObjElementInstancer _renderObjInstancer;
         private bool _needsViewportUpdate;
         private Panel? _panel;
@@ -71,7 +69,7 @@ namespace Core.UI {
             }
         }
 
-        public static CoreUIPlugin? Instance { get; internal set; }
+        public static CoreUIPlugin Instance { get; internal set; }
 
         JsonTypeInfo<UIState> ISerializeState<UIState>.TypeInfo => SourceGenerationContext.Default.UIState;
 
@@ -104,9 +102,9 @@ namespace Core.UI {
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
             Backend.Renderer.OnGraphicsPostReset += Renderer_OnGraphicsPostReset;
 
-            _panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
-            _panel.OnAfterReload += Panel_OnAfterReload;
-            MakeReactive();
+            //_panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
+            //_panel.OnAfterReload += Panel_OnAfterReload;
+            //MakeReactive();
         }
 
         private void Panel_OnAfterReload(object? sender, EventArgs e) {
@@ -438,6 +436,7 @@ namespace Core.UI {
 
                     ScriptableDocumentInstancer = new ScriptableDocumentInstancer(Backend, Log);
                     _scriptableEventListenerInstancer = new ScriptableEventListenerInstancer(ScriptableDocumentInstancer, Log);
+                    _eventInstancer = new ScriptableEventInstancer();
                     _renderObjInstancer = new RenderObjElementInstancer(Backend, _dat, Log);
 
                     RmlContext = Rml.CreateContext("viewport", size);
@@ -531,6 +530,7 @@ namespace Core.UI {
             _themePlugin?.Dispose();
             ScriptableDocumentInstancer?.Dispose();
             _scriptableEventListenerInstancer?.Dispose();
+            _eventInstancer?.Dispose();
             _renderObjInstancer?.Dispose();
             _rmlRenderInterface?.Dispose();
             _rmlSystemInterface?.Dispose();

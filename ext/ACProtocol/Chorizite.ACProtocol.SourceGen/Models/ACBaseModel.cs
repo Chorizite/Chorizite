@@ -6,12 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Xml.XPath;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Chorizite.ACProtocol.SourceGen.Models {
     public abstract class ACBaseModel {
         public ACBaseModel Parent { get; set; } = null;
         public XElement Element { get; }
         public List<ACBaseModel> Children { get; set; } = new List<ACBaseModel>();
+        public bool Shared { get; }
 
         public List<ACBaseModel> AllChildren {
             get {
@@ -79,6 +81,7 @@ namespace Chorizite.ACProtocol.SourceGen.Models {
             Parent = parent;
             Element = element;
             Children = ParseChildren(element);
+            Shared = element.Attribute("shared")?.Value == "true";
         }
 
         internal bool HasParentOfType(Type type) {

@@ -17,6 +17,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_Close")]
         public static extern void Close(IntPtr document);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_PullToFront")]
+        public static extern void PullToFront(IntPtr document);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_ElementDocument_New")]
         public static extern IntPtr Create(OnLoadInlineScript? onLoadInlineScript, OnLoadExternalScript? onLoadExternalScript);
 

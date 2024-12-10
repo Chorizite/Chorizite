@@ -20,6 +20,15 @@ local MakeElement = function(elType, ...)
       error("Unhandled element argument: " .. type(v))
     end
   end
+  if props.class ~= nil and type(props.class) == 'table' then
+    local classStr = ""
+    for k,v in pairs(props.class) do
+      if props.class[k] then
+        classStr = classStr .. (#classStr > 0 and (" " .. k) or k)
+      end
+    end
+    props.class = classStr
+  end
   return __Rx:El(elType, props, children, text)
 end
 

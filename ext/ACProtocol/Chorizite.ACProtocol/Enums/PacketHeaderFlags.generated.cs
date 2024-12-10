@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     [Flags]
     public enum PacketHeaderFlags : uint {

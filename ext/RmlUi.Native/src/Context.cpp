@@ -19,6 +19,10 @@ RMLUI_CAPI void rml_Context_Update(Rml::Context *context) {
     context->Update();
 }
 
+RMLUI_CAPI Rml::Element* rml_Context_GetHoverElement(Rml::Context *context) {
+    return context->GetHoverElement();
+}
+
 RMLUI_CAPI void rml_Context_SetDimensions(Rml::Context *context, int x, int y) {
     auto vec = Rml::Vector2i(x, y);
     context->SetDimensions(vec);
@@ -42,6 +46,18 @@ RMLUI_CAPI bool rml_Context_IsMouseInteracting(Rml::Context *context) {
 
 RMLUI_CAPI bool rml_Context_ProcessMouseLeave(Rml::Context *context) {
     return context->ProcessMouseLeave();
+}
+
+RMLUI_CAPI Rml::Element* rml_Context_GetFocusElement(Rml::Context *context) {
+    return context->GetFocusElement();
+}
+
+RMLUI_CAPI Rml::Element* rml_Context_GetRootElement(Rml::Context *context) {
+    return context->GetRootElement();
+}
+
+RMLUI_CAPI void rml_Context_UnfocusDocument(Rml::Context *context, Rml::ElementDocument* document) {
+    return context->UnfocusDocument(document);
 }
 
 RMLUI_CAPI bool rml_Context_ProcessMouseMove(Rml::Context *context, int x, int y, int keyModifierState) {

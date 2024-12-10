@@ -1,0 +1,9 @@
+{
+  "name": "AuctionHouse",
+  "author": "Chorizite",
+  "entryfile": "AuctionHouse.dll",
+  "version": "0.0.1",
+  "description": "AuctionHouse",
+  "dependencies": [ "Core.UI@0.0.1", "Core.AC@0.0.1" ],
+  "environments": [ "Client" ]
+}

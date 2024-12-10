@@ -8,6 +8,7 @@ using Chorizite.ACProtocol.Messages.S2C.Events;
 using Chorizite.ACProtocol.Types;
 using Chorizite.ACProtocol;
 using Chorizite.Common;
+using Chorizite.Common.Enums;
 
 namespace Chorizite.ACProtocol {
 

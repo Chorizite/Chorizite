@@ -20,18 +20,20 @@ namespace Launcher {
         }
 
         internal unsafe void Launch(string clientPath, string server, string username, string password) {
-            var host = server.Split(":").First();
-            var port = server.Split(":").Last();
-            var clientArgs = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
+            Task.Run(() => {
+                var host = server.Split(":").First();
+                var port = server.Split(":").Last();
+                var clientArgs = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
 
-            var choriziteDll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "Chorizite.Bootstrapper.dll");
+                var choriziteDll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "Chorizite.Bootstrapper.dll");
 
-            EntryPointParameters[] dllsToInject = [
-                new EntryPointParameters(choriziteDll, "Bootstrap"),
-                //new EntryPointParameters(DecalHelpers.GetDecalLocation(), "Startup")
-            ];
+                EntryPointParameters[] dllsToInject = [
+                    new EntryPointParameters(choriziteDll, "Bootstrap"),
+                    //new EntryPointParameters(DecalHelpers.GetDecalLocation(), "Startup")
+                ];
 
-            LaunchClientWithInjected(clientPath, clientArgs, dllsToInject);
+                LaunchClientWithInjected(clientPath, clientArgs, dllsToInject);
+            });
         }
 
         private unsafe static void LaunchClientWithInjected(string clientPath, string clientArgs, EntryPointParameters[] entryPointParams) {

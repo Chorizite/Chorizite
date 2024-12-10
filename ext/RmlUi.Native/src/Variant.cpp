@@ -3,6 +3,10 @@
 #include <string>
 #include <unordered_map>
 
+RMLUI_CAPI void rml_Variant_Free(Rml::Variant* variant) {
+  delete variant;
+}
+
 RMLUI_CAPI Rml::Variant* rml_Variant_CreateInt(int value) {
   return new Rml::Variant(value);
 }

@@ -51,14 +51,13 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" ExcludeAssets="runtime" />
-    <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.42" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </PackageReference>
+    <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="assets\panels\DragDropOverlay.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="assets\panels\Logs.rml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

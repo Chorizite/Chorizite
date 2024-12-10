@@ -47,6 +47,10 @@ namespace RmlUiNet
             Native.ElementDocument.Show(NativePtr, modalFlag, focusFlag);
         }
 
+        public void PullToFront() {
+            Native.ElementDocument.PullToFront(NativePtr);
+        }
+
         /// <summary>
         /// Hide the document.
         /// </summary>

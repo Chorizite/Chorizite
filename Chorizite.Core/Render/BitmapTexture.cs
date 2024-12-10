@@ -17,8 +17,8 @@ using DatReaderWriter.DBObjs;
 
 namespace Chorizite.Core.Render {
     public abstract class BitmapTexture : ITexture {
-        private static readonly Color BORDER_COLOR_MASK = Color.White;
-        private static readonly Color BACKGROUND_COLOR_MASK = Color.Black;
+        private static readonly Rgba32 BORDER_COLOR_MASK = Color.FromRgba(255, 255, 255, 255);
+        private static readonly Rgba32 BACKGROUND_COLOR_MASK = Color.FromRgba(255, 255, 255, 0);
 
         /// <summary>
         /// The bitmap this texture is using.
@@ -35,7 +35,7 @@ namespace Chorizite.Core.Render {
         public abstract int Height { get; }
 
         public BitmapTexture() {
-        
+
         }
 
         public BitmapTexture(byte[] source, int width, int height) {
@@ -55,9 +55,8 @@ namespace Chorizite.Core.Render {
         public BitmapTexture(string file) : base() {
             if (!System.IO.File.Exists(file)) {
                 ChoriziteStatics.Log.LogError($"Could not find texture file: {file}");
-                using Stream stream = typeof(BitmapTexture).Assembly.GetManifestResourceStream("Chorizite.Core.Render.nulltexture.jpg");
-                using var img = Image.Load(stream);
-                Bitmap = img.CloneAs<Rgba32>();
+                Bitmap = GetTextureMissing();
+                CreateTexture();
             }
             else {
                 using var img = Image.Load(file);
@@ -93,79 +92,91 @@ namespace Chorizite.Core.Render {
                 return;
             }
 
-            var bmp2 = new Image<Rgba32>(baseBmp.Width, baseBmp.Height);
+            if (string.IsNullOrEmpty(uri.Query)) {
+                var bmp2 = new Image<Rgba32>(baseBmp.Width, baseBmp.Height);
 
-            for (int x = 0; x < baseBmp.Width; x++) {
-                for (int y = 0; y < baseBmp.Height; y++) {
-                    Color gotColor = baseBmp[x, y];
-                    if (gotColor == BACKGROUND_COLOR_MASK) {
-                        baseBmp[x, y] = Color.Transparent;
+                for (int x = 0; x < baseBmp.Width; x++) {
+                    for (int y = 0; y < baseBmp.Height; y++) {
+                        var gotColor = baseBmp[x, y];
+                        if (gotColor == BACKGROUND_COLOR_MASK) {
+                            baseBmp[x, y] = Color.Transparent;
+                        }
                     }
                 }
+
+                bmp2.Mutate(x => x.Fill(Color.Transparent));
+                bmp2.Mutate(x => x.DrawImage(baseBmp, 1));
+                baseBmp.Dispose();
+                Bitmap = bmp2;
+                CreateTexture();
             }
+            else {
+                var bmp = new Image<Rgba32>(baseBmp.Width, baseBmp.Height);
+                bmp.Mutate(x => x.Fill(Color.Transparent));
 
-            bmp2.Mutate(x => x.Fill(Color.Transparent));
-            bmp2.Mutate(x => x.DrawImage(baseBmp, 1));
-            baseBmp.Dispose();
-            Bitmap = bmp2;
-            CreateTexture();
-            /*
-            if (baseBmp is null) return null;
-            if (baseBmp.Width == 32 && baseBmp.Height == 32) return new ManagedDXTexture(baseBmp);
-
-            var bmp = new Image<Argb32>(baseBmp.Width, baseBmp.Height);
-            bmp.Mutate(x => x.Fill(Color.Transparent));
-
-            Image<Argb32>? underlay = null;
-            Image<Argb32>? uieffect = null;
-            Image<Argb32>? overlay1 = null;
-            Image<Argb32>? overlay2 = null;
-
-            if (!string.IsNullOrEmpty(uri.Query)) {
+                Image<Rgba32>? underlay = null;
+                Image<Rgba32>? uieffect = null;
+                Image<Rgba32>? overlay1 = null;
+                Image<Rgba32>? overlay2 = null;
                 var query = HttpHelpers.ParseQueryString(uri.Query);
                 if (query.ContainsKey("underlay") && !string.IsNullOrEmpty(query["underlay"])) {
-                    underlay = GetIconBitmap(ParseDatId(query["underlay"]), _portalDat, out var _);
+                    var underlayId = ParseDatId(query["underlay"]);
+                    if (underlayId != 0) {
+                        underlay = GetIconBitmap(underlayId, _portalDat, out var _);
+                    }
                 }
-                if (query.ContainsKey("overlay1") && !string.IsNullOrEmpty(query["overlay1"])) {
-                    overlay1 = GetIconBitmap(ParseDatId(query["overlay1"]), _portalDat, out var _);
+                if (query.ContainsKey("overlay") && !string.IsNullOrEmpty(query["overlay"])) {
+                    var overlayId = ParseDatId(query["overlay"]);
+                    if (overlayId != 0) {
+                        overlay1 = GetIconBitmap(overlayId, _portalDat, out var _);
+                    }
                 }
                 if (query.ContainsKey("overlay2") && !string.IsNullOrEmpty(query["overlay2"])) {
-                    overlay2 = GetIconBitmap(ParseDatId(query["overlay2"]), _portalDat, out var _);
+                    var overlayId = ParseDatId(query["overlay2"]);
+                    if (overlayId != 0) {
+                        overlay2 = GetIconBitmap(overlayId, _portalDat, out var _);
+                    }
                 }
                 if (query.ContainsKey("uieffect") && !string.IsNullOrEmpty(query["uieffect"]) && _uiEffects.TryGetValue(query["uieffect"].ToLower(), out var effectId)) {
                     uieffect = GetIconBitmap(effectId, _portalDat, out var _);
                 }
-            }
 
-            uieffect ??= GetIconBitmap(0x060011C5, _portalDat, out var _);
-            // ui effect
-            if (baseBmp.Width <= 32 && baseBmp.Height <= 32) {
-                for (int x = 0; x < baseBmp.Width; x++) {
-                    for (int y = 0; y < baseBmp.Height; y++) {
-                        Color gotColor = bmp[x, y];
-                        if (gotColor == BORDER_COLOR_MASK) {
-                            bmp[x, y] = uieffect[x, y];
-                        }
-                        else if (gotColor == BACKGROUND_COLOR_MASK) {
-                            bmp[x, y] = Color.Transparent;
+                uieffect ??= GetIconBitmap(0x060011C5, _portalDat, out var _); // transparent
+                // ui effect
+                if (baseBmp.Width <= 32 && baseBmp.Height <= 32) {
+                    for (int x = 0; x < baseBmp.Width; x++) {
+                        for (int y = 0; y < baseBmp.Height; y++) {
+                            var gotColor = baseBmp[x, y];
+                            if (gotColor == BORDER_COLOR_MASK) {
+                                baseBmp[x, y] = uieffect[x, y];
+                            }
+                            else if (gotColor == BACKGROUND_COLOR_MASK) {
+                                baseBmp[x, y] = Color.Transparent;
+                            }
                         }
                     }
+
+                    if (underlay is not null) bmp.Mutate(x => x.DrawImage(underlay, 1));
+                    bmp.Mutate(x => x.DrawImage(baseBmp, 1));
+                    if (overlay1 is not null) bmp.Mutate(x => x.DrawImage(overlay1, 1));
+                    if (overlay2 is not null) bmp.Mutate(x => x.DrawImage(overlay2, 1));
                 }
 
-                if (underlay is not null) bmp.Mutate(x => x.DrawImage(underlay, 1));
-                bmp.Mutate(x => x.DrawImage(baseBmp, 1));
-                if (overlay1 is not null) bmp.Mutate(x => x.DrawImage(overlay1, 1));
-                if (overlay2 is not null) bmp.Mutate(x => x.DrawImage(overlay2, 1));
+                underlay?.Dispose();
+                uieffect?.Dispose();
+                overlay1?.Dispose();
+                overlay2?.Dispose();
+                baseBmp.Dispose();
+
+                Bitmap = bmp;
+                CreateTexture();
             }
+        }
 
-            baseBmp?.Dispose();
-            underlay?.Dispose();
-            uieffect?.Dispose();
-            overlay1?.Dispose();
-            overlay2?.Dispose();
-
-            return new ManagedDXTexture(bmp);
-            */
+        private static Image<Rgba32> GetTextureMissing() {
+            using Stream stream = typeof(BitmapTexture).Assembly.GetManifestResourceStream("Chorizite.Core.Render.nulltexture.jpg");
+            using var img = Image.Load(stream);
+            return  img.CloneAs<Rgba32>();
         }
 
         protected static Image<Rgba32> GetBitmap(DatReaderWriter.DBObjs.RenderSurface texture) {
@@ -196,11 +207,11 @@ namespace Chorizite.Core.Render {
                     for (int i = 0; i < texture.Height; i++)
                         for (int j = 0; j < texture.Width; j++) {
                             int idx = i * texture.Width + j;
-                            int a = (int)((colorArray[idx] & 0xFF000000) >> 24);
+                            int a = (byte)((colorArray[idx] & 0xFF000000) >> 24);
                             int r = (colorArray[idx] & 0xFF0000) >> 16;
                             int g = (colorArray[idx] & 0xFF00) >> 8;
                             int b = colorArray[idx] & 0xFF;
-                            image[j, i] = Color.FromRgba((byte)r, (byte)g, (byte)b, 255);
+                            image[j, i] = Color.FromRgba((byte)r, (byte)g, (byte)b, (byte)a);
                         }
                     break;
                 /*
@@ -254,32 +265,13 @@ namespace Chorizite.Core.Render {
                             int r = colorArray[idx + 1];
                             int g = colorArray[idx + 2];
                             int b = colorArray[idx + 3];
-                            image[j, i] = Color.FromRgba((byte)r, (byte)g, (byte)b, 255);
+                            image[j, i] = Color.FromRgba((byte)r, (byte)g, (byte)b, (byte)a);
                         }
                     break;
                 default:
-                    throw new Exception($"Unknown pixel format: {texture.Format}");
-            }
-            
-            if (image.Width <= 32 && image.Height <= 32) {
-                var recolored = new Image<Rgba32>(32, 32);
-                for (int x = 0; x < image.Width; x++) {
-                    for (int y = 0; y < image.Height; y++) {
-                        Color gotColor = image[x, y];
-                        if (gotColor == BORDER_COLOR_MASK) {
-                            //recolored[x, y] = uieffect[x, y];
-                            recolored[x, y] = Color.Transparent;
-                        }
-                        else if (gotColor == BACKGROUND_COLOR_MASK) {
-                            recolored[x, y] = Color.Transparent;
-                        }
-                        else {
-                            recolored[x, y] = gotColor;
-                        }
-                    }
-                }
-                image.Dispose();
-                return recolored;
+                    ChoriziteStatics.Log.LogError($"Unknown pixel format: {texture.Format}");
+                    image.Dispose();
+                    return GetTextureMissing();
             }
 
             return image;
@@ -416,6 +408,7 @@ namespace Chorizite.Core.Render {
 
         internal static Dictionary<string, uint> _uiEffects = new Dictionary<string, uint>() {
             { "", 0x060011C5 },
+            { "none", 0x060011C5 },
             { "magical", 0x060011CA },
             { "posioned", 0x060011C6 },
             { "boosthealth", 0x06001B05 },
@@ -427,16 +420,19 @@ namespace Chorizite.Core.Render {
             { "acid", 0x06001B2C },
             { "bludgeoning", 0x060033C3 },
             { "slashing", 0x060033C2 },
-            { "piercing", 0x060033C4 }
+            { "piercing", 0x060033C4 },
+            { "reversed", 0x06004C3E } // for spells
         };
 
         private static Image<Rgba32> GetIconBitmap(uint id, IDatReaderInterface portalDat, out DatReaderWriter.DBObjs.RenderSurface? iconFile) {
             if (!portalDat.TryGet(id, out iconFile)) {
-                throw new Exception($"Could not load icon from dat: 0x{id:X8}");
+                ChoriziteStatics.Log.LogError($"Could not load icon from dat: 0x{id:X8}");
+                return GetTextureMissing();
             }
 
             if (iconFile is null || iconFile.SourceData is null) {
-                throw new Exception($"iconFile was null: 0x{id:X8}");
+                ChoriziteStatics.Log.LogError($"iconFile was null: 0x{id:X8}");
+                return GetTextureMissing();
             }
 
             return GetBitmap(iconFile);
@@ -455,7 +451,7 @@ namespace Chorizite.Core.Render {
                 return 0;
             }
 
-            if (id < 0x06000000)
+            if (id != 0 && id < 0x06000000)
                 id += 0x06000000;
 
             return id;

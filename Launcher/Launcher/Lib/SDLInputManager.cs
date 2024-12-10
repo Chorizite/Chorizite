@@ -52,6 +52,13 @@ namespace Launcher.Lib {
         private readonly WeakEvent<MouseUpEventArgs> _OnMouseUp = new();
 
         /// <inheritdoc/>
+        public event EventHandler<MouseWheelEventArgs>? OnMouseWheel {
+            add { _OnMouseWheel.Subscribe(value); }
+            remove { _OnMouseWheel.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<MouseWheelEventArgs> _OnMouseWheel = new();
+
+        /// <inheritdoc/>
         public event EventHandler<KeyPressEventArgs>? OnKeyPress {
             add { _OnKeyPress.Subscribe(value); }
             remove { _OnKeyPress.Unsubscribe(value); }
@@ -129,6 +136,9 @@ namespace Launcher.Lib {
                         break;
                     case SDL_EventType.SDL_MOUSEBUTTONUP:
                         _OnMouseUp?.Invoke(this, new MouseUpEventArgs(ConvertSDLMouseButton(e.button.button)));
+                        break;
+                    case SDL_EventType.SDL_MOUSEWHEEL:
+                        _OnMouseWheel?.Invoke(this, new MouseWheelEventArgs(e.wheel.x, e.wheel.y));
                         break;
                     case SDL_EventType.SDL_KEYDOWN:
                         _OnKeyDown?.Invoke(this, new KeyDownEventArgs(ConvertSDLToKey(e.key.keysym.sym)));

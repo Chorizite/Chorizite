@@ -1,4 +1,5 @@
 ﻿using DatReaderWriter;
+using DatReaderWriter.DBObjs;
 using DatReaderWriter.Lib.IO;
 using DatReaderWriter.Lib.IO.BlockAllocators;
 using Microsoft.Extensions.Logging;
@@ -11,11 +12,41 @@ using System.Threading.Tasks;
 namespace Chorizite.Core.Dats {
     internal class FSDatReader : IDatReaderInterface {
         private string _datPath;
+        private SpellTable _spellTable;
+        private SkillTable _skillTable;
+        private VitalTable _vitalTable;
         private readonly ILogger _log;
         private readonly IChoriziteConfig _config;
 
         public PortalDatabase Portal { get; private set; }
         public CellDatabase Cell { get; private set; }
+
+        public SpellTable SpellTable {
+            get {
+                if (_spellTable is null) {
+                    _spellTable = Portal.SpellTable;
+                }
+                return _spellTable;
+            }
+        }
+
+        public SkillTable SkillTable {
+            get {
+                if (_skillTable is null) {
+                    _skillTable = Portal.SkillTable;
+                }
+                return _skillTable;
+            }
+        }
+
+        public VitalTable VitalTable {
+            get {
+                if (_vitalTable is null) {
+                    _vitalTable = Portal.VitalTable;
+                }
+                return _vitalTable;
+            }
+        }
 
         public FSDatReader(ILogger<FSDatReader> log) {
             _log = log;

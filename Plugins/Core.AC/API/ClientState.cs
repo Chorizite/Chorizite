@@ -29,23 +29,18 @@
         EnteringGame = 4,
         
         /// <summary>
-        /// Got Player details while logging in
-        /// </summary>
-        PlayerDescReceived = 5,
-        
-        /// <summary>
         /// Fully logged in to the game
         /// </summary>
-        InGame = 6,
+        InGame = 5,
         
         /// <summary>
         /// Logging out
         /// </summary>
-        LoggingOut = 7,
+        LoggingOut = 6,
 
         /// <summary>
         /// Disconnected from server
         /// </summary>
-        Disconnected = 8
+        Disconnected = 7
     }
 }

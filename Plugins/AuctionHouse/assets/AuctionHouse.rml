@@ -1,0 +1,172 @@
+﻿<rml>
+	<head>
+    <title>Auction House</title>
+		<link type="text/template" href="../../Core.UI/assets/templates/tabpanel.rml" />
+		<style>
+      body {
+        font-size: 33px;
+        min-width: 300px;
+        font-family: Tahoma;
+      }
+
+      .inner {
+        padding: 0px;
+        background-color: #000000dd;
+      }
+
+      body h4 {
+        color: #eea300dd;
+        font-weight: bold;
+        font-size: 16px;
+        padding: 0;
+        margin: 4dp 0 4dp 0;
+      }
+
+      input[type="text"] {
+        width: 60px;
+      }
+
+      .flex {
+        display: flex;
+      }
+
+      .post-area {
+        flex: 200dp;
+        padding: 6dp;
+        border-right: 1px #eea300dd;
+      }
+
+      #browse {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+
+      .post-comparisons {
+        flex: 1;
+        padding: 6dp;
+        min-width: 400px;
+      }
+
+      .post-area .item {
+        margin-right: 10px;
+      }
+
+      .post-area .icon-stack {
+        decorator: image(dat://0x06000F6E);
+        display: inline-block;
+        width: 32dp;
+        height: 32dp;
+        position: relative;
+      }
+      .post-area .icon-stack > * {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 32dp;
+        height: 32dp;
+      }
+
+      .post-area .icon-stack .icon-drag-invalid {
+        decorator: image(dat://0x060011F8);
+        display: none;
+      }
+
+      .post-area .icon-stack .icon-drag-accept {
+        decorator: image(dat://0x060011F9);
+        display: none;
+      }
+
+      .post-area.has-drag-over .icon-stack .icon-drag-accept {
+        display: inline-block;
+      }
+
+      .post-area.has-drag-over-invalid .icon-stack .icon-drag-invalid {
+        display: inline-block;
+      }
+
+      .post-area .icon-stack .icon-item {
+        display: none;
+      }
+
+      .post-area.has-item .icon-stack .icon-item {
+        display: inline-block;
+      }
+      
+      .post-area .name {
+        flex: 1;
+        font-size: 16px;
+        padding-left: 8dp;
+      }
+
+      .post-area button.create-auction-button{
+        margin: 6px 0 0 0;
+      }
+    </style>
+    <script src="auctionhouse.lua"></script>
+    <script src="post.lua"></script>
+	</head>
+	<body class="window" template="tabpanel">
+    <div class="inner">
+      <tabset>
+        <tab>Post</tab>
+        <panel>
+          <div id="post" />
+        </panel>
+        <tab>Browse</tab>
+        <panel>
+          <div id="browse">
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+            scroll content<br />
+          </div>
+        </panel>
+        <tab>My Listings</tab>
+        <panel>
+          <div id="my-listings" />
+        </panel>
+      </tabset>
+    </div>
+	</body>
+</rml>

@@ -35,9 +35,7 @@ namespace RmlUiNet
 
         internal void ProcessEventInternal(IntPtr eventPtr) {
             //CoreUIPlugin.UI.Log?.LogTrace($"ProcessEventInternal: {eventPtr}");
-            ProcessEvent(
-                Event.GetOrCreateCache(eventPtr, ptr => new Event(ptr))
-            );
+            ProcessEvent(new Event(eventPtr));
         }
 
         internal void AttachEventInternal(IntPtr elementPtr, string elementType) {

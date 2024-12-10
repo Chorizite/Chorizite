@@ -41,5 +41,8 @@ namespace Chorizite.Core.Backend {
         public virtual static IChoriziteBackend Create(IContainer container) => throw new NotImplementedException("You must implement IChoriziteBackend.Create static method.");
 
         void PlaySound(uint soundId);
+        void SetCursorDid(uint did, int hotX = 0, int hotY = 0, bool makeDefault = false);
+        void SetClipboardText(string text);
+        string? GetClipboardText();
     }
 }

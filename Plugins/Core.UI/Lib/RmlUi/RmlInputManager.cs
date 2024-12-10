@@ -2,14 +2,17 @@
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace ACUI.Lib.RmlUi {
+namespace Core.UI.Lib.RmlUi {
     internal class RmlInputManager : IDisposable {
         private readonly Context _ctx;
         private readonly ILogger? _log;
         private readonly IInputManager _input;
+        private Key _lastGameKeyDown;
+        private Dictionary<Key, bool> _keyStates = [];
 
         public RmlInputManager(IInputManager inputManager, Context ctx, ILogger? log) {
             _ctx = ctx;
@@ -19,6 +22,7 @@ namespace ACUI.Lib.RmlUi {
             _input.OnMouseMove += InputManager_OnMouseMove;
             _input.OnMouseDown += InputManager_OnMouseDown;
             _input.OnMouseUp += InputManager_OnMouseUp;
+            _input.OnMouseWheel += InputManager_OnMouseWheel;
             _input.OnKeyDown += InputManager_OnKeyDown;
             _input.OnKeyUp += InputManager_OnKeyUp;
             _input.OnKeyPress += InputManager_OnKeyPress;
@@ -27,31 +31,68 @@ namespace ACUI.Lib.RmlUi {
         private void InputManager_OnKeyPress(object? sender, KeyPressEventArgs e) {
             var textParts = e.Text.Select(t => t).Where(c => (c >= 32 || c == '\n') && c != 127);
             foreach (var character in textParts) {
-                e.Eat = !_ctx.ProcessTextInput(character.ToString()) || e.Eat;
+                _ctx.ProcessTextInput(character.ToString());
             }
+            e.Eat = CoreUIPlugin.Instance._rmlSystemInterface?.HasKeyboardFocus == true;
         }
 
         private void InputManager_OnKeyUp(object? sender, KeyUpEventArgs e) {
-            e.Eat = !_ctx.ProcessKeyUp(ConvertKey((int)e.Key), GetKeyModifierState());
+            var eat = !_ctx.ProcessKeyUp(ConvertKey((int)e.Key), GetKeyModifierState());
+            e.Eat = eat || CoreUIPlugin.Instance._rmlSystemInterface?.HasKeyboardFocus == true;
         }
 
         private void InputManager_OnKeyDown(object? sender, KeyDownEventArgs e) {
-            e.Eat = !_ctx.ProcessKeyDown(ConvertKey((int)e.Key), GetKeyModifierState());
+            var eat = !_ctx.ProcessKeyDown(ConvertKey((int)e.Key), GetKeyModifierState());
+            var tag = _ctx.GetFocusElement()?.TagName;
+            e.Eat = eat || CoreUIPlugin.Instance._rmlSystemInterface?.HasKeyboardFocus == true;
         }
 
         private void InputManager_OnMouseUp(object? sender, MouseUpEventArgs e) {
-            var eat = !_ctx.ProcessMouseButtonUp((int)e.Button, 0);
-            e.Eat = _ctx.IsMouseInteracting;
+            var eat = !_ctx.ProcessMouseButtonUp((int)e.Button, GetKeyModifierState());
+            if (!IsGhostPanel()) {
+                e.Eat = _ctx.IsMouseInteracting;
+            }
         }
 
         private void InputManager_OnMouseDown(object? sender, MouseDownEventArgs e) {
-            var eat = !_ctx.ProcessMouseButtonDown((int)e.Button, 0);
-            e.Eat = _ctx.IsMouseInteracting;
+            var eat = !_ctx.ProcessMouseButtonDown((int)e.Button, GetKeyModifierState());
+            if (!IsGhostPanel()) {
+                e.Eat = _ctx.IsMouseInteracting;
+            }
+            if (!e.Eat) {
+                _ctx.GetFocusElement()?.Blur();
+            }
         }
 
         private void InputManager_OnMouseMove(object? sender, MouseMoveEventArgs e) {
-            var eat = !_ctx.ProcessMouseMove(e.X, e.Y, 0);
-            e.Eat = _ctx.IsMouseInteracting;
+            var eat = !_ctx.ProcessMouseMove(e.X, e.Y, GetKeyModifierState());
+
+            if (!IsGhostPanel()) {
+                e.Eat = _ctx.IsMouseInteracting;
+            }
+        }
+
+        private void InputManager_OnMouseWheel(object? sender, MouseWheelEventArgs e) {
+            var eat = !_ctx.ProcessMouseWheel(new Vector2f(-e.DeltaX, -e.DeltaY), GetKeyModifierState());
+            if (!IsGhostPanel()) {
+                e.Eat = _ctx.IsMouseInteracting;
+            }
+        }
+
+        private bool IsGhostPanel() {
+            if (_ctx.IsMouseInteracting) {
+                try {
+                    var doc = CoreUIPlugin.RmlContext?.GetHoverElement()?.OwnerDocument;
+                    if (doc is not null) {
+                        var panel = CoreUIPlugin.Instance?.PanelManager.GetPanelByPtr(doc.NativePtr);
+                        if (panel?.IsGhost == true) {
+                            return true;
+                        }
+                    }
+                }
+                catch { }
+            }
+            return false;
         }
 
         private RmlUiNet.Input.KeyModifier GetKeyModifierState() {
@@ -262,6 +303,7 @@ namespace ACUI.Lib.RmlUi {
             _input.OnMouseMove -= InputManager_OnMouseMove;
             _input.OnMouseDown -= InputManager_OnMouseDown;
             _input.OnMouseUp -= InputManager_OnMouseUp;
+            _input.OnMouseWheel -= InputManager_OnMouseWheel;
             _input.OnKeyDown -= InputManager_OnKeyDown;
             _input.OnKeyUp -= InputManager_OnKeyUp;
             _input.OnKeyPress -= InputManager_OnKeyPress;

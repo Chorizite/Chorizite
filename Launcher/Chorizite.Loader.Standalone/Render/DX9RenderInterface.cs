@@ -114,8 +114,11 @@ namespace Chorizite.Loader.Standalone.Render {
                 D3Ddevice.SetRenderState(RenderState.MultisampleAntialias, true);
 
                 D3Ddevice.SetRenderState(RenderState.AlphaBlendEnable, true);
+                D3Ddevice.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
                 D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.SourceAlpha);
                 D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
+                D3Ddevice.SetRenderState(RenderState.SourceBlendAlpha, Blend.One);
+                D3Ddevice.SetRenderState(RenderState.DestinationBlendAlpha, Blend.Zero);
 
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorOperation, TextureOperation.Modulate);
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg1, TextureArgument.Texture);

@@ -28,5 +28,6 @@ namespace Chorizite.Core.Backend {
         public void Exit();
         public void AddChatText(string text, ChatType type = ChatType.Default);
         void InvokeChat(string text, int windowId = 1);
+        void ClearDragandDrop();
     }
 }

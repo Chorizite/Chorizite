@@ -55,6 +55,12 @@ namespace Core.UI.Lib {
         /// </summary>
         public int Height => _doc is null ? 0 : (int)_doc.GetClientHeight();
 
+        public event EventHandler<EventArgs> OnBeforeRender {
+            add => _OnBeforeRender.Subscribe(value);
+            remove => _OnBeforeRender.Unsubscribe(value);
+        }
+        private WeakEvent<EventArgs> _OnBeforeRender = new();
+
         public event EventHandler<EventArgs> OnAfterReload {
             add => _onAfterReload.Subscribe(value);
             remove => _onAfterReload.Unsubscribe(value);
@@ -145,6 +151,8 @@ namespace Core.UI.Lib {
                 Context.Update();
                 _onAfterReload.Invoke(this, EventArgs.Empty);
             }
+
+            _OnBeforeRender.Invoke(this, EventArgs.Empty);
         }
 
         internal void HandleGraphicsPreReset() {

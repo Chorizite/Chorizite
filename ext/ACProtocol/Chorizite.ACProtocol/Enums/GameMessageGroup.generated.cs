@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum GameMessageGroup : uint {
         Event = 0x0001,

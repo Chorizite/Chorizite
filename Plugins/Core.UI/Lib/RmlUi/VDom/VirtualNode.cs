@@ -1,4 +1,6 @@
-﻿using Core.UI.Lib.Extensions;
+﻿using Chorizite.Common.Enums;
+using Chorizite.Core.Backend;
+using Core.UI.Lib.Extensions;
 using Core.UI.Lib.RmlUi.Elements;
 using Cortex.Net;
 using Cortex.Net.Api;
@@ -18,7 +20,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
     // Represents a node in the Virtual DOM
     public class VirtualNode : IEquatable<VirtualNode>, IDisposable {
         private List<Action<Event>> _eventHandlers = [];
-        private ScriptableDocumentElement _doc;
+        private ScriptableDocumentElement _docEl;
 
         public string Type { get; set; }
         public Dictionary<string, object> Props { get; set; }
@@ -31,7 +33,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
         internal List<Func<VirtualNode>> ChildrenBuilder { get; set; }
 
         public VirtualNode(ScriptableDocumentElement doc, string type, Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) {
-            _doc = doc;
+            _docEl = doc;
             Type = type;
             Props = props ?? [];
             Text = text;
@@ -107,7 +109,36 @@ namespace Core.UI.Lib.RmlUi.VDom {
             else if (value is LuaFunction || oldValue is LuaFunction) {
                 var evtName = key.StartsWith("on") ? key.Substring(2) : key;
                 if (value is LuaFunction action) {
-                    Element.SetEventListener(evtName.ToLower(), (e) => action.Call(e));
+                    Element.SetEventListener(evtName.ToLower(), (e) => {
+                        var doc = CoreUIPlugin.Instance.PanelManager.GetPanelByPtr(_docEl.OwnerDocument.NativePtr);
+                        if (doc is null) return;
+                        var evtTable = doc.ScriptableDocument.LuaContext.NewTable();
+                        evtTable.SetInPath("Id", e.Id);
+                        evtTable.SetInPath("IsInterruptible", e.IsInterruptible);
+                        evtTable.SetInPath("CurrentElement", e.CurrentElement);
+                        evtTable.SetInPath("TargetElement", e.TargetElement);
+                        evtTable.SetInPath("IsImmediatePropagating", e.IsImmediatePropagating);
+                        evtTable.SetInPath("IsPropagating", e.IsPropagating);
+                        evtTable.SetInPath("Phase", e.Phase);
+                        evtTable.SetInPath("StopPropagation", e.StopPropagation);
+                        evtTable.SetInPath("StopImmediatePropagation", e.StopImmediatePropagation);
+                        var paramsTable = doc.ScriptableDocument.LuaContext.NewTable();
+                        foreach (var param in e.Parameters) {
+                            switch (param.Key) {
+                                case "DropFlags":
+                                    paramsTable.SetInPath(param.Key, (DragDropFlags)param.Value);
+                                    break;
+                                case "IconEffects":
+                                    paramsTable.SetInPath(param.Key, (UiEffects)param.Value);
+                                    break;
+                                default:
+                                    paramsTable.SetInPath(param.Key, param.Value);
+                                    break;
+                            }
+                        }
+                        evtTable.SetInPath("Params", paramsTable);
+                        action.Call(evtTable);
+                    });
                 }
                 else {
                     Element.RemoveEventListener(evtName.ToLower());

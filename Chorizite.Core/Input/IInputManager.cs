@@ -17,6 +17,7 @@ namespace Chorizite.Core.Input {
         public event EventHandler<KeyDownEventArgs> OnKeyDown;
         public event EventHandler<KeyUpEventArgs> OnKeyUp;
         public event EventHandler<EventArgs> OnShutdown;
+        event EventHandler<MouseWheelEventArgs>? OnMouseWheel;
 
         void HandleShutdown();
         bool IsKeyPressed(Key key);

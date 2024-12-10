@@ -23,6 +23,9 @@ namespace RmlUiNet.Native
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_LoadDocument")]
         public static extern IntPtr LoadDocument(IntPtr context, string documentPath);
 
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_GetHoverElement")]
+        public static extern IntPtr GetHoverElement(IntPtr context);
+
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_LoadDocumentFromMemory")]
         public static extern IntPtr LoadDocumentFromMemory(IntPtr context, string documentRml, string sourceUrl);
 
@@ -70,5 +73,14 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_RemoveDataModel")]
         public static extern bool RemoveDataModel(IntPtr context, string name);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_GetFocusElement")]
+        public static extern IntPtr GetFocusElement(IntPtr context);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_UnfocusDocument")]
+        public static extern void UnfocusDocument(IntPtr context, IntPtr document);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Context_GetRootElement")]
+        public static extern IntPtr GetRootElement(IntPtr context);
     }
 }

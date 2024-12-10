@@ -17,7 +17,6 @@ namespace Core.UI.Lib.RmlUi {
 
         public override void ProcessEvent(Event ev) {
             var scriptableDoc = _scriptableDocumentInstancer.GetDocument(ev.TargetElement.OwnerDocument.NativePtr);
-            _log.LogTrace($"Scriptable Event: ({ev.Id}) {value}");
             try {
                 scriptableDoc?.LuaContext.DoString(value);
             }

@@ -106,5 +106,8 @@ namespace RmlUiNet.Native
 
         [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_RemoveAttribute")]
         public static extern void RemoveAttribute(IntPtr element, string attributeName);
+
+        [DllImport("RmlUiNative", CallingConvention = CallingConvention.Cdecl, EntryPoint = "rml_Element_DispatchEvent")]
+        public static extern bool DispatchEvent(IntPtr element, string event_id, IntPtr parameters, bool interruptible, bool bubbles);
     }
 }

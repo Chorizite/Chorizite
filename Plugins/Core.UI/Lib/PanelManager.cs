@@ -1,5 +1,6 @@
 ﻿using ACUI.Lib.RmlUi;
 using Chorizite.Core.Render;
+using Core.UI;
 using Core.UI.Lib;
 using Core.UI.Lib.Fonts;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace ACUI.Lib {
         private readonly Dictionary<string, Panel> _panels = []; // <filename, panel>
         private ElementDocument? _modalPanel;
         private Screen? _currentScreen = null;
+        internal IDictionary<string, object>? _externalDragDropEventData;
         private readonly IRenderInterface Render;
         private readonly ACSystemInterface _rmlSystemInterface;
         private readonly Context Context;
@@ -46,6 +48,26 @@ namespace ACUI.Lib {
             var panels = _panels.Values.ToArray();
             foreach (var panel in panels) {
                 panel.HandleGraphicsPostReset();
+            }
+        }
+
+        public void SetExternalDragDropEventData(Dictionary<string, object> data) {
+            foreach (var kv in data) {
+                if (_externalDragDropEventData is null) {
+                    _externalDragDropEventData = new Dictionary<string, object>(data.Count);
+                }
+                if (!_externalDragDropEventData.TryAdd(kv.Key, kv.Value)) {
+                    _externalDragDropEventData[kv.Key] = kv.Value;
+                }
+            }
+            _externalDragDropEventData = data;
+        }
+
+        public void ClearExternalDragDropEventData(Dictionary<string, object> data) {
+            if (_externalDragDropEventData is not null) {
+                foreach (var kv in data) {
+                    _externalDragDropEventData.Remove(kv.Key);
+                }
             }
         }
 
@@ -142,6 +164,27 @@ namespace ACUI.Lib {
             foreach (var panel in panels) {
                 panel.Update();
             }
+        }
+
+        public bool IsAnyPanelUnderMouse() {
+            var panels = _panels.Values.ToArray();
+            foreach (var panel in panels) {
+                if (panel.IsGhost || panel.ScriptableDocument is null) continue;
+
+                var mouseX = CoreUIPlugin.Instance.Backend.Input.MouseX;
+                var mouseY = CoreUIPlugin.Instance.Backend.Input.MouseY;
+
+                var panelX = panel.ScriptableDocument.GetAbsoluteLeft();
+                var panelY = panel.ScriptableDocument.GetAbsoluteTop();
+                var panelWidth = panel.ScriptableDocument.GetClientWidth();
+                var panelHeight = panel.ScriptableDocument.GetClientHeight();
+
+                // check if mouse is over panel
+                if (mouseX >= panelX && mouseX <= panelX + panelWidth && mouseY >= panelY && mouseY <= panelY + panelHeight) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         public void Dispose() {

@@ -1,6 +1,6 @@
 ﻿<#@ assembly name="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" #>
-<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\System.CodeDom.dll" #>
-<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\Debug\netstandard2.0\Chorizite.ACProtocol.SourceGen.dll" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\$(Configuration)\netstandard2.0\System.CodeDom.dll" #>
+<#@ assembly name="$(SolutionDir)\ext\ACProtocol\Chorizite.ACProtocol.SourceGen\bin\$(Configuration)\netstandard2.0\Chorizite.ACProtocol.SourceGen.dll" #>
 <#@ template language="c#" hostspecific="true" inherits="Chorizite.ACProtocol.SourceGen.CSTemplateBase" #>
 <#@ output extension=".cs" #>
 <#@include file="MultipleOutputHelper.ttinclude"#>
@@ -20,6 +20,7 @@
         WriteLine("using System.IO;");
         WriteLine("using System.Collections.Generic;"); 
         WriteLine("using Chorizite.ACProtocol.Enums;");
+        WriteLine("using Chorizite.Common.Enums;");
         WriteLine("using Chorizite.ACProtocol.Extensions;");
         WriteUsingAliases(this.MessageReader.ACTypeAliases);
         WriteLine("namespace Chorizite.ACProtocol.Types {");

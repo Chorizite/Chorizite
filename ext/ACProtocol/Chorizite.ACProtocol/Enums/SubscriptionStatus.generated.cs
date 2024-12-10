@@ -9,6 +9,7 @@
 
 
 using System;
+
 namespace Chorizite.ACProtocol.Enums {
     public enum SubscriptionStatus : uint {
         No_Subscription = 0,
