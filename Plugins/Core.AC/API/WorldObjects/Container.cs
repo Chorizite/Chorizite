@@ -10,36 +10,19 @@ using System.Threading.Tasks;
 namespace Core.AC.API.WorldObjects {
     public class Container : WorldObject {
         /// <summary>
-        /// child item ids, excluding containers // equipped (assuming this item is a container) (not recursive,
+        /// child items, excluding containers // equipped (assuming this item is a container) (not recursive,
         /// meaning it doesn't include child container items, just non-container items contained directly in this container)
         /// </summary>
-        public List<uint> ItemIds { get; } = [];
+        public List<WorldObject> Items { get; } = [];
 
         /// <summary>
-        /// child container ids, including foci
+        /// child containers, including foci
         /// </summary>
-        public List<uint> ContainerIds { get; } = [];
+        public List<Container> Containers { get; } = [];
 
         /// <summary>
         /// Type of container
         /// </summary>
-        public ContainerProperties ContainerProperties { get; set; }
-
-        /// <summary>
-        /// List of weenie ids contained with this item. It also returns item ids contained within containers within this container.
-        /// </summary>
-        [JsonIgnore]
-        public IEnumerable<uint> AllItemIds {
-            get {
-                var itemIds = new List<uint>();
-
-                itemIds.AddRange(ItemIds);
-                //foreach (var container in Containers) {
-                //    itemIds.AddRange(container.ItemIds);
-                //}
-
-                return itemIds;
-            }
-        }
+        public ContainerProperties ContainerType { get; set; } = ContainerProperties.None;
     }
 }

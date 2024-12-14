@@ -1,8 +1,10 @@
 ﻿using Chorizite.ACProtocol.Enums;
 using Chorizite.ACProtocol.Types;
 using Chorizite.Common.Enums;
+using Core.AC.API.WorldObjects;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Serialization;
 using XLua.Cast;
 
@@ -21,10 +23,10 @@ namespace Core.AC.API {
         public uint ClassId { get; set; }
 
         /// <summary>
-        /// The id of the parent container, or 0 if none
+        /// The parent container, if any
         /// </summary>
         [JsonIgnore]
-        public uint ParentContainer => Value(PropertyInstanceId.Container);
+        public Container? ParentContainer => CoreACPlugin.Instance.Game.World.Get(Value(PropertyInstanceId.Container)) as Container;
 
         /// <summary>
         /// Icon effects, like border highlights
@@ -108,21 +110,29 @@ namespace Core.AC.API {
         /// <summary>
         /// Object description
         /// </summary>
-        public ObjectDescriptionFlag ObjectDescriptionFlags { get; set; }
-
-        public ObjectDescription ObjectDescription { get; set; } = new ObjectDescription();
-
-        public PhysicsDescription PhysicsDesc { get; set; } = new PhysicsDescription();
+        public ObjectDescriptionFlag Behavior { get; set; }
 
         /// <summary>
-        /// Weenie creation header flags. These are flags for if data fields are present during a weenie description
+        /// The id of the spell this item casts, if any
         /// </summary>
-        public WeenieHeaderFlag CreateFlags { get; set; }
+        public uint SpellId { get; set; }
+        
+        /// <summary>
+        /// Object description that was used to create this weenie
+        /// </summary>
+        public ObjDesc ObjectDescription { get; set; } = new();
 
         /// <summary>
-        /// More weenie creation header flags. These are flags for if data fields are present during a weenie description
+        /// Physics description that was used to create this weenie
         /// </summary>
-        public WeenieHeaderFlag2 CreateFlags2 { get; set; }
+        public PhysicsDesc PhysicsDesc { get; set; } = new();
+
+        /// <summary>
+        /// Weenie description that was used to create this weenie
+        /// </summary>
+        public PublicWeenieDesc WeenieDescription { get; set; } = new();
+
+        public DateTime LastAccessTime { get; set; }
 
         /// <summary>
         /// ObjectClass, for decal compatibility / familiarity (also a bit more granular than ObjectType)
@@ -131,61 +141,7 @@ namespace Core.AC.API {
         public ObjectClass ObjectClass {
             get {
                 if (_objectClass == ObjectClass.Unknown) {
-                    ObjectClass objectClass = ObjectClass.Unknown;
-
-                    if (ItemType.HasFlag(ItemType.MeleeWeapon)) objectClass = ObjectClass.MeleeWeapon;
-                    else if (ItemType.HasFlag(ItemType.Armor)) objectClass = ObjectClass.Armor;
-                    else if (ItemType.HasFlag(ItemType.Clothing)) objectClass = ObjectClass.Clothing;
-                    else if (ItemType.HasFlag(ItemType.Jewelry)) objectClass = ObjectClass.Jewelry;
-                    else if (ItemType.HasFlag(ItemType.Creature)) objectClass = ObjectClass.Monster;
-                    else if (ItemType.HasFlag(ItemType.Food)) objectClass = ObjectClass.Food;
-                    else if (ItemType.HasFlag(ItemType.Money)) objectClass = ObjectClass.Money;
-                    else if (ItemType.HasFlag(ItemType.Misc)) objectClass = ObjectClass.Misc;
-                    else if (ItemType.HasFlag(ItemType.MissileWeapon)) objectClass = ObjectClass.MissileWeapon;
-                    else if (ItemType.HasFlag(ItemType.Container)) objectClass = ObjectClass.Container;
-                    else if (ItemType.HasFlag(ItemType.Useless)) objectClass = ObjectClass.Bundle;
-                    else if (ItemType.HasFlag(ItemType.Gem)) objectClass = ObjectClass.Gem;
-                    else if (ItemType.HasFlag(ItemType.SpellComponents)) objectClass = ObjectClass.SpellComponent;
-                    else if (ItemType.HasFlag(ItemType.Key)) objectClass = ObjectClass.Key;
-                    else if (ItemType.HasFlag(ItemType.Caster)) objectClass = ObjectClass.WandStaffOrb;
-                    else if (ItemType.HasFlag(ItemType.Portal)) objectClass = ObjectClass.Portal;
-                    else if (ItemType.HasFlag(ItemType.PromissoryNote)) objectClass = ObjectClass.TradeNote;
-                    else if (ItemType.HasFlag(ItemType.ManaStone)) objectClass = ObjectClass.ManaStone;
-                    else if (ItemType.HasFlag(ItemType.Service)) objectClass = ObjectClass.Services;
-                    else if (ItemType.HasFlag(ItemType.MagicWieldable)) objectClass = ObjectClass.Plant;
-                    else if (ItemType.HasFlag(ItemType.CraftCookingBase)) objectClass = ObjectClass.BaseCooking;
-                    else if (ItemType.HasFlag(ItemType.CraftAlchemyBase)) objectClass = ObjectClass.BaseAlchemy;
-                    else if (ItemType.HasFlag(ItemType.CraftFletchingBase)) objectClass = ObjectClass.BaseFletching;
-                    else if (ItemType.HasFlag(ItemType.CraftFletchingIntermediate)) objectClass = ObjectClass.CraftedFletching;
-                    else if (ItemType.HasFlag(ItemType.TinkeringTool)) objectClass = ObjectClass.Ust;
-                    else if (ItemType.HasFlag(ItemType.TinkeringMaterial)) objectClass = ObjectClass.Salvage;
-
-                    if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Player)) objectClass = ObjectClass.Player;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Vendor)) objectClass = ObjectClass.Vendor;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Door)) objectClass = ObjectClass.Door;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Corpse)) objectClass = ObjectClass.Corpse;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.LifeStone)) objectClass = ObjectClass.Lifestone;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Food)) objectClass = ObjectClass.Food;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Healer)) objectClass = ObjectClass.HealingKit;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Lockpick)) objectClass = ObjectClass.Lockpick;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Portal)) objectClass = ObjectClass.Portal;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.RequiresPackSlot)) objectClass = ObjectClass.Foci;
-                    else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Openable)) objectClass = ObjectClass.Container;
-
-                    if (objectClass == ObjectClass.Unknown && ItemType.HasFlag(ItemType.Writable) && ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Book)) {
-                        if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Inscribable)) objectClass = ObjectClass.Journal;
-                        else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Stuck)) objectClass = ObjectClass.Sign;
-                        else if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Openable)) objectClass = ObjectClass.Book;
-                    }
-
-                    if (ItemType.HasFlag(ItemType.Writable) && CreateFlags.HasFlag(WeenieHeaderFlag.Spell)) objectClass = ObjectClass.Scroll;
-
-                    if (objectClass == ObjectClass.Monster) {
-                        if (!ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.Attackable)) objectClass = ObjectClass.Npc;
-                        if (ObjectDescriptionFlags.HasFlag(ObjectDescriptionFlag.IncludesSecondHeader)) objectClass = ObjectClass.Npc;
-                    }
-
-                    _objectClass = objectClass;
+                    _objectClass = GetObjectClass(ItemType, Behavior, WeenieDescription.Header);
                 }
 
                 return _objectClass;
@@ -379,6 +335,64 @@ namespace Core.AC.API {
         }
         #endregion // Public API
 
+        internal static ObjectClass GetObjectClass(ItemType itemType, ObjectDescriptionFlag objDescFlags, WeenieHeaderFlag createFlags) {
+            ObjectClass objectClass = ObjectClass.Unknown;
+
+            if (itemType.HasFlag(ItemType.MeleeWeapon)) objectClass = ObjectClass.MeleeWeapon;
+            else if (itemType.HasFlag(ItemType.Armor)) objectClass = ObjectClass.Armor;
+            else if (itemType.HasFlag(ItemType.Clothing)) objectClass = ObjectClass.Clothing;
+            else if (itemType.HasFlag(ItemType.Jewelry)) objectClass = ObjectClass.Jewelry;
+            else if (itemType.HasFlag(ItemType.Creature)) objectClass = ObjectClass.Monster;
+            else if (itemType.HasFlag(ItemType.Food)) objectClass = ObjectClass.Food;
+            else if (itemType.HasFlag(ItemType.Money)) objectClass = ObjectClass.Money;
+            else if (itemType.HasFlag(ItemType.Misc)) objectClass = ObjectClass.Misc;
+            else if (itemType.HasFlag(ItemType.MissileWeapon)) objectClass = ObjectClass.MissileWeapon;
+            else if (itemType.HasFlag(ItemType.Container)) objectClass = ObjectClass.Container;
+            else if (itemType.HasFlag(ItemType.Useless)) objectClass = ObjectClass.Bundle;
+            else if (itemType.HasFlag(ItemType.Gem)) objectClass = ObjectClass.Gem;
+            else if (itemType.HasFlag(ItemType.SpellComponents)) objectClass = ObjectClass.SpellComponent;
+            else if (itemType.HasFlag(ItemType.Key)) objectClass = ObjectClass.Key;
+            else if (itemType.HasFlag(ItemType.Caster)) objectClass = ObjectClass.WandStaffOrb;
+            else if (itemType.HasFlag(ItemType.Portal)) objectClass = ObjectClass.Portal;
+            else if (itemType.HasFlag(ItemType.PromissoryNote)) objectClass = ObjectClass.TradeNote;
+            else if (itemType.HasFlag(ItemType.ManaStone)) objectClass = ObjectClass.ManaStone;
+            else if (itemType.HasFlag(ItemType.Service)) objectClass = ObjectClass.Services;
+            else if (itemType.HasFlag(ItemType.MagicWieldable)) objectClass = ObjectClass.Plant;
+            else if (itemType.HasFlag(ItemType.CraftCookingBase)) objectClass = ObjectClass.BaseCooking;
+            else if (itemType.HasFlag(ItemType.CraftAlchemyBase)) objectClass = ObjectClass.BaseAlchemy;
+            else if (itemType.HasFlag(ItemType.CraftFletchingBase)) objectClass = ObjectClass.BaseFletching;
+            else if (itemType.HasFlag(ItemType.CraftFletchingIntermediate)) objectClass = ObjectClass.CraftedFletching;
+            else if (itemType.HasFlag(ItemType.TinkeringTool)) objectClass = ObjectClass.Ust;
+            else if (itemType.HasFlag(ItemType.TinkeringMaterial)) objectClass = ObjectClass.Salvage;
+
+            if (objDescFlags.HasFlag(ObjectDescriptionFlag.Player)) objectClass = ObjectClass.Player;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Vendor)) objectClass = ObjectClass.Vendor;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Door)) objectClass = ObjectClass.Door;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Corpse)) objectClass = ObjectClass.Corpse;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.LifeStone)) objectClass = ObjectClass.Lifestone;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Food)) objectClass = ObjectClass.Food;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Healer)) objectClass = ObjectClass.HealingKit;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Lockpick)) objectClass = ObjectClass.Lockpick;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Portal)) objectClass = ObjectClass.Portal;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.RequiresPackSlot)) objectClass = ObjectClass.Foci;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Openable)) objectClass = ObjectClass.Container;
+
+            if (objectClass == ObjectClass.Unknown && itemType.HasFlag(ItemType.Writable) && objDescFlags.HasFlag(ObjectDescriptionFlag.Book)) {
+                if (objDescFlags.HasFlag(ObjectDescriptionFlag.Inscribable)) objectClass = ObjectClass.Journal;
+                else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Stuck)) objectClass = ObjectClass.Sign;
+                else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Openable)) objectClass = ObjectClass.Book;
+            }
+
+            if (itemType.HasFlag(ItemType.Writable) && createFlags.HasFlag(WeenieHeaderFlag.Spell)) objectClass = ObjectClass.Scroll;
+
+            if (objectClass == ObjectClass.Monster) {
+                if (!objDescFlags.HasFlag(ObjectDescriptionFlag.Attackable)) objectClass = ObjectClass.Npc;
+                if (objDescFlags.HasFlag(ObjectDescriptionFlag.IncludesSecondHeader)) objectClass = ObjectClass.Npc;
+            }
+
+            return objectClass;
+        }
+
         #region Property Methods
         internal void UpdateStatsTable(Dictionary<PropertyInstanceId, uint> statsTable) {
             foreach (var kv in statsTable) {
@@ -511,5 +525,142 @@ namespace Core.AC.API {
             PositionValues.Remove(key);
         }
         #endregion // Property Methods
+
+        internal void UpdateObjDesc(ObjDesc objDesc) {
+            if (objDesc == null)
+                return;
+            ObjectDescription = objDesc;
+        }
+
+        internal void UpdatePhysicsDesc(PhysicsDesc physicsDesc) {
+            if (physicsDesc == null)
+                return;
+            PhysicsDesc = physicsDesc;
+
+            if ((physicsDesc.Flags & 0x00000020) != 0)
+                AddOrUpdateValue(PropertyInstanceId.Wielder, physicsDesc.ParentId);
+        }
+
+        internal void UpdateWeenieDesc(PublicWeenieDesc wdesc) {
+            if (wdesc == null)
+                return;
+
+            WeenieDescription = wdesc;
+
+            ClassId = wdesc.WeenieClassId;
+            Behavior = wdesc.Behavior;
+            SpellId = wdesc.SpellId;
+            AddOrUpdateValue(PropertyString.Name, wdesc.Name);
+            AddOrUpdateValue(PropertyDataId.Icon, wdesc.Icon);
+            AddOrUpdateValue(PropertyInt.ItemType, (int)wdesc.Type);
+
+            var flag1 = wdesc.Header;
+            var flag2 = wdesc.Header2;
+
+            if ((flag1 & WeenieHeaderFlag.AmmoType) != 0)
+                AddOrUpdateValue(PropertyInt.AmmoType, (int)wdesc.AmmunitionType);
+
+            if ((flag1 & WeenieHeaderFlag.RadarBlipColor) != 0)
+                AddOrUpdateValue(PropertyInt.RadarBlipColor, (int)wdesc.BlipColor);
+
+            if ((flag1 & WeenieHeaderFlag.CombatUse) != 0)
+                AddOrUpdateValue(PropertyInt.CombatUse, (int)wdesc.CombatUse);
+
+            if ((flag1 & WeenieHeaderFlag.ContainersCapacity) != 0)
+                AddOrUpdateValue(PropertyInt.ContainersCapacity, wdesc.ContainerCapacity);
+
+            if ((flag1 & WeenieHeaderFlag.Container) != 0)
+                AddOrUpdateValue(PropertyInstanceId.Container, wdesc.ContainerId);
+
+            if ((flag2 & WeenieHeaderFlag2.CooldownDuration) != 0)
+                AddOrUpdateValue(PropertyFloat.CooldownDuration, wdesc.CooldownDuration);
+
+            if ((flag2 & WeenieHeaderFlag2.Cooldown) != 0)
+                AddOrUpdateValue(PropertyInt.SharedCooldown, (int)wdesc.CooldownId);
+
+            if ((flag1 & WeenieHeaderFlag.HookType) != 0)
+                AddOrUpdateValue(PropertyInt.HookType, (int)wdesc.HookType);
+
+            if ((flag1 & WeenieHeaderFlag.HookableOn) != 0)
+                AddOrUpdateValue(PropertyInt.HookItemType, (int)wdesc.HookItemTypes);
+
+            if ((flag1 & WeenieHeaderFlag.IconOverlay) != 0)
+                AddOrUpdateValue(PropertyDataId.IconOverlay, wdesc.IconOverlay);
+
+            if ((flag2 & WeenieHeaderFlag2.IconUnderlay) != 0)
+                AddOrUpdateValue(PropertyDataId.IconUnderlay, wdesc.IconUnderlay);
+
+            if ((flag1 & WeenieHeaderFlag.ItemsCapacity) != 0)
+                AddOrUpdateValue(PropertyInt.ItemsCapacity, wdesc.ItemsCapacity);
+
+            if ((flag1 & WeenieHeaderFlag.CurrentlyWieldedLocation) != 0)
+                AddOrUpdateValue(PropertyInt.CurrentWieldedLocation, (int)wdesc.Slot);
+
+            if ((flag1 & WeenieHeaderFlag.MaterialType) != 0)
+                AddOrUpdateValue(PropertyInt.MaterialType, (int)wdesc.Material);
+
+            if ((flag1 & WeenieHeaderFlag.MaxStackSize) != 0)
+                AddOrUpdateValue(PropertyInt.MaxStackSize, wdesc.MaxStackSize);
+
+            if ((flag1 & WeenieHeaderFlag.MaxUses) != 0)
+                AddOrUpdateValue(PropertyInt.MaxStructure, wdesc.MaxStructure);
+
+            if ((flag1 & WeenieHeaderFlag.Monarch) != 0)
+                AddOrUpdateValue(PropertyInstanceId.Monarch, wdesc.MonarchId);
+
+            if ((flag1 & WeenieHeaderFlag.PluralName) != 0)
+                AddOrUpdateValue(PropertyString.PluralName, wdesc.PluralName);
+
+            if ((flag1 & WeenieHeaderFlag.Owner) != 0)
+                AddOrUpdateValue(PropertyInstanceId.Owner, wdesc.OwnerId);
+
+            if ((flag2 & WeenieHeaderFlag2.PetOwner) != 0)
+                AddOrUpdateValue(PropertyInstanceId.PetOwner, wdesc.PetOwnerId);
+
+            if ((flag1 & WeenieHeaderFlag.PhysicsScript) != 0)
+                AddOrUpdateValue(PropertyDataId.PhysicsScript, wdesc.PhysicsScript);
+
+            if ((flag1 & WeenieHeaderFlag.Coverage) != 0)
+                AddOrUpdateValue(PropertyInt.ClothingPriority, (int)wdesc.Priority);
+
+            if ((flag1 & WeenieHeaderFlag.RadarBehavior) != 0)
+                AddOrUpdateValue(PropertyInt.ShowableOnRadar, (int)wdesc.RadarEnum);
+
+            if ((flag1 & WeenieHeaderFlag.Spell) != 0)
+                AddOrUpdateValue(PropertyDataId.Spell, wdesc.SpellId);
+
+            if ((flag1 & WeenieHeaderFlag.StackSize) != 0)
+                AddOrUpdateValue(PropertyInt.StackSize, wdesc.StackSize);
+
+            if ((flag1 & WeenieHeaderFlag.Uses) != 0)
+                AddOrUpdateValue(PropertyInt.Structure, wdesc.Structure);
+
+            if ((flag1 & WeenieHeaderFlag.TargetType) != 0)
+                AddOrUpdateValue(PropertyInt.TargetType, (int)wdesc.TargetType);
+
+            if ((flag1 & WeenieHeaderFlag.Usable) != 0)
+                AddOrUpdateValue(PropertyInt.ItemUseable, (int)wdesc.Useability);
+
+            if ((flag1 & WeenieHeaderFlag.UseRadius) != 0)
+                AddOrUpdateValue(PropertyFloat.UseRadius, wdesc.UseRadius);
+
+            if ((flag1 & WeenieHeaderFlag.ValidEquipLocations) != 0)
+                AddOrUpdateValue(PropertyInt.ValidLocations, (int)wdesc.ValidSlots);
+
+            if ((flag1 & WeenieHeaderFlag.Value) != 0)
+                AddOrUpdateValue(PropertyInt.Value, (int)wdesc.Value);
+
+            if ((flag1 & WeenieHeaderFlag.Wielder) != 0)
+                AddOrUpdateValue(PropertyInstanceId.Wielder, wdesc.WielderId);
+
+            if ((flag1 & WeenieHeaderFlag.Workmanship) != 0)
+                AddOrUpdateValue(PropertyInt.ItemWorkmanship, (int)wdesc.Workmanship);
+
+            if ((flag1 & WeenieHeaderFlag.Burden) != 0)
+                AddOrUpdateValue(PropertyInt.EncumbranceVal, (int)wdesc.Burden);
+
+            if ((flag1 & WeenieHeaderFlag.UiEffects) != 0)
+                AddOrUpdateValue(PropertyDataId.IconOverlaySecondary, (uint)wdesc.Effects);
+        }
     }
 }

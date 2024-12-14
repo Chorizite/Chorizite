@@ -10,25 +10,25 @@ using Core.AC.Lib.Screens;
 using Microsoft.Extensions.Logging;
 
 namespace Core.AC.UIModels {
+    public class CharacterInfo : UIDataSubModel {
+        public DataVariable<uint> Id { get; } = new(0);
+        public DataVariable<string> Name { get; } = new("");
+        public DataVariable<uint> TimeToDeletion { get; } = new(0);
+
+        public CharacterInfo() : base() {
+
+        }
+
+        public CharacterInfo(uint id, string name, uint timeToDeletion = 0) : base() {
+            Id.Value = id;
+            Name.Value = name;
+            TimeToDeletion.Value = timeToDeletion;
+        }
+    }
+
     [JsonConverter(typeof(UIDataModelJsonConverter))]
     public class CharSelectScreenModel : UIDataModel {
         private readonly NetworkParser _net;
-
-        public class CharacterInfo : UIDataSubModel {
-            public DataVariable<uint> Id { get; } = new(0);
-            public DataVariable<string> Name { get; } = new("");
-            public DataVariable<uint> TimeToDeletion { get; } = new(0);
-
-            public CharacterInfo() : base() {
-
-            }
-
-            public CharacterInfo(uint id, string name, uint timeToDeletion = 0) : base() {
-                Id.Value = id;
-                Name.Value = name;
-                TimeToDeletion.Value = timeToDeletion;
-            }
-        }
 
         public DataVariable<string> WorldName { get; } = new("");
         public DataVariable<uint> MaxConnections { get; } = new(0);
@@ -39,6 +39,7 @@ namespace Core.AC.UIModels {
         private bool _showingModal = false;
 
         public CharSelectScreenModel() : base() {
+            CoreACPlugin.Log.LogDebug($"Initializing CharSelectScreenModel: {CoreACPlugin.Instance is null} {CoreACPlugin.Instance?.Net is null} {CoreACPlugin.Instance?.Id}");
             _net = CoreACPlugin.Instance.Net;
 
             _net.Messages.S2C.OnLogin_WorldInfo += Messages_S2C_OnLogin_WorldInfo;
@@ -62,7 +63,6 @@ namespace Core.AC.UIModels {
 
             BindAction("enter_game", (evt, variants) => {
                 if (variants.First().Value is uint characterId) {
-                    CoreACPlugin.Log.LogDebug($"EnterGame: {characterId}");
                     CoreACPlugin.Instance.ClientBackend.EnterGame(characterId);
                 }
             });
@@ -71,7 +71,6 @@ namespace Core.AC.UIModels {
                 if (variants.Count() == 1 && variants.FirstOrDefault()?.Type == VariantType.UINT) {
                     var character = Characters.Value.FirstOrDefault(c => c.Id.Value == (uint)variants.First().Value!);
                     if (character is not null) {
-                        CoreACPlugin.Log.LogDebug($"Selecting: {character.Name.Value}");
                         SelectedCharacter.Value.Name.Value = character.Name.Value;
                         SelectedCharacter.Value.Id.Value = character.Id.Value;
                         _modelConstructor.Handle.DirtyAllVariables();

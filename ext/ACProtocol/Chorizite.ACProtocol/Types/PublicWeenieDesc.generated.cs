@@ -23,7 +23,7 @@ namespace Chorizite.ACProtocol.Types {
         /// <summary>
         /// game data flags
         /// </summary>
-        public uint Header;
+        public WeenieHeaderFlag Header;
 
         /// <summary>
         /// object name
@@ -53,7 +53,7 @@ namespace Chorizite.ACProtocol.Types {
         /// <summary>
         /// additional game data flags
         /// </summary>
-        public uint Header2;
+        public WeenieHeaderFlag2 Header2;
 
         /// <summary>
         /// plural object name (if not specified, use &lt;name&gt; followed by &#39;s&#39; or &#39;es&#39;)
@@ -224,7 +224,7 @@ namespace Chorizite.ACProtocol.Types {
         /// Reads instance data from a binary reader
         /// </summary>
         public void Read(BinaryReader reader) {
-            Header = reader.ReadUInt32();
+            Header = (WeenieHeaderFlag)reader.ReadUInt32();
             Name = reader.ReadString16L();
             WeenieClassId = reader.ReadPackedDWORD();
             Icon = reader.ReadPackedDWORD();
@@ -234,7 +234,7 @@ namespace Chorizite.ACProtocol.Types {
                 reader.BaseStream.Position += 4 - (reader.BaseStream.Position % 4);
             }
             if (((uint)Behavior & (uint)0x04000000) != 0) {
-                Header2 = reader.ReadUInt32();
+                Header2 = (WeenieHeaderFlag2)reader.ReadUInt32();
             }
             if (((uint)Header & (uint)0x00000001) != 0) {
                 PluralName = reader.ReadString16L();
@@ -354,7 +354,7 @@ namespace Chorizite.ACProtocol.Types {
         /// Writes instance data to a binary writer
         /// </summary>
         public void Write(BinaryWriter writer) {
-            writer.Write(Header);
+            writer.Write((uint)Header);
             writer.Write(Name);
             writer.Write(WeenieClassId);
             writer.Write(Icon);
@@ -364,7 +364,7 @@ namespace Chorizite.ACProtocol.Types {
                 writer.BaseStream.Position += 4 - (writer.BaseStream.Position % 4);
             }
             if (((uint)Behavior & (uint)0x04000000) != 0) {
-                writer.Write(Header2);
+                writer.Write((uint)Header2);
             }
             if (((uint)Header & (uint)0x00000001) != 0) {
                 writer.Write(PluralName);

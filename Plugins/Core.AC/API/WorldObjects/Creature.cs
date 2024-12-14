@@ -24,6 +24,11 @@ namespace Core.AC.API.WorldObjects {
         public RadarBehavior RadarBehavior => (RadarBehavior)Value(PropertyInt.ShowableOnRadar);
 
         /// <summary>
+        /// The creature's equipment
+        /// </summary>
+        public List<Equipment> Equipment { get; set; } = [];
+
+        /// <summary>
         /// The stance the weenie is in, only applies to creatures.
         /// </summary>
         public MotionStance Stance {

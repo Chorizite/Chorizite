@@ -17,6 +17,7 @@ namespace Core.UI.Lib.Serialization {
     // lol
     public class UIDataModelJsonConverter : JsonConverter<UIDataModel> {
         private readonly CoreUIPlugin _plugin;
+        private JsonSerializerOptions _options;
 
         public UIDataModelJsonConverter() {
             _plugin = CoreUIPlugin.Instance;
@@ -27,20 +28,24 @@ namespace Core.UI.Lib.Serialization {
         }
 
         public override UIDataModel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            return ReadObj(ref reader) as UIDataModel;
+            _options = options;
+            return ReadObj(ref reader, typeToConvert) as UIDataModel;
         }
 
-        private object ReadObj(ref Utf8JsonReader reader) {
+        private object ReadObj(ref Utf8JsonReader reader, Type? typeToConvert = null) {
             reader.Read(); // open Obj
 
             reader.GetString(); // type prop
             reader.Read();
             var modelTypeName = reader.GetString();
-            Type? type = null;
 
-            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies()) {
-                type = a.GetType(modelTypeName);
-                if (type is not null) break;
+            if (typeToConvert is null) {
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                assemblies = assemblies.Reverse().ToArray();
+                foreach (Assembly a in assemblies) {
+                    typeToConvert = a.GetType(modelTypeName);
+                    if (typeToConvert is not null) break;
+                }
             }
 
             reader.Read();
@@ -50,10 +55,10 @@ namespace Core.UI.Lib.Serialization {
                 reader.Read();
                 var modelName = reader.GetString();
                 reader.Read();
-                obj = Activator.CreateInstance(type);
+                obj = Activator.CreateInstance(typeToConvert);
             }
             else {
-                obj = Activator.CreateInstance(type);
+                obj = Activator.CreateInstance(typeToConvert);
             }
 
             reader.GetString(); // props prop 
@@ -98,7 +103,7 @@ namespace Core.UI.Lib.Serialization {
                 return JsonSerializer.Deserialize<string>(ref reader);
             }
             else if (reader.TokenType == JsonTokenType.StartObject) {
-                return ReadObj(ref reader);
+                return ReadObj(ref reader, type);
             }
             else {
                 throw new Exception($"Could not read type: {type}");
