@@ -436,6 +436,48 @@
       <value value="0xF753" name="Movement_AutonomousPosition" />
       <value value="0xF7C9" name="Movement_Jump_NonAutonomous" />
     </enum>
+    <enum name="WeenieHeaderFlag" parent="uint" mask="true" shared="true">
+      <value name="None" value="0" />
+      <value name="PluralName" value="1" />
+      <value name="ItemsCapacity" value="2" />
+      <value name="ContainersCapacity" value="4" />
+      <value name="Value" value="8" />
+      <value name="Usable" value="0x10" />
+      <value name="UseRadius" value="0x20" />
+      <value name="Monarch" value="0x40" />
+      <value name="UiEffects" value="0x80" />
+      <value name="AmmoType" value="0x100" />
+      <value name="CombatUse" value="0x200" />
+      <value name="Uses" value="0x400" />
+      <value name="MaxUses" value="0x800" />
+      <value name="StackSize" value="0x1000" />
+      <value name="MaxStackSize" value="0x2000" />
+      <value name="Container" value="0x4000" />
+      <value name="Wielder" value="0x8000" />
+      <value name="ValidEquipLocations" value="0x10000" />
+      <value name="CurrentlyWieldedLocation" value="0x20000" />
+      <value name="Coverage" value="0x40000" />
+      <value name="TargetType" value="0x80000" />
+      <value name="RadarBlipColor" value="0x100000" />
+      <value name="Burden" value="0x200000" />
+      <value name="Spell" value="0x400000" />
+      <value name="RadarBehavior" value="0x800000" />
+      <value name="Workmanship" value="0x1000000" />
+      <value name="Owner" value="0x2000000" />
+      <value name="HouseRestrictions" value="0x4000000" />
+      <value name="PhysicsScript" value="0x8000000" />
+      <value name="HookableOn" value="0x10000000" />
+      <value name="HookType" value="0x20000000" />
+      <value name="IconOverlay" value="0x40000000" />
+      <value name="MaterialType" value="0x80000000" />
+    </enum>
+    <enum name="WeenieHeaderFlag2" parent="uint" mask="true" shared="true">
+      <value name="None" value="0" />
+      <value name="IconUnderlay" value="1" />
+      <value name="Cooldown" value="2" />
+      <value name="CooldownDuration" value="4" />
+      <value name="PetOwner" value="8" />
+    </enum>
     <enum name="WeenieType" parent="uint" shared="true">
       <value name="Undef" value="0" />
       <value name="Generic" value="1" />
@@ -6095,7 +6137,7 @@
       </switch>
     </type>
     <type name="PublicWeenieDesc" text="The PublicWeenieDesc structure defines an object's game behavior.">
-      <field type="uint" name="Header" text="game data flags" />
+      <field type="WeenieHeaderFlag" name="Header" text="game data flags" />
       <field type="string" name="Name" text="object name" />
       <field type="PackedDWORD" name="WeenieClassId" text="object weenie class id" />
       <field type="PackedDWORD" name="Icon" text="icon ResourceId (minus 0x06000000)" />
@@ -6104,7 +6146,7 @@
       <align type="uint" />
       <maskmap name="Behavior">
         <mask value="0x04000000">
-          <field type="uint" name="Header2" text="additional game data flags" />
+          <field type="WeenieHeaderFlag2" name="Header2" text="additional game data flags" />
         </mask>
       </maskmap>
       <maskmap name="Header">

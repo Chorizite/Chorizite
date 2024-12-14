@@ -32,7 +32,6 @@ namespace Core.AC {
 
         internal static ILogger Log;
         internal static CoreACPlugin Instance;
-        private TooltipModel _tooltipModel;
 
         internal CoreUIPlugin CoreUI { get; }
         internal NetworkParser Net { get; }
@@ -73,6 +72,8 @@ namespace Core.AC {
             ClientBackend = clientBackend;
             ChoriziteBackend = choriziteBackend;
             Dat = dat;
+            Id = 3;
+            Log.LogDebug($"CTOR CoreACPlugin 1 {Id}");
 
             // since this plugin is ISerializeState<ACState>, we wait to do full initialization until after loading state.
             // ISerializeState{ACState}.DeserializeAfterLoad(ACState?) is now responsible for calling Init()
@@ -80,16 +81,15 @@ namespace Core.AC {
 
         private void Init() {
             DragDropManager = new DragDropManager();
-            _tooltipModel = new TooltipModel();
 
             CoreUI.RegisterUIModel("CharSelectScreen", _state.CharSelectModel);
             CoreUI.RegisterUIModel("DatPatchScreen", _state.DatPatchModel);
-            CoreUI.RegisterUIModel("Tooltip", _tooltipModel);
+            CoreUI.RegisterUIModel("Tooltip", _state.TooltipModel);
 
             RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "screens", "CharSelect.rml"));
             RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "screens", "DatPatch.rml"));
 
-
+            
             //RegisterPanel(GamePanel.Logs, Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
 
             ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
@@ -130,13 +130,15 @@ namespace Core.AC {
         PluginState ISerializeState<PluginState>.SerializeBeforeUnload() => _state;
 
         void ISerializeState<PluginState>.DeserializeAfterLoad(PluginState? state) {
+            Log.LogDebug($"DeserializeAfterLoad CoreACPlugin::State");
             _state = state ?? new PluginState();
             _state.CharSelectModel ??= new CharSelectScreenModel();
             _state.DatPatchModel ??= new DatPatchScreenModel();
+            _state.TooltipModel ??= new TooltipModel();
             _state.Game ??= new Game();
 
             Log.LogDebug($"Initializing CoreACPlugin: {Game.AccountName} // {Game.ServerName} // {Game.State}");
-
+            
             Init();
         }
         #endregion // State / Settings Serialization
@@ -241,7 +243,7 @@ namespace Core.AC {
             ClientBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
 
             DragDropManager.Dispose();
-
+            
             CoreUI.Screen = "None";
 
             foreach (var screen in _registeredGameScreens) {
@@ -253,16 +255,18 @@ namespace Core.AC {
                 UnregisterPanel(panel.Key, panel.Value);
             }
             _registeredGamePanels.Clear();
-
+            
             CoreUI.UnregisterUIModel("CharSelectScreen", _state.CharSelectModel);
             CoreUI.UnregisterUIModel("DatPatchScreen", _state.DatPatchModel);
-            CoreUI.UnregisterUIModel("Tooltip", _tooltipModel);
+            CoreUI.UnregisterUIModel("Tooltip", _state.TooltipModel);
 
             _state.CharSelectModel.Dispose();
             _state.DatPatchModel.Dispose();
-            _tooltipModel.Dispose();
+            _state.TooltipModel.Dispose();
+            
+            Game?.Dispose();
 
-            Game.Dispose();
+            _state = null;
             Instance = null!;
         }
     }

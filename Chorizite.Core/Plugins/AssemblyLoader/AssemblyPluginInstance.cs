@@ -251,8 +251,9 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             if (instance is null) {
                 return;
             }
+            _log.LogError($"TryDeserializeType({type.Name}) for plugin: {Name} {instance.Id}");
 
-            var stateSerializer = instance.GetType().GetInterfaces().FirstOrDefault(x =>
+            var stateSerializer = instance.GetType().GetInterfaces().LastOrDefault(x =>
                  x.IsGenericType &&
                  x.GetGenericTypeDefinition() == type);
 
@@ -366,7 +367,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TrySerializeState() {
-            TrySerializeType(typeof(ISerializeState<>), Path.Combine(PluginInstance.DataDirectory, "state.json"));
+            TrySerializeType(typeof(ISerializeState<>));
         }
 
         public override void Dispose() {

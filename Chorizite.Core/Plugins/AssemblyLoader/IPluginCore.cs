@@ -12,6 +12,8 @@ namespace Chorizite.Core.Plugins {
         /// </summary>
         public AssemblyPluginManifest Manifest { get; }
 
+        public int Id { get; set; }
+
         /// <summary>
         /// The path to the entry file assembly directory.
         /// </summary>

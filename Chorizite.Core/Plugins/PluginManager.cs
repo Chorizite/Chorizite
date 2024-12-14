@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Xml.Linq;
 
@@ -61,6 +62,7 @@ namespace Chorizite.Core.Plugins {
         }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public T? GetPlugin<T>(string name) where T : IPluginCore {
             var plugin = _loadedPlugins.Values.Where(p => p.Name.ToLower() == name.ToLower()).FirstOrDefault();
             if (plugin is null) {
@@ -96,6 +98,7 @@ namespace Chorizite.Core.Plugins {
         }
 
         /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.NoInlining)]
         public void StartPlugins() {
             var plugins = _loadedPlugins.Values.ToArray();
             var startedPlugins = new List<string>();
@@ -112,6 +115,7 @@ namespace Chorizite.Core.Plugins {
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void ReloadPlugins() {
             try {
                 var pluginsToReload = _loadedPlugins.Values.Where(p => p.WantsReload).ToArray();
@@ -126,9 +130,6 @@ namespace Chorizite.Core.Plugins {
                     }
                 }
 
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-
                 var startedPlugins = new List<string>();
                 foreach (var plugin in unloadedPlugins) {
                     StartPlugin(plugin, ref startedPlugins);
@@ -139,6 +140,7 @@ namespace Chorizite.Core.Plugins {
             }
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private void UnloadPluginAndDependents(PluginInstance plugin, ref List<PluginInstance> unloadedPlugins) {
             foreach (var depPlugin in _loadedPlugins.Values.Where(p => p.Manifest.Dependencies.Select(d => d.Split('@').First()).Contains(plugin.Name))) {
                 if (!unloadedPlugins.Contains(depPlugin)) {
@@ -150,6 +152,7 @@ namespace Chorizite.Core.Plugins {
             _OnPluginUnloaded?.Invoke(this, new PluginUnloadedEventArgs(plugin.Name));
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool LoadPluginManifest(string manifestFile, out PluginInstance? plugin) {
             try {
                 _log?.LogTrace($"Loading plugin manifest: {manifestFile}");
@@ -161,7 +164,7 @@ namespace Chorizite.Core.Plugins {
                         }
                     }
                     else {
-                        _log?.LogError("Failed to find plugin loader for: {0}", manifest.EntryFile); ;
+                        _log?.LogError("Failed to find plugin loader for: {0}", manifest.EntryFile);
                     }
                 }
                 else {
@@ -199,6 +202,7 @@ namespace Chorizite.Core.Plugins {
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private bool StartPlugin(PluginInstance plugin, ref List<string> startedPlugins) {
             if (plugin.IsLoaded || startedPlugins.Contains(plugin.Name.ToLower())) {
                 return true;

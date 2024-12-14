@@ -16,22 +16,22 @@ namespace Core.AC.API {
         /// <summary>
         /// Attribute type
         /// </summary>
-        public virtual AttributeId Type { get; }
+        public virtual AttributeId Type { get; set; }
 
         /// <summary>
         /// The amount of times this attribute has been raised
         /// </summary>
-        public virtual uint PointsRaised { get; internal set; }
+        public virtual uint PointsRaised { get; set; }
 
         /// <summary>
         /// starting point for advancement of the attribute (eg bonus points)
         /// </summary>
-        public virtual uint InnatePoints { get; internal set; }
+        public virtual uint InnatePoints { get; set; }
 
         /// <summary>
         /// Total XP spent on this attribute
         /// </summary>
-        public virtual uint Experience { get; internal set; }
+        public virtual uint Experience { get; set; }
 
         /// <summary>
         /// Base (unbuffed) attribute level
@@ -55,6 +55,10 @@ namespace Core.AC.API {
                     return Base;
                 }
             }
+        }
+
+        public AttributeInfo() {
+        
         }
 
         internal AttributeInfo(AttributeId attributeId, WorldObject weenie) {
