@@ -33,7 +33,6 @@ namespace Chorizite.Loader.Standalone {
     public unsafe class ACChoriziteBackend : IChoriziteBackend, IClientBackend {
         private readonly AudioPlaybackEngine _engine;
         private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
-        private int _previousGameScreen = (int)UIMode.None;
 
         public override IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
@@ -48,13 +47,12 @@ namespace Chorizite.Loader.Standalone {
             get => ((IntPtr)UIFlow.m_instance == IntPtr.Zero || *UIFlow.m_instance is null) ? 0 : (int)(*UIFlow.m_instance)->_curMode;
             set {
                 if (!((IntPtr)UIFlow.m_instance == IntPtr.Zero || *UIFlow.m_instance is null)) {
-                    if (value != _previousGameScreen) {
-                        if ((int)(*UIFlow.m_instance)->_curMode != value) {
-                            (*UIFlow.m_instance)->QueueUIMode((UIMode)value);
-                        }
-                        _previousGameScreen = value;
-                        _OnScreenChanged?.Invoke(this, EventArgs.Empty);
+                    if ((int)(*UIFlow.m_instance)->_curMode != value) {
+                        (*UIFlow.m_instance)->QueueUIMode((UIMode)value);
                     }
+                }
+                else {
+                    StandaloneLoader.Log.LogError("UIFlow.m_instance is null");
                 }
             }
         }
@@ -92,13 +90,13 @@ namespace Chorizite.Loader.Standalone {
             remove { _OnChatInput.Unsubscribe(value); }
         }
 
-        private readonly WeakEvent<ChatTextAddedEventArgs> _OnChatTextAdded = new();
+        internal readonly WeakEvent<ChatTextAddedEventArgs> _OnChatTextAdded = new();
         public event EventHandler<ChatTextAddedEventArgs>? OnChatTextAdded {
             add { _OnChatTextAdded.Subscribe(value); }
             remove { _OnChatTextAdded.Unsubscribe(value); }
         }
 
-        private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
+        internal readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
         public event EventHandler<EventArgs>? OnScreenChanged {
             add { _OnScreenChanged.Subscribe(value); }
             remove { _OnScreenChanged.Unsubscribe(value); }
@@ -266,7 +264,7 @@ namespace Chorizite.Loader.Standalone {
             ClientCommunicationSystem_OnChatCommand(ChatHooks.ClientCommunicationSystem, &pstring, windowId);
         }
 
-        private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
+        private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x004010F0;
         private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
 
         public override void SetClipboardText(string text) {

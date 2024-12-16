@@ -9,8 +9,6 @@ namespace Core.AC {
     [JsonSourceGenerationOptions(WriteIndented = true, AllowTrailingCommas = true, UseStringEnumConverter = true)]
     [JsonSerializable(typeof(PluginState))]
     [JsonSerializable(typeof(GameScreen))]
-    [JsonSerializable(typeof(CharSelectScreenModel))]
-    [JsonSerializable(typeof(CharacterInfo))]
     [JsonSerializable(typeof(TooltipModel))]
     [JsonSerializable(typeof(Game))]
     [JsonSerializable(typeof(Character))]

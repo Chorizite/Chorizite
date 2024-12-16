@@ -2,7 +2,9 @@
 using Chorizite.ACProtocol.Messages.C2S.Actions;
 using Chorizite.ACProtocol.Messages.S2C;
 using Chorizite.Common;
+using Chorizite.Core.Backend;
 using Chorizite.Core.Net;
+using Core.AC.Lib.Screens;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ namespace Core.AC.API {
         public string AccountName { get; set; } = "";
 
         /// <summary>
-        /// Maximum number of allowed characters on this server
+        /// Maximum number of allowed characters per account on this server
         /// </summary>
         public uint MaxAllowedCharacters { get; set; } = 0;
 
@@ -36,6 +38,16 @@ namespace Core.AC.API {
         /// Information about connection / patch progress.
         /// </summary>
         public PatchProgress PatchProgress { get; set; } = new();
+        
+        /// <summary>
+        /// Maximum number of connections allowed on this server (this is not per player/ip, this is total)
+        /// </summary>
+        public int MaxAllowedConnections { get; set; }
+
+        /// <summary>
+        /// The current number of connections on this server (this is not per player/ip, this is total)
+        /// </summary>
+        public int CurrentConnectionCount { get; set; }
 
         /// <summary>
         /// The current state of the client. Use this to check if you are logged in
@@ -84,6 +96,15 @@ namespace Core.AC.API {
         }
         private WeakEvent<EventArgs> _OnCharactersChanged = new();
 
+        /// <summary>
+        /// Fired when world info is received. This contains <see cref="ServerName"/>, <see cref="MaxAllowedConnections"/>, and <see cref="CurrentConnectionCount"/>.
+        /// </summary>
+        public event EventHandler<EventArgs> OnWorldInfo {
+            add => _OnWorldInfo.Subscribe(value);
+            remove => _OnWorldInfo.Unsubscribe(value);
+        }
+        private WeakEvent<EventArgs> _OnWorldInfo = new();
+
         public Game() {
             _log = CoreACPlugin.Log;
             _net = CoreACPlugin.Instance.Net;
@@ -97,9 +118,41 @@ namespace Core.AC.API {
             State = ClientState.GameStarted;
         }
 
+        #region Public API
+        /// <summary>
+        /// Log in as the specified character id. You can only call this while <see cref="State"/> is <see cref="ClientState.CharacterSelect"/>.
+        /// </summary>
+        /// <param name="characterId">The character id to log in as</param>
+        /// <returns>True if login request was sent, false otherwise</returns>
+        public bool Login(uint characterId) {
+            if (State != ClientState.CharacterSelect) {
+                _log.LogWarning($"Cannot login while not on character select screen (Currently on {State})");
+                return false;
+            }
+            if (Characters.Any(c => c.Id == characterId)) {
+                return CoreACPlugin.Instance.ClientBackend.EnterGame(characterId);
+            }
+            _log.LogWarning($"Unable to login as Character with id 0x{characterId:X8} not found! {string.Join(", ", Characters.Select(c => c.ToString()))}");
+            return false;
+        }
+
+        /// <summary>
+        /// Log in as the specified character. You can only call this while <see cref="State"/> is <see cref="ClientState.CharacterSelect"/>.
+        /// </summary>
+        /// <param name="characterIdentity">The character identity to log in as</param>
+        /// <returns>True if login request was sent, false otherwise</returns>
+        public bool Login(CharacterIdentity characterIdentity) => Login(characterIdentity.Id);
+
+        public void SetScreen(GameScreen screen) {
+            CoreACPlugin.Instance.ClientBackend.GameScreen = (int)screen;
+        }
+        #endregion // Public API
+
         #region Event Handlers
         private void OnLogin_WorldInfo(object? sender, Login_WorldInfo e) {
             ServerName = e.WorldName;
+            MaxAllowedConnections = (int)e.MaxConnections;
+            CurrentConnectionCount = (int)e.Connections;
         }
 
         private void OnLogin_LoginCharacterSet(object? sender, Login_LoginCharacterSet e) {

@@ -491,6 +491,13 @@ namespace Core.UI {
             if (fontInfoBold is not null) {
                 Rml.LoadFontFace(fontInfoBold.Filename, false, FontWeight.Bold);
             }
+
+            if (FontManager.TryGetFont("Tahoma", "regular", out var fontInfoTahoma)) {
+                Rml.LoadFontFace(fontInfoTahoma.Filename, true, FontWeight.Normal);
+            }
+            if (FontManager.TryGetFont("Tahoma", "bold", out var fontInfoTahomaBold)) {
+                Rml.LoadFontFace(fontInfoTahomaBold.Filename, true, FontWeight.Bold);
+            }
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {

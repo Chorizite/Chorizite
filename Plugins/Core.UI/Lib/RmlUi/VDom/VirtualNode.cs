@@ -110,34 +110,48 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 var evtName = key.StartsWith("on") ? key.Substring(2) : key;
                 if (value is LuaFunction action) {
                     Element.SetEventListener(evtName.ToLower(), (e) => {
-                        var doc = CoreUIPlugin.Instance.PanelManager.GetPanelByPtr(_docEl.OwnerDocument.NativePtr);
-                        if (doc is null) return;
-                        var evtTable = doc.ScriptableDocument.LuaContext.NewTable();
-                        evtTable.SetInPath("Id", e.Id);
-                        evtTable.SetInPath("IsInterruptible", e.IsInterruptible);
-                        evtTable.SetInPath("CurrentElement", e.CurrentElement);
-                        evtTable.SetInPath("TargetElement", e.TargetElement);
-                        evtTable.SetInPath("IsImmediatePropagating", e.IsImmediatePropagating);
-                        evtTable.SetInPath("IsPropagating", e.IsPropagating);
-                        evtTable.SetInPath("Phase", e.Phase);
-                        evtTable.SetInPath("StopPropagation", e.StopPropagation);
-                        evtTable.SetInPath("StopImmediatePropagation", e.StopImmediatePropagation);
-                        var paramsTable = doc.ScriptableDocument.LuaContext.NewTable();
-                        foreach (var param in e.Parameters) {
-                            switch (param.Key) {
-                                case "DropFlags":
-                                    paramsTable.SetInPath(param.Key, (DragDropFlags)param.Value);
-                                    break;
-                                case "IconEffects":
-                                    paramsTable.SetInPath(param.Key, (UiEffects)param.Value);
-                                    break;
-                                default:
-                                    paramsTable.SetInPath(param.Key, param.Value);
-                                    break;
+                        try {
+                            UIDocument? doc = CoreUIPlugin.Instance.PanelManager.GetPanelByPtr(_docEl.OwnerDocument.NativePtr);
+                            if (doc is null) {
+                                if (_docEl.OwnerDocument.NativePtr == CoreUIPlugin.Instance.PanelManager.GetScreen()?.NativePtr) {
+                                    doc = CoreUIPlugin.Instance.PanelManager.GetScreen();
+                                }
+
+                                if (doc is null) {
+                                    CoreUIPlugin.Log.LogWarning($"Document is null, skipping event handler on {ToString()}: {key}={value}");
+                                    return;
+                                }
                             }
+                            var evtTable = doc.ScriptableDocument.LuaContext.NewTable();
+                            evtTable.SetInPath("Id", e.Id);
+                            evtTable.SetInPath("IsInterruptible", e.IsInterruptible);
+                            evtTable.SetInPath("CurrentElement", e.CurrentElement);
+                            evtTable.SetInPath("TargetElement", e.TargetElement);
+                            evtTable.SetInPath("IsImmediatePropagating", e.IsImmediatePropagating);
+                            evtTable.SetInPath("IsPropagating", e.IsPropagating);
+                            evtTable.SetInPath("Phase", e.Phase);
+                            evtTable.SetInPath("StopPropagation", e.StopPropagation);
+                            evtTable.SetInPath("StopImmediatePropagation", e.StopImmediatePropagation);
+                            var paramsTable = doc.ScriptableDocument.LuaContext.NewTable();
+                            foreach (var param in e.Parameters) {
+                                switch (param.Key) {
+                                    case "DropFlags":
+                                        paramsTable.SetInPath(param.Key, (DragDropFlags)param.Value);
+                                        break;
+                                    case "IconEffects":
+                                        paramsTable.SetInPath(param.Key, (UiEffects)param.Value);
+                                        break;
+                                    default:
+                                        paramsTable.SetInPath(param.Key, param.Value);
+                                        break;
+                                }
+                            }
+                            evtTable.SetInPath("Params", paramsTable);
+                            action.Call(evtTable);
                         }
-                        evtTable.SetInPath("Params", paramsTable);
-                        action.Call(evtTable);
+                        catch (Exception ex) {
+                            CoreUIPlugin.Log.LogError(ex, "Error calling event handler");
+                        }
                     });
                 }
                 else {
@@ -162,7 +176,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
         }
 
         internal void UpdateElement(Element element) {
-            Element = WrappedElement.GetOrCreate(element);
+            Element = WrappedElement.GetOrCreate(_docEl, element);
 
             // Add properties as attributes
             foreach (var prop in Props) {

@@ -119,7 +119,7 @@ namespace Core.DearImGui {
         uint _count = 0;
         private unsafe void Renderer_OnRender2D(object? sender, EventArgs e) {
             try {
-                if (_count++ < 5) return;
+                if (_count++ < 1) return;
                 ImGuiImpl.ImGui_ImplDX9_NewFrame();
                 ImGuiImpl.ImGui_ImplWin32_NewFrame();
                 ImGui.NewFrame();

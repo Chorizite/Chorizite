@@ -184,7 +184,7 @@ end
 
 function rx:Div(...) return MakeElement("div", ...) end
 function rx:Span(...) return MakeElement("span", ...) end
-function rx:P(...) return MakeElement("dipv", ...) end
+function rx:P(...) return MakeElement("p", ...) end
 function rx:H1(...) return MakeElement("h1", ...) end
 function rx:H2(...) return MakeElement("h2", ...) end
 function rx:H3(...) return MakeElement("h3", ...) end

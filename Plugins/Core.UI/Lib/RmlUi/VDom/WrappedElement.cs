@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Core.UI.Lib.RmlUi.Elements;
+using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Core.UI.Lib.RmlUi.VDom {
     public class WrappedElement : IDisposable {
-        private static readonly Dictionary<IntPtr, WrappedElement> _elementCache = [];
+        internal static readonly Dictionary<IntPtr, Dictionary<IntPtr, WrappedElement>> _elementCache = [];
         private readonly Dictionary<string, Action<Event>> _eventCache = [];
         private readonly Dictionary<string, Action<Event>> _myEventCache = [];
         public readonly Element DocEl;
@@ -17,21 +18,28 @@ namespace Core.UI.Lib.RmlUi.VDom {
             DocEl = element;
         }
 
-        public static WrappedElement? GetOrCreate(Element element) {
-            if (!_elementCache.ContainsKey(element.NativePtr)) {
-                _elementCache.Add(element.NativePtr, new WrappedElement(element));
+        public static WrappedElement? GetOrCreate(ScriptableDocumentElement doc, Element element) {
+            if (!_elementCache.ContainsKey(doc.NativePtr)) {
+                _elementCache.Add(doc.NativePtr, []);
             }
-            return _elementCache[element.NativePtr];
+            var docCache = _elementCache[doc.NativePtr];
+
+            if (!docCache.ContainsKey(element.NativePtr)) {
+                docCache.Add(element.NativePtr, new WrappedElement(element));
+            }
+            return docCache[element.NativePtr];
         }
 
         internal void SetEventListener(string eventName, Action<Event> action) {
             if (!_eventCache.Remove(eventName, out var oldEventAction)) {
                 Action<Event> listener = (e) => {
-                    if (e.Id == RmlUiNet.EventId.DragDrop && e.Parameters.TryGetValue("ObjectName", out var drop)) {
-                        CoreUIPlugin.Log.LogDebug($"OBJET NAME Event: {drop}");
-                    }
                     if (_eventCache.TryGetValue(eventName, out var eventAction)) {
-                        eventAction(e);
+                        try {
+                            eventAction(e);
+                        }
+                        catch (Exception ex) {
+                            CoreUIPlugin.Log.LogError(ex, ex.Message);
+                        }
                     }
                 };
                 _myEventCache.Add(eventName, listener);

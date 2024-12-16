@@ -1,4 +1,4 @@
-﻿<html>
+﻿<rml>
 	<head>
 		<style>
       body {
@@ -117,4 +117,4 @@
 	<body>
     <div id="datpatch"></div>
 	</body>
-</html>
+</rml>
