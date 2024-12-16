@@ -275,6 +275,17 @@ namespace Chorizite.Loader.Standalone {
             return Native.GetClipboardText();
         }
 
+        public void SendProtoUIMessage(byte[] message) {
+            StandaloneLoader.Log.LogDebug($"Sending ProtoUI message of length {message.Length}: {string.Join(" ", message.Select(b => b.ToString("X2")))}");
+            fixed (byte* ptr = message) {
+                Proto_UI.SendToControl(ptr, message.Length);
+            }
+        }
+
+        public void SendProtoUIMessage(PacketWriter stream) {
+            SendProtoUIMessage(stream.ToArray());
+        }
+
         public void Exit() {
             CleanupNet(*Client.m_instance);
             Cleanup(*Client.m_instance);

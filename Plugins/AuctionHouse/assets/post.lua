@@ -1,5 +1,7 @@
 local rx = require('rx')
 local backend = require('backend')
+local ChatType = CS.Chorizite.Core.Backend.ChatType
+local PacketWriter = CS.Chorizite.Core.Backend.PacketWriter
 
 local state = rx:CreateState({
   selectedId = 0,
@@ -10,7 +12,21 @@ local state = rx:CreateState({
   price = 1,
   duration = 1,
   isDragging = false,
-  allowDragging = true
+  allowDragging = true,
+  SendCustomPacket = function(self)
+    if self.selectedId == 0 then
+      backend:AddChatText("Select an item first!", ChatType.HelpChannel)
+      return
+    end
+    print(string.format("Sending: Number: %d, String: %s", self.selectedId, self.selectedName))
+
+    local writer = PacketWriter()
+    writer:WriteUInt32(0xF7CA) -- opcode
+    writer:WriteUInt32(self.selectedId) -- selected id
+    writer:WriteString(self.selectedName) -- selected name
+    backend:SendProtoUIMessage(writer)
+    writer:Dispose()
+  end
 })
 
 local PostItemView = function(state)
@@ -32,10 +48,8 @@ local PostItemView = function(state)
             state.selectedId = evt.Params.ObjectId
             state.selectedIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
             state.selectedName = evt.Params.ObjectName
-            print(state.selectedIcon)
           end,
           ondragover = function(evt)
-            print("ondragover:", string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString()))
             state.isDragging = true
             state.allowDragging = evt.Params.IsSpell == false
           end,
@@ -76,7 +90,10 @@ local PostItemView = function(state)
         rx:Input({ type = "text", id="post-item-duration", value = state.duration })
       }),
 
-      rx:Button({ class = "primary create-auction-button" }, "Create Auction")
+      rx:Button({
+        class = "primary create-auction-button",
+        onclick = function(evt) state:SendCustomPacket() end
+      }, "Create Auction")
     }),
 
     rx:Div({ class="post-comparisons" }, "post comparison area....")

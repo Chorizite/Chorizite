@@ -83,7 +83,7 @@ namespace RmlUiNet {
                     }
                     finally
                     {
-                        Native.Variant.Free(variant.NativePtr);
+                        //Native.Variant.Free(variant.NativePtr);
                     }
                 }
                 return _parameters;

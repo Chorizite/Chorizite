@@ -532,16 +532,16 @@ namespace AcClient {
         public static int SendFriendsCommand(UInt32 cmd, PStringBase<char>* i_player) => ((delegate* unmanaged[Cdecl]<UInt32, PStringBase<char>*, int>)0x00547810)(cmd, i_player); // .text:00546C50 ; int __cdecl Proto_UI::SendFriendsCommand(unsigned int cmd, PStringBase<char> *i_player) .text:00546C50 ?SendFriendsCommand@Proto_UI@@YAHIABV?$PStringBase@D@@@Z
 
         // Proto_UI.SendToControl:
-        public static Byte SendToControl(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x00547440)(buf, size); // .text:00546880 ; bool __cdecl Proto_UI::SendToControl(char *buf, int size) .text:00546880 ?SendToControl@Proto_UI@@YA_NPAEH@Z
+        public static Byte SendToControl(byte* buf, int size) => ((delegate* unmanaged[Cdecl]<byte*, int, Byte>)0x00547440)(buf, size); // .text:00546880 ; bool __cdecl Proto_UI::SendToControl(char *buf, int size) .text:00546880 ?SendToControl@Proto_UI@@YA_NPAEH@Z
 
         // Proto_UI.SendToDatabase:
-        public static Byte SendToDatabase(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x00547520)(buf, size); // .text:00546960 ; bool __cdecl Proto_UI::SendToDatabase(char *buf, int size) .text:00546960 ?SendToDatabase@Proto_UI@@YA_NPAEH@Z
+        public static Byte SendToDatabase(byte* buf, int size) => ((delegate* unmanaged[Cdecl]<byte*, int, Byte>)0x00547520)(buf, size); // .text:00546960 ; bool __cdecl Proto_UI::SendToDatabase(char *buf, int size) .text:00546960 ?SendToDatabase@Proto_UI@@YA_NPAEH@Z
 
         // Proto_UI.SendToLogon:
-        public static Byte SendToLogon(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x005474B0)(buf, size); // .text:005468F0 ; bool __cdecl Proto_UI::SendToLogon(char *buf, int size) .text:005468F0 ?SendToLogon@Proto_UI@@YA_NPAEH@Z
+        public static Byte SendToLogon(byte* buf, int size) => ((delegate* unmanaged[Cdecl]<byte*, int, Byte>)0x005474B0)(buf, size); // .text:005468F0 ; bool __cdecl Proto_UI::SendToLogon(char *buf, int size) .text:005468F0 ?SendToLogon@Proto_UI@@YA_NPAEH@Z
 
         // Proto_UI.SendToWeenie:
-        public static Byte SendToWeenie(char* buf, int size) => ((delegate* unmanaged[Cdecl]<char*, int, Byte>)0x005473D0)(buf, size); // .text:00546810 ; bool __cdecl Proto_UI::SendToWeenie(char *buf, int size) .text:00546810 ?SendToWeenie@Proto_UI@@YA_NPAEH@Z
+        public static Byte SendToWeenie(byte* buf, int size) => ((delegate* unmanaged[Cdecl]<byte*, int, Byte>)0x005473D0)(buf, size); // .text:00546810 ; bool __cdecl Proto_UI::SendToWeenie(char *buf, int size) .text:00546810 ?SendToWeenie@Proto_UI@@YA_NPAEH@Z
 
         // Proto_UI.SetEventCounter:
         public static void SetEventCounter(UInt32 tsVal) => ((delegate* unmanaged[Cdecl]<UInt32, void>)0x005473C0)(tsVal); // .text:00546800 ; void __cdecl Proto_UI::SetEventCounter(unsigned int tsVal) .text:00546800 ?SetEventCounter@Proto_UI@@YAXI@Z
