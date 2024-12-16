@@ -18,12 +18,11 @@ namespace Core.AC.API {
     public class World : IDisposable {
         private readonly ILogger _log;
         private readonly NetworkParser _net;
-        private ConcurrentDictionary<uint, WorldObject> _weenies = new();
 
         /// <summary>
-        /// A list of all weenies that the client knows about.
+        /// The weenies that are currently in the world
         /// </summary>
-        public virtual IList<WorldObject> AllWeenies => _weenies.Values.ToList();
+        public Dictionary<uint, WorldObject> Weenies { get; set; } = [];
 
         /// <summary>
         /// The container that is currently open, if any
@@ -85,7 +84,7 @@ namespace Core.AC.API {
 
         #region public API
         public WorldObject? Get(uint objectId) {
-            if (_weenies.TryGetValue(objectId, out WorldObject? weenie)) {
+            if (Weenies.TryGetValue(objectId, out WorldObject? weenie)) {
                 return weenie;
             }
 
@@ -99,6 +98,7 @@ namespace Core.AC.API {
 
             if (e.ObjectId == CoreACPlugin.Instance.Game.Character.Id) {
                 weenie = CoreACPlugin.Instance.Game.Character;
+                Weenies.TryAdd(e.ObjectId, weenie);
             }
             else {
                 weenie = GetOrCreateWorldObject(e.ObjectId, e.ObjectDescription, e.PhysicsDescription, e.WeenieDescription);
@@ -226,13 +226,14 @@ namespace Core.AC.API {
         #endregion // Event Handlers
 
         private WorldObject GetOrCreateWorldObject(uint objectId, ObjDesc objectDescription, PhysicsDesc physicsDescription, PublicWeenieDesc weenieDescription) {
-            if (_weenies.TryGetValue(objectId, out WorldObject? weenie)) {
+            if (Weenies.TryGetValue(objectId, out WorldObject? weenie)) {
                 weenie.LastAccessTime = DateTime.UtcNow;
             }
 
-            weenie ??= CreateWorldObject(objectId, weenieDescription);
-
-            _weenies.TryAdd(objectId, weenie);
+            if (weenie is null) {
+                weenie = CreateWorldObject(objectId, weenieDescription);
+                Weenies.TryAdd(objectId, weenie);
+            }
 
             return weenie;
         }
@@ -244,6 +245,13 @@ namespace Core.AC.API {
             switch (objectClass) {
                 case ObjectClass.Player:
                     wobject = new Player();
+                    break;
+                case ObjectClass.Npc:
+                case ObjectClass.Vendor:
+                    wobject = new NPC();
+                    break;
+                case ObjectClass.Container:
+                    wobject = new Container();
                     break;
                 default:
                     wobject = new WorldObject();
@@ -278,7 +286,7 @@ namespace Core.AC.API {
             if (weenieId == CoreACPlugin.Instance.Game.Character.Id)
                 return;
 
-            if (_weenies.TryRemove(weenieId, out WorldObject weenieToRemove)) {
+            if (Weenies.Remove(weenieId, out WorldObject? weenieToRemove)) {
                 // try update containers of parent
                 if (weenieToRemove.ParentContainer is not null) {
                     _log.LogTrace($"Scripts_RemoveWeenie: {weenieToRemove} ({weenieToRemove.ParentContainer.ContainerType}) // from {weenieToRemove.ParentContainer}");

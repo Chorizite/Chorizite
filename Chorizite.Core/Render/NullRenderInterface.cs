@@ -30,6 +30,10 @@ namespace Chorizite.Core.Render {
 
         public unsafe IntPtr DataPatchUI { get; set; }
 
+        public IntPtr NativeDevice => IntPtr.Zero;
+
+        public IntPtr NativeHwnd => IntPtr.Zero;
+
         /// <inheritdoc/>
         public event EventHandler<EventArgs>? OnRender2D {
             add { _OnRender2D.Subscribe(value); }

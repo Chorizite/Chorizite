@@ -88,7 +88,16 @@ namespace Chorizite.Core {
                 .SingleInstance();
 
             _container = builder.Build();
-            ChoriziteStatics.Backend = TBackend.Create(_container);
+
+            var createBackend = typeof(TBackend).GetMethod("Create", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            if (createBackend is null) {
+                ChoriziteStatics.Log.LogError($"Could not find Create method on {typeof(TBackend).Name}");
+            }
+
+            var backend = createBackend?.Invoke(null, [_container]) as IChoriziteBackend;
+            if (backend is not null) {
+                ChoriziteStatics.Backend = backend;
+            }
             _log = new ChoriziteLogger("Chorizite", Config.LogDirectory);
             ChoriziteStatics.Log = _log;
 

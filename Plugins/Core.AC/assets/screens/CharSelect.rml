@@ -1,13 +1,11 @@
-﻿<html>
+﻿<rml>
   <head>
     <style>
             body {
-              font-family: LatoLatin;
-              height: 600px;
-              width: 800px;
-              color: #fff;
+              font-family: Tahoma;
+              height: 100%;
+              width: 100%;
               decorator: image( dat://0x06004d63 );
-              opacity: 1;
             }
 
             #panel {
@@ -15,7 +13,7 @@
               position: absolute;
               top: 206px;
               left: 37px;
-              width: 252px
+              width: 252px;
               padding: 4px;
               height: 300px;
             }
@@ -31,12 +29,11 @@
 
             button {
               position: absolute;
-              decorator: image( dat://0x06004c9e );
               display: inline-block;
               text-align: center;
-              width: 170px;
-              height: 99px;
-              line-height: 99px;
+              width: 100px;
+              height: 30px;
+              line-height: 30px;
               font-size: 18dp;
               font-effect: outline(2px black);
             }
@@ -46,17 +43,14 @@
             }
 
             button#createcharacter {
-              decorator: image( dat://0x06004CA3 );
+              color: #ffff00;
               top: 185px;
               left: 315px;
-              width: 254px;
-              height: 113px;
-              line-height: 113px;
+              width: 220px;
+              height: 50px;
+              line-height: 50px;
               font-size: 21dp;
               font-weight: bold;
-            }
-            button#createcharacter:hover {
-              decorator: image( dat://0x06004CA4 );
             }
 
             button#enter {
@@ -66,21 +60,10 @@
               left: 340px;
               width: 211px;
               height: 211px;
-              line-height: 20px;
+              line-height: 210px;
               font-size: 32dp;
               font-weight: bold;
             }
-
-      	  button#enter span {
-      			margin-top: 80px;
-      			display: block;
-      	  }
-
-      	  button#enter span.as {
-      			margin-top: 5px;
-      			display: block;
-      			font-size: 14px;
-      	  }
 
             button#enter:hover {
               decorator: image( dat://0x06004CB3 );
@@ -123,30 +106,82 @@
       		background-color: red;
       	  }
     </style>
+    <script type="">
+      local rx = require('rx')
+      local backend = require('backend')
+      local ac = require('ac')
+      local GameScreen = CS.Core.AC.Lib.Screens.GameScreen
+
+      local state = rx:CreateState({
+        SelectedId = 0,
+        SelectedName = "",
+        ServerName = ac.ServerName,
+        MaxAllowedConnections = ac.MaxAllowedConnections,
+        CurrentConnectionCount = ac.CurrentConnectionCount,
+        Characters = {}
+      })
+
+      local UpdateCharacters = function()
+        state.Characters = {}
+        for i,v in pairs(ac.Characters) do
+          table.insert(state.Characters, {
+            Id = v.Id,
+            Name = v.Name
+          })
+        end
+        if #state.Characters > 0 then
+          state.SelectedId = state.Characters[1].Id
+          state.SelectedName = state.Characters[1].Name
+        end
+      end
+
+      UpdateCharacters()
+
+      -- subscribe to events to update our reactive state
+      ac:OnWorldInfo('+', function()
+        state.ServerName = ac.ServerName
+        state.MaxAllowedConnections = ac.MaxAllowedConnections
+        state.CurrentConnectionCount = ac.CurrentConnectionCount
+      end)
+
+      ac:OnCharactersChanged('+', UpdateCharacters)
+
+      local CharacterSelectView = function(state)
+        return rx:Div({ class="wrapper" }, {
+          rx:Span({ id="world" }, string.format("%s %d / %d", state.ServerName, state.CurrentConnectionCount, state.MaxAllowedConnections)),
+          rx:Button({ id="exit", onclick = function(evt) backend:Exit() end }, "EXIT"),
+          rx:Button({ id="enter", onclick = function(evt)
+            if state.SelectedId ~= 0 then
+              ac:Login(state.SelectedId)
+            end
+          end }, "ENTER"),
+          rx:Button({ id="createcharacter", onclick = function(evt) ac:SetScreen(GameScreen.CharCreate) end }, "Create Character"),
+          rx:Button({ id="credits", onclick = function(evt) ac:SetScreen(GameScreen.Credits) end }, "CREDITS"),
+          rx:Button({ id="delete", disabled="disabled", onclick = function(evt) print("DELETE!!") end }, "DELETE"),
+          rx:Div({ id="panel" },
+            rx:Ul({}, function() 
+              local children = {}
+                for i,k in ipairs(state.Characters) do
+                  table.insert(children, rx:Li({
+                    class = {
+                      selected = state.SelectedId == k.Id,
+                    },
+                    onclick = function()
+                      state.SelectedId = k.Id
+                      state.SelectedName = k.Name
+                    end
+                  }, k.Name))
+                end
+              return children
+            end)
+          )
+        })
+      end
+
+      document:Mount(function() return CharacterSelectView(state) end, "#characterselect")
+    </script>
   </head>
-  <body id="b">
-    <div id="wrapper" data-model="CharSelectScreen">
-      <span id="world">
-        {{ WorldName }} {{ CurrentConnections }}/{{ MaxConnections }}
-      </span>
-      <button id="exit" data-event-click="exit()">EXIT</button>
-      <button id="enter" data-event-click="enter_game(SelectedCharacter.Id)">
-        <span>ENTER</span>
-        <span data-if="SelectedCharacter.Id != 0" class="as">
-          (as {{ SelectedCharacter.Id }} {{ SelectedCharacter.Name }})
-        </span>
-      </button>
-      <div id="panel">
-        <ul>
-          <li data-for="Character : Characters" data-event-click="select(Character.Id)" data-class-selected="Character.Id == SelectedCharacter.Id">
-            <span style="color: red">{{ Character.Id }}</span>
-            {{ Character.Name }}
-          </li>
-        </ul>
-      </div>
-      <button id="createcharacter" data-event-click="create_character">Create Character</button>
-      <button id="credits" data-event-click="show_credits">CREDITS</button>
-      <button id="delete">DELETE</button>
-    </div>
+  <body>
+    <div id="characterselect"></div>
   </body>
-</html>
+</rml>

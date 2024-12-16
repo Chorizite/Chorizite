@@ -14,6 +14,7 @@ using System.IO;
 using System.Reflection;
 using Chorizite.Common;
 using Chorizite.Loader.Standalone.Lib;
+using Chorizite.Loader.Standalone.Hooks;
 
 namespace Chorizite.Loader.Standalone.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
@@ -77,6 +78,8 @@ namespace Chorizite.Loader.Standalone.Render {
         public IntPtr DataPatchUI { get; private set; }
         internal HLSLShader BasicShader { get; }
 
+        public IntPtr NativeDevice => D3Ddevice.NativePointer;
+        public IntPtr NativeHwnd => DirectXHooks.HWND;
 
         public DX9RenderInterface(IntPtr unmanagedD3dPtr, ILogger logger, IDatReaderInterface datReader) {
             _log = logger;

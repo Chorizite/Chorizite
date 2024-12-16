@@ -1,4 +1,5 @@
-﻿using Chorizite.Core.Backend;
+﻿using Chorizite.Common;
+using Chorizite.Core.Backend;
 using Chorizite.Core.Lib;
 using Chorizite.Core.Lua;
 using Core.UI.Lib.RmlUi.VDom;
@@ -48,6 +49,12 @@ namespace Core.UI.Lib.RmlUi.Elements {
         public ISharedState SharedState { get; private set; }
         public ReactiveHelpers Rx { get; private set; }
         public string DocumentDirectory => Path.GetDirectoryName(GetSourceURL());
+
+        public event EventHandler<EventArgs> OnUnload {
+            add => _OnUnload.Subscribe(value);
+            remove => _OnUnload.Unsubscribe(value);
+        }
+        private WeakEvent<EventArgs> _OnUnload = new();
 
         public ScriptableDocumentElement(IChoriziteBackend backend, ILogger logger) : base() {
             _log = logger;
@@ -176,6 +183,12 @@ namespace Core.UI.Lib.RmlUi.Elements {
         }
 
         public override void Dispose() {
+            try {
+                _OnUnload?.Invoke(this, EventArgs.Empty);
+                WrappedElement._elementCache.Remove(NativePtr);
+            } catch( Exception ex) {
+                _log.LogError(ex, "Error in ScriptibleDocumentElement.OnUnload");
+            }
             foreach (var watcher in _scriptWatchers) {
                 watcher.Dispose();
             }

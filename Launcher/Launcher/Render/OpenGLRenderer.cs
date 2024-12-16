@@ -64,6 +64,9 @@ namespace Launcher.Render {
         public GLSLShader ColorShader { get; }
         public GLSLShader TextureShader { get; }
 
+        public IntPtr NativeDevice => IntPtr.Zero;
+        public IntPtr NativeHwnd => IntPtr.Zero;
+
         /// <inheritdoc/>
         public event EventHandler<EventArgs>? OnRender2D {
             add { _OnRender2D.Subscribe(value); }

@@ -23,11 +23,11 @@ namespace AuctionHouse {
 
             _panelId = AC.CustomPanelFromName("AuctionHouse");
 
-            AC.RegisterPanel(_panelId, Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
+            //AC.RegisterPanel(_panelId, Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
         }
 
         protected override void Dispose() {
-            AC.UnregisterPanel(_panelId, Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
+            //AC.UnregisterPanel(_panelId, Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
         }
     }
 }
