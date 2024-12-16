@@ -9,6 +9,13 @@ using System.Text.Json.Serialization;
 using XLua.Cast;
 
 namespace Core.AC.API {
+    [JsonDerivedType(typeof(WorldObject), typeDiscriminator: "WorldObject")]
+    [JsonDerivedType(typeof(Character), typeDiscriminator: "Character")]
+    [JsonDerivedType(typeof(Container), typeDiscriminator: "Container")]
+    [JsonDerivedType(typeof(Creature), typeDiscriminator: "Creature")]
+    [JsonDerivedType(typeof(Equipment), typeDiscriminator: "Equipment")]
+    [JsonDerivedType(typeof(NPC), typeDiscriminator: "NPC")]
+    [JsonDerivedType(typeof(Player), typeDiscriminator: "Player")]
     public class WorldObject {
         private ObjectClass _objectClass;
 
@@ -16,7 +23,7 @@ namespace Core.AC.API {
         /// The id of this world object
         /// </summary>
         public uint Id { get; set; }
-
+        
         /// <summary>
         /// Weenie ClassId
         /// </summary>
@@ -661,6 +668,10 @@ namespace Core.AC.API {
 
             if ((flag1 & WeenieHeaderFlag.UiEffects) != 0)
                 AddOrUpdateValue(PropertyDataId.IconOverlaySecondary, (uint)wdesc.Effects);
+        }
+
+        public override string ToString() {
+            return $"{Name}({GetType().Name})[0x{Id:X8} {ItemType}//{ObjectClass}]";
         }
     }
 }

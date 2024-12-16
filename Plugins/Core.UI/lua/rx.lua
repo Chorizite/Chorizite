@@ -196,5 +196,7 @@ function rx:Li(...) return MakeElement("li", ...) end
 function rx:Form(...) return MakeElement("form", ...) end
 function rx:Input(...) return MakeElement("input", ...) end
 function rx:Button(...) return MakeElement("button", ...) end
+function rx:Progress(...) return MakeElement("progress", ...) end
+function rx:Br(...) return MakeElement("br", ...) end
 
 return rx;

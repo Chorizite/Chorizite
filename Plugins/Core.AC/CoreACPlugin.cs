@@ -72,8 +72,6 @@ namespace Core.AC {
             ClientBackend = clientBackend;
             ChoriziteBackend = choriziteBackend;
             Dat = dat;
-            Id = 3;
-            Log.LogDebug($"CTOR CoreACPlugin 1 {Id}");
 
             // since this plugin is ISerializeState<ACState>, we wait to do full initialization until after loading state.
             // ISerializeState{ACState}.DeserializeAfterLoad(ACState?) is now responsible for calling Init()
@@ -82,8 +80,9 @@ namespace Core.AC {
         private void Init() {
             DragDropManager = new DragDropManager();
 
+            ChoriziteBackend.RegisterLuaModule("ac", Game);
+
             CoreUI.RegisterUIModel("CharSelectScreen", _state.CharSelectModel);
-            CoreUI.RegisterUIModel("DatPatchScreen", _state.DatPatchModel);
             CoreUI.RegisterUIModel("Tooltip", _state.TooltipModel);
 
             RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "screens", "CharSelect.rml"));
@@ -133,7 +132,6 @@ namespace Core.AC {
             Log.LogDebug($"DeserializeAfterLoad CoreACPlugin::State");
             _state = state ?? new PluginState();
             _state.CharSelectModel ??= new CharSelectScreenModel();
-            _state.DatPatchModel ??= new DatPatchScreenModel();
             _state.TooltipModel ??= new TooltipModel();
             _state.Game ??= new Game();
 
@@ -242,6 +240,8 @@ namespace Core.AC {
             ClientBackend.OnShowTooltip -= ClientBackend_OnShowTooltip;
             ClientBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
 
+            ChoriziteBackend.UnregisterLuaModule("ac");
+
             DragDropManager.Dispose();
             
             CoreUI.Screen = "None";
@@ -257,11 +257,9 @@ namespace Core.AC {
             _registeredGamePanels.Clear();
             
             CoreUI.UnregisterUIModel("CharSelectScreen", _state.CharSelectModel);
-            CoreUI.UnregisterUIModel("DatPatchScreen", _state.DatPatchModel);
             CoreUI.UnregisterUIModel("Tooltip", _state.TooltipModel);
 
             _state.CharSelectModel.Dispose();
-            _state.DatPatchModel.Dispose();
             _state.TooltipModel.Dispose();
             
             Game?.Dispose();

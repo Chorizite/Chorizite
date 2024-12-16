@@ -11,7 +11,6 @@ namespace Core.AC {
     [JsonSerializable(typeof(GameScreen))]
     [JsonSerializable(typeof(CharSelectScreenModel))]
     [JsonSerializable(typeof(CharacterInfo))]
-    [JsonSerializable(typeof(DatPatchScreenModel))]
     [JsonSerializable(typeof(TooltipModel))]
     [JsonSerializable(typeof(Game))]
     [JsonSerializable(typeof(Character))]

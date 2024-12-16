@@ -33,6 +33,11 @@ namespace Core.AC.API {
         public uint MaxAllowedCharacters { get; set; } = 0;
 
         /// <summary>
+        /// Information about connection / patch progress.
+        /// </summary>
+        public PatchProgress PatchProgress { get; set; } = new();
+
+        /// <summary>
         /// The current state of the client. Use this to check if you are logged in
         /// </summary>
         public ClientState State {
@@ -132,7 +137,8 @@ namespace Core.AC.API {
             _net.C2S.OnLogin_SendEnterWorld -= OnLogin_SendEnterWorld;
             _net.S2C.OnLogin_LogOffCharacter -= OnLogin_LogOffCharacter;
             _net.C2S.OnCharacter_LoginCompleteNotification -= OnCharacter_LoginCompleteNotification;
-
+            
+            PatchProgress?.Dispose();
             Character?.Dispose();
             World?.Dispose();
         }

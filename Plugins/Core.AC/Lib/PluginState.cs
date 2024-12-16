@@ -6,7 +6,6 @@ namespace Core.AC.Lib {
     internal class PluginState {
         public GameScreen CurrentScreen { get; set; } = GameScreen.None;
         public CharSelectScreenModel CharSelectModel { get; set; }
-        public DatPatchScreenModel DatPatchModel { get; set; }
         public TooltipModel TooltipModel { get; set; }
         public Game Game { get; set; }
     }

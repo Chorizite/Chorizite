@@ -12,6 +12,16 @@ namespace Chorizite.Core.Render {
         public Vector2 ViewportSize { get; }
 
         /// <summary>
+        /// The native device
+        /// </summary>
+        public IntPtr NativeDevice { get; }
+
+        /// <summary>
+        /// The native window
+        /// </summary>
+        public IntPtr NativeHwnd { get; }
+
+        /// <summary>
         /// Callback for 2D rendering
         /// </summary>
         public event EventHandler<EventArgs>? OnRender2D;

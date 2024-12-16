@@ -96,5 +96,9 @@ namespace Core.UI.Lib.RmlUi.VDom {
         public Func<VirtualNode> H5(Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) => El("h5", props, children, text);
 
         public Func<VirtualNode> H6(Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) => El("h6", props, children, text);
+
+        public Func<VirtualNode> Progress(Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) => El("progress", props, children, text);
+
+        public Func<VirtualNode> Br(Dictionary<string, object>? props = null, List<Func<VirtualNode>>? children = null, string? text = null) => El("br", props, children, text);
     }
 }

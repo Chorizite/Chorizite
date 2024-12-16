@@ -30,15 +30,15 @@ using NAudio.Wave.SampleProviders;
 using Chorizite.Loader.Standalone.Lib;
 
 namespace Chorizite.Loader.Standalone {
-    public unsafe class ACChoriziteBackend : IClientBackend, IChoriziteBackend {
+    public unsafe class ACChoriziteBackend : IChoriziteBackend, IClientBackend {
         private readonly AudioPlaybackEngine _engine;
         private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
         private int _previousGameScreen = (int)UIMode.None;
 
-        public IRenderInterface Renderer { get; }
+        public override IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
 
-        public IInputManager Input { get; }
+        public override IInputManager Input { get; }
         public ILogger Log { get; }
         public Win32InputManager Win32Input { get; }
         /// <inheritdoc/>
@@ -59,7 +59,7 @@ namespace Chorizite.Loader.Standalone {
             }
         }
 
-        public event EventHandler<LogMessageEventArgs>? OnLogMessage {
+        public override event EventHandler<LogMessageEventArgs>? OnLogMessage {
             add { _OnLogMessage.Subscribe(value); }
             remove { _OnLogMessage.Unsubscribe(value); }
         }
@@ -70,9 +70,9 @@ namespace Chorizite.Loader.Standalone {
         /// </summary>
         /// <param name="logLevel"></param>
         /// <param name="message"></param>
-        public virtual void HandleLogMessage(LogMessageEventArgs evt) => _OnLogMessage.Invoke(this, evt);
+        public override void HandleLogMessage(LogMessageEventArgs evt) => _OnLogMessage.Invoke(this, evt);
 
-        public ChoriziteEnvironment Environment => ChoriziteEnvironment.Client;
+        public override ChoriziteEnvironment Environment => ChoriziteEnvironment.Client;
 
         private readonly WeakEvent<PacketDataEventArgs> _OnC2SData = new WeakEvent<PacketDataEventArgs>();
         public event EventHandler<PacketDataEventArgs>? OnC2SData {
@@ -162,12 +162,12 @@ namespace Chorizite.Loader.Standalone {
             }
         }
 
-        public void SetCursorDid(uint did, int hotX = 0, int hotY = 0, bool makeDefault = false) {
+        public override void SetCursorDid(uint did, int hotX = 0, int hotY = 0, bool makeDefault = false) {
             UIHooks.CursorDid = did;
             UIElementManager.s_pInstance->SetCursor(did, hotX, hotY, (byte)(makeDefault ? 1 : 0));
         }
 
-        public void PlaySound(uint soundId) {
+        public override void PlaySound(uint soundId) {
             try {
                 if (DatReader.TryGet<Wave>(soundId, out var sound)) {
                     var stream = new MemoryStream();
@@ -269,11 +269,11 @@ namespace Chorizite.Loader.Standalone {
         private static delegate* unmanaged[Thiscall]<Client*, int> Cleanup = (delegate* unmanaged[Thiscall]<Client*, int>)0x00401EC0;
         private static delegate* unmanaged[Thiscall]<Client*, void> CleanupNet = (delegate* unmanaged[Thiscall]<Client*, void>)0x00412060;
 
-        public void SetClipboardText(string text) {
+        public override void SetClipboardText(string text) {
             Native.SetClipboardText(text);
         }
 
-        public string? GetClipboardText() {
+        public override string? GetClipboardText() {
             return Native.GetClipboardText();
         }
 

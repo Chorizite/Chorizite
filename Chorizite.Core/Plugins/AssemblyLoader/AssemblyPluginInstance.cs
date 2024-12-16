@@ -251,7 +251,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             if (instance is null) {
                 return;
             }
-            _log.LogError($"TryDeserializeType({type.Name}) for plugin: {Name} {instance.Id}");
+            _log.LogTrace($"TryDeserializeType({type.Name}) for plugin: {Name} {instance.Id}");
 
             var stateSerializer = instance.GetType().GetInterfaces().LastOrDefault(x =>
                  x.IsGenericType &&
