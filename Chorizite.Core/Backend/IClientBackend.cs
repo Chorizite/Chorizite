@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Chorizite.Common;
+using System.IO;
 
 namespace Chorizite.Core.Backend {
     public interface IClientBackend : IDisposable {
@@ -29,5 +30,7 @@ namespace Chorizite.Core.Backend {
         public void AddChatText(string text, ChatType type = ChatType.Default);
         void InvokeChat(string text, int windowId = 1);
         void ClearDragandDrop();
+        void SendProtoUIMessage(byte[] message);
+        void SendProtoUIMessage(PacketWriter stream);
     }
 }
