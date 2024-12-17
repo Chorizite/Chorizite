@@ -424,7 +424,7 @@ namespace XLua
 
                 if (!translator.AllDelegateBridgeReleased())
                 {
-                    throw new InvalidOperationException("try to dispose a LuaEnv with C# callback!");
+                    //throw new InvalidOperationException("try to dispose a LuaEnv with C# callback!");
                 }
                 
                 ObjectTranslatorPool.Instance.Remove(L);

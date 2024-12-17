@@ -29,6 +29,17 @@ local state = rx:CreateState({
   end
 })
 
+local queryAuctionListings = function () 
+  local writer = PacketWriter()
+  writer:WriteUInt32(0xF7CA) -- opcode
+  backend:SendProtoUIMessage(writer)
+  writer:Dispose()
+  state.loaded = true;
+end
+
+-- C2S message
+queryAuctionListings()
+
 local PostItemView = function(state)
   return rx:Div({ class="post flex" }, {
     -- post area

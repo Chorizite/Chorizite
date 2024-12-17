@@ -33,9 +33,35 @@ RMLUI_CAPI const char *rml_Element_GetElementTypeName(Rml::Element *element) {
 }
 
 RMLUI_CAPI const char *rml_Element_GetOwnerDocument(Rml::Element *element, Rml::Element **foundElement) {
-    *foundElement = element->GetOwnerDocument();
+    // Validate input pointers
+    if (element == nullptr) {
+        if (foundElement) *foundElement = nullptr;
+        return nullptr;
+    }
 
-    return rmlui_type_name(**foundElement);
+    // Safely get owner document
+    try {
+        Rml::Element* ownerDocument = element->GetOwnerDocument();
+        
+        // Check if document was found
+        if (ownerDocument == nullptr) {
+            if (foundElement) *foundElement = nullptr;
+            return nullptr;
+        }
+
+        // Set the output parameter if provided
+        if (foundElement) {
+            *foundElement = ownerDocument;
+        }
+
+        // Safely get type name
+        return ownerDocument ? rmlui_type_name(*ownerDocument) : nullptr;
+    }
+    catch (...) {
+        // Handle any unexpected exceptions
+        if (foundElement) *foundElement = nullptr;
+        return nullptr;
+    }
 }
 
 RMLUI_CAPI const char* rml_Element_GetInnerRml(Rml::Element *element) {
