@@ -135,12 +135,23 @@ namespace RmlUiNet
         /// <summary>
         /// Gets the document this element belongs to.
         /// </summary>
-        public ElementDocument OwnerDocument {
-            get {
-                var elementType = Marshal.PtrToStringAnsi(
-                    Native.Element.GetOwnerDocument(NativePtr, out var elementPtr)
-                );
-                return Util.GetOrThrowElementByTypeName(elementPtr, elementType) as ElementDocument;
+        public ElementDocument? OwnerDocument
+        {
+            get
+            {
+                try
+                {
+                    var el = Native.Element.GetOwnerDocument(NativePtr, out var elementPtr);
+                    if (el == IntPtr.Zero || elementPtr == IntPtr.Zero) return null;
+                    var elementType = Marshal.PtrToStringAnsi(el);
+                    if (string.IsNullOrEmpty(elementType)) return null;
+                    return Util.GetElementByTypeName(elementPtr, elementType) as ElementDocument;
+                }
+                catch (Exception ex)
+                {
+                    Rml.Log($"Error getting OwnerDocument: {ex}", LogType.Error);
+                    return null;
+                }
             }
         }
 
@@ -190,7 +201,8 @@ namespace RmlUiNet
                 handlers.Add(handler);
             }
 
-            public void RemoveHandler(string eventName, Action<Event> handler) {
+            public void RemoveHandler(string eventName, Action<Event> handler)
+            {
                 if (_handlers.TryGetValue(eventName.ToLower(), out var handlers))
                 {
                     handlers.Remove(handler);
@@ -199,7 +211,8 @@ namespace RmlUiNet
 
             public override void ProcessEvent(Event ev)
             {
-                if (_handlers.TryGetValue(ev.Id.ToString().ToLower(), out var handlers)) {
+                if (_handlers.TryGetValue(ev.Id.ToString().ToLower(), out var handlers))
+                {
                     handlers.ToList().ForEach(handler => handler.Invoke(ev));
                 }
             }
@@ -216,7 +229,8 @@ namespace RmlUiNet
 
             public override void Dispose()
             {
-                foreach (var evtName in _handlers.Keys.ToArray()) {
+                foreach (var evtName in _handlers.Keys.ToArray())
+                {
                     _owningElement.RemoveEventListener(evtName.ToLower(), this);
                 }
                 _handlers.Clear();
@@ -251,8 +265,10 @@ namespace RmlUiNet
         {
             var dict = Native.RmlDictionary.Create();
             List<IntPtr> variants = [];
-            try {
-                foreach (var kv in parameters) {
+            try
+            {
+                foreach (var kv in parameters)
+                {
                     var variant = Util.ToVariant(kv.Value);
 
                     if (variant is not null)
@@ -263,8 +279,10 @@ namespace RmlUiNet
                 }
                 return Native.Element.DispatchEvent(NativePtr, event_id, dict, interruptible, bubbles);
             }
-            finally {
-                foreach (var variant in variants) {
+            finally
+            {
+                foreach (var variant in variants)
+                {
                     Native.Variant.Free(variant);
                 }
                 Native.RmlDictionary.Free(dict);
@@ -281,7 +299,8 @@ namespace RmlUiNet
             var nativeElementType = Native.Element.GetElementById(NativePtr, id, out var elementPtr);
             var elementType = Marshal.PtrToStringAnsi(nativeElementType);
 
-            if (null == elementType) {
+            if (null == elementType)
+            {
                 return null;
             }
 
@@ -310,7 +329,8 @@ namespace RmlUiNet
         /// <param name="child"></param>
         /// <param name="addToDom"></param>
         /// <returns></returns>
-        public Element AppendChild(Element child, bool addToDom = true) {
+        public Element AppendChild(Element child, bool addToDom = true)
+        {
             var nativeElement = Native.Element.AppendChild(NativePtr, child.NativePtr, addToDom);
             var typePtr = Native.Element.GetElementTypeName(nativeElement);
             var elementType = Marshal.PtrToStringAnsi(typePtr);
@@ -331,7 +351,8 @@ namespace RmlUiNet
             return Util.GetOrThrowElementByTypeName(nativeElement, elementType);
         }
 
-        public void RemoveChild(Element child) { 
+        public void RemoveChild(Element child)
+        {
             Native.Element.RemoveChild(NativePtr, child.NativePtr);
         }
 
@@ -341,7 +362,8 @@ namespace RmlUiNet
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="behavior"></param>
-        public void ScrollTo(float x, float y, ScrollBehavior behavior = ScrollBehavior.Auto) {
+        public void ScrollTo(float x, float y, ScrollBehavior behavior = ScrollBehavior.Auto)
+        {
             Native.Element.ScrollTo(NativePtr, x, y, (int)behavior);
         }
 
@@ -402,27 +424,32 @@ namespace RmlUiNet
         }
 
         /// <inheritdoc cref="Element.GetOffsetTop"/>
-        public float GetOffsetTop() {
+        public float GetOffsetTop()
+        {
             return Native.Element.GetOffsetTop(NativePtr);
         }
 
         /// <inheritdoc cref="Element.GetAbsoluteLeft"/>
-        public float GetAbsoluteLeft() {
+        public float GetAbsoluteLeft()
+        {
             return Native.Element.GetAbsoluteLeft(NativePtr);
         }
 
         /// <inheritdoc cref="Element.GetAbsoluteTop"/>
-        public float GetAbsoluteTop() {
+        public float GetAbsoluteTop()
+        {
             return Native.Element.GetAbsoluteTop(NativePtr);
         }
 
         /// <inheritdoc cref="Element.GetClientWidth"/>
-        public float GetClientWidth() {
+        public float GetClientWidth()
+        {
             return Native.Element.GetClientWidth(NativePtr);
         }
 
         /// <inheritdoc cref="Element.GetClientHeight"/>
-        public float GetClientHeight() {
+        public float GetClientHeight()
+        {
             return Native.Element.GetClientHeight(NativePtr);
         }
 
@@ -452,7 +479,8 @@ namespace RmlUiNet
             return strValue ?? "";
         }
 
-        public void SetAttribute(string attributeName, string value) {
+        public void SetAttribute(string attributeName, string value)
+        {
             Native.Element.SetAttributeString(NativePtr, attributeName, value);
         }
 
