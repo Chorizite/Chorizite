@@ -25,7 +25,9 @@ local state = rx:CreateState({
       self.stackSize = 1
       self.stackCount = 1
     else
-      self.stackSize = wobject:Value(PropertyInt.StackSize)
+      self.stackSize = 1
+      self.stackCount = 1
+      -- self.stackSize = wobject:Value(PropertyInt.StackSize)
     end
   end,
   SetMaximumStackSize = function(self)
@@ -81,9 +83,9 @@ local PostItemView = function(state)
                 state.allowDragging = false
                 state.dragError = "Containers are not allowed on the Auction House"
                 return
-              elseif wobject.IsBonded then
+              elseif wobject.IsAttuned then
                 state.allowDragging = false
-                state.dragError = "Can't sell bonded items on the Auction House"
+                state.dragError = "Can't sell attuned items on the Auction House"
                 return
               end
             end

@@ -168,7 +168,7 @@ namespace Core.AC.API {
         /// <summary>
         /// True if this object is stackable
         /// </summary>b
-        public bool IsStackable => Value(PropertyInt.MaxStackSize) != 0;
+        public bool IsStackable => Value(PropertyInt.MaxStackSize, 1) != 1;
 
         /// <summary>
         /// True if this object is attuned to your character. (Can't be dropped / given to others)
