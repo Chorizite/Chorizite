@@ -81,9 +81,9 @@ local PostItemView = function(state)
                 state.allowDragging = false
                 state.dragError = "Containers are not allowed on the Auction House"
                 return
-              elseif wobject.IsBonded then
+              elseif wobject.IsAttuned then
                 state.allowDragging = false
-                state.dragError = "Can't sell bonded items on the Auction House"
+                state.dragError = "Can't sell attuned items on the Auction House"
                 return
               end
             end
