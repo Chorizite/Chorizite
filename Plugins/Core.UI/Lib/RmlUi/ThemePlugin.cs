@@ -100,9 +100,11 @@ namespace Core.UI.Lib.RmlUi {
         }
 
         public override void OnDocumentLoad(ElementDocument document) {
-            _documents.TryAdd(document.NativePtr, document);
-            document.AddStyleSheetContainer(_styleSheetContainer);
-            base.OnDocumentLoad(document);
+            if (!CoreUIPlugin.Instance._isTogglingDebugger) {
+                _documents.TryAdd(document.NativePtr, document);
+                document.AddStyleSheetContainer(_styleSheetContainer);
+                base.OnDocumentLoad(document);
+            }
         }
 
         public override void OnDocumentUnload(ElementDocument document) {

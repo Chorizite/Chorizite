@@ -11,7 +11,7 @@ namespace Core.AC.API {
     /// Represents a specific Attribute on a creature (Like Strength, Endurance, etc)
     /// </summary>
     public class AttributeInfo {
-        private WorldObject _weenie;
+        private Character character => CoreACPlugin.Instance.Game.Character;
 
         /// <summary>
         /// Attribute type
@@ -43,17 +43,11 @@ namespace Core.AC.API {
         /// </summary>
         public virtual int Current {
             get {
-                if (_weenie is Character character) {
-                    var multiplier = character.GetEnchantmentsMultiplierModifier(Type);
-                    var additives = character.GetEnchantmentsAdditiveModifier(Type);
+                var multiplier = character.GetEnchantmentsMultiplierModifier(Type);
+                var additives = character.GetEnchantmentsAdditiveModifier(Type);
 
-                    var effective = (int)Math.Round(Base * multiplier + additives);
-                    return Math.Max(effective, Base >= 10 ? 10 : 1);
-                }
-                else {
-                    // TODO (is this right for creatures? do we have any enchantment data?)
-                    return Base;
-                }
+                var effective = (int)Math.Round(Base * multiplier + additives);
+                return Math.Max(effective, Base >= 10 ? 10 : 1);
             }
         }
 
@@ -61,9 +55,12 @@ namespace Core.AC.API {
         
         }
 
-        internal AttributeInfo(AttributeId attributeId, WorldObject weenie) {
+        internal AttributeInfo(AttributeId attributeId) {
             Type = attributeId;
-            _weenie = weenie;
+        }
+
+        public override string ToString() {
+            return $"[{Type} Base: {Base}, Current: {Current}]";
         }
     }
 }

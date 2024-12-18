@@ -5,6 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Core.AC.API.WorldObjects {
-    public class NPC : Creature {
+    public class Ust : Item {
     }
 }

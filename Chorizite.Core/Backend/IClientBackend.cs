@@ -10,20 +10,23 @@ using System.Text;
 using System.Threading.Tasks;
 using Chorizite.Common;
 using System.IO;
+using System.Numerics;
 
 namespace Chorizite.Core.Backend {
     public interface IClientBackend : IDisposable {
         int GameScreen { get; set; }
+        uint SelectedObjectId { get; set; }
 
         public event EventHandler<PacketDataEventArgs> OnC2SData;
         public event EventHandler<PacketDataEventArgs> OnS2CData;
         public event EventHandler<EventArgs> OnScreenChanged;
         public event EventHandler<ChatInputEventArgs> OnChatInput;
         public event EventHandler<ChatTextAddedEventArgs> OnChatTextAdded;
-        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragEnd;
-        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragStart;
-        public event EventHandler<EventArgs>? OnHideTooltip;
-        public event EventHandler<ShowTooltipEventArgs>? OnShowTooltip;
+        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragEnd;
+        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragStart;
+        public event EventHandler<EventArgs> OnHideTooltip;
+        public event EventHandler<ShowTooltipEventArgs> OnShowTooltip;
+        public event EventHandler<ObjectSelectedEventArgs> OnObjectSelected;
 
         public bool EnterGame(uint characterId);
         public void Exit();
@@ -32,5 +35,6 @@ namespace Chorizite.Core.Backend {
         void ClearDragandDrop();
         void SendProtoUIMessage(byte[] message);
         void SendProtoUIMessage(PacketWriter stream);
+        Vector4 GetUIElementPosition(uint uiElementId);
     }
 }

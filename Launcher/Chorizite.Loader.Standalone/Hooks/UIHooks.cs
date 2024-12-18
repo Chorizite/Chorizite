@@ -27,6 +27,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
         private static IHook<Del_UIElementManager_CheckTooltip>? Hook_UIElementManager_CheckTooltip;
         private static IHook<Del_UIElementManager_SetCursor>? Hook_UIElementManager_SetCursor;
         private static IHook<Del_UIElement_CatchDroppedItem>? Hook_UIElement_CatchDroppedItem;
+        private static IHook<Del_ACCWeenieObject_SetSelectedObject>? Hook_ACCWeenieObject_SetSelectedObject;
 
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate int Del_UIElementManager_StartDragandDrop(UIElementManager* This, UIElement* element, int x, int y);
@@ -46,6 +47,9 @@ namespace Chorizite.Loader.Standalone.Hooks {
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate int Del_UIElement_CatchDroppedItem(UIElement* This, DragDropInfo* info);
 
+        [Function(CallingConventions.Cdecl)]
+        private delegate void Del_ACCWeenieObject_SetSelectedObject(uint objectId, int reselect);
+
         internal static void Init() {
             Hook_UIElementManager_StartTooltip = CreateHook<Del_UIElementManager_StartTooltip>(typeof(UIHooks), nameof(UIElementManager_StartTooltip_Impl), 0x0045DF70);
             Hook_UIElementManager_ResetTooltip = CreateHook<Del_UIElementManager_ResetTooltip>(typeof(UIHooks), nameof(UIElementManager_ResetTooltip_Impl), 0x0045C440);
@@ -53,6 +57,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
             Hook_UIElementManager_StartDragandDrop = CreateHook<Del_UIElementManager_StartDragandDrop>(typeof(UIHooks), nameof(UIElementManager_StartDragandDrop_Impl), 0x0045E120);
             Hook_UIElementManager_SetCursor = CreateHook<Del_UIElementManager_SetCursor>(typeof(UIHooks), nameof(UIElementManager_SetCursor_Impl), 0x0045A910);
             Hook_UIElement_CatchDroppedItem = CreateHook<Del_UIElement_CatchDroppedItem>(typeof(UIHooks), nameof(UIElement_CatchDroppedItem_Impl), 0x00461860);
+            Hook_ACCWeenieObject_SetSelectedObject = CreateHook<Del_ACCWeenieObject_SetSelectedObject>(typeof(UIHooks), nameof(ACCWeenieObject_SetSelectedObject_Impl), 0x0058D110);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
@@ -301,6 +306,16 @@ namespace Chorizite.Loader.Standalone.Hooks {
             }
 
             return Hook_UIElement_CatchDroppedItem!.OriginalFunction(This, info);
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
+        private static void ACCWeenieObject_SetSelectedObject_Impl(uint objectId, int reselect) {
+            var eventArgs = new ObjectSelectedEventArgs(objectId);
+            StandaloneLoader.Backend.HandleObjectSelected(eventArgs);
+
+            if (!eventArgs.Eat) {
+                Hook_ACCWeenieObject_SetSelectedObject!.OriginalFunction(objectId, reselect);
+            }
         }
     }
 }
