@@ -106,7 +106,7 @@
         margin: 6px 0 0 0;
       }
     </style>
-    <script src="auctionhouse.lua"></script>
+    <script src="browse.lua"></script>
     <script src="post.lua"></script>
 	</head>
 	<body class="window" template="tabpanel">
@@ -119,51 +119,6 @@
         <tab>Browse</tab>
         <panel>
           <div id="browse">
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
-            scroll content<br />
           </div>
         </panel>
         <tab>My Listings</tab>
