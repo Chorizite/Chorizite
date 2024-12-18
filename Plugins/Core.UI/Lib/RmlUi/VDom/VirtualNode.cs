@@ -22,6 +22,12 @@ namespace Core.UI.Lib.RmlUi.VDom {
         private List<Action<Event>> _eventHandlers = [];
         private ScriptableDocumentElement _docEl;
 
+        private readonly HashSet<string> _lifecycleEvents = new HashSet<string>() {
+        "onUpdate",
+        "onMount"
+    };
+        private bool _hasMounted = false;
+
         public string Type { get; set; }
         public Dictionary<string, object> Props { get; set; }
         public List<VirtualNode> Children { get; } = [];
@@ -91,6 +97,9 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 CoreUIPlugin.Log.LogWarning($"Element is null, skipping prop update on {ToString()}: {key}={value}");
                 return;
             }
+
+            if (_lifecycleEvents.Contains(key))
+                return;
 
             if (value is string stringValue) {
                 if (!string.IsNullOrEmpty(stringValue)) {
@@ -180,6 +189,26 @@ namespace Core.UI.Lib.RmlUi.VDom {
 
         internal void UpdateElement(Element element) {
             Element = WrappedElement.GetOrCreate(_docEl, element);
+
+            // Trigger lifecycle action if defined
+            if (_hasMounted && Props.TryGetValue("onUpdate", out var onUpdate)) {
+                if (onUpdate is Action updateAction)
+                    updateAction.Invoke();
+                else if (onUpdate is LuaFunction updateLuaAction) {
+                    updateLuaAction.Call();
+                }
+            }
+
+            // Trigger onMount lifecycle if defined and has not been triggered yet
+            if (!_hasMounted && Props.TryGetValue("onMount", out var onMount)) {
+                if (onMount is Action mountAction) {
+                    mountAction.Invoke();
+                }
+                else if (onMount is LuaFunction luaMountAction) {
+                    luaMountAction.Call(luaMountAction);
+                }
+                _hasMounted = true; // Set the flag to true after mounting
+            }
 
             // Add properties as attributes
             foreach (var prop in Props) {
