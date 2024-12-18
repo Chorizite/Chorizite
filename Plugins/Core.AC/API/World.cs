@@ -80,6 +80,8 @@ namespace Core.AC.API {
 
             _net.S2C.OnItem_OnViewContents += OnItem_OnViewContents;
             _net.S2C.OnItem_StopViewingObjectContents += OnItem_StopViewingObjectContents;
+
+            _net.S2C.OnLogin_PlayerDescription += OnLogin_PlayerDescription;
         }
 
         #region public API
@@ -223,22 +225,39 @@ namespace Core.AC.API {
         private void OnInventory_PickupEvent(object? sender, Inventory_PickupEvent e) {
             _log.LogError($"Inventory_PickupEvent: 0x{e.ObjectId:X8} ({Get(e.ObjectId)})");
         }
+
+        private void OnLogin_PlayerDescription(object? sender, Login_PlayerDescription e) {
+            foreach (var profile in e.ContentProfile) {
+                var container = CreateContainer(profile.ObjectId, profile.ContainerType);
+                container.AddOrUpdateValue(PropertyInstanceId.Container, CoreACPlugin.Instance.Game.Character.Id);
+                CoreACPlugin.Instance.Game.Character.Containers.Add(container);
+            }
+        }
         #endregion // Event Handlers
 
-        private WorldObject GetOrCreateWorldObject(uint objectId, ObjDesc objectDescription, PhysicsDesc physicsDescription, PublicWeenieDesc weenieDescription) {
+        internal WorldObject GetOrCreateWorldObject(uint objectId, ObjDesc objectDescription, PhysicsDesc physicsDescription, PublicWeenieDesc weenieDescription) {
             if (Weenies.TryGetValue(objectId, out WorldObject? weenie)) {
                 weenie.LastAccessTime = DateTime.UtcNow;
             }
 
             if (weenie is null) {
                 weenie = CreateWorldObject(objectId, weenieDescription);
-                Weenies.TryAdd(objectId, weenie);
             }
 
             return weenie;
         }
 
-        private WorldObject CreateWorldObject(uint objectId, PublicWeenieDesc weenieDescription) {
+        internal Container CreateContainer(uint objectId, ContainerProperties containerProperties) {
+            var container = new Container();
+            container.Id = objectId;
+            container.ContainerType = containerProperties;
+            container.LastAccessTime = DateTime.UtcNow;
+            container.CreatedAt = DateTime.UtcNow;
+            Weenies.TryAdd(objectId, container);
+            return container;
+        }
+
+        internal WorldObject CreateWorldObject(uint objectId, PublicWeenieDesc weenieDescription) {
             var objectClass = WorldObject.GetObjectClass(weenieDescription.Type, weenieDescription.Behavior, weenieDescription.Header);
             WorldObject? wobject = null;
 
@@ -261,6 +280,8 @@ namespace Core.AC.API {
             wobject.Id = objectId;
             wobject.LastAccessTime = DateTime.UtcNow;
             wobject.CreatedAt = DateTime.UtcNow;
+
+            Weenies.TryAdd(objectId, wobject);
 
             return wobject;
         }
