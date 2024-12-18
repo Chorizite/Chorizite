@@ -109,6 +109,16 @@ namespace Core.AC.API {
         public Dictionary<PropertyPosition, Position> PositionValues { get; set; } = [];
 
         /// <summary>
+        /// A list of spells this item casts.
+        /// </summary>
+        public List<LayeredSpellId> SpellIds { get; set; } = [];
+
+        /// <summary>
+        /// A list of active enchantments on this item.
+        /// </summary>
+        public List<LayeredSpellId> EnchantmentIds { get; set; } = [];
+
+        /// <summary>
         /// Type of item this is
         /// </summary>
         [JsonIgnore]
@@ -154,6 +164,16 @@ namespace Core.AC.API {
                 return _objectClass;
             }
         }
+
+        /// <summary>
+        /// True if this object is stackable
+        /// </summary>b
+        public bool IsStackable => Value(PropertyInt.MaxStackSize) != 0;
+
+        /// <summary>
+        /// True if this object is attuned to your character. (Can't be dropped / given to others)
+        /// </summary>
+        public bool IsAttuned => Value(PropertyInt.Attuned) != 0;
         #region Public API
 
 
@@ -668,6 +688,23 @@ namespace Core.AC.API {
 
             if ((flag1 & WeenieHeaderFlag.UiEffects) != 0)
                 AddOrUpdateValue(PropertyDataId.IconOverlaySecondary, (uint)wdesc.Effects);
+        }
+
+        internal void UpdateSpells(List<LayeredSpellId> spellBook) {
+            if (spellBook == null || spellBook == null)
+                return;
+
+            SpellIds.Clear();
+            EnchantmentIds.Clear();
+
+            foreach (var spellId in spellBook) {
+                if (spellId.Layer == 0x8000) {
+                    EnchantmentIds.Add(spellId);
+                }
+                else {
+                    SpellIds.Add(spellId);
+                }
+            }
         }
 
         public override string ToString() {

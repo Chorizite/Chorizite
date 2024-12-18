@@ -500,3 +500,8 @@ input[type="text"], input[type="password"] {
 	display: inline-block;
 	padding: 6px;
 }
+
+input[type="text"]:disabled, input[type="password"]:disabled {
+	font-effect: shadow(1px 1px black);
+	color: #999;
+}

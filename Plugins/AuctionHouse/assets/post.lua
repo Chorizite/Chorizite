@@ -1,7 +1,10 @@
 local rx = require('rx')
 local backend = require('backend')
+local ac = require('ac')
 local ChatType = CS.Chorizite.Core.Backend.ChatType
 local PacketWriter = CS.Chorizite.Core.Backend.PacketWriter
+local PropertyInt = CS.Chorizite.Common.Enums.PropertyInt
+local ObjectClass = CS.Chorizite.Common.Enums.ObjectClass
 
 local state = rx:CreateState({
   selectedId = 0,
@@ -13,7 +16,24 @@ local state = rx:CreateState({
   duration = 1,
   isDragging = false,
   allowDragging = true,
-  SendCustomPacket = function(self)
+  dragError = "",
+  canStack = false,
+  SelectItem = function(self, objectId)
+    local wobject = ac.World:Get(objectId)
+    self.canStack = wobject.IsStackable
+    if not self.canStack then
+      self.stackSize = 1
+      self.stackCount = 1
+    else
+      self.stackSize = wobject:Value(PropertyInt.StackSize)
+    end
+  end,
+  SetMaximumStackSize = function(self)
+    local wobject = ac.World:Get(self.selectedId)
+    if wobject == nil or not wobject.IsStackable then return end
+    self.stackSize = math.min(wobject:Value(PropertyInt.StackSize), wobject:Value(PropertyInt.MaxStackSize))
+  end,
+  PostItem = function(self)
     if self.selectedId == 0 then
       backend:AddChatText("Select an item first!", ChatType.HelpChannel)
       return
@@ -28,17 +48,6 @@ local state = rx:CreateState({
     writer:Dispose()
   end
 })
-
-local queryAuctionListings = function () 
-  local writer = PacketWriter()
-  writer:WriteUInt32(0xF7CA) -- opcode
-  backend:SendProtoUIMessage(writer)
-  writer:Dispose()
-  state.loaded = true;
-end
-
--- C2S message
-queryAuctionListings()
 
 local PostItemView = function(state)
   return rx:Div({ class="post flex" }, {
@@ -59,13 +68,29 @@ local PostItemView = function(state)
             state.selectedId = evt.Params.ObjectId
             state.selectedIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
             state.selectedName = evt.Params.ObjectName
+            state:SelectItem(state.selectedId)
           end,
           ondragover = function(evt)
             state.isDragging = true
             state.allowDragging = evt.Params.IsSpell == false
+            state.dragError = ""
+
+            if not evt.Params.IsSpell then
+              local wobject = ac.World:Get(evt.Params.ObjectId)
+              if wobject.ObjectClass == ObjectClass.Container then
+                state.allowDragging = false
+                state.dragError = "Containers are not allowed on the Auction House"
+                return
+              elseif wobject.IsBonded then
+                state.allowDragging = false
+                state.dragError = "Can't sell bonded items on the Auction House"
+                return
+              end
+            end
           end,
           ondragout = function(evt)
             state.isDragging = false
+            state.dragError = ""
           end
         }, {
           rx:Div({ class = "icon-stack" }, {
@@ -81,14 +106,21 @@ local PostItemView = function(state)
 
       rx:H4("Stack Size"),
       rx:Div({ class = "flex" }, {
-        rx:Input({ type = "text", id="post-item-stack-size", value = state.stackSize }),
-        rx:Button({ class = "secondary" }, "Maximum"),
+        rx:Input({ type = "text", id="post-item-stack-size", value = state.stackSize, disabled = not state.canStack }),
+        rx:Button({
+          class = "secondary",
+          disabled = not state.canStack,
+          onclick = function(evt) state:SetMaximumStackSize() end
+        }, "Maximum"),
       }),
 
       rx:H4("Number of Stacks"),
       rx:Div({ class = "flex" }, {
-        rx:Input({ type = "text", id="post-item-stacks", value = state.stackCount }),
-        rx:Button({ class = "secondary" }, "Maximum"),
+        rx:Input({ type = "text", id="post-item-stacks", value = state.stackCount, disabled = not state.canStack }),
+        rx:Button({
+          class = "secondary",
+          disabled = not state.canStack
+        }, "Maximum"),
       }),
 
       rx:H4("Price"),
@@ -103,11 +135,16 @@ local PostItemView = function(state)
 
       rx:Button({
         class = "primary create-auction-button",
-        onclick = function(evt) state:SendCustomPacket() end
+        onclick = function(evt) state:PostItem() end
       }, "Create Auction")
     }),
 
-    rx:Div({ class="post-comparisons" }, "post comparison area....")
+    rx:Div({
+      class = {
+        ["post-comparisons"] = true,
+        ["has-error"] = #state.dragError > 0
+      }
+    }, (#state.dragError > 0 and state.dragError or "post comparison area...."))
   })
 end
 
