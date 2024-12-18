@@ -604,9 +604,7 @@ namespace Core.AC.API {
         }
         #endregion // Event Handlers
 
-
-
-        private void ApplyEnchantment(Chorizite.ACProtocol.Types.Enchantment enchantment) {
+        internal void ApplyEnchantment(Chorizite.ACProtocol.Types.Enchantment enchantment) {
             if (enchantment.Id.Id == VITAE_SPELL_ID) {
                 Vitae = enchantment.StatMod.Value;
                 return;
@@ -634,7 +632,7 @@ namespace Core.AC.API {
             }
         }
 
-        private void RemoveEnchantment(LayeredSpellId layeredSpellId) {
+        internal void RemoveEnchantment(LayeredSpellId layeredSpellId) {
             if (layeredSpellId.Id == VITAE_SPELL_ID) {
                 Vitae = 1;
                 return;
@@ -649,7 +647,7 @@ namespace Core.AC.API {
             }
         }
 
-        private SkillInfo AddOrCreateSkill(SkillId key) {
+        internal SkillInfo AddOrCreateSkill(SkillId key) {
             if (!Skills.TryGetValue(key, out var skill)) {
                 skill = new SkillInfo(key, this);
                 Skills.Add(key, skill);
@@ -658,7 +656,7 @@ namespace Core.AC.API {
             return skill;
         }
 
-        private void UpdateSkill(SkillId key, Skill value) {
+        internal void UpdateSkill(SkillId key, Skill value) {
             if (value == null)
                 return;
             SkillInfo skill = AddOrCreateSkill(key);
@@ -673,7 +671,7 @@ namespace Core.AC.API {
             skill.Experience = value.ExperienceSpent;
         }
 
-        private AttributeInfo AddOrCreateAttribute(AttributeId key) {
+        internal AttributeInfo AddOrCreateAttribute(AttributeId key) {
             if (!Attributes.TryGetValue(key, out var attribute)) {
                 attribute = new AttributeInfo(key, this);
                 Attributes.Add(key, attribute);
@@ -682,7 +680,7 @@ namespace Core.AC.API {
             return attribute;
         }
 
-        private void UpdateAttribute(AttributeId key, Chorizite.ACProtocol.Types.AttributeInfo value) {
+        internal void UpdateAttribute(AttributeId key, Chorizite.ACProtocol.Types.AttributeInfo value) {
             var attribute = AddOrCreateAttribute(key);
             attribute.InnatePoints = value.InnatePoints;
             attribute.PointsRaised = value.PointsRaised;
@@ -748,6 +746,13 @@ namespace Core.AC.API {
         internal void UpdateSkillPointsRaised(SkillId key, uint value) {
             SkillInfo skill = AddOrCreateSkill(key);
             skill.PointsRaised = value;
+        }
+
+        internal void SetWielded(WorldObject weenie, EquipMask slot) {
+            weenie.AddOrUpdateValue(PropertyInstanceId.Wielder, CoreACPlugin.Instance.Game.Character.Id);
+            weenie.AddOrUpdateValue(PropertyInt.CurrentWieldedLocation, (int)slot);
+
+            //Equipment.Add(weenie);
         }
 
         private void Clear() {

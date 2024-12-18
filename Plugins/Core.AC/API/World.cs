@@ -82,6 +82,37 @@ namespace Core.AC.API {
             _net.S2C.OnItem_StopViewingObjectContents += OnItem_StopViewingObjectContents;
 
             _net.S2C.OnLogin_PlayerDescription += OnLogin_PlayerDescription;
+
+            _net.S2C.OnItem_SetAppraiseInfo += OnItem_SetAppraiseInfo;
+            _net.S2C.OnItem_SetState += OnItem_SetState;
+            _net.S2C.OnItem_UpdateObject += OnItem_UpdateObject;
+            _net.S2C.OnItem_UpdateStackSize += OnItem_UpdateStackSize;
+            _net.S2C.OnItem_WearItem += OnItem_WearItem;
+            _net.S2C.OnItem_QueryItemManaResponse += OnItem_QueryItemManaResponse;
+
+            _net.S2C.OnQualities_RemoveBoolEvent += OnQualities_RemoveBoolEvent;
+            _net.S2C.OnQualities_RemoveDataIdEvent += OnQualities_RemoveDataIDEvent_S2C;
+            _net.S2C.OnQualities_RemoveFloatEvent += OnQualities_RemoveFloatEvent_S2C;
+            _net.S2C.OnQualities_RemoveInstanceIdEvent += OnQualities_RemoveInstanceIDEvent_S2C;
+            _net.S2C.OnQualities_RemoveInt64Event += OnQualities_RemoveInt64Event_S2C;
+            _net.S2C.OnQualities_RemoveIntEvent += OnQualities_RemoveIntEvent_S2C;
+            _net.S2C.OnQualities_RemovePositionEvent += OnQualities_RemovePositionEvent_S2C;
+            _net.S2C.OnQualities_RemoveStringEvent += OnQualities_RemoveStringEvent_S2C;
+            _net.S2C.OnQualities_UpdateAttribute2ndLevel += OnQualities_UpdateAttribute2ndLevel_S2C;
+            _net.S2C.OnQualities_UpdateAttribute2nd += OnQualities_UpdateAttribute2nd_S2C;
+            _net.S2C.OnQualities_UpdateAttributeLevel += OnQualities_UpdateAttributeLevel_S2C;
+            _net.S2C.OnQualities_UpdateAttribute += OnQualities_UpdateAttribute_S2C;
+            _net.S2C.OnQualities_UpdateBool += OnQualities_UpdateBool_S2C;
+            _net.S2C.OnQualities_UpdateDataId += OnQualities_UpdateDataID_S2C;
+            _net.S2C.OnQualities_UpdateFloat += OnQualities_UpdateFloat_S2C;
+            _net.S2C.OnQualities_UpdateInstanceId += OnQualities_UpdateInstanceID_S2C;
+            _net.S2C.OnQualities_UpdateInt64 += OnQualities_UpdateInt64_S2C;
+            _net.S2C.OnQualities_UpdateInt += OnQualities_UpdateInt_S2C;
+            _net.S2C.OnQualities_UpdatePosition += OnQualities_UpdatePosition_S2C;
+            _net.S2C.OnQualities_UpdateSkillAC += OnQualities_UpdateSkillAC_S2C;
+            _net.S2C.OnQualities_UpdateSkillLevel += OnQualities_UpdateSkillLevel_S2C;
+            _net.S2C.OnQualities_UpdateSkill += OnQualities_UpdateSkill_S2C;
+            _net.S2C.OnQualities_UpdateString += OnQualities_UpdateString_S2C;
         }
 
         #region public API
@@ -228,10 +259,289 @@ namespace Core.AC.API {
 
         private void OnLogin_PlayerDescription(object? sender, Login_PlayerDescription e) {
             foreach (var profile in e.ContentProfile) {
+                if (profile.ContainerType == ContainerProperties.None) {
+                    continue;
+                }
                 var container = CreateContainer(profile.ObjectId, profile.ContainerType);
                 container.AddOrUpdateValue(PropertyInstanceId.Container, CoreACPlugin.Instance.Game.Character.Id);
                 CoreACPlugin.Instance.Game.Character.Containers.Add(container);
             }
+        }
+
+        private void OnItem_SetAppraiseInfo(object? sender, Item_SetAppraiseInfo e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to Item_SetAppraiseInfo");
+                return;
+            }
+            weenie.UpdateStatsTable(e.BoolProperties);
+            weenie.UpdateStatsTable(e.FloatProperties);
+            weenie.UpdateStatsTable(e.Int64Properties);
+            weenie.UpdateStatsTable(e.IntProperties);
+            weenie.UpdateStatsTable(e.StringProperties);
+            weenie.UpdateStatsTable(e.DataIdProperties);
+            weenie.UpdateSpells(e.SpellBook);
+            weenie.LastAppraisalTime = DateTime.UtcNow;
+            weenie.HasAppraisalData = true;
+        }
+
+        private void OnItem_SetState(object? sender, Item_SetState e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to Item_SetState");
+                return;
+            }
+
+            weenie.AddOrUpdateValue(PropertyInt.PhysicsState, (int)e.NewState);
+        }
+
+        private void OnItem_UpdateObject(object? sender, Item_UpdateObject e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to Item_UpdateObject");
+                return;
+            }
+            weenie.UpdateWeenieDesc(e.WeenieDesc);
+            weenie.UpdateObjDesc(e.ObjectDesc);
+            weenie.UpdatePhysicsDesc(e.PhysicsDesc);
+            weenie.LastAccessTime = DateTime.UtcNow;
+        }
+
+        private void OnItem_UpdateStackSize(object? sender, Item_UpdateStackSize e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to Item_UpdateStackSize");
+                return;
+            }
+            weenie.AddOrUpdateValue(PropertyInt.StackSize, (int)e.Amount);
+            weenie.AddOrUpdateValue(PropertyInt.Value, (int)e.NewValue);
+        }
+
+        private void OnItem_WearItem(object? sender, Item_WearItem e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to Item_WearItem");
+                return;
+            }
+
+            MoveWeenie(weenie, null, 0);
+            CoreACPlugin.Instance.Game.Character.SetWielded(weenie, e.Slot);
+        }
+
+        private void OnItem_QueryItemManaResponse(object? sender, Item_QueryItemManaResponse e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to Item_QueryItemManaResponse");
+                return;
+            }
+            weenie.LastAccessTime = DateTime.UtcNow;
+        }
+
+        private void OnQualities_RemoveBoolEvent(object? sender, Qualities_RemoveBoolEvent e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemoveBoolEvent");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_RemoveDataIDEvent_S2C(object? sender, Qualities_RemoveDataIdEvent e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemoveDataIDEvent_S2C");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_RemoveFloatEvent_S2C(object? sender, Qualities_RemoveFloatEvent e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemoveFloatEvent_S2C");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_RemoveInstanceIDEvent_S2C(object? sender, Qualities_RemoveInstanceIdEvent e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemoveInstanceIDEvent_S2C");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_RemoveInt64Event_S2C(object? sender, Qualities_RemoveInt64Event e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemoveInt64Event_S2C");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_RemoveIntEvent_S2C(object? sender, Qualities_RemoveIntEvent e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemoveIntEvent_S2C");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_RemovePositionEvent_S2C(object? sender, Qualities_RemovePositionEvent e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemovePositionEvent_S2C");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_RemoveStringEvent_S2C(object? sender, Qualities_RemoveStringEvent e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_RemoveStringEvent_S2C");
+                return;
+            }
+            weenie.RemoveValue(e.Type);
+        }
+
+        private void OnQualities_UpdateAttribute2ndLevel_S2C(object? sender, Qualities_UpdateAttribute2ndLevel e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null || weenie is not Character characater) {
+                _log.LogWarning($"Could not find character weenie 0x{e.ObjectId:X8} ({weenie}) to OnQualities_UpdateAttribute2ndLevel_S2C");
+                return;
+            }
+            characater.UpdateVitalCurrent((VitalId)e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateAttribute2nd_S2C(object? sender, Qualities_UpdateAttribute2nd e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null || weenie is not Character characater) {
+                _log.LogWarning($"Could not find character weenie 0x{e.ObjectId:X8} ({weenie}) to OnQualities_UpdateAttribute2nd_S2C");
+                return;
+            }
+            characater.UpdateVital(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateAttributeLevel_S2C(object? sender, Qualities_UpdateAttributeLevel e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null || weenie is not Character characater) {
+                _log.LogWarning($"Could not find character weenie 0x{e.ObjectId:X8} ({weenie}) to OnQualities_UpdateAttributeLevel_S2C");
+                return;
+            }
+            characater.UpdateAttributePointsRaised(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateAttribute_S2C(object? sender, Qualities_UpdateAttribute e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null || weenie is not Character characater) {
+                _log.LogWarning($"Could not find character weenie 0x{e.ObjectId:X8} ({weenie}) to OnQualities_UpdateAttribute_S2C");
+                return;
+            }
+            characater.UpdateAttribute(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateBool_S2C(object? sender, Qualities_UpdateBool e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdateBool_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateDataID_S2C(object? sender, Qualities_UpdateDataId e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdateDataID_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateFloat_S2C(object? sender, Qualities_UpdateFloat e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdateFloat_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateInstanceID_S2C(object? sender, Qualities_UpdateInstanceId e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdateInstanceID_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateInt64_S2C(object? sender, Qualities_UpdateInt64 e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdateInt64_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateInt_S2C(object? sender, Qualities_UpdateInt e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdateInt_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdatePosition_S2C(object? sender, Qualities_UpdatePosition e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdatePosition_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateString_S2C(object? sender, Qualities_UpdateString e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null) {
+                _log.LogWarning($"Could not find weenie 0x{e.ObjectId:X8} to OnQualities_UpdateString_S2C");
+                return;
+            }
+            weenie.AddOrUpdateValue(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateSkillAC_S2C(object? sender, Qualities_UpdateSkillAC e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null || weenie is not Character character) {
+                _log.LogWarning($"Could not find character weenie 0x{e.ObjectId:X8} ({weenie}) to OnQualities_UpdateSkillAC_S2C");
+                return;
+            }
+            character.UpdateSkillTraining(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateSkillLevel_S2C(object? sender, Qualities_UpdateSkillLevel e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null || weenie is not Character character) {
+                _log.LogWarning($"Could not find character weenie 0x{e.ObjectId:X8} ({weenie}) to OnQualities_UpdateSkillLevel_S2C");
+                return;
+            }
+            character.UpdateSkillPointsRaised(e.Key, e.Value);
+        }
+
+        private void OnQualities_UpdateSkill_S2C(object? sender, Qualities_UpdateSkill e) {
+            var weenie = Get(e.ObjectId);
+            if (weenie is null || weenie is not Character character) {
+                _log.LogWarning($"Could not find character weenie 0x{e.ObjectId:X8} ({weenie}) to OnQualities_UpdateSkillLevel_S2C");
+                return;
+            }
+            character.UpdateSkill(e.Key, e.Value);
         }
         #endregion // Event Handlers
 
@@ -338,7 +648,50 @@ namespace Core.AC.API {
         }
 
         public void Dispose() {
+            _net.S2C.OnItem_CreateObject -= OnItem_CreateObject;
+            _net.S2C.OnItem_DeleteObject -= OnItem_DeleteObject;
+            _net.S2C.OnItem_ObjDescEvent -= OnItem_ObjDescEvent;
+            _net.S2C.OnItem_ParentEvent -= OnItem_ParentEvent;
+            _net.S2C.OnItem_ServerSaysContainId -= OnItem_ServerSaysContainId;
+            _net.S2C.OnItem_ServerSaysMoveItem -= OnItem_ServerSaysMoveItem;
+            _net.S2C.OnItem_ServerSaysRemove -= OnItem_ServerSaysRemove;
+            _net.S2C.OnInventory_PickupEvent -= OnInventory_PickupEvent;
 
+            _net.S2C.OnItem_OnViewContents -= OnItem_OnViewContents;
+            _net.S2C.OnItem_StopViewingObjectContents -= OnItem_StopViewingObjectContents;
+
+            _net.S2C.OnLogin_PlayerDescription -= OnLogin_PlayerDescription;
+
+            _net.S2C.OnItem_SetAppraiseInfo -= OnItem_SetAppraiseInfo;
+            _net.S2C.OnItem_SetState -= OnItem_SetState;
+            _net.S2C.OnItem_UpdateObject -= OnItem_UpdateObject;
+            _net.S2C.OnItem_UpdateStackSize -= OnItem_UpdateStackSize;
+            _net.S2C.OnItem_WearItem -= OnItem_WearItem;
+            _net.S2C.OnItem_QueryItemManaResponse -= OnItem_QueryItemManaResponse;
+
+            _net.S2C.OnQualities_RemoveBoolEvent -= OnQualities_RemoveBoolEvent;
+            _net.S2C.OnQualities_RemoveDataIdEvent -= OnQualities_RemoveDataIDEvent_S2C;
+            _net.S2C.OnQualities_RemoveFloatEvent -= OnQualities_RemoveFloatEvent_S2C;
+            _net.S2C.OnQualities_RemoveInstanceIdEvent -= OnQualities_RemoveInstanceIDEvent_S2C;
+            _net.S2C.OnQualities_RemoveInt64Event -= OnQualities_RemoveInt64Event_S2C;
+            _net.S2C.OnQualities_RemoveIntEvent -= OnQualities_RemoveIntEvent_S2C;
+            _net.S2C.OnQualities_RemovePositionEvent -= OnQualities_RemovePositionEvent_S2C;
+            _net.S2C.OnQualities_RemoveStringEvent -= OnQualities_RemoveStringEvent_S2C;
+            _net.S2C.OnQualities_UpdateAttribute2ndLevel -= OnQualities_UpdateAttribute2ndLevel_S2C;
+            _net.S2C.OnQualities_UpdateAttribute2nd -= OnQualities_UpdateAttribute2nd_S2C;
+            _net.S2C.OnQualities_UpdateAttributeLevel -= OnQualities_UpdateAttributeLevel_S2C;
+            _net.S2C.OnQualities_UpdateAttribute -= OnQualities_UpdateAttribute_S2C;
+            _net.S2C.OnQualities_UpdateBool -= OnQualities_UpdateBool_S2C;
+            _net.S2C.OnQualities_UpdateDataId -= OnQualities_UpdateDataID_S2C;
+            _net.S2C.OnQualities_UpdateFloat -= OnQualities_UpdateFloat_S2C;
+            _net.S2C.OnQualities_UpdateInstanceId -= OnQualities_UpdateInstanceID_S2C;
+            _net.S2C.OnQualities_UpdateInt64 -= OnQualities_UpdateInt64_S2C;
+            _net.S2C.OnQualities_UpdateInt -= OnQualities_UpdateInt_S2C;
+            _net.S2C.OnQualities_UpdatePosition -= OnQualities_UpdatePosition_S2C;
+            _net.S2C.OnQualities_UpdateSkillAC -= OnQualities_UpdateSkillAC_S2C;
+            _net.S2C.OnQualities_UpdateSkillLevel -= OnQualities_UpdateSkillLevel_S2C;
+            _net.S2C.OnQualities_UpdateSkill -= OnQualities_UpdateSkill_S2C;
+            _net.S2C.OnQualities_UpdateString -= OnQualities_UpdateString_S2C;
         }
     }
 }

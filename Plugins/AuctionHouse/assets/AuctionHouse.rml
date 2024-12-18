@@ -47,6 +47,10 @@
         min-width: 400px;
       }
 
+      .post-comparisons.has-error {
+        color: red;
+      }
+
       .post-area .item {
         margin-right: 10px;
       }
