@@ -13,9 +13,31 @@ namespace Core.AC.API {
     [JsonDerivedType(typeof(Character), typeDiscriminator: "Character")]
     [JsonDerivedType(typeof(Container), typeDiscriminator: "Container")]
     [JsonDerivedType(typeof(Creature), typeDiscriminator: "Creature")]
-    [JsonDerivedType(typeof(Equipment), typeDiscriminator: "Equipment")]
+    [JsonDerivedType(typeof(Equippable), typeDiscriminator: "Equipment")]
     [JsonDerivedType(typeof(NPC), typeDiscriminator: "NPC")]
     [JsonDerivedType(typeof(Player), typeDiscriminator: "Player")]
+    [JsonDerivedType(typeof(Vendor), typeDiscriminator: "Vendor")]
+    [JsonDerivedType(typeof(Door), typeDiscriminator: "Door")]
+    [JsonDerivedType(typeof(MeleeWeapon), typeDiscriminator: "MeleeWeapon")]
+    [JsonDerivedType(typeof(MissileWeapon), typeDiscriminator: "MissileWeapon")]
+    [JsonDerivedType(typeof(Wand), typeDiscriminator: "Wand")]
+    [JsonDerivedType(typeof(Ust), typeDiscriminator: "Ust")]
+    [JsonDerivedType(typeof(Portal), typeDiscriminator: "Portal")]
+    [JsonDerivedType(typeof(Clothing), typeDiscriminator: "Clothing")]
+    [JsonDerivedType(typeof(Armor), typeDiscriminator: "Armor")]
+    [JsonDerivedType(typeof(Gem), typeDiscriminator: "Gem")]
+    [JsonDerivedType(typeof(SpellComponent), typeDiscriminator: "SpellComponent")]
+    [JsonDerivedType(typeof(Monster), typeDiscriminator: "Monster")]
+    [JsonDerivedType(typeof(Bindstone), typeDiscriminator: "Bindstone")]
+    [JsonDerivedType(typeof(Static), typeDiscriminator: "Static")]
+    [JsonDerivedType(typeof(Jewelry), typeDiscriminator: "Jewelry")]
+    [JsonDerivedType(typeof(Food), typeDiscriminator: "Food")]
+    [JsonDerivedType(typeof(Key), typeDiscriminator: "Key")]
+    [JsonDerivedType(typeof(TradeNote), typeDiscriminator: "TradeNote")]
+    [JsonDerivedType(typeof(ManaStone), typeDiscriminator: "ManaStone")]
+    [JsonDerivedType(typeof(Corpse), typeDiscriminator: "Corpse")]
+    [JsonDerivedType(typeof(Scroll), typeDiscriminator: "Scroll")]
+    [JsonDerivedType(typeof(Foci), typeDiscriminator: "Foci")]
     public class WorldObject {
         private ObjectClass _objectClass;
 
@@ -28,24 +50,6 @@ namespace Core.AC.API {
         /// Weenie ClassId
         /// </summary>
         public uint ClassId { get; set; }
-
-        /// <summary>
-        /// The parent container, if any
-        /// </summary>
-        [JsonIgnore]
-        public Container? ParentContainer => CoreACPlugin.Instance.Game.World.Get(Value(PropertyInstanceId.Container)) as Container;
-
-        /// <summary>
-        /// Icon effects, like border highlights
-        /// </summary>
-        [JsonIgnore]
-        public UiEffects UIEffects => (UiEffects)Value(PropertyDataId.IconOverlaySecondary);
-
-        /// <summary>
-        /// Burden
-        /// </summary>
-        [JsonIgnore]
-        public int Burden => Value(PropertyInt.EncumbranceVal);
 
         /// <summary>
         /// The name of this weenie object.
@@ -109,30 +113,15 @@ namespace Core.AC.API {
         public Dictionary<PropertyPosition, Position> PositionValues { get; set; } = [];
 
         /// <summary>
-        /// A list of spells this item casts.
-        /// </summary>
-        public List<LayeredSpellId> SpellIds { get; set; } = [];
-
-        /// <summary>
-        /// A list of active enchantments on this item.
-        /// </summary>
-        public List<LayeredSpellId> EnchantmentIds { get; set; } = [];
-
-        /// <summary>
         /// Type of item this is
         /// </summary>
         [JsonIgnore]
         public ItemType ItemType => (ItemType)Value(PropertyInt.ItemType);
 
         /// <summary>
-        /// Object description
+        /// Object description flags
         /// </summary>
         public ObjectDescriptionFlag Behavior { get; set; }
-
-        /// <summary>
-        /// The id of the spell this item casts, if any
-        /// </summary>
-        public uint SpellId { get; set; }
         
         /// <summary>
         /// Object description that was used to create this weenie
@@ -164,16 +153,6 @@ namespace Core.AC.API {
                 return _objectClass;
             }
         }
-
-        /// <summary>
-        /// True if this object is stackable
-        /// </summary>
-        public bool IsStackable => Value(PropertyInt.MaxStackSize, 1) != 1;
-
-        /// <summary>
-        /// True if this object is attuned to your character. (Can't be dropped / given to others)
-        /// </summary>
-        public bool IsAttuned => Value(PropertyInt.Attuned) != 0;
         #region Public API
 
 
@@ -391,6 +370,7 @@ namespace Core.AC.API {
             else if (itemType.HasFlag(ItemType.CraftFletchingIntermediate)) objectClass = ObjectClass.CraftedFletching;
             else if (itemType.HasFlag(ItemType.TinkeringTool)) objectClass = ObjectClass.Ust;
             else if (itemType.HasFlag(ItemType.TinkeringMaterial)) objectClass = ObjectClass.Salvage;
+            else if (itemType.HasFlag(ItemType.Key)) objectClass = ObjectClass.Key;
 
             if (objDescFlags.HasFlag(ObjectDescriptionFlag.Player)) objectClass = ObjectClass.Player;
             else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Vendor)) objectClass = ObjectClass.Vendor;
@@ -403,11 +383,12 @@ namespace Core.AC.API {
             else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Portal)) objectClass = ObjectClass.Portal;
             else if (objDescFlags.HasFlag(ObjectDescriptionFlag.RequiresPackSlot)) objectClass = ObjectClass.Foci;
             else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Openable)) objectClass = ObjectClass.Container;
+            else if (objDescFlags.HasFlag(ObjectDescriptionFlag.BindStone)) objectClass = ObjectClass.Bindstone;
 
             if (objectClass == ObjectClass.Unknown && itemType.HasFlag(ItemType.Writable) && objDescFlags.HasFlag(ObjectDescriptionFlag.Book)) {
                 if (objDescFlags.HasFlag(ObjectDescriptionFlag.Inscribable)) objectClass = ObjectClass.Journal;
                 else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Stuck)) objectClass = ObjectClass.Sign;
-                else if (objDescFlags.HasFlag(ObjectDescriptionFlag.Openable)) objectClass = ObjectClass.Book;
+                else objectClass = ObjectClass.Book;
             }
 
             if (itemType.HasFlag(ItemType.Writable) && createFlags.HasFlag(WeenieHeaderFlag.Spell)) objectClass = ObjectClass.Scroll;
@@ -415,6 +396,12 @@ namespace Core.AC.API {
             if (objectClass == ObjectClass.Monster) {
                 if (!objDescFlags.HasFlag(ObjectDescriptionFlag.Attackable)) objectClass = ObjectClass.Npc;
                 if (objDescFlags.HasFlag(ObjectDescriptionFlag.IncludesSecondHeader)) objectClass = ObjectClass.Npc;
+            }
+
+            if (objectClass == ObjectClass.Misc || objectClass == ObjectClass.Unknown) {
+                if (objDescFlags.HasFlag(ObjectDescriptionFlag.Stuck)) {
+                    objectClass = ObjectClass.Static;
+                }
             }
 
             return objectClass;
@@ -576,9 +563,9 @@ namespace Core.AC.API {
 
             ClassId = wdesc.WeenieClassId;
             Behavior = wdesc.Behavior;
-            SpellId = wdesc.SpellId;
+            Value(PropertyDataId.Spell, wdesc.SpellId);
             AddOrUpdateValue(PropertyString.Name, wdesc.Name);
-            AddOrUpdateValue(PropertyDataId.Icon, wdesc.Icon);
+            AddOrUpdateValue(PropertyDataId.Icon, 0x06000000 | wdesc.Icon);
             AddOrUpdateValue(PropertyInt.ItemType, (int)wdesc.Type);
 
             var flag1 = wdesc.Header;
@@ -612,10 +599,10 @@ namespace Core.AC.API {
                 AddOrUpdateValue(PropertyInt.HookItemType, (int)wdesc.HookItemTypes);
 
             if ((flag1 & WeenieHeaderFlag.IconOverlay) != 0)
-                AddOrUpdateValue(PropertyDataId.IconOverlay, wdesc.IconOverlay);
+                AddOrUpdateValue(PropertyDataId.IconOverlay, 0x06000000 | wdesc.IconOverlay);
 
             if ((flag2 & WeenieHeaderFlag2.IconUnderlay) != 0)
-                AddOrUpdateValue(PropertyDataId.IconUnderlay, wdesc.IconUnderlay);
+                AddOrUpdateValue(PropertyDataId.IconUnderlay, 0x06000000 | wdesc.IconUnderlay);
 
             if ((flag1 & WeenieHeaderFlag.ItemsCapacity) != 0)
                 AddOrUpdateValue(PropertyInt.ItemsCapacity, wdesc.ItemsCapacity);
@@ -688,23 +675,6 @@ namespace Core.AC.API {
 
             if ((flag1 & WeenieHeaderFlag.UiEffects) != 0)
                 AddOrUpdateValue(PropertyDataId.IconOverlaySecondary, (uint)wdesc.Effects);
-        }
-
-        internal void UpdateSpells(List<LayeredSpellId> spellBook) {
-            if (spellBook == null || spellBook == null)
-                return;
-
-            SpellIds.Clear();
-            EnchantmentIds.Clear();
-
-            foreach (var spellId in spellBook) {
-                if (spellId.Layer == 0x8000) {
-                    EnchantmentIds.Add(spellId);
-                }
-                else {
-                    SpellIds.Add(spellId);
-                }
-            }
         }
 
         public override string ToString() {

@@ -57,6 +57,21 @@ namespace Chorizite.Loader.Standalone {
             }
         }
 
+        public uint SelectedObjectId {
+            get {
+                if (GameScreen != (int)UIMode.GamePlayUI) {
+                    return 0;
+                }
+                return SmartBox.smartbox[0]->target_object_id;
+            }
+            set {
+                if (GameScreen != (int)UIMode.GamePlayUI) {
+                    return;
+                }
+                ACCWeenieObject.SetSelectedObject(value, 1);
+            }
+        }
+
         public override event EventHandler<LogMessageEventArgs>? OnLogMessage {
             add { _OnLogMessage.Subscribe(value); }
             remove { _OnLogMessage.Unsubscribe(value); }
@@ -73,57 +88,63 @@ namespace Chorizite.Loader.Standalone {
         public override ChoriziteEnvironment Environment => ChoriziteEnvironment.Client;
 
         private readonly WeakEvent<PacketDataEventArgs> _OnC2SData = new WeakEvent<PacketDataEventArgs>();
-        public event EventHandler<PacketDataEventArgs>? OnC2SData {
+        public event EventHandler<PacketDataEventArgs> OnC2SData {
             add { _OnC2SData.Subscribe(value); }
             remove { _OnC2SData.Unsubscribe(value); }
         }
 
         private readonly WeakEvent<PacketDataEventArgs> _OnS2CData = new WeakEvent<PacketDataEventArgs>();
-        public event EventHandler<PacketDataEventArgs>? OnS2CData {
+        public event EventHandler<PacketDataEventArgs> OnS2CData {
             add { _OnS2CData.Subscribe(value); }
             remove { _OnS2CData.Unsubscribe(value); }
         }
 
         private readonly WeakEvent<ChatInputEventArgs> _OnChatInput = new();
-        public event EventHandler<ChatInputEventArgs>? OnChatInput {
+        public event EventHandler<ChatInputEventArgs> OnChatInput {
             add { _OnChatInput.Subscribe(value); }
             remove { _OnChatInput.Unsubscribe(value); }
         }
 
         internal readonly WeakEvent<ChatTextAddedEventArgs> _OnChatTextAdded = new();
-        public event EventHandler<ChatTextAddedEventArgs>? OnChatTextAdded {
+        public event EventHandler<ChatTextAddedEventArgs> OnChatTextAdded {
             add { _OnChatTextAdded.Subscribe(value); }
             remove { _OnChatTextAdded.Unsubscribe(value); }
         }
 
         internal readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
-        public event EventHandler<EventArgs>? OnScreenChanged {
+        public event EventHandler<EventArgs> OnScreenChanged {
             add { _OnScreenChanged.Subscribe(value); }
             remove { _OnScreenChanged.Unsubscribe(value); }
         }
 
         private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragStart = new WeakEvent<GameObjectDragDropEventArgs>();
-        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragStart {
+        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragStart {
             add { _OnGameObjectDragStart.Subscribe(value); }
             remove { _OnGameObjectDragStart.Unsubscribe(value); }
         }
 
         private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragEnd = new WeakEvent<GameObjectDragDropEventArgs>();
-        public event EventHandler<GameObjectDragDropEventArgs>? OnGameObjectDragEnd {
+        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragEnd {
             add { _OnGameObjectDragEnd.Subscribe(value); }
             remove { _OnGameObjectDragEnd.Unsubscribe(value); }
         }
 
         private readonly WeakEvent<ShowTooltipEventArgs> _OnShowTooltip = new WeakEvent<ShowTooltipEventArgs>();
-        public event EventHandler<ShowTooltipEventArgs>? OnShowTooltip {
+        public event EventHandler<ShowTooltipEventArgs> OnShowTooltip {
             add { _OnShowTooltip.Subscribe(value); }
             remove { _OnShowTooltip.Unsubscribe(value); }
         }
 
-        private readonly WeakEvent<EventArgs> _OnHideTooltip = new WeakEvent<EventArgs>();
-        public event EventHandler<EventArgs>? OnHideTooltip {
+        private readonly WeakEvent<EventArgs> _OnHideTooltip = new();
+        public event EventHandler<EventArgs> OnHideTooltip {
             add { _OnHideTooltip.Subscribe(value); }
             remove { _OnHideTooltip.Unsubscribe(value); }
+        }
+
+        private readonly WeakEvent<ObjectSelectedEventArgs> _OnObjectSelected = new();
+        public event EventHandler<ObjectSelectedEventArgs> OnObjectSelected {
+            add { _OnObjectSelected.Subscribe(value); }
+            remove { _OnObjectSelected.Unsubscribe(value); }
         }
 
         public static IChoriziteBackend Create(IContainer container) {
@@ -286,6 +307,18 @@ namespace Chorizite.Loader.Standalone {
             SendProtoUIMessage(stream.ToArray());
         }
 
+        public System.Numerics.Vector4 GetUIElementPosition(uint uiElementId) {
+            var el = UIElementManager.s_pInstance->GetElement(uiElementId);
+            if (el is null) return new System.Numerics.Vector4();
+
+            int zlevel = 0;
+            var position = new Box2D();
+
+            el->GetCurrentPosition(&position, &zlevel);
+
+            return new System.Numerics.Vector4(position.m_x0, position.m_y0, position.m_x1, position.m_y1);
+        }
+
         public void Exit() {
             CleanupNet(*Client.m_instance);
             Cleanup(*Client.m_instance);
@@ -322,6 +355,10 @@ namespace Chorizite.Loader.Standalone {
 
         internal void HandleHideTooltip(EventArgs empty) {
             _OnHideTooltip?.Invoke(this, empty);
+        }
+
+        internal void HandleObjectSelected(ObjectSelectedEventArgs eventArgs) {
+            _OnObjectSelected?.Invoke(this, eventArgs);
         }
         #endregion // internal event callers
 

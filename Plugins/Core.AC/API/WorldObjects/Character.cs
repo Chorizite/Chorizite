@@ -14,7 +14,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace Core.AC.API {
-    public class Character : Player, IDisposable {
+    public class Character : Container, IDisposable {
         private readonly ILogger _log;
         private readonly NetworkParser _net;
         private readonly ushort VITAE_SPELL_ID = 666;
@@ -102,6 +102,12 @@ namespace Core.AC.API {
         /// </summary>
         [JsonIgnore]
         public Dictionary<LayeredSpellId, SharedCooldown> SharedCooldowns { get; set; } = [];
+
+        /// <summary>
+        /// The character's heritage
+        /// </summary>
+        [JsonIgnore]
+        public HeritageGroup Heritage => (HeritageGroup)Value(PropertyInt.HeritageGroup);
 
         #region Events
         /// <summary>
@@ -366,12 +372,6 @@ namespace Core.AC.API {
         }
         #endregion // Public API
 
-        private void OnCombat_HandlePlayerDeathEvent(object? sender, Combat_HandlePlayerDeathEvent e) {
-            if (e.KilledId == Id) {
-                _OnDeath?.Invoke(this, new DeathEventArgs(e.Message, e.KillerId));
-            }
-        }
-
         #region Event Handlers
         private void OnLogin_SendEnterWorld(object? sender, Login_SendEnterWorld e) {
             Id = e.CharacterId;
@@ -450,6 +450,12 @@ namespace Core.AC.API {
 
         private void OnLogin_LogOffCharacter(object? sender, Chorizite.ACProtocol.Messages.S2C.Login_LogOffCharacter e) {
             Clear();
+        }
+
+        private void OnCombat_HandlePlayerDeathEvent(object? sender, Combat_HandlePlayerDeathEvent e) {
+            if (e.KilledId == Id) {
+                _OnDeath?.Invoke(this, new DeathEventArgs(e.Message, e.KillerId));
+            }
         }
 
         private void OnItem_SetState(object? sender, Item_SetState e) {
@@ -649,7 +655,7 @@ namespace Core.AC.API {
 
         internal SkillInfo AddOrCreateSkill(SkillId key) {
             if (!Skills.TryGetValue(key, out var skill)) {
-                skill = new SkillInfo(key, this);
+                skill = new SkillInfo(key);
                 Skills.Add(key, skill);
             }
 
@@ -673,7 +679,7 @@ namespace Core.AC.API {
 
         internal AttributeInfo AddOrCreateAttribute(AttributeId key) {
             if (!Attributes.TryGetValue(key, out var attribute)) {
-                attribute = new AttributeInfo(key, this);
+                attribute = new AttributeInfo(key);
                 Attributes.Add(key, attribute);
             }
 
@@ -697,7 +703,7 @@ namespace Core.AC.API {
                 key -= 1;
 
             if (!Vitals.TryGetValue(key, out var vital)) {
-                vital = new VitalInfo(key, this);
+                vital = new VitalInfo(key);
                 Vitals.Add(key, vital);
             }
 

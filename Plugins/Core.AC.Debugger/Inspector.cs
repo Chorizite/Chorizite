@@ -505,7 +505,7 @@ namespace Core.AC.Debugger {
         internal static List<MemberInfo> GetAllFieldInfos(object toInspect) {
             if (toInspect == null)
                 return new List<MemberInfo>();
-            var items = toInspect.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            var items = toInspect.GetType().GetFields(BindingFlags.Public | BindingFlags.Instance)
                 //.Where(p => p.FieldType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() != typeof(EventHandler<>)) && ShouldRenderProp(p))
                 .Select(p => p as MemberInfo)
                 .ToList();
@@ -517,7 +517,7 @@ namespace Core.AC.Debugger {
         internal static List<MemberInfo> GetAllPropertyInfos(object toInspect) {
             if (toInspect == null)
                 return new List<MemberInfo>();
-            var items = toInspect.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            var items = toInspect.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Where(p => ShouldRenderProp(p)).Select(p => p as MemberInfo)
                 .ToList();
 

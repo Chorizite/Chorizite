@@ -49,6 +49,8 @@ namespace Chorizite.Common.Enums {
         Salvage,
         Ust,
         Services,
-        Scroll
+        Scroll,
+        Bindstone,
+        Static
     }
 }

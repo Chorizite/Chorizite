@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Core.AC.API {
     public class SkillInfo {
-        private WorldObject _weenie;
+        private Character character => CoreACPlugin.Instance.Game.Character;
         private SkillAdvancementClass _training = SkillAdvancementClass.Unusable;
         private SkillFormula _formula;
         private SkillBase _dat;
@@ -79,33 +79,30 @@ namespace Core.AC.API {
         [JsonIgnore]
         public int Base {
             get {
-                if (_weenie is Character character) {
-                    // logic from ACE
-                    var _base = (int)(InitLevel + PointsRaised);
+                // logic from ACE
+                var _base = (int)(InitLevel + PointsRaised);
 
-                    if (Training > SkillAdvancementClass.Unusable && Formula.UseFormula) {
-                        var attrBonus = character.Attributes[Formula.Attribute1].Base;
-                        if (Formula.Attribute2 != 0) {
-                            attrBonus += character.Attributes[Formula.Attribute2].Base;
-                        }
-
-                        _base += (int)Math.Round(((float)attrBonus / Formula.Divisor));
+                if (Training > SkillAdvancementClass.Unusable && Formula.UseFormula) {
+                    var attrBonus = character.Attributes[Formula.Attribute1].Base;
+                    if (Formula.Attribute2 != 0) {
+                        attrBonus += character.Attributes[Formula.Attribute2].Base;
                     }
 
-                    _base += character.Value(PropertyInt.LumAugAllSkills);
-
-                    if (MeleeSkills.Contains(Type))
-                        _base += character.Value(PropertyInt.AugmentationSkilledMelee) * 10;
-                    else if (MissileSkills.Contains(Type))
-                        _base += character.Value(PropertyInt.AugmentationSkilledMissile) * 10;
-                    else if (MagicSkills.Contains(Type))
-                        _base += character.Value(PropertyInt.AugmentationSkilledMagic) * 10;
-
-                    if (Training >= SkillAdvancementClass.Trained)
-                        _base += character.Value(PropertyInt.Enlightenment);
-                    return _base;
+                    _base += (int)Math.Round(((float)attrBonus / Formula.Divisor));
                 }
-                return 0;
+
+                _base += character.Value(PropertyInt.LumAugAllSkills);
+
+                if (MeleeSkills.Contains(Type))
+                    _base += character.Value(PropertyInt.AugmentationSkilledMelee) * 10;
+                else if (MissileSkills.Contains(Type))
+                    _base += character.Value(PropertyInt.AugmentationSkilledMissile) * 10;
+                else if (MagicSkills.Contains(Type))
+                    _base += character.Value(PropertyInt.AugmentationSkilledMagic) * 10;
+
+                if (Training >= SkillAdvancementClass.Trained)
+                    _base += character.Value(PropertyInt.Enlightenment);
+                return _base;
             }
         }
 
@@ -115,44 +112,40 @@ namespace Core.AC.API {
         [JsonIgnore]
         public int Current {
             get {
-                if (_weenie is Character character) {
-                    // logic from ACE
-                    var effectiveBase = (int)(InitLevel + PointsRaised);
-                    if (Training > SkillAdvancementClass.Unusable && Formula.UseFormula) {
-                        var attrBonus = character.Attributes[Formula.Attribute1].Current;
-                        if (Formula.Attribute2 != 0) {
-                            attrBonus += character.Attributes[Formula.Attribute2].Current;
-                        }
-
-                        effectiveBase += (int)Math.Round(((float)attrBonus / Formula.Divisor));
+                // logic from ACE
+                var effectiveBase = (int)(InitLevel + PointsRaised);
+                if (Training > SkillAdvancementClass.Unusable && Formula.UseFormula) {
+                    var attrBonus = character.Attributes[Formula.Attribute1].Current;
+                    if (Formula.Attribute2 != 0) {
+                        attrBonus += character.Attributes[Formula.Attribute2].Current;
                     }
 
-                    effectiveBase += character.Value(PropertyInt.LumAugAllSkills);
-
-                    if (MeleeSkills.Contains(Type))
-                        effectiveBase += character.Value(PropertyInt.AugmentationSkilledMelee) * 10;
-                    else if (MissileSkills.Contains(Type))
-                        effectiveBase += character.Value(PropertyInt.AugmentationSkilledMissile) * 10;
-                    else if (MagicSkills.Contains(Type))
-                        effectiveBase += character.Value(PropertyInt.AugmentationSkilledMagic) * 10;
-
-                    var multiplier = character.GetEnchantmentsMultiplierModifier(Type);
-                    var fTotal = effectiveBase * multiplier;
-
-                    if (character.Vitae < 1.0f) {
-                        fTotal *= character.Vitae;
-                    }
-
-                    fTotal += character.Value(PropertyInt.AugmentationJackOfAllTrades) * 5;
-
-                    if (Training == SkillAdvancementClass.Specialized)
-                        fTotal += character.Value(PropertyInt.LumAugSkilledSpec) * 2;
-
-                    var additives = character.GetEnchantmentsAdditiveModifier(Type);
-                    return (int)Math.Max(Math.Round(fTotal + additives), 0);
+                    effectiveBase += (int)Math.Round(((float)attrBonus / Formula.Divisor));
                 }
 
-                return 0;
+                effectiveBase += character.Value(PropertyInt.LumAugAllSkills);
+
+                if (MeleeSkills.Contains(Type))
+                    effectiveBase += character.Value(PropertyInt.AugmentationSkilledMelee) * 10;
+                else if (MissileSkills.Contains(Type))
+                    effectiveBase += character.Value(PropertyInt.AugmentationSkilledMissile) * 10;
+                else if (MagicSkills.Contains(Type))
+                    effectiveBase += character.Value(PropertyInt.AugmentationSkilledMagic) * 10;
+
+                var multiplier = character.GetEnchantmentsMultiplierModifier(Type);
+                var fTotal = effectiveBase * multiplier;
+
+                if (character.Vitae < 1.0f) {
+                    fTotal *= character.Vitae;
+                }
+
+                fTotal += character.Value(PropertyInt.AugmentationJackOfAllTrades) * 5;
+
+                if (Training == SkillAdvancementClass.Specialized)
+                    fTotal += character.Value(PropertyInt.LumAugSkilledSpec) * 2;
+
+                var additives = character.GetEnchantmentsAdditiveModifier(Type);
+                return (int)Math.Max(Math.Round(fTotal + additives), 0);
             }
         }
 
@@ -195,7 +188,7 @@ namespace Core.AC.API {
         protected SkillCG? HeritageSkill {
             get {
                 if (_heritageSkill is null) {
-                    var myHeritage = (HeritageGroup)_weenie.Value(PropertyInt.HeritageGroup, 0);
+                    var myHeritage = character.Heritage;
                     if (CoreACPlugin.Instance.Dat.Portal.CharGen?.HeritageGroups?.TryGetValue((uint)myHeritage, out var heritage) == true) {
                         _heritageSkill = heritage.Skills.FirstOrDefault(f => (SkillId)f.Id == Type);
                     }
@@ -213,13 +206,13 @@ namespace Core.AC.API {
         /// True if this skill can be lowered
         /// </summary>
         [JsonIgnore]
-        public bool CanLower => (_weenie is Character) && Training > MinTraining;
+        public bool CanLower => Training > MinTraining;
 
         /// <summary>
         /// True if this skill can be raised
         /// </summary>
         [JsonIgnore]
-        public bool CanRaise => (_weenie is Character) && Training < MaxTraining;
+        public bool CanRaise => Training < MaxTraining;
 
         [JsonIgnore]
         public int CreditsSpent {
@@ -236,9 +229,12 @@ namespace Core.AC.API {
         public SkillInfo() { }
 
 
-        internal SkillInfo(SkillId skillId, WorldObject weenie) {
+        internal SkillInfo(SkillId skillId) {
             Type = skillId;
-            _weenie = weenie;
+        }
+
+        public override string ToString() {
+            return $"[{Type} ({Training}) Base: {Base}, Current: {Current}]";
         }
 
         /// <summary>

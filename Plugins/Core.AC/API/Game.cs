@@ -79,6 +79,11 @@ namespace Core.AC.API {
         public World World { get; set; } = new();
 
         /// <summary>
+        /// Actions that can be taken by the client
+        /// </summary>
+        public Actions Actions { get; set; } = new();
+
+        /// <summary>
         /// Fired when client state changes. See <see cref="ClientState"/> for a list of valid states.
         /// </summary>
         public event EventHandler<GameStateChangedEventArgs> OnStateChanged {
