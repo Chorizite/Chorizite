@@ -167,7 +167,7 @@ namespace Core.AC.API {
 
         /// <summary>
         /// True if this object is stackable
-        /// </summary>b
+        /// </summary>
         public bool IsStackable => Value(PropertyInt.MaxStackSize, 1) != 1;
 
         /// <summary>

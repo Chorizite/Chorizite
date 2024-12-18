@@ -25,9 +25,7 @@ local state = rx:CreateState({
       self.stackSize = 1
       self.stackCount = 1
     else
-      self.stackSize = 1
-      self.stackCount = 1
-      -- self.stackSize = wobject:Value(PropertyInt.StackSize)
+      self.stackSize = wobject:Value(PropertyInt.StackSize)
     end
   end,
   SetMaximumStackSize = function(self)
