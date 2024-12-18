@@ -33,7 +33,7 @@ namespace Chorizite.Loader.Standalone {
 
         public static unsafe int Init(IntPtr a, int b) {
             try {
-                //*
+                /*
                 while (!System.Diagnostics.Debugger.IsAttached) {
                     System.Threading.Thread.Sleep(100);
                 }
