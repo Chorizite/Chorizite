@@ -22,7 +22,7 @@
         margin: 4dp 0 4dp 0;
       }
 
-      input[type="text"] {
+      .post input[type="text"] {
         width: 60px;
       }
 
@@ -105,6 +105,32 @@
       .post-area button.create-auction-button{
         margin: 6px 0 0 0;
       }
+
+      .auction-browse {
+        width: 800px;
+        padding: 1rem;
+	  }
+
+      .browse-header {
+        margin-bottom: 1rem;
+	  }
+
+      .browse-header h1 {
+		color: #eea300dd;
+        font-size: 1rem;
+		margin-bottom: 0.5rem;
+	  }
+
+      .browse-header p {
+        color: #ddd;
+	  }
+
+      .browse-search {
+        width: 700px;
+		margin-bottom: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+	  }
     </style>
     <script src="browse.lua"></script>
     <script src="post.lua"></script>

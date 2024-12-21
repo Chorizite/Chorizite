@@ -13,6 +13,7 @@ local ClientState = CS.Core.AC.API.ClientState
 
 local state = rx:CreateState({
 	items = { { ListingId = 1, Info = "Test" } },
+    searchTerm = "",
 	loading = true,
 })
 
@@ -36,7 +37,7 @@ local fetchAuctionListings = function ()
     backend:InvokeChat("/ah-list")
 end
 
-local onBrowseMount = function () 
+local onMount = function () 
 	print("BrowseMount")
 	Net.Messages:OnUnknownMessage('+', function(sender, evt)
 	  if OpCodeHandlers[evt.OpCode] then
@@ -48,11 +49,14 @@ local onBrowseMount = function ()
 end
 
 local BrowseHeader = function (state) 
-    print(state.loading)
-    return rx:Div({ class = "browse-header"},{
-        rx:Span("Id"),
-        rx:P("Info")
+    return rx:Div({ class = "browse-header"}, {
+        rx:H1("Auction Items"),
+        rx:P("Browse and buy unique items")
     })
+end
+
+local BrowseSearch = function (state) 
+    return rx:Input({ type = "text", placeholder = "Serach items", class = "browse-search", value = state.searchTerm })
 end
 
 local BrowseLoader = function () 
@@ -67,7 +71,6 @@ local BrowseItems = function(state)
     return rx:Ul(function()
         local ret = {}
         for i, item in ipairs(state.items) do
-            print(string.format("Item %d: Id=%d, Info=%s", i, item.Id, item.Info))
             table.insert(ret, rx:Li({ key = item.Id }, {
                 rx:P({
 					rx:Span(tostring(i) .. ". "),
@@ -81,10 +84,9 @@ end
 
 local BrowseAuctionView = function(state)
   print("Rendering BrowwseAuctionView")
-  print(state.loading)
-  print(#state.items)
-  return rx:Div({ onMount = function () onBrowseMount() end }, {
+  return rx:Div({ class = "auction-browse", onMount = function () onMount() end }, {
       BrowseHeader(state),
+      BrowseSearch(state),
       BrowseItems(state)
   })
 end
