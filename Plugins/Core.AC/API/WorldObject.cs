@@ -38,6 +38,7 @@ namespace Core.AC.API {
     [JsonDerivedType(typeof(Corpse), typeDiscriminator: "Corpse")]
     [JsonDerivedType(typeof(Scroll), typeDiscriminator: "Scroll")]
     [JsonDerivedType(typeof(Foci), typeDiscriminator: "Foci")]
+    [JsonDerivedType(typeof(Item), typeDiscriminator: "Item")]
     public class WorldObject {
         private ObjectClass _objectClass;
 

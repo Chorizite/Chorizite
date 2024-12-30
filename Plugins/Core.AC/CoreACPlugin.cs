@@ -45,7 +45,7 @@ namespace Core.AC {
         /// <summary>
         /// Client API entry point
         /// </summary>
-        public Game Game => _state.Game;
+        public Game Game => _state?.Game;
 
         /// <summary>
         /// The current <see cref="GameScreen"/> being shown

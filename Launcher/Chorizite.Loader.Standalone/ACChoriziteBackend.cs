@@ -326,39 +326,84 @@ namespace Chorizite.Loader.Standalone {
 
         #region internal event callers
         internal void HandleC2SPacketData(byte[] bytes) {
-            _OnC2SData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ClientToServer, bytes));
+            try {
+                _OnC2SData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ClientToServer, bytes));
+            }
+            catch (Exception ex) {
+                Log.LogError(ex, "Failed to handle C2S packet data");
+            }
         }
 
         internal void HandleS2CPacketData(byte[] bytes) {
-            _OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
+            try {
+                _OnS2CData?.Invoke(this, new PacketDataEventArgs(MessageDirection.ServerToClient, bytes));
+            }
+            catch (Exception ex) {
+                Log.LogError(ex, "Failed to handle S2C packet data");
+            }
         }
 
         internal void HandleChatTextAdded(ChatTextAddedEventArgs eventArgs) {
-            _OnChatTextAdded?.Invoke(this, eventArgs);
+            try {
+                _OnChatTextAdded?.Invoke(this, eventArgs);
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, "Error in OnChatTextAdded event handler");
+            }
         }
 
         internal void HandleChatTextInput(ChatInputEventArgs eventArgs) {
-            _OnChatInput?.Invoke(this, eventArgs);
+            try {
+                _OnChatInput?.Invoke(this, eventArgs);
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, "Error in OnChatInput event handler");
+            }
         }
 
         internal void HandleGameObjectDragStart(GameObjectDragDropEventArgs eventArgs) {
-            _OnGameObjectDragStart?.Invoke(this, eventArgs);
+            try {
+                _OnGameObjectDragStart?.Invoke(this, eventArgs);
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, "Error in OnGameObjectDragStart event handler");
+            }
         }
 
         internal void HandleGameObjectDragEnd(GameObjectDragDropEventArgs eventArgs) {
-            _OnGameObjectDragEnd?.Invoke(this, eventArgs);
+            try {
+                _OnGameObjectDragEnd?.Invoke(this, eventArgs);
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, "Error in OnGameObjectDragEnd event handler");
+            }
         }
 
         internal void HandleShowTooltip(ShowTooltipEventArgs showTooltipEventArgs) {
-            _OnShowTooltip?.Invoke(this, showTooltipEventArgs);
+            try {
+                _OnShowTooltip?.Invoke(this, showTooltipEventArgs);
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, "Error in OnShowTooltip event handler");
+            }
         }
 
         internal void HandleHideTooltip(EventArgs empty) {
-            _OnHideTooltip?.Invoke(this, empty);
+            try {
+                _OnHideTooltip?.Invoke(this, empty);
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, "Error in OnHideTooltip event handler");
+            }
         }
 
         internal void HandleObjectSelected(ObjectSelectedEventArgs eventArgs) {
-            _OnObjectSelected?.Invoke(this, eventArgs);
+            try {
+                _OnObjectSelected?.Invoke(this, eventArgs);
+            }
+            catch (Exception ex) {
+                StandaloneLoader.Log.LogError(ex, "Error in OnObjectSelected event handler");
+            }
         }
         #endregion // internal event callers
 

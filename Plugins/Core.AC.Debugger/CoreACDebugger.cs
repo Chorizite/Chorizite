@@ -49,7 +49,9 @@ namespace Core.AC.Debugger {
 
         protected override void Dispose() {
             _imgui.OnRender -= ImGui_OnRender;
-            _ac.Game.OnStateChanged -= Game_OnStateChanged;
+            if (_ac.Game is not null) {
+                _ac.Game.OnStateChanged -= Game_OnStateChanged;
+            }
         }
     }
 }
