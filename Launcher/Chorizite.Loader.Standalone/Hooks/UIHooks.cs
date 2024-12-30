@@ -47,8 +47,8 @@ namespace Chorizite.Loader.Standalone.Hooks {
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate int Del_UIElement_CatchDroppedItem(UIElement* This, DragDropInfo* info);
 
-        [Function(CallingConventions.Cdecl)]
-        private delegate void Del_ACCWeenieObject_SetSelectedObject(uint objectId, int reselect);
+        [Function(CallingConventions.Stdcall)]
+        private delegate int Del_ACCWeenieObject_SetSelectedObject(uint objectId, int reselect);
 
         internal static void Init() {
             Hook_UIElementManager_StartTooltip = CreateHook<Del_UIElementManager_StartTooltip>(typeof(UIHooks), nameof(UIElementManager_StartTooltip_Impl), 0x0045DF70);
@@ -57,44 +57,51 @@ namespace Chorizite.Loader.Standalone.Hooks {
             Hook_UIElementManager_StartDragandDrop = CreateHook<Del_UIElementManager_StartDragandDrop>(typeof(UIHooks), nameof(UIElementManager_StartDragandDrop_Impl), 0x0045E120);
             Hook_UIElementManager_SetCursor = CreateHook<Del_UIElementManager_SetCursor>(typeof(UIHooks), nameof(UIElementManager_SetCursor_Impl), 0x0045A910);
             Hook_UIElement_CatchDroppedItem = CreateHook<Del_UIElement_CatchDroppedItem>(typeof(UIHooks), nameof(UIElement_CatchDroppedItem_Impl), 0x00461860);
-            Hook_ACCWeenieObject_SetSelectedObject = CreateHook<Del_ACCWeenieObject_SetSelectedObject>(typeof(UIHooks), nameof(ACCWeenieObject_SetSelectedObject_Impl), 0x0058D110);
+            //Hook_ACCWeenieObject_SetSelectedObject = CreateHook<Del_ACCWeenieObject_SetSelectedObject>(typeof(UIHooks), nameof(ACCWeenieObject_SetSelectedObject_Impl), 0x0058D110);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static void UIElementManager_SetCursor_Impl(UIElementManager* This, uint cursorDid, int hotX, int hotY, byte makeDefault) {
-            if (CursorDid != 0) {
-                Hook_UIElementManager_SetCursor!.OriginalFunction(This, cursorDid, hotX, hotY, makeDefault);
+            try {
+                if (CursorDid != 0) {
+                    Hook_UIElementManager_SetCursor!.OriginalFunction(This, cursorDid, hotX, hotY, makeDefault);
+                }
+                else if (cursorDid == 0 && _lastCursorDid != 0) {
+                    Hook_UIElementManager_SetCursor!.OriginalFunction(This, _lastCursorDid, _lastHotX, _lastHotY, _lastMakeDefault);
+                }
+                else {
+                    _lastCursorDid = cursorDid;
+                    _lastHotX = hotX;
+                    _lastHotY = hotY;
+                    _lastMakeDefault = makeDefault;
+                    Hook_UIElementManager_SetCursor!.OriginalFunction(This, cursorDid, hotX, hotY, makeDefault);
+                }
             }
-            else if (cursorDid == 0 && _lastCursorDid != 0) {
-                Hook_UIElementManager_SetCursor!.OriginalFunction(This, _lastCursorDid, _lastHotX, _lastHotY, _lastMakeDefault);
-            }
-            else {
-                _lastCursorDid = cursorDid;
-                _lastHotX = hotX;
-                _lastHotY = hotY;
-                _lastMakeDefault = makeDefault;
-                Hook_UIElementManager_SetCursor!.OriginalFunction(This, cursorDid, hotX, hotY, makeDefault);
-            }
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to set cursor"); }
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static int UIElementManager_StartDragandDrop_Impl(UIElementManager* This, UIElement* element, int x, int y) {
-            uint itemId = 0;
-            uint spellId = 0;
-            DropItemFlags flags;
+            try {
+                uint itemId = 0;
+                uint spellId = 0;
+                DropItemFlags flags;
 
-            UIElement_ItemList.InqDropIconInfo(element, &itemId, &spellId, &flags);
-            var eventArgs = BuildDragDropEventArgs(false, element, itemId, spellId, flags);
+                UIElement_ItemList.InqDropIconInfo(element, &itemId, &spellId, &flags);
+                var eventArgs = BuildDragDropEventArgs(false, element, itemId, spellId, flags);
 
-            if (eventArgs is not null) {
-                StandaloneLoader.Backend.HandleGameObjectDragStart(eventArgs);
+                if (eventArgs is not null) {
+                    StandaloneLoader.Backend.HandleGameObjectDragStart(eventArgs);
 
-                if (eventArgs.Eat) {
-                    return 0;
+                    if (eventArgs.Eat) {
+                        return 0;
+                    }
                 }
-            }
 
-            return Hook_UIElementManager_StartDragandDrop!.OriginalFunction(This, element, x, y);
+                return Hook_UIElementManager_StartDragandDrop!.OriginalFunction(This, element, x, y);
+            }
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to set start drag drop"); }
+            return 0;
         }
 
         private static GameObjectDragDropEventArgs BuildDragDropEventArgs(bool isDropping, UIElement* element, uint itemId, uint spellId, DropItemFlags flags) {
@@ -255,67 +262,87 @@ namespace Chorizite.Loader.Standalone.Hooks {
         internal static int GetFirstChildElement(ref UIElement This) => ((delegate* unmanaged[Thiscall]<ref UIElement, int>)0x00464110)(ref This);
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static int UIElementManager_StartTooltip_Impl(UIElementManager* This, StringInfo* strInfo, UIElement* el, int a, uint b, int c) {
-            var objectId = GetHoveredObjectId();
-            var physicsObj = CPhysicsObj.GetObjectA(objectId);
-            uint iconId = 0;
-            if (physicsObj != null) {
-                physicsObj->weenie_obj->InqIconID(&iconId);
+            try {
+                var objectId = GetHoveredObjectId();
+                var physicsObj = CPhysicsObj.GetObjectA(objectId);
+                uint iconId = 0;
+                if (physicsObj != null) {
+                    physicsObj->weenie_obj->InqIconID(&iconId);
+                }
+                var eventArgs = new ShowTooltipEventArgs(strInfo->m_LiteralValue.ToString(), objectId, iconId);
+                StandaloneLoader.Backend.HandleShowTooltip(eventArgs);
+
+                _showingTooltip = true;
+
+                var res = Hook_UIElementManager_StartTooltip!.OriginalFunction(This, strInfo, el, a, b, c);
+
+                if (eventArgs.Eat) {
+                    UIElementManager.s_pInstance->m_pTooltipElement->SetVisible(0);
+                }
+                return res;
             }
-            var eventArgs = new ShowTooltipEventArgs(strInfo->m_LiteralValue.ToString(), objectId, iconId);
-            StandaloneLoader.Backend.HandleShowTooltip(eventArgs);
-
-            _showingTooltip = true;
-
-            var res = Hook_UIElementManager_StartTooltip!.OriginalFunction(This, strInfo, el, a, b, c);
-
-            if (eventArgs.Eat) {
-                UIElementManager.s_pInstance->m_pTooltipElement->SetVisible(0);
-            }
-            return res;
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to start tooltip"); }
+            return 0;
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static void UIElementManager_ResetTooltip_Impl(UIElementManager* This) {
-            Hook_UIElementManager_ResetTooltip!.OriginalFunction(This);
+            try {
+                Hook_UIElementManager_ResetTooltip!.OriginalFunction(This);
+            }
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to reset tooltip"); }
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static void UIElementManager_CheckTooltip_Impl(UIElementManager* This) {
-            Hook_UIElementManager_CheckTooltip!.OriginalFunction(This);
-            if (_showingTooltip && UIElementManager.s_pInstance->m_pTooltipElement == null) {
-                _showingTooltip = false;
-                StandaloneLoader.Backend.HandleHideTooltip(EventArgs.Empty);
+            try {
+                Hook_UIElementManager_CheckTooltip!.OriginalFunction(This);
+                if (_showingTooltip && UIElementManager.s_pInstance->m_pTooltipElement == null) {
+                    _showingTooltip = false;
+                    StandaloneLoader.Backend.HandleHideTooltip(EventArgs.Empty);
+                }
             }
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to check tooltip"); }
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static int UIElement_CatchDroppedItem_Impl(UIElement* This, DragDropInfo* info) {
-            uint itemId = 0;
-            uint spellId = 0;
-            DropItemFlags flags;
+            try {
+                uint itemId = 0;
+                uint spellId = 0;
+                DropItemFlags flags;
 
-            UIElement_ItemList.InqDropIconInfo(info->element, &itemId, &spellId, &flags);
-            var eventArgs = BuildDragDropEventArgs(false, info->element, itemId, spellId, flags);
+                UIElement_ItemList.InqDropIconInfo(info->element, &itemId, &spellId, &flags);
+                var eventArgs = BuildDragDropEventArgs(false, info->element, itemId, spellId, flags);
 
-            if (eventArgs is not null) {
-                StandaloneLoader.Backend.HandleGameObjectDragEnd(eventArgs);
+                if (eventArgs is not null) {
+                    StandaloneLoader.Backend.HandleGameObjectDragEnd(eventArgs);
 
-                if (eventArgs.Eat) {
-                    return 0;
+                    if (eventArgs.Eat) {
+                        return 0;
+                    }
+                }
+
+                return Hook_UIElement_CatchDroppedItem!.OriginalFunction(This, info);
+            }
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to catch dropped item"); }
+            return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
+        private static int ACCWeenieObject_SetSelectedObject_Impl(uint objectId, int reselect) {
+            try {
+                var eventArgs = new ObjectSelectedEventArgs(objectId);
+                StandaloneLoader.Backend.HandleObjectSelected(eventArgs);
+
+                if (!eventArgs.Eat) {
+                    return Hook_ACCWeenieObject_SetSelectedObject!.OriginalFunction(objectId, reselect);
                 }
             }
 
-            return Hook_UIElement_CatchDroppedItem!.OriginalFunction(This, info);
-        }
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to set selected item"); }
 
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]
-        private static void ACCWeenieObject_SetSelectedObject_Impl(uint objectId, int reselect) {
-            var eventArgs = new ObjectSelectedEventArgs(objectId);
-            StandaloneLoader.Backend.HandleObjectSelected(eventArgs);
-
-            if (!eventArgs.Eat) {
-                Hook_ACCWeenieObject_SetSelectedObject!.OriginalFunction(objectId, reselect);
-            }
+            return 0;
         }
     }
 }
