@@ -3285,7 +3285,7 @@ namespace AcClient {
         public UIElement* CreateRootElementByDataID(UInt32 _layoutDID, UInt32 _elementID) => ((delegate* unmanaged[Thiscall]<ref UIElementManager, UInt32, UInt32, UIElement*>)0x0045E4B0)(ref this, _layoutDID, _elementID); // .text:0045E3D0 ; UIElement *__thiscall UIElementManager::CreateRootElementByDataID(UIElementManager *this, IDClass<_tagDataID,32,0> _layoutDID, unsigned int _elementID) .text:0045E3D0 ?CreateRootElementByDataID@UIElementManager@@QAEPAVUIElement@@V?$IDClass@U_tagDataID@@$0CA@$0A@@@K@Z
 
         // UIElementManager.CreateUIElementManager:
-        public static void CreateUIElementManager() => ((delegate* unmanaged[Cdecl]<void>)0x0045F900)(); // .text:0045F820 ; void __cdecl UIElementManager::CreateUIElementManager() .text:0045F820 ?CreateUIElementManager@UIElementManager@@SAXXZ
+        public static void CreateUIElementManager() => ((delegate* unmanaged[Cdecl]<void>)0x0045F900)(); // .text:0x0045F900 ; void __cdecl UIElementManager::CreateUIElementManager() .text:0045F820 ?CreateUIElementManager@UIElementManager@@SAXXZ
 
         // UIElementManager.DeletingElement:
         public void DeletingElement(UIElement* _element) => ((delegate* unmanaged[Thiscall]<ref UIElementManager, UIElement*, void>)0x0045E600)(ref this, _element); // .text:0045E520 ; void __thiscall UIElementManager::DeletingElement(UIElementManager *this, UIElement *_element) .text:0045E520 ?DeletingElement@UIElementManager@@QAEXPAVUIElement@@@Z
