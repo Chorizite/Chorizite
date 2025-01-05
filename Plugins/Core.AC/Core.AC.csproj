@@ -61,7 +61,7 @@
     <None Update="assets\panels\Logs.rml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="assets\panels\Test.rml">
+    <None Update="assets\panels\Indicators.rml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="assets\panels\Tooltip.rml">

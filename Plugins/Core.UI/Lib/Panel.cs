@@ -14,8 +14,17 @@ namespace ACUI.Lib {
     /// Represents a panel in the UI. Multiple panels can be loaded and displayed at the same time.
     /// </summary>
     public class Panel : UIDocument {
+        private bool _isDisposed = false;
 
+        /// <summary>
+        /// ghost panels let click/mouse events pass through
+        /// </summary>
         public bool IsGhost { get; set; }
+
+        /// <summary>
+        /// Show in the plugin bar. This is where plugins can be minimized to
+        /// </summary>
+        public bool ShowInBar { get; set; } = false;
 
         internal Panel(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log) : base(name, filename, context, rmlSystemInterface, log) {
 
@@ -25,8 +34,16 @@ namespace ACUI.Lib {
 
         }
 
-        public void BringToFront() {
+        public void PullToFront() {
             ScriptableDocument?.PullToFront();
+        }
+
+        public override void Dispose() {
+            if (!_isDisposed) {
+                _isDisposed = true;
+                Core.UI.CoreUIPlugin.Instance.PanelManager.DestroyPanel(Name);
+                base.Dispose();
+            }
         }
     }
 }

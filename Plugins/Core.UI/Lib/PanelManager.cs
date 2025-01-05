@@ -1,4 +1,5 @@
 ﻿using ACUI.Lib.RmlUi;
+using Chorizite.Common;
 using Chorizite.Core.Render;
 using Core.UI;
 using Core.UI.Lib;
@@ -26,6 +27,26 @@ namespace ACUI.Lib {
         private readonly ILogger Log;
 
         public Screen? CurrentScreen => _currentScreen;
+
+        public List<Panel> Panels => _panels.Values.ToList();
+
+        public event EventHandler<PanelAddedEventArgs> OnPanelAdded {
+            add => _OnPanelAdded.Subscribe(value);
+            remove => _OnPanelAdded.Unsubscribe(value);
+        }
+        private WeakEvent<PanelAddedEventArgs> _OnPanelAdded = new();
+
+        public event EventHandler<PanelRemovedEventArgs> OnPanelRemoved {
+            add => _OnPanelRemoved.Subscribe(value);
+            remove => _OnPanelRemoved.Unsubscribe(value);
+        }
+        private WeakEvent<PanelRemovedEventArgs> _OnPanelRemoved = new();
+
+        public event EventHandler<PanelVisibilityChangedEventArgs> OnPanelVisibilityChanged {
+            add => _OnPanelVisibilityChanged.Subscribe(value);
+            remove => _OnPanelVisibilityChanged.Unsubscribe(value);
+        }
+        private WeakEvent<PanelVisibilityChangedEventArgs> _OnPanelVisibilityChanged = new();
 
         internal PanelManager(Context ctx, ACSystemInterface rmlSystemInterface, IRenderInterface render, ILogger log) {
             Log = log;
@@ -103,12 +124,8 @@ namespace ACUI.Lib {
         /// <param name="rmlFilePath">The rml file of the panel</param>
         /// <returns></returns>
         public Panel CreatePanelFromSource(string name, string rmlFilePath) {
-            if (_panels.Remove(name, out var panel)) {
-                panel.Dispose();
-            }
-
-            panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
-            _panels.Add(name, panel);
+            var panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
+            AddPanelInternal(name, panel);
 
             return panel;
         }
@@ -120,23 +137,15 @@ namespace ACUI.Lib {
         /// <param name="rmlFilePath">The rml file of the panel</param>
         /// <returns></returns>
         public Panel CreatePanel(string name, string rmlFilePath) {
-            if (_panels.Remove(name, out var panel)) {
-                panel.Dispose();
-            }
-
-            panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
-            _panels.Add(name, panel);
+            var panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
+            AddPanelInternal(name, panel);
 
             return panel;
         }
 
         public Panel CreatePanelFromString(string name, string rmlContents) {
-            if (_panels.Remove(name, out var panel)) {
-                panel.Dispose();
-            }
-            Log.LogDebug($"Loading panel {name} [source text] 123");
-            panel = new Panel(name, rmlContents, Context, _rmlSystemInterface, Log, true);
-            _panels.Add(name, panel);
+            var panel = new Panel(name, rmlContents, Context, _rmlSystemInterface, Log, true);
+            AddPanelInternal(name, panel);
 
             return panel;
         }
@@ -148,11 +157,34 @@ namespace ACUI.Lib {
         /// <returns></returns>
         public Panel? DestroyPanel(string name) {
             if (_panels.Remove(name, out var panel)) {
+                panel.OnShow -= Panel_OnShow;
+                panel.OnHide -= Panel_OnHide;
+
+                _OnPanelRemoved?.Invoke(this, new PanelRemovedEventArgs(panel));
                 panel.Dispose();
             }
             Context.Update();
 
             return panel;
+        }
+
+        private void AddPanelInternal(string name, Panel panel) {
+            DestroyPanel(name);
+
+            panel.OnShow += Panel_OnShow;
+            panel.OnHide += Panel_OnHide;
+
+            _panels.Add(name, panel);
+
+            _OnPanelAdded?.Invoke(this, new PanelAddedEventArgs(panel));
+        }
+
+        private void Panel_OnHide(object? sender, EventArgs e) {
+            _OnPanelVisibilityChanged?.Invoke(this, new PanelVisibilityChangedEventArgs((Panel)sender!, false));
+        }
+
+        private void Panel_OnShow(object? sender, EventArgs e) {
+            _OnPanelVisibilityChanged?.Invoke(this, new PanelVisibilityChangedEventArgs((Panel)sender!, true));
         }
 
         internal Panel? GetPanelByPtr(IntPtr ptr) => _panels.Values.FirstOrDefault(p => p.NativePtr == ptr);

@@ -38,8 +38,7 @@ local is_reactive = function (v)
   return type(v) == "table" and getmetatable(v) == rx_marker
 end
 
-local make_reactive
-make_reactive = function (original_value, name, parent, seen)
+function make_reactive(original_value, name, parent, seen)
   seen = seen or {}
   if is_reactive(original_value) then
     return original_value
@@ -198,5 +197,10 @@ function rx:Input(...) return MakeElement("input", ...) end
 function rx:Button(...) return MakeElement("button", ...) end
 function rx:Progress(...) return MakeElement("progress", ...) end
 function rx:Br(...) return MakeElement("br", ...) end
+function rx:Img(...) return MakeElement("img", ...) end
+function rx:Handle(...) return MakeElement("handle", ...) end
+function rx:Tabset(...) return MakeElement("tabset", ...) end
+function rx:Tab(...) return MakeElement("tab", ...) end
+function rx:Panel(...) return MakeElement("panel", ...) end
 
 return rx;

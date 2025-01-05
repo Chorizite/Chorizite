@@ -87,6 +87,9 @@ namespace Chorizite.Loader.Standalone {
 
         public override ChoriziteEnvironment Environment => ChoriziteEnvironment.Client;
 
+        public IClientUIBackend UIBackend => ACUIBackend;
+        internal ACClientUIBackend ACUIBackend { get; } = new ACClientUIBackend();
+
         private readonly WeakEvent<PacketDataEventArgs> _OnC2SData = new WeakEvent<PacketDataEventArgs>();
         public event EventHandler<PacketDataEventArgs> OnC2SData {
             add { _OnC2SData.Subscribe(value); }
@@ -109,36 +112,6 @@ namespace Chorizite.Loader.Standalone {
         public event EventHandler<ChatTextAddedEventArgs> OnChatTextAdded {
             add { _OnChatTextAdded.Subscribe(value); }
             remove { _OnChatTextAdded.Unsubscribe(value); }
-        }
-
-        internal readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
-        public event EventHandler<EventArgs> OnScreenChanged {
-            add { _OnScreenChanged.Subscribe(value); }
-            remove { _OnScreenChanged.Unsubscribe(value); }
-        }
-
-        private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragStart = new WeakEvent<GameObjectDragDropEventArgs>();
-        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragStart {
-            add { _OnGameObjectDragStart.Subscribe(value); }
-            remove { _OnGameObjectDragStart.Unsubscribe(value); }
-        }
-
-        private readonly WeakEvent<GameObjectDragDropEventArgs> _OnGameObjectDragEnd = new WeakEvent<GameObjectDragDropEventArgs>();
-        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragEnd {
-            add { _OnGameObjectDragEnd.Subscribe(value); }
-            remove { _OnGameObjectDragEnd.Unsubscribe(value); }
-        }
-
-        private readonly WeakEvent<ShowTooltipEventArgs> _OnShowTooltip = new WeakEvent<ShowTooltipEventArgs>();
-        public event EventHandler<ShowTooltipEventArgs> OnShowTooltip {
-            add { _OnShowTooltip.Subscribe(value); }
-            remove { _OnShowTooltip.Unsubscribe(value); }
-        }
-
-        private readonly WeakEvent<EventArgs> _OnHideTooltip = new();
-        public event EventHandler<EventArgs> OnHideTooltip {
-            add { _OnHideTooltip.Subscribe(value); }
-            remove { _OnHideTooltip.Unsubscribe(value); }
         }
 
         private readonly WeakEvent<ObjectSelectedEventArgs> _OnObjectSelected = new();
@@ -173,12 +146,6 @@ namespace Chorizite.Loader.Standalone {
 
         public void AddChatText(string text, ChatType type = ChatType.Default) {
             ChatHooks.AddChatText(text, (eChatTypes)type);
-        }
-
-        public void ClearDragandDrop() {
-            if (UIElementManager.s_pInstance is not null) {
-                UIElementManager.s_pInstance->StopDragandDrop();
-            }
         }
 
         public override void SetCursorDid(uint did, int hotX = 0, int hotY = 0, bool makeDefault = false) {
@@ -307,19 +274,10 @@ namespace Chorizite.Loader.Standalone {
             SendProtoUIMessage(stream.ToArray());
         }
 
-        public System.Numerics.Vector4 GetUIElementPosition(uint uiElementId) {
-            var el = UIElementManager.s_pInstance->GetElement(uiElementId);
-            if (el is null) return new System.Numerics.Vector4();
-
-            int zlevel = 0;
-            var position = new Box2D();
-
-            el->GetCurrentPosition(&position, &zlevel);
-
-            return new System.Numerics.Vector4(position.m_x0, position.m_y0, position.m_x1, position.m_y1);
-        }
-
         public void Exit() {
+            if (UIFlow.m_instance[0] is not null) {
+                UIFlow.m_instance[0]->QueueUIMode(UIMode.EpilogueUI);
+            }
             CleanupNet(*Client.m_instance);
             Cleanup(*Client.m_instance);
         }
@@ -358,42 +316,6 @@ namespace Chorizite.Loader.Standalone {
             }
             catch (Exception ex) {
                 StandaloneLoader.Log.LogError(ex, "Error in OnChatInput event handler");
-            }
-        }
-
-        internal void HandleGameObjectDragStart(GameObjectDragDropEventArgs eventArgs) {
-            try {
-                _OnGameObjectDragStart?.Invoke(this, eventArgs);
-            }
-            catch (Exception ex) {
-                StandaloneLoader.Log.LogError(ex, "Error in OnGameObjectDragStart event handler");
-            }
-        }
-
-        internal void HandleGameObjectDragEnd(GameObjectDragDropEventArgs eventArgs) {
-            try {
-                _OnGameObjectDragEnd?.Invoke(this, eventArgs);
-            }
-            catch (Exception ex) {
-                StandaloneLoader.Log.LogError(ex, "Error in OnGameObjectDragEnd event handler");
-            }
-        }
-
-        internal void HandleShowTooltip(ShowTooltipEventArgs showTooltipEventArgs) {
-            try {
-                _OnShowTooltip?.Invoke(this, showTooltipEventArgs);
-            }
-            catch (Exception ex) {
-                StandaloneLoader.Log.LogError(ex, "Error in OnShowTooltip event handler");
-            }
-        }
-
-        internal void HandleHideTooltip(EventArgs empty) {
-            try {
-                _OnHideTooltip?.Invoke(this, empty);
-            }
-            catch (Exception ex) {
-                StandaloneLoader.Log.LogError(ex, "Error in OnHideTooltip event handler");
             }
         }
 

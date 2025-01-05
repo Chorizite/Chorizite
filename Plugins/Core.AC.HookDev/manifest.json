@@ -1,0 +1,9 @@
+{
+  "name": "Core.AC.HookDev",
+  "author": "Chorizite",
+  "entryfile": "Core.AC.HookDev.dll",
+  "version": "0.0.1",
+  "description": "Hooking dev",
+  "dependencies": [ "Core.AC@0.0.1" ],
+  "environments": [ "Client" ]
+}

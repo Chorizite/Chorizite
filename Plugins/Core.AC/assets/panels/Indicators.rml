@@ -1,0 +1,210 @@
+<rml>
+	<head>
+    <title>Indicators</title>
+	<style>
+      body {
+        font-size: 14px;
+        font-family: Tahoma;
+      }
+
+      #handle {
+        width: 20px;
+        height: 20px;
+        decorator: image(dat://0x060074C9);
+        background-color: #222;
+        cursor: 0x06006119 14 14;
+      }
+
+      .panel {
+        padding: 4px 4px 4px 4px;
+      }
+
+      .panel-inner {
+        display: flex;
+        padding: 1px 1px 0px 1px;
+        background-color: #111;
+      }
+
+      .game-icons {
+        display: flex;
+        overflow: hidden;
+        height: 21px;
+      }
+
+      .plugin-icons {
+        display: flex;
+      }
+
+      .plugin-icons button.icon {
+        height: 20px;
+        width: 20px;
+        padding: 0;
+        margin: 0;
+        decorator: image(dat://0x06004D20);
+        color: #aaa;
+        position: relative;
+        display: block;
+      }
+
+      .plugin-icons button.icon.visible {
+        color: #fff;
+        font-weight: bold;
+      }
+
+      .plugin-icons button.icon .overlay {
+        height: 20px;
+        width: 20px;
+        line-height: 20px;
+      }
+
+      .plugin-icons button.icon.visible .overlay {
+        decorator: image(dat://0x0600749B);
+      }
+
+      button.icon {
+        height: 20px;
+        width: 20px;
+        margin: 0px;
+        padding: 0px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+    <script type="">
+      local rx = require('rx')
+      local RootElementId = CS.Chorizite.Common.Enums.RootElementId
+      local backend = require('backend')
+      local plugin = require('plugins.Core.UI')
+
+      local pluginLookup = {}
+
+      for i=0,plugin.PanelManager.Panels.Count-1 do
+        pluginLookup[plugin.PanelManager.Panels[i].Name] = plugin.PanelManager.Panels[i]
+      end
+
+      local state = rx:CreateState({
+        UIIsLocked = backend.UIBackend.IsUILocked,
+        Plugins = 1
+      })
+
+      backend.UIBackend:OnUILockChanged('+', function(s, e)
+        state.UIIsLocked = e.IsLocked
+      end)
+
+      plugin.PanelManager:OnPanelAdded('+', function(s, e)
+
+      end)
+
+      plugin.PanelManager:OnPanelRemoved('+', function(s, e)
+
+      end)
+
+      plugin.PanelManager:OnPanelVisibilityChanged('+', function(s, e)
+        state.Plugins = state.Plugins + 1
+      end)
+
+      local IndicatorsView = function(state)
+        return rx:Div({ class="panel" }, {
+          rx:Div({ class="panel-inner" }, {
+            rx:Handle({
+              move_target="#document"
+            }, {
+              rx:Div({
+                class= {
+                  hidden = state.UIIsLocked
+                },
+                id="handle"
+              })
+            }),
+            rx:Div({ class="game-icons"}, {
+              rx:Button({
+                class="icon",
+                style="decorator: image(dat://0x06007498);",
+                onclick = function()
+                  backend.UIBackend:ToggleRootElement(RootElementId.LinkStatus)
+                end
+              }),
+              rx:Button({
+                class="icon",
+                style="decorator: image(dat://0x0600749C);",
+                onclick = function()
+                  backend.UIBackend:ToggleRootElement(RootElementId.PositiveEffects)
+                end
+              }),
+              rx:Button({
+                class="icon",
+                style="decorator: image(dat://0x0600749F);",
+                onclick = function()
+                  backend.UIBackend:ToggleRootElement(RootElementId.NegativeEffects)
+                end
+              }),
+              rx:Button({
+                class="icon",
+                style="decorator: image(dat://0x060074A1);",
+                onclick = function()
+                  backend.UIBackend:ToggleRootElement(RootElementId.Vitae)
+                end
+              }),
+              rx:Button({
+                class="icon",
+                style="decorator: image(dat://0x060074A2);",
+                onclick = function()
+                  backend.UIBackend:ToggleRootElement(RootElementId.CharacterInfo)
+                end
+              }),
+              rx:Button({
+                class="icon",
+                style="decorator: image(dat://0x060074A6);",
+                onclick = function()
+                  backend.UIBackend:ToggleRootElement(RootElementId.MiniGame)
+                end
+              }),
+              rx:Div({
+                class="plugin-icons",
+                count = state.Plugins
+              }, function()
+                local res = {}
+                for k,v in pairs(pluginLookup) do
+                  if v.ShowInBar then
+                    res[#res + 1] = rx:Button({
+                      key=k,
+                      class={
+                        icon = true,
+                        visible = v.IsVisible
+                      },
+                      onclick=function()
+                        if v.IsVisible then
+                          v:Hide()
+                        else
+                          v:Show()
+                          v:PullToFront()
+                        end
+                      end
+                    }, {
+                      rx:Div({ class="overlay" }, string.sub(k, 1, 1))
+                    })
+                  end
+                end
+                return res
+              end),
+              rx:Button({
+                class="icon",
+                style="decorator: image(dat://0x060074B1);",
+                onclick = function()
+                  backend:Exit()
+                end
+              }),
+            })
+          })
+        })
+      end
+
+      document:Mount(function() return IndicatorsView(state) end, "#indicators-wrapper")
+    </script>
+	</head>
+	<body>
+    <div id="indicators-wrapper"></div>
+	</body>
+</rml>

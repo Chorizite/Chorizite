@@ -28,6 +28,8 @@ namespace Chorizite.Loader.Standalone.Hooks {
         private static IHook<Del_UIElementManager_SetCursor>? Hook_UIElementManager_SetCursor;
         private static IHook<Del_UIElement_CatchDroppedItem>? Hook_UIElement_CatchDroppedItem;
         private static IHook<Del_ACCWeenieObject_SetSelectedObject>? Hook_ACCWeenieObject_SetSelectedObject;
+        private static IHook<Del_UIElement_SetVisible> Hook_UIElement_SetVisible;
+        private static IHook<Del_gmFloatyIndicatorsUI_UpdateLockedStatus> Hook_gmFloatyIndicatorsUI_UpdateLockedStatus;
 
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate int Del_UIElementManager_StartDragandDrop(UIElementManager* This, UIElement* element, int x, int y);
@@ -47,8 +49,14 @@ namespace Chorizite.Loader.Standalone.Hooks {
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate int Del_UIElement_CatchDroppedItem(UIElement* This, DragDropInfo* info);
 
+        [Function(CallingConventions.MicrosoftThiscall)]
+        private delegate int Del_UIElement_SetVisible(UIElement* This, byte hidden);
+
         [Function(CallingConventions.Stdcall)]
         private delegate int Del_ACCWeenieObject_SetSelectedObject(uint objectId, int reselect);
+
+        [Function(CallingConventions.MicrosoftThiscall)]
+        private delegate void Del_gmFloatyIndicatorsUI_UpdateLockedStatus(IntPtr thisPtr);
 
         internal static void Init() {
             Hook_UIElementManager_StartTooltip = CreateHook<Del_UIElementManager_StartTooltip>(typeof(UIHooks), nameof(UIElementManager_StartTooltip_Impl), 0x0045DF70);
@@ -57,7 +65,9 @@ namespace Chorizite.Loader.Standalone.Hooks {
             Hook_UIElementManager_StartDragandDrop = CreateHook<Del_UIElementManager_StartDragandDrop>(typeof(UIHooks), nameof(UIElementManager_StartDragandDrop_Impl), 0x0045E120);
             Hook_UIElementManager_SetCursor = CreateHook<Del_UIElementManager_SetCursor>(typeof(UIHooks), nameof(UIElementManager_SetCursor_Impl), 0x0045A910);
             Hook_UIElement_CatchDroppedItem = CreateHook<Del_UIElement_CatchDroppedItem>(typeof(UIHooks), nameof(UIElement_CatchDroppedItem_Impl), 0x00461860);
+            Hook_UIElement_SetVisible = CreateHook<Del_UIElement_SetVisible>(typeof(UIHooks), nameof(UIElement_SetVisible_Impl), 0x00462390);
             //Hook_ACCWeenieObject_SetSelectedObject = CreateHook<Del_ACCWeenieObject_SetSelectedObject>(typeof(UIHooks), nameof(ACCWeenieObject_SetSelectedObject_Impl), 0x0058D110);
+            Hook_gmFloatyIndicatorsUI_UpdateLockedStatus = CreateHook<Del_gmFloatyIndicatorsUI_UpdateLockedStatus>(typeof(UIHooks), nameof(gmFloatyIndicatorsUI_UpdateLockedStatus_Impl), 0x004D3C20);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
@@ -91,7 +101,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
                 var eventArgs = BuildDragDropEventArgs(false, element, itemId, spellId, flags);
 
                 if (eventArgs is not null) {
-                    StandaloneLoader.Backend.HandleGameObjectDragStart(eventArgs);
+                    StandaloneLoader.Backend.ACUIBackend.HandleGameObjectDragStart(eventArgs);
 
                     if (eventArgs.Eat) {
                         return 0;
@@ -270,7 +280,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
                     physicsObj->weenie_obj->InqIconID(&iconId);
                 }
                 var eventArgs = new ShowTooltipEventArgs(strInfo->m_LiteralValue.ToString(), objectId, iconId);
-                StandaloneLoader.Backend.HandleShowTooltip(eventArgs);
+                StandaloneLoader.Backend.ACUIBackend.HandleShowTooltip(eventArgs);
 
                 _showingTooltip = true;
 
@@ -299,7 +309,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
                 Hook_UIElementManager_CheckTooltip!.OriginalFunction(This);
                 if (_showingTooltip && UIElementManager.s_pInstance->m_pTooltipElement == null) {
                     _showingTooltip = false;
-                    StandaloneLoader.Backend.HandleHideTooltip(EventArgs.Empty);
+                    StandaloneLoader.Backend.ACUIBackend.HandleHideTooltip(EventArgs.Empty);
                 }
             }
             catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to check tooltip"); }
@@ -316,7 +326,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
                 var eventArgs = BuildDragDropEventArgs(false, info->element, itemId, spellId, flags);
 
                 if (eventArgs is not null) {
-                    StandaloneLoader.Backend.HandleGameObjectDragEnd(eventArgs);
+                    StandaloneLoader.Backend.ACUIBackend.HandleGameObjectDragEnd(eventArgs);
 
                     if (eventArgs.Eat) {
                         return 0;
@@ -343,6 +353,38 @@ namespace Chorizite.Loader.Standalone.Hooks {
             catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to set selected item"); }
 
             return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
+        private static int UIElement_SetVisible_Impl(UIElement* thisPtr, byte shown) {
+            var elId = (RootElementId)thisPtr->m_desc.m_elementID;
+            switch (elId) {
+                case RootElementId.Indicators:
+                    ToggleElementVisibleEventArgs args;
+                    if (shown == 1) {
+                        args = new ToggleElementVisibleEventArgs(elId, true);
+                        StandaloneLoader.Backend.ACUIBackend.HandleShowRootElement(args);
+                        if (args.Eat) {
+                            Hook_UIElement_SetVisible!.OriginalFunction(thisPtr, 0);
+                            return 0;
+                        }
+                    }
+                    else {
+                        args = new ToggleElementVisibleEventArgs(elId, false);
+                        StandaloneLoader.Backend.ACUIBackend.HandleHideTooltip(args);
+                    }
+                    if (args.Eat) {
+                        return 0;
+                    }
+                    break;
+            }
+            return Hook_UIElement_SetVisible!.OriginalFunction(thisPtr, shown);
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
+        private static void gmFloatyIndicatorsUI_UpdateLockedStatus_Impl(IntPtr thisPtr) {
+            StandaloneLoader.Backend.ACUIBackend.HandleLockUI(new UILockedEventArgs(StandaloneLoader.Backend.ACUIBackend.IsUILocked));
+            Hook_gmFloatyIndicatorsUI_UpdateLockedStatus!.OriginalFunction(thisPtr);
         }
     }
 }

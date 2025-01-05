@@ -6,13 +6,13 @@ using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core;
 using Core.UI;
 using Core.AC;
-using Core.AC.Lib.Panels;
 using Core.AC.API;
+using ACUI.Lib;
 
 namespace AuctionHouse {
     public class AuctionHousePlugin : IPluginCore {
         internal static ILogger Log;
-        private readonly GamePanel _panelId;
+        private Panel? _panel;
 
         public CoreUIPlugin UI { get; }
         public CoreACPlugin AC { get; }
@@ -21,8 +21,6 @@ namespace AuctionHouse {
             Log = log;
             UI = coreUI;
             AC = coreAC;
-
-            _panelId = AC.CustomPanelFromName("AuctionHouse");
 
             if (AC.Game.State == ClientState.InGame) {
                 Init();
@@ -40,11 +38,15 @@ namespace AuctionHouse {
         }
 
         private void Init() {
-            AC.RegisterPanel(_panelId, Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
+            _panel = UI.CreatePanel("ActionHouse", Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
+            if (_panel is not null) {
+                _panel.ShowInBar = true;
+                _panel.Show();
+            }
         }
 
         protected override void Dispose() {
-            AC.UnregisterPanel(_panelId, Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
+            _panel?.Dispose();
         }
     }
 }

@@ -49,4 +49,8 @@
   <ItemGroup>
     <NativeLibs Remove="ACChoriziteBackend.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="ACClientUIBackend.cs" />
+  </ItemGroup>
 </Project>

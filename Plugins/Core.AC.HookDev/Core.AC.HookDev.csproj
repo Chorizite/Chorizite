@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\$(TargetFramework)\plugins\Core.AC.Debugger\</OutputPath>
+    <OutputPath>..\..\bin\$(TargetFramework)\plugins\Core.AC.HookDev\</OutputPath>
     <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
@@ -21,6 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Launcher\Chorizite.Loader.Standalone\Chorizite.Loader.Standalone.csproj" ExcludeAssets="runtime">
+      <Private>False</Private>
+      <ExcludeAssets>all</ExcludeAssets>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
     <ProjectReference Include="..\..\Chorizite.Common\Chorizite.Common.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
@@ -36,16 +41,12 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.DearImGui\Core.DearImGui.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="8.1.1" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" ExcludeAssets="runtime" />
+    <PackageReference Include="Reloaded.Hooks" Version="4.3.3" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,5 +58,15 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
-
+  <Target Name="DeleteFiles" AfterTargets="Build">
+    <ItemGroup>
+      <FilesToDelete Include="$(OutDir)\FASM*" />
+      <FilesToDelete Include="$(OutDir)\Reloaded.Assembler.targets" />
+    </ItemGroup>
+    <Message Text="Deleting Files @(FilesToDelete)" />
+    <Delete Files="@(FilesToDelete)">
+      <Output TaskParameter="DeletedFiles" ItemName="FilesDeleted" />
+    </Delete>
+    <Message Text="Files deleted: @(FilesDeleted)" />
+  </Target>
 </Project>

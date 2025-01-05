@@ -19,22 +19,17 @@ namespace Chorizite.Core.Backend {
 
         public event EventHandler<PacketDataEventArgs> OnC2SData;
         public event EventHandler<PacketDataEventArgs> OnS2CData;
-        public event EventHandler<EventArgs> OnScreenChanged;
         public event EventHandler<ChatInputEventArgs> OnChatInput;
         public event EventHandler<ChatTextAddedEventArgs> OnChatTextAdded;
-        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragEnd;
-        public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragStart;
-        public event EventHandler<EventArgs> OnHideTooltip;
-        public event EventHandler<ShowTooltipEventArgs> OnShowTooltip;
         public event EventHandler<ObjectSelectedEventArgs> OnObjectSelected;
+
+        public IClientUIBackend UIBackend { get; }
 
         public bool EnterGame(uint characterId);
         public void Exit();
         public void AddChatText(string text, ChatType type = ChatType.Default);
         void InvokeChat(string text, int windowId = 1);
-        void ClearDragandDrop();
         void SendProtoUIMessage(byte[] message);
         void SendProtoUIMessage(PacketWriter stream);
-        Vector4 GetUIElementPosition(uint uiElementId);
     }
 }

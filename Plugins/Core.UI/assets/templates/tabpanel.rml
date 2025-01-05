@@ -1,42 +1,40 @@
 <template name="tabpanel" content="content">
-  <head>
-    <style>
+	<head>
+		<style>
       body {
-      z-index: 100;
-      position: absolute;
-      top: 90px;
-      left: 90px;
-      font-family: Tahoma;
+        position: absolute;
+        top: 90px;
+        left: 90px;
+        font-family: Tahoma;
       }
 
       .window {
-      display: block;
-      position: absolute;
-      padding: 4px 4px 4px 4px;
-      font-size: 13dp;
+        display: block;
+        decorator: ninepatch(panel, panel-inner);
+        position: absolute;
+        padding: 4px 4px 4px 4px;
+        font-size: 13dp;
       }
 
       #content {
         display: block;
-        decorator: ninepatch(panel, panel-inner);
-        padding: 4px;
       }
 
       #window-close {
-      width: 24px;
-      height: 25px;
-      position: absolute;
-      bottom: 0px;
-      right: 0px;
-      decorator: image(window-close);
+        width: 24px;
+        height: 25px;
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        decorator: image(window-close);
       }
 
       #window-close:hover {
-      decorator: image(window-close-hover);
+        decorator: image(window-close-hover);
       }
 
       #title-bar {
-      position: relative;
+        position: relative;
       }
 
       #title-bar span {
@@ -54,14 +52,14 @@
       -- set the fake tabpanel #window-title el to the documents title
       document:GetElementById("window-title"):SetInnerRml(document:GetTitle())
     </script>
-  </head>
-  <body class="window">
-    <div id="title-bar">
+	</head>
+	<body class="window">
+  	<div id="title-bar">
       <handle move_target="#document">
         <span id="window-title">Testing</span>
-        <div id="window-close"></div>
+        <div id="window-close" onclick="document:Hide()"></div>
       </handle>
     </div>
     <div id="content"></div>
-  </body>
+	</body>
 </template>

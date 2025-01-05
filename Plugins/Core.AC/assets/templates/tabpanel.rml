@@ -2,7 +2,6 @@
 	<head>
 		<style>
       body {
-        z-index: 100;
         position: absolute;
         top: 90px;
         left: 90px;
@@ -52,15 +51,14 @@
     <script type="">
       -- set the fake tabpanel #window-title el to the documents title
       document:GetElementById("window-title"):SetInnerRml(document:GetTitle())
-      print("SET DOCUMENT TITLE:", document:GetTitle())
     </script>
 	</head>
 	<body class="window">
   	<div id="title-bar">
       <handle move_target="#document">
         <span id="window-title">Testing</span>
-        <div id="window-close"></div>
       </handle>
+      <div id="window-close" onclick="print('HIDE!');document:Hide()"></div>
     </div>
     <div id="content"></div>
 	</body>

@@ -1,7 +1,6 @@
 ﻿using ACUI.Lib;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Input;
-using Core.AC.Lib.Panels;
 using Core.UI;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
@@ -17,7 +16,6 @@ namespace Core.AC.Lib {
 
     internal class DragDropManager : IDisposable {
         private string _panelPath;
-        private GamePanel _panelId;
         private Panel? _panel;
         private bool _showingDragDropOverlay;
         private Dictionary<string, object> _dragDropExternalData;
@@ -25,14 +23,13 @@ namespace Core.AC.Lib {
         private int _mouseStartY = 0;
 
         public DragDropManager() {
-            CoreACPlugin.Instance.ClientBackend.OnGameObjectDragStart += OnGameObjectDragStart;
-            CoreACPlugin.Instance.ClientBackend.OnGameObjectDragEnd += OnGameObjectDragEnd;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnGameObjectDragStart += OnGameObjectDragStart;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnGameObjectDragEnd += OnGameObjectDragEnd;
             CoreACPlugin.Instance.ChoriziteBackend.Input.OnMouseDown += Input_OnMouseDown;
 
             _panelPath = Path.Combine(CoreACPlugin.Instance.AssemblyDirectory, "assets", "panels", "DragDropOverlay.rml");
             if (File.Exists(_panelPath)) {
-                _panelId = CoreACPlugin.Instance.CustomPanelFromName("DragDropOverlay");
-                _panel = CoreACPlugin.Instance.RegisterPanel(_panelId, _panelPath);
+                _panel = CoreACPlugin.Instance.CoreUI.CreatePanel("DragDropOverlay", _panelPath);
                 if (_panel is not null) {
                     _panel.IsGhost = true;
                     _panel.Hide();
@@ -97,7 +94,7 @@ namespace Core.AC.Lib {
         private void Input_OnMouseUp(object? sender, MouseUpEventArgs e) {
             // if there is a panel under the mouse, cancel the game drag
             if (_showingDragDropOverlay && CoreUIPlugin.Instance?.PanelManager.IsAnyPanelUnderMouse() == true) {
-                CoreACPlugin.Instance.ClientBackend.ClearDragandDrop();
+                CoreACPlugin.Instance.ClientBackend.UIBackend.ClearDragandDrop();
                 // dont eat (this is true because CoreUI says we are interacting with rmlui, not the game)
                 // we dont eat otherwise the game will never see the mouse up, and not properly cancel the drag
                 e.Eat = false;
@@ -136,8 +133,8 @@ namespace Core.AC.Lib {
         }
 
         public void Dispose() {
-            CoreACPlugin.Instance.ClientBackend.OnGameObjectDragStart -= OnGameObjectDragStart;
-            CoreACPlugin.Instance.ClientBackend.OnGameObjectDragEnd -= OnGameObjectDragEnd;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnGameObjectDragStart -= OnGameObjectDragStart;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnGameObjectDragEnd -= OnGameObjectDragEnd;
             CoreACPlugin.Instance.ChoriziteBackend.Input.OnMouseUp -= Input_OnMouseUp;
             CoreACPlugin.Instance.ChoriziteBackend.Input.OnMouseDown -= Input_OnMouseDown;
             CoreACPlugin.Instance.ChoriziteBackend.Input.OnMouseMove -= Input_OnMouseMove;
@@ -146,9 +143,7 @@ namespace Core.AC.Lib {
                 CoreUIPlugin.Instance.PanelManager.ClearExternalDragDropEventData(_dragDropExternalData);
                 _dragDropExternalData = null;
             }
-            if (_panel is not null) {
-                CoreACPlugin.Instance.UnregisterPanel(_panelId, _panelPath);
-            }
+            _panel?.Dispose();
         }
     }
 }
