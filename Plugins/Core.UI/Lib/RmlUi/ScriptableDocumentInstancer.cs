@@ -21,7 +21,6 @@ namespace Core.UI.Lib.RmlUi {
             if (_elements.TryGetValue(ptr, out var document)) {
                 return document;
             }
-            return _elements.Values.FirstOrDefault();
             return null;
         }
 

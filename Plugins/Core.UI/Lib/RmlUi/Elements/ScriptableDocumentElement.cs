@@ -66,14 +66,12 @@ namespace Core.UI.Lib.RmlUi.Elements {
             SharedState.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex.ExceptionObject}");
 
             LuaContext = new LuaContext();
-            LuaContext.Global.Set("document", this);
             LuaContext.Global.Set("__Rx", Rx);
-            LuaContext.Global.Set("d", PretendJQuery);
 
             LuaContext.AddLoader(UIModulesLoader);
 
             AddEventListener("click", HandleClick);
-            AddEventListener("load", HandleLoad);
+            //AddEventListener("load", HandleLoad);
         }
 
         private byte[] UIModulesLoader(ref string filepath) {
@@ -85,15 +83,12 @@ namespace Core.UI.Lib.RmlUi.Elements {
             return null;
         }
 
-        internal Element? PretendJQuery(string selector) {
-            return QuerySelector(selector);
-        }
-
         internal void Update() {
             LuaContext?.Tick();
         }
 
-        private void HandleLoad(Event evt) {
+        internal void HandleLoad() {
+            LuaContext.Global.Set("document", Panel);
             foreach (var script in _scripts) {
                 try {
                     LuaContext.DoString($"""coroutine.create_managed(function() {script.Source} end, "Document")""", $"{script.SourcePath}:{script.SourceLine}");
@@ -142,7 +137,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
             }
         }
 
-        public MyObservable Observable(string name = "[anonymous]", MyObservable parent = null) {
+        internal MyObservable Observable(string name = "[anonymous]", MyObservable parent = null) {
             var observable = new MyObservable(SharedState, name, parent);
             _observables.Add(observable);
             return observable;
@@ -150,7 +145,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
 
         private List<IDisposable> _mounts = [];
         internal Reaction? _currentReaction;
-        public void Mount(Func<Func<VirtualNode>> virtualNode, string selector) {
+        internal void Mount(Func<Func<VirtualNode>> virtualNode, string selector) {
             var el = QuerySelector(selector) ?? throw new Exception($"Could not find element with selector '{selector}' to mount to");
             if (virtualNode is null) throw new ArgumentNullException(nameof(virtualNode));
 

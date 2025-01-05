@@ -17,17 +17,15 @@ using Chorizite.Core.Input;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 using Core.AC.Lib.Screens;
-using Core.AC.Lib.Panels;
 using ACUI.Lib;
 using Core.AC.API;
 using Chorizite.Core.Dats;
 
 namespace Core.AC {
-    public class CoreACPlugin : IPluginCore, IScreenProvider<GameScreen>, IPanelProvider<GamePanel>, ISerializeState<PluginState> {
+    public class CoreACPlugin : IPluginCore, IScreenProvider<GameScreen>, ISerializeState<PluginState> {
         private readonly Dictionary<GameScreen, string> _registeredGameScreens = [];
-        private readonly Dictionary<GamePanel, string> _registeredGamePanels = [];
-        private readonly Dictionary<GamePanel, string> _registeredCustomPanels = [];
         private PluginState _state;
+        private Panel? _indicatorPanel;
         private Panel? _tooltip;
 
         internal static ILogger Log;
@@ -86,16 +84,34 @@ namespace Core.AC {
             RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "screens", "CharSelect.rml"));
             RegisterScreen(GameScreen.DatPatch, Path.Combine(AssemblyDirectory, "assets", "screens", "DatPatch.rml"));
 
-            
-            //RegisterPanel(GamePanel.Logs, Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
-
-            ClientBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
+            ClientBackend.UIBackend.OnScreenChanged += ClientBackend_OnScreenChanged;
 
             //_tooltip = RegisterPanel(GamePanel.Tooltip, Path.Combine(AssemblyDirectory, "assets", "panels", "Tooltip.rml"));
-            ClientBackend.OnShowTooltip += ClientBackend_OnShowTooltip;
-            ClientBackend.OnHideTooltip += ClientBackend_OnHideTooltip;
+            ClientBackend.UIBackend.OnShowTooltip += ClientBackend_OnShowTooltip;
+            ClientBackend.UIBackend.OnHideTooltip += ClientBackend_OnHideTooltip;
+
+            ClientBackend.UIBackend.OnShowRootElement += ClientBackend_OnShowRootElement;
+            ClientBackend.UIBackend.OnHideRootElement += ClientBackend_OnHideRootElement;
 
             SetScreen(_state.CurrentScreen, true);
+        }
+
+        private void ClientBackend_OnShowRootElement(object? sender, ToggleElementVisibleEventArgs e) {
+            if (e.ElementId == Chorizite.Common.Enums.RootElementId.Indicators) {
+                _indicatorPanel ??= CoreUI.CreatePanel("Core.AC.Indicators", Path.Combine(AssemblyDirectory, "assets", "panels", "Indicators.rml"));
+                if (_indicatorPanel is not null) {
+                    _indicatorPanel.Show();
+                    e.Eat = true;
+                }
+            }
+        }
+
+        private void ClientBackend_OnHideRootElement(object? sender, ToggleElementVisibleEventArgs e) {
+            if (e.ElementId == Chorizite.Common.Enums.RootElementId.Indicators) {
+                e.Eat = true;
+                _indicatorPanel?.Dispose();
+                _indicatorPanel = null;
+            }
         }
 
         private void ClientBackend_OnShowTooltip(object? sender, ShowTooltipEventArgs e) {
@@ -112,17 +128,6 @@ namespace Core.AC {
         private void ClientBackend_OnHideTooltip(object? sender, EventArgs e) {
             //_tooltip?.Hide();
         }
-        
-        private void SetScreen(GameScreen value, bool force = false) {
-            // TODO: validate screen transitions
-            if (force || _state.CurrentScreen != value) {
-                var oldScreen = _state.CurrentScreen;
-                _state.CurrentScreen = value;
-                CoreUI.Screen = _state.CurrentScreen.ToString();
-
-                _OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _state.CurrentScreen));
-            }
-        }
 
         #region State / Settings Serialization
         PluginState ISerializeState<PluginState>.SerializeBeforeUnload() => _state;
@@ -137,6 +142,16 @@ namespace Core.AC {
         #endregion // State / Settings Serialization
 
         #region ScreenProvider
+        private void SetScreen(GameScreen value, bool force = false) {
+            // TODO: validate screen transitions
+            if (force || _state.CurrentScreen != value) {
+                var oldScreen = _state.CurrentScreen;
+                _state.CurrentScreen = value;
+                CoreUI.Screen = _state.CurrentScreen.ToString();
+
+                _OnScreenChanged?.Invoke(this, new ScreenChangedEventArgs(oldScreen, _state.CurrentScreen));
+            }
+        }
         private void ClientBackend_OnScreenChanged(object? sender, EventArgs e) {
             CurrentScreen = (GameScreen)ClientBackend.GameScreen;
         }
@@ -166,79 +181,15 @@ namespace Core.AC {
         public GameScreen CustomScreenFromName(string name) => GameScreenHelpers.FromString(name);
         #endregion // ScreenProvider
 
-        #region PanelProvider
-        public bool RegisterPanelFromString(string panelName, string rmlContents) {
-            _registeredCustomPanels.TryAdd(CustomPanelFromName(panelName), panelName);
-            return RegisterPanelFromString(CustomPanelFromName(panelName), rmlContents);
-        }
-
-        public bool RegisterPanelFromString(GamePanel panel, string rmlContents) {
-            if (_registeredGamePanels.TryGetValue(panel, out var existingRmlPath)) {
-                CoreUI.UnregisterPanel(panel.ToString(), existingRmlPath);
-                _registeredGamePanels[panel] = rmlContents;
-            }
-            else {
-                _registeredGamePanels.Add(panel, rmlContents);
-            }
-
-            var panelName = panel.ToString();
-            if (_registeredCustomPanels.TryGetValue(panel, out var customPanelName)) {
-                panelName = customPanelName;
-            }
-
-            return CoreUI.RegisterPanelFromString(panelName, rmlContents);
-        }
-
-         /// <inheritdoc/>
-        public Panel? RegisterPanel(GamePanel panel, string rmlPath) {
-            if (_registeredGamePanels.TryGetValue(panel, out var existingRmlPath)) {
-                CoreUI.UnregisterPanel(panel.ToString(), existingRmlPath);
-                _registeredGamePanels[panel] = rmlPath;
-            }
-            else {
-                _registeredGamePanels.Add(panel, rmlPath);
-            }
-
-            return CoreUI.RegisterPanel(panel.ToString(), rmlPath);
-        }
-
-        /// <inheritdoc/>
-        public void UnregisterPanel(GamePanel panel, string? rmlPath) {
-            _registeredGamePanels.Remove(panel);
-
-            var panelName = panel.ToString();
-            if (_registeredCustomPanels.TryGetValue(panel, out var customPanelName)) {
-                panelName = customPanelName;
-            }
-
-            CoreUI.UnregisterPanel(panelName, rmlPath);
-        }
-
-        /// <inheritdoc/>
-        public GamePanel CustomPanelFromName(string name) {
-            var customGamePanel = GamePanelHelpers.FromString(name);
-            if (!_registeredCustomPanels.ContainsKey(customGamePanel)) {
-                _registeredCustomPanels.Add(customGamePanel, name);
-            }
-            return customGamePanel;
-        }
-
-        /// <inheritdoc/>
-        public bool IsPanelVisible(GamePanel panel) => CoreUI.IsPanelVisible(panel.ToString());
-
-        /// <inheritdoc/>
-        public void TogglePanelVisibility(GamePanel panel, bool visible) => CoreUI.TogglePanelVisibility(panel.ToString(), visible);
-        #endregion // PanelProvider
-
         protected override void Dispose() {
-            ClientBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
-            ClientBackend.OnShowTooltip -= ClientBackend_OnShowTooltip;
-            ClientBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
+            ClientBackend.UIBackend.OnScreenChanged -= ClientBackend_OnScreenChanged;
+            ClientBackend.UIBackend.OnShowTooltip -= ClientBackend_OnShowTooltip;
+            ClientBackend.UIBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
+            ClientBackend.UIBackend.OnShowRootElement -= ClientBackend_OnShowRootElement;
+            ClientBackend.UIBackend.OnHideRootElement -= ClientBackend_OnHideRootElement;
 
             ChoriziteBackend.UnregisterLuaModule("ac");
-
             DragDropManager.Dispose();
-            
             CoreUI.Screen = "None";
 
             foreach (var screen in _registeredGameScreens) {
@@ -246,15 +197,12 @@ namespace Core.AC {
             }
             _registeredGameScreens.Clear();
 
-            foreach (var panel in _registeredGamePanels) {
-                UnregisterPanel(panel.Key, panel.Value);
-            }
-            _registeredGamePanels.Clear();
-            
+            _indicatorPanel?.Dispose();
+            _indicatorPanel = null;
+
             CoreUI.UnregisterUIModel("Tooltip", _state.TooltipModel);
 
             _state.TooltipModel.Dispose();
-            
             Game?.Dispose();
 
             _state = null;

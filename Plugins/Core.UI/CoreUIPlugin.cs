@@ -37,7 +37,6 @@ namespace Core.UI {
 
         private Dictionary<string, UIDataModel> _models = [];
         private readonly Dictionary<string, string> _gameScreenRmls = [];
-        private readonly Dictionary<string, Panel> _gamePanelRmls = [];
         private RmlUIRenderInterface? _rmlRenderInterface;
         internal ACSystemInterface? _rmlSystemInterface;
         private ThemePlugin _themePlugin;
@@ -351,56 +350,17 @@ namespace Core.UI {
         }
 
 
-        public bool RegisterPanelFromString(string name, string rmlContents) {
-            UnregisterPanel(name, null);
-
-            var panel = PanelManager.CreatePanelFromString(name, rmlContents);
-
-            // TODO: allow multiple panels
-            if (_gamePanelRmls.ContainsKey(name)) {
-                _gamePanelRmls[name] = panel;
-            }
-            else {
-                _gamePanelRmls.Add(name, panel);
-            }
-
-            return true;
+        public Panel CreatePanelFromString(string name, string rmlContents) {
+            return PanelManager.CreatePanelFromString(name, rmlContents);
         }
 
-        public Panel? RegisterPanel(string name, string rmlFilePath) {
+        public Panel? CreatePanel(string name, string rmlFilePath) {
             if (!File.Exists(rmlFilePath)) {
                 Log?.LogError($"Could not find RML file {rmlFilePath}");
                 return null;
             }
-
-            UnregisterPanel(name, rmlFilePath);
-
-            var panel = PanelManager.CreatePanel(name, rmlFilePath);
-
-            // TODO: allow multiple panels
-            if (_gamePanelRmls.ContainsKey(name)) {
-                _gamePanelRmls[name] = panel;
-            }
-            else {
-                _gamePanelRmls.Add(name, panel);
-            }
-
-            return panel;
+            return PanelManager.CreatePanel(name, rmlFilePath);
         }
-
-        public void UnregisterPanel(string name, string? rmlFilePath) {
-            _gamePanelRmls.Remove(name);
-            PanelManager.DestroyPanel(name);
-        }
-
-        public bool IsPanelVisible(string name) {
-            return true;
-        }
-
-        public void TogglePanelVisibility(string name, bool visible) {
-
-        }
-
         #endregion
 
         internal void ToggleDebugger() {
@@ -578,7 +538,6 @@ namespace Core.UI {
                 PanelManager.Dispose();
                 PluginManager.OnPluginUnloaded -= PluginManager_OnPluginUnloaded;
                 ShutdownRmlUI();
-                PanelManager?.Dispose();
                 FontManager?.Dispose();
             }
             catch (Exception ex) {

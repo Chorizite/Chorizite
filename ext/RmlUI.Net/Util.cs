@@ -84,7 +84,7 @@ namespace RmlUiNet
                 return ElementGeneric.Create(elementPtr);
             }
 
-            return null;
+            return ElementGeneric.Create(elementPtr);
         }
 
         public static Variant? ToVariant(object value)

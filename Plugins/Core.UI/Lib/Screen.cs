@@ -10,7 +10,7 @@ namespace Core.UI.Lib {
     /// </summary>
     public class Screen : UIDocument {
         internal Screen(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log) : base(name, filename, context, rmlSystemInterface, log) {
-            
+            Show();
         }
     }
 }

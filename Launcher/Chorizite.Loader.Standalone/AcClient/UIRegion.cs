@@ -3312,7 +3312,7 @@ namespace AcClient {
         //public static ClientCombatSystem* GetCombatSystem() => ((delegate* unmanaged[Cdecl]<ClientCombatSystem*>)0x0056B210)(); // .text:0056A4D0 ; ClientCombatSystem *__cdecl ClientCombatSystem::GetCombatSystem() .text:0056A4D0 ?GetCombatSystem@ClientCombatSystem@@SAPAV1@XZ
 
         // UIElementManager.GetElement:
-        public UIElement* GetElement(UInt32 _ID) => ((delegate* unmanaged[Thiscall]<UIElementManager, UInt32, UIElement*>)0x00459A00)(this, _ID); // .text:00459990 ; UIElement *__thiscall UIElementManager::GetElement(UIElementManager *this, unsigned int _ID) .text:00459990 ?GetElement@UIElementManager@@QAEPAVUIElement@@K@Z
+        public UIElement* GetElement(UIElementId _ID) => ((delegate* unmanaged[Thiscall]<ref UIElementManager, UInt32, UIElement*>)0x00459A00)(ref this, (uint)_ID); // .text:00459990 ; UIElement *__thiscall UIElementManager::GetElement(UIElementManager *this, unsigned int _ID) .text:00459990 ?GetElement@UIElementManager@@QAEPAVUIElement@@K@Z
 
         // UIElementManager.HandlePreferenceCallback:
         public static void HandlePreferenceCallback(PStringBase<char>* _Name) => ((delegate* unmanaged[Cdecl]<PStringBase<char>*, void>)0x0045CD20)(_Name); // .text:0045CBA0 ; void __cdecl UIElementManager::HandlePreferenceCallback(PStringBase<char> *_Name) .text:0045CBA0 ?HandlePreferenceCallback@UIElementManager@@SAXABV?$PStringBase@D@@@Z

@@ -186,6 +186,10 @@ form {
 	tab-header-bg: 200px 247px 10px 25px;
 }
 
+.panel {
+	decorator: ninepatch(panel, panel-inner);
+}
+
 /* Force the tabset element to a fixed size. */
 tabset
 {

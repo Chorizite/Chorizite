@@ -18,7 +18,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
             DocEl = element;
         }
 
-        public static WrappedElement? GetOrCreate(ScriptableDocumentElement doc, Element element) {
+        internal static WrappedElement? GetOrCreate(ScriptableDocumentElement doc, Element element) {
             if (!_elementCache.ContainsKey(doc.NativePtr)) {
                 _elementCache.Add(doc.NativePtr, []);
             }

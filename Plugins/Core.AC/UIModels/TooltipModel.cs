@@ -20,8 +20,8 @@ namespace Core.AC.UIModels {
 
         public TooltipModel() : base() {
 
-            CoreACPlugin.Instance.ClientBackend.OnShowTooltip += ClientBackend_OnShowTooltip;
-            CoreACPlugin.Instance.ClientBackend.OnHideTooltip += ClientBackend_OnHideTooltip;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnShowTooltip += ClientBackend_OnShowTooltip;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnHideTooltip += ClientBackend_OnHideTooltip;
         }
 
         private void ClientBackend_OnShowTooltip(object? sender, ShowTooltipEventArgs e) {
@@ -37,8 +37,8 @@ namespace Core.AC.UIModels {
 
         public override void Dispose() {
             base.Dispose();
-            CoreACPlugin.Instance.ClientBackend.OnShowTooltip -= ClientBackend_OnShowTooltip;
-            CoreACPlugin.Instance.ClientBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnShowTooltip -= ClientBackend_OnShowTooltip;
+            CoreACPlugin.Instance.ClientBackend.UIBackend.OnHideTooltip -= ClientBackend_OnHideTooltip;
         }
     }
 }

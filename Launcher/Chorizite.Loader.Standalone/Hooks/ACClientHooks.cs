@@ -116,7 +116,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
             var mode = uiFlow->_nextMode;
             var ret = _uiFlowUseNewModeHook!.OriginalFunction(uiFlow);
 
-            StandaloneLoader.Backend._OnScreenChanged?.Invoke(StandaloneLoader.Backend, EventArgs.Empty);
+            StandaloneLoader.Backend.ACUIBackend._OnScreenChanged?.Invoke(StandaloneLoader.Backend, EventArgs.Empty);
 
             return ret;
         }
