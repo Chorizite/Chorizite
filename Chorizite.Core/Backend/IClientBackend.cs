@@ -26,6 +26,8 @@ namespace Chorizite.Core.Backend {
         public IClientUIBackend UIBackend { get; }
 
         public bool EnterGame(uint characterId);
+        public bool LogOff(bool immediate); 
+
         public void Exit();
         public void AddChatText(string text, ChatType type = ChatType.Default);
         void InvokeChat(string text, int windowId = 1);
