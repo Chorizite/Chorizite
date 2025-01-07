@@ -193,7 +193,7 @@
                 class="icon",
                 style="decorator: image(dat://0x060074B1);",
                 onclick = function()
-                  backend:Exit()
+                  backend:LogOff()
                 end
               }),
             })

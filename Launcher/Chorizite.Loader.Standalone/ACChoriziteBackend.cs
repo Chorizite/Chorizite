@@ -144,6 +144,16 @@ namespace Chorizite.Loader.Standalone {
             return AcClient.CPlayerSystem.GetPlayerSystem()->LogOnCharacter(characterId) == 1;
         }
 
+        public bool LogOff(bool immediate = false) {
+            if ((*UIFlow.m_instance)->_curMode != UIMode.GamePlayUI) {
+                return false;
+            }
+
+            byte immediateByte = (byte)(immediate ? 1 : 0); 
+            AcClient.CPlayerSystem.GetPlayerSystem()->LogOffCharacter(immediateByte);
+            return true;
+        }
+
         public void AddChatText(string text, ChatType type = ChatType.Default) {
             ChatHooks.AddChatText(text, (eChatTypes)type);
         }
