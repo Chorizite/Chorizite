@@ -63,6 +63,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.AC.Debugger", "Plugins
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.AC.HookDev", "Plugins\Core.AC.HookDev\Core.AC.HookDev.csproj", "{ED482583-1872-4784-A7C3-3AD07AB0FA14}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chorizite.DocGen", "Chorizite.DocGen", "{1B04BB5A-0007-417F-A5C2-94BA8CD162E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chorizite.DocGen.LuaDefs", "ext\Chorizite.DocGen\Chorizite.DocGen.LuaDefs\Chorizite.DocGen.LuaDefs.csproj", "{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +165,10 @@ Global
 		{ED482583-1872-4784-A7C3-3AD07AB0FA14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED482583-1872-4784-A7C3-3AD07AB0FA14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED482583-1872-4784-A7C3-3AD07AB0FA14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -188,6 +196,8 @@ Global
 		{BDE2D3AD-FEE6-43A5-9428-176B232DC07B} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{B211CB30-DAF2-4DB7-AD56-54A8CD2CF82E} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{ED482583-1872-4784-A7C3-3AD07AB0FA14} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
+		{1B04BB5A-0007-417F-A5C2-94BA8CD162E1} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
+		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26} = {1B04BB5A-0007-417F-A5C2-94BA8CD162E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

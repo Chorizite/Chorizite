@@ -48,6 +48,10 @@ namespace Chorizite.Core.Plugins {
         }
         private readonly WeakEvent<PluginUnloadedEventArgs> _OnPluginUnloaded = new();
 
+        public PluginManager(IChoriziteConfig config) {
+            _config = config;
+        }
+
         public PluginManager(IChoriziteConfig config, IRenderInterface render, ILogger<PluginManager> log) {
             _config = config;
             _log = log;
