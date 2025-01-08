@@ -165,6 +165,7 @@ namespace Core.AC {
         }
         private void ClientBackend_OnScreenChanged(object? sender, EventArgs e) {
             CurrentScreen = (GameScreen)ClientBackend.GameScreen;
+            CoreUI.PanelManager.CloseModal();
         }
 
         /// <inheritdoc/>

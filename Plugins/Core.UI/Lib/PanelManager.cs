@@ -21,6 +21,7 @@ namespace ACUI.Lib {
     public class PanelManager : IDisposable {
         private readonly Dictionary<string, Panel> _panels = []; // <filename, panel>
         private Screen? _currentScreen = null;
+        private Panel? _currentModal = null;
         internal IDictionary<string, object>? _externalDragDropEventData;
         private readonly IRenderInterface Render;
         private readonly ACSystemInterface _rmlSystemInterface;
@@ -28,6 +29,7 @@ namespace ACUI.Lib {
         private readonly ILogger Log;
 
         public Screen? CurrentScreen => _currentScreen;
+        public Panel? CurrentModal => _currentModal;
 
         public List<Panel> Panels => _panels.Values.ToList();
 
@@ -242,6 +244,7 @@ namespace ACUI.Lib {
         }
 
         public Panel ShowModalConfirmation(string text, Action<string> callback, params string[] buttons) {
+            CloseModal();
             var modalTemplate = System.IO.Path.Combine(CoreUIPlugin.Instance.AssemblyDirectory, "assets", "templates", "modal.rml");
             var _modalPanel = CreatePanel($"Modal_{text}", modalTemplate, (panel) => {
                 var modal = panel.ScriptableDocument.LuaContext.NewTable();
@@ -260,9 +263,16 @@ namespace ACUI.Lib {
                 modal.SetInPath("buttons", buttonsTable);
                 panel.ScriptableDocument.LuaContext.SetGlobal("modal", modal);
             });
+            _currentModal = _modalPanel;
             _modalPanel.Show();
 
             return _modalPanel;
+        }
+
+        public void CloseModal() {
+            if (_currentModal != null) {
+                DestroyPanel(_currentModal.Name);
+            }
         }
     }
 }
