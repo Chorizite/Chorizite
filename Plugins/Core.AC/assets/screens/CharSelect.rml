@@ -110,6 +110,7 @@
       local rx = require('rx')
       local backend = require('backend')
       local ac = require('ac')
+      local ui = require('plugins.Core.UI')
       local GameScreen = CS.Core.AC.Lib.Screens.GameScreen
 
       local state = rx:CreateState({
@@ -149,7 +150,13 @@
       local CharacterSelectView = function(state)
         return rx:Div({ class="wrapper" }, {
           rx:Span({ id="world" }, string.format("%s %d / %d", state.ServerName, state.CurrentConnectionCount, state.MaxAllowedConnections)),
-          rx:Button({ id="exit", onclick = function(evt) backend:Exit() end }, "EXIT"),
+          rx:Button({ id="exit", onclick = function(evt)
+            ui.PanelManager:ShowModalConfirmation("Are you sure you want to exit?", function(res)
+              if res == "Yes" then
+                backend:Exit()
+              end
+            end, "Yes", "No")
+          end }, "EXIT"),
           rx:Button({ id="enter", onclick = function(evt)
             if state.SelectedId ~= 0 then
               ac:Login(state.SelectedId)

@@ -94,16 +94,27 @@ namespace Core.AC {
             ClientBackend.UIBackend.OnHideRootElement += ClientBackend_OnHideRootElement;
 
             SetScreen(_state.CurrentScreen, true);
+
+            if (Game.State == ClientState.InGame) {
+                ShowIndicatorsPanel();
+            }
         }
 
         private void ClientBackend_OnShowRootElement(object? sender, ToggleElementVisibleEventArgs e) {
             if (e.ElementId == Chorizite.Common.Enums.RootElementId.Indicators) {
-                _indicatorPanel ??= CoreUI.CreatePanel("Core.AC.Indicators", Path.Combine(AssemblyDirectory, "assets", "panels", "Indicators.rml"));
-                if (_indicatorPanel is not null) {
-                    _indicatorPanel.Show();
+                if (ShowIndicatorsPanel()) {
                     e.Eat = true;
                 }
             }
+        }
+
+        private bool ShowIndicatorsPanel() {
+            _indicatorPanel ??= CoreUI.CreatePanel("Core.AC.Indicators", Path.Combine(AssemblyDirectory, "assets", "panels", "Indicators.rml"));
+            if (_indicatorPanel is not null) {
+                _indicatorPanel.Show();
+                return true;
+            }
+            return false;
         }
 
         private void ClientBackend_OnHideRootElement(object? sender, ToggleElementVisibleEventArgs e) {
