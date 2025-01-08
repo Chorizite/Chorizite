@@ -80,6 +80,9 @@
     <None Update="assets\scroll-vert-bg.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="assets\templates\modal.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="assets\templates\tabpanel.rml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

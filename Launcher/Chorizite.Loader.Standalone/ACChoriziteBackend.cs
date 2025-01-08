@@ -288,8 +288,6 @@ namespace Chorizite.Loader.Standalone {
             if (UIFlow.m_instance[0] is not null) {
                 UIFlow.m_instance[0]->QueueUIMode(UIMode.EpilogueUI);
             }
-            CleanupNet(*Client.m_instance);
-            Cleanup(*Client.m_instance);
         }
 
         #region internal event callers

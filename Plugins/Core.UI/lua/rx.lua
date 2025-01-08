@@ -161,7 +161,17 @@ function make_reactive(original_value, name, parent, seen)
       end,
       -- Custom pairs iterator
       __pairs = function(t)
-        error("pairs not implemented")
+        local function pairs_iterator(t, k)
+          local nextKey = observable:NextKey(k)
+          if nextKey == nil then
+            return nil
+          end
+          
+          local value = readValue(nextKey)
+          
+          return nextKey, value
+        end
+        return pairs_iterator, t, nil
       end,
       -- Custom len function
       __len = function()

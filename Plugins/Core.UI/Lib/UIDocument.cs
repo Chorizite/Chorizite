@@ -1,4 +1,5 @@
-﻿using ACUI.Lib.RmlUi;
+﻿using ACUI.Lib;
+using ACUI.Lib.RmlUi;
 using Chorizite.Common;
 using Chorizite.Core.Lib;
 using Core.UI.Lib.RmlUi;
@@ -24,6 +25,7 @@ namespace Core.UI.Lib {
         internal Context Context { get; }
 
         private ACSystemInterface _rmlSystemInterface;
+        private Action<UIDocument>? _init;
 
         internal IntPtr NativePtr { get; private set; }
 
@@ -99,13 +101,14 @@ namespace Core.UI.Lib {
         }
         private WeakEvent<EventArgs> _OnShow = new();
 
-        internal UIDocument(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log, bool isSource = false) {
+        internal UIDocument(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log, bool isSource = false, Action<UIDocument>? init = null) {
             Name = name;
             _log = log;
             IsSource = isSource;
             _docFile = IsSource ? filename : PathHelpers.TryMakeDevPath(filename);
             Context = context;
             _rmlSystemInterface = rmlSystemInterface;
+            _init = init;
 
             LoadDoc();
 
@@ -179,6 +182,9 @@ namespace Core.UI.Lib {
             _scriptableDoc = CoreUIPlugin.Instance.ScriptableDocumentInstancer.GetDocument(NativePtr);
             
             _scriptableDoc.Panel = this;
+            if (_init is not null) {
+                _init(this);
+            }
             _scriptableDoc.HandleLoad();
 
             //_scriptableDoc.QuerySelector("handle")?.AddEventListener("handledrag", (ev) => {

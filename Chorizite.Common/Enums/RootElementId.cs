@@ -12,5 +12,6 @@ namespace Chorizite.Common.Enums {
         NegativeEffects = 0x10000185,
         CharacterInfo = 0x10000183,
         LinkStatus = 0x10000187,
+        LogOut = 0x10000026,
     }
 }

@@ -73,6 +73,9 @@ namespace Chorizite.Loader.Standalone {
         public void ToggleRootElement(RootElementId rootElementId) {
             if (UIElementManager.s_pInstance is not null) {
                 switch (rootElementId) {
+                    case RootElementId.LogOut:
+                        UIElementManager.s_pInstance->DoVisibilityToggleAction((uint)ClientAction.LOGOUT);
+                        break;
                     //case RootElementId.MiniGame:
                     //    UIElementManager.s_pInstance->DoVisibilityToggleAction((uint)ClientAction.ToggleMiniGamePanel);
                     //    break;
