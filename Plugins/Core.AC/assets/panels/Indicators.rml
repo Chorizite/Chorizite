@@ -76,33 +76,43 @@
       local rx = require('rx')
       local RootElementId = CS.Chorizite.Common.Enums.RootElementId
       local backend = require('backend')
-      local plugin = require('plugins.Core.UI')
+      local ui = require('plugins.Core.UI')
 
-      local pluginLookup = {}
+      local initialPlugins = {}
 
-      for i=0,plugin.PanelManager.Panels.Count-1 do
-        pluginLookup[plugin.PanelManager.Panels[i].Name] = plugin.PanelManager.Panels[i]
+      for i=0,ui.PanelManager.Panels.Count-1 do
+        if ui.PanelManager.Panels[i].ShowInBar then
+          initialPlugins[ui.PanelManager.Panels[i].Name] = ui.PanelManager.Panels[i].IsVisible
+        end
       end
 
       local state = rx:CreateState({
         UIIsLocked = backend.UIBackend.IsUILocked,
-        Plugins = 1
+        Plugins = initialPlugins,
+        Cheating = 1
       })
 
       backend.UIBackend:OnUILockChanged('+', function(s, e)
         state.UIIsLocked = e.IsLocked
       end)
 
-      plugin.PanelManager:OnPanelAdded('+', function(s, e)
-
+      ui.PanelManager:OnPanelAdded('+', function(s, e)
+        if e.Panel.ShowInBar then
+          state.Plugins[e.Panel.Name] = e.Panel.IsVisible
+          state.Cheating = state.Cheating + 1
+        end
       end)
 
-      plugin.PanelManager:OnPanelRemoved('+', function(s, e)
-
+      ui.PanelManager:OnPanelRemoved('+', function(s, e)
+        state.Plugins[e.Panel.Name] = nil
+        state.Cheating = state.Cheating + 1
       end)
 
-      plugin.PanelManager:OnPanelVisibilityChanged('+', function(s, e)
-        state.Plugins = state.Plugins + 1
+      ui.PanelManager:OnPanelVisibilityChanged('+', function(s, e)
+        if e.Panel.ShowInBar then
+          state.Plugins[e.Panel.Name] = e.Panel.IsVisible
+          state.Cheating = state.Cheating + 1
+        end
       end)
 
       local IndicatorsView = function(state)
@@ -163,29 +173,27 @@
               }),
               rx:Div({
                 class="plugin-icons",
-                count = state.Plugins
+                count = state.Cheating
               }, function()
                 local res = {}
-                for k,v in pairs(pluginLookup) do
-                  if v.ShowInBar then
-                    res[#res + 1] = rx:Button({
-                      key=k,
-                      class={
-                        icon = true,
-                        visible = v.IsVisible
-                      },
-                      onclick=function()
-                        if v.IsVisible then
-                          v:Hide()
-                        else
-                          v:Show()
-                          v:PullToFront()
-                        end
+                for panelName,isVisible in pairs(state.Plugins) do
+                  res[#res + 1] = rx:Button({
+                    key=k,
+                    class={
+                      icon = true,
+                      visible = isVisible
+                    },
+                    onclick=function()
+                      if isVisible then
+                        ui.PanelManager:GetPanel(panelName):Hide()
+                      else
+                        ui.PanelManager:GetPanel(panelName):Show()
+                        ui.PanelManager:GetPanel(panelName):PullToFront()
                       end
-                    }, {
-                      rx:Div({ class="overlay" }, string.sub(k, 1, 1))
-                    })
-                  end
+                    end
+                  }, {
+                    rx:Div({ class="overlay" }, string.sub(panelName, 1, 1))
+                  })
                 end
                 return res
               end),
@@ -193,7 +201,11 @@
                 class="icon",
                 style="decorator: image(dat://0x060074B1);",
                 onclick = function()
-                  backend:Exit()
+                  ui.PanelManager:ShowModalConfirmation("Are you sure you want to log off?", function(res)
+                    if res == "Yes" then
+                      backend:LogOff()
+                    end
+                  end, "Yes", "No")
                 end
               }),
             })

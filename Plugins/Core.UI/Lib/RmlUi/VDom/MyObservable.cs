@@ -5,12 +5,14 @@ using Cortex.Net.Core;
 using Cortex.Net.Types;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Core.UI.Lib.RmlUi.Elements {
     public class MyObservable : IReactiveObject {
         private static uint _nextObservableId = 0;
         private ISharedState _state;
         private MyObservable _parent;
+        private List<string> _orderedKeys = new();
 
         public string Name { get; }
 
@@ -47,11 +49,15 @@ namespace Core.UI.Lib.RmlUi.Elements {
         }
 
         private int n = 0;
-        private Dictionary<ObservableObject, MyObservable> _observables = new(); // TODO: remove>
+        private Dictionary<ObservableObject, MyObservable> _observables = new();
         private void AddObservableProperty<T>(string name, T value) {
             if (Observable.Has(name)) return;
 
             Length++;
+            if (!_orderedKeys.Contains(name)) {
+                _orderedKeys.Add(name);
+            }
+
             if (value is MyObservable myObservable) {
                 _observables.Remove(myObservable.Observable);
                 _observables.Add(myObservable.Observable, myObservable);
@@ -64,6 +70,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
 
         public void ClearProperty(string name) {
             Length--;
+            _orderedKeys.Remove(name);
             Observable.Remove(name);
         }
 
@@ -89,6 +96,9 @@ namespace Core.UI.Lib.RmlUi.Elements {
         }
 
         internal void Write<T>(string name, T value) {
+            if (!_orderedKeys.Contains(name)) {
+                _orderedKeys.Add(name);
+            }
             if (!Observable.Has(name)) {
                 Observable.AddObservableProperty(name, default(T));
             }
@@ -102,6 +112,29 @@ namespace Core.UI.Lib.RmlUi.Elements {
                 }
             }
             return null;
+        }
+
+        public string? NextKey(string currentKey) {
+            // If currentKey is null, return the first key
+            if (currentKey == null && _orderedKeys.Count > 0) {
+                return _orderedKeys[0];
+            }
+
+            // Find the index of the current key
+            int currentIndex = _orderedKeys.IndexOf(currentKey);
+
+            // If current key not found or it's the last key, return null
+            if (currentIndex == -1 || currentIndex >= _orderedKeys.Count - 1) {
+                return null;
+            }
+
+            // Return the next key in sequence
+            return _orderedKeys[currentIndex + 1];
+        }
+
+        // Helper method to get all available keys
+        public IReadOnlyList<string> GetKeys() {
+            return _orderedKeys.AsReadOnly();
         }
     }
 }

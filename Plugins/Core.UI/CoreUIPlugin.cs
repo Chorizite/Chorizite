@@ -350,16 +350,16 @@ namespace Core.UI {
         }
 
 
-        public Panel CreatePanelFromString(string name, string rmlContents) {
-            return PanelManager.CreatePanelFromString(name, rmlContents);
+        public Panel CreatePanelFromString(string name, string rmlContents, Action<UIDocument>? init = null) {
+            return PanelManager.CreatePanelFromString(name, rmlContents, init);
         }
 
-        public Panel? CreatePanel(string name, string rmlFilePath) {
+        public Panel? CreatePanel(string name, string rmlFilePath, Action<UIDocument>? init = null) {
             if (!File.Exists(rmlFilePath)) {
                 Log?.LogError($"Could not find RML file {rmlFilePath}");
                 return null;
             }
-            return PanelManager.CreatePanel(name, rmlFilePath);
+            return PanelManager.CreatePanel(name, rmlFilePath, init);
         }
         #endregion
 

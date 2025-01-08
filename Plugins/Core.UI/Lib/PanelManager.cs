@@ -1,5 +1,6 @@
 ﻿using ACUI.Lib.RmlUi;
 using Chorizite.Common;
+using Chorizite.Core.Lua;
 using Chorizite.Core.Render;
 using Core.UI;
 using Core.UI.Lib;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using XLua;
 
 namespace ACUI.Lib {
     /// <summary>
@@ -18,8 +20,8 @@ namespace ACUI.Lib {
     /// </summary>
     public class PanelManager : IDisposable {
         private readonly Dictionary<string, Panel> _panels = []; // <filename, panel>
-        private ElementDocument? _modalPanel;
         private Screen? _currentScreen = null;
+        private Panel? _currentModal = null;
         internal IDictionary<string, object>? _externalDragDropEventData;
         private readonly IRenderInterface Render;
         private readonly ACSystemInterface _rmlSystemInterface;
@@ -27,6 +29,7 @@ namespace ACUI.Lib {
         private readonly ILogger Log;
 
         public Screen? CurrentScreen => _currentScreen;
+        public Panel? CurrentModal => _currentModal;
 
         public List<Panel> Panels => _panels.Values.ToList();
 
@@ -117,6 +120,13 @@ namespace ACUI.Lib {
             Context.Update();
         }
 
+        public Panel? GetPanel(string name) {
+            if (_panels.TryGetValue(name, out Panel? panel)) {
+                return panel;
+            }
+            return null;
+        }
+
         /// <summary>
         /// Create a panel
         /// </summary>
@@ -136,15 +146,15 @@ namespace ACUI.Lib {
         /// <param name="name">The name of the panel</param>
         /// <param name="rmlFilePath">The rml file of the panel</param>
         /// <returns></returns>
-        public Panel CreatePanel(string name, string rmlFilePath) {
-            var panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log);
+        public Panel CreatePanel(string name, string rmlFilePath, Action<UIDocument>? init = null) {
+            var panel = new Panel(name, rmlFilePath, Context, _rmlSystemInterface, Log, false, init);
             AddPanelInternal(name, panel);
 
             return panel;
         }
 
-        public Panel CreatePanelFromString(string name, string rmlContents) {
-            var panel = new Panel(name, rmlContents, Context, _rmlSystemInterface, Log, true);
+        public Panel CreatePanelFromString(string name, string rmlContents, Action<UIDocument>? init = null) {
+            var panel = new Panel(name, rmlContents, Context, _rmlSystemInterface, Log, true, init);
             AddPanelInternal(name, panel);
 
             return panel;
@@ -231,81 +241,38 @@ namespace ACUI.Lib {
             _panels.Clear();
             _currentScreen?.Dispose();
             _currentScreen = null;
-            _modalPanel?.Dispose();
-            _modalPanel = null;
         }
 
-        internal void ShowModalConfirmation(string text, IEnumerable<string> buttons, Action<string> callback) {
-            var buttonsStr = new StringBuilder();
-            foreach (var button in buttons) {
-                buttonsStr.Append($"""<button data-event-click="exit('{button}')">{button}</button>""");
-            }
-            _modalPanel = Context.LoadDocumentFromMemory($$$"""
-<rml>
-    <head>
-        <title>{{{text}}}</title>
-        <style>
-            body {
-                display: block;
-                width: 100%;
-                height: 100%;
-                background-color: #00000088;
-                font-family: LatoLatin;
-            }
-            div {
-                display: block;
-            }
-            p {
-                display: inline-block;
-                padding: 20px;
-            }
-            button {
-                display: inline-block;
-                font-size: 30px;
-                padding: 10px;
-                margin: 10px;
-                color: white;
-                background-color: #093754;
-                border-color: white;
-                border-width: 1px;
-            }
-            button:hover {
-                background-color: orange;
-            }
-            button:active {
-                background-color: red;
-            }
-            .modal {
-                display: block;
-                margin: auto;
-                width: 300px;
-                height: 200px;
-                color: white;
-                background-color: #001421;
-                border-color: white;
-                border-width: 3px;
-                text-align: center;
-                font-size: 22px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="modal" data-model="CharSelectScreen">
-            <p id="message">{{{text}}}</p>
-            <div class="buttons">
-                {{{buttonsStr}}}
-            </div>
-        </div>
-    </body>
-</rml>
-""");
-            
+        public Panel ShowModalConfirmation(string text, Action<string> callback, params string[] buttons) {
+            CloseModal();
+            var modalTemplate = System.IO.Path.Combine(CoreUIPlugin.Instance.AssemblyDirectory, "assets", "templates", "modal.rml");
+            var _modalPanel = CreatePanel($"Modal_{text}", modalTemplate, (panel) => {
+                var modal = panel.ScriptableDocument.LuaContext.NewTable();
+                modal.SetInPath("text", text);
+                modal.SetInPath("callback", (Action<string>)((buttonText) => {
+                    try {
+                        callback(buttonText);
+                    }
+                    catch(Exception ex) { Log.LogError(ex, "Error running Modal callback"); }
+                    panel.Dispose();
+                }));
+                var buttonsTable = panel.ScriptableDocument.LuaContext.NewTable();
+                for (var i = 0; i < buttons.Length; i++) {
+                    buttonsTable.Set(i + 1, buttons[i]);
+                }
+                modal.SetInPath("buttons", buttonsTable);
+                panel.ScriptableDocument.LuaContext.SetGlobal("modal", modal);
+            });
+            _currentModal = _modalPanel;
             _modalPanel.Show();
+
+            return _modalPanel;
         }
 
-        internal void HideModal() {
-            _modalPanel?.Close();
-            _modalPanel = null;
+        public void CloseModal() {
+            if (_currentModal != null) {
+                DestroyPanel(_currentModal.Name);
+            }
         }
     }
 }

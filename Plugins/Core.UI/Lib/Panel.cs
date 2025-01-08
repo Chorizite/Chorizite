@@ -26,11 +26,11 @@ namespace ACUI.Lib {
         /// </summary>
         public bool ShowInBar { get; set; } = false;
 
-        internal Panel(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log) : base(name, filename, context, rmlSystemInterface, log) {
+        internal Panel(string name, string filename, Context context, ACSystemInterface rmlSystemInterface, ILogger log, Action<UIDocument>? init = null) : base(name, filename, context, rmlSystemInterface, log, false, init) {
 
         }
 
-        internal Panel(string name, string rmlContents, Context context, ACSystemInterface rmlSystemInterface, ILogger log, bool isSource) : base(name, rmlContents, context, rmlSystemInterface, log, isSource) {
+        internal Panel(string name, string rmlContents, Context context, ACSystemInterface rmlSystemInterface, ILogger log, bool isSource, Action<UIDocument>? init = null) : base(name, rmlContents, context, rmlSystemInterface, log, isSource, init) {
 
         }
 
