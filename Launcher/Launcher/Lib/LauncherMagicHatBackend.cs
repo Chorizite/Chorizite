@@ -9,6 +9,7 @@ using Chorizite.Common;
 using DatReaderWriter.DBObjs;
 using NAudio.Wave;
 using Chorizite.Core;
+using Chorizite.Core.Backend.Launcher;
 
 namespace Launcher.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {

@@ -11,8 +11,13 @@ using System.Threading.Tasks;
 using Chorizite.Common;
 using System.IO;
 using System.Numerics;
+using Chorizite.Core.Lua;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
+    /// <summary>
+    /// Interface for the ac client
+    /// </summary>
+    [LuaModuleNamespace("Chorizite.Core.Backend.Client")]
     public interface IClientBackend : IDisposable {
         int GameScreen { get; set; }
         uint SelectedObjectId { get; set; }
@@ -26,7 +31,7 @@ namespace Chorizite.Core.Backend {
         public IClientUIBackend UIBackend { get; }
 
         public bool EnterGame(uint characterId);
-        public bool LogOff(bool immediate); 
+        public bool LogOff(bool immediate);
 
         public void Exit();
         public void AddChatText(string text, ChatType type = ChatType.Default);

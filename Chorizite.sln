@@ -65,7 +65,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.AC.HookDev", "Plugins\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chorizite.DocGen", "Chorizite.DocGen", "{1B04BB5A-0007-417F-A5C2-94BA8CD162E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chorizite.DocGen.LuaDefs", "ext\Chorizite.DocGen\Chorizite.DocGen.LuaDefs\Chorizite.DocGen.LuaDefs.csproj", "{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.DocGen.LuaDefs", "ext\Chorizite.DocGen\Chorizite.DocGen.LuaDefs\Chorizite.DocGen.LuaDefs.csproj", "{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{189167BA-01A1-44D2-91FF-C2618E096B8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chorizite.Core.Tests", "Tests\Chorizite.Core.Tests\Chorizite.Core.Tests.csproj", "{94F24AF9-BFD2-41B2-9052-3696EC93357C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -169,6 +173,10 @@ Global
 		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -198,6 +206,7 @@ Global
 		{ED482583-1872-4784-A7C3-3AD07AB0FA14} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{1B04BB5A-0007-417F-A5C2-94BA8CD162E1} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
 		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26} = {1B04BB5A-0007-417F-A5C2-94BA8CD162E1}
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C} = {189167BA-01A1-44D2-91FF-C2618E096B8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

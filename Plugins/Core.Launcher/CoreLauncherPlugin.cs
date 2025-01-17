@@ -11,6 +11,7 @@ using Core.Launcher.UIModels;
 using Chorizite.Core.Backend;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
+using Chorizite.Core.Backend.Launcher;
 
 namespace Core.Launcher {
     public class CoreLauncherPlugin : IPluginCore, IScreenProvider<LauncherScreen>, ISerializeState<LauncherState>, ISerializeSettings<LauncherSettings> {

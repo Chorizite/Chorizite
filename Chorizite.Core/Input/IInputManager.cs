@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Chorizite.Core.Lua;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Input {
+    [LuaModuleNamespace("Chorizite.Core.Input")]
     public interface IInputManager : IDisposable {
         bool MouseIsOverWindow { get; }
         int MouseX { get; }

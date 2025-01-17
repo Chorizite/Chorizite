@@ -6,13 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
     public class ToggleElementVisibleEventArgs : EatableEventArgs {
         public RootElementId ElementId { get; init; }
         public bool IsShowing { get; init; }
 
         public ToggleElementVisibleEventArgs() {
-        
+
         }
 
         public ToggleElementVisibleEventArgs(RootElementId elementId, bool isShowing) {

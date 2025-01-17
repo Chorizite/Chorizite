@@ -48,8 +48,9 @@ namespace Chorizite.Core.Plugins {
         }
         private readonly WeakEvent<PluginUnloadedEventArgs> _OnPluginUnloaded = new();
 
-        public PluginManager(IChoriziteConfig config) {
+        public PluginManager(IChoriziteConfig config, ILogger log) {
             _config = config;
+            _log = log;
         }
 
         public PluginManager(IChoriziteConfig config, IRenderInterface render, ILogger<PluginManager> log) {
@@ -95,7 +96,7 @@ namespace Chorizite.Core.Plugins {
                     continue;
                 }
 
-                if (plugin.Manifest.Environments.HasFlag(_config.Environment)) {
+                if (plugin.Manifest.Environments.HasFlag(_config.Environment) || _config.Environment == ChoriziteEnvironment.DocGen) {
                     _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
                 }
             }

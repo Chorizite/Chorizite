@@ -17,7 +17,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
             if (oldTree == null) {
                 // If old tree is null, replace entire tree
                 var patch = new PatchOperation() {
-                    Type = PatchOperation.OperationType.Replace,
+                    Type = DomPatchType.Replace,
                     NewNode = newTree,
                 };
                 patches.Add(patch);
@@ -35,7 +35,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
             // If nodes are completely different, replace
             if (!AreNodesCompatible(oldNode, newNode)) {
                 patches.Add(new PatchOperation() {
-                    Type = PatchOperation.OperationType.Replace,
+                    Type = DomPatchType.Replace,
                     NewNode = newNode,
                     OldNode = oldNode
                 });
@@ -45,7 +45,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
             // Check for prop changes
             if (!ArePropsEqual(oldNode.Props, newNode.Props)) {
                 patches.Add(new PatchOperation() {
-                    Type = PatchOperation.OperationType.UpdateProps,
+                    Type = DomPatchType.UpdateProps,
                     NewNode = newNode,
                     OldNode = oldNode
                 });
@@ -54,7 +54,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
             // Check for text changes
             if (oldNode.Text != newNode.Text) {
                 patches.Add(new PatchOperation() {
-                    Type = PatchOperation.OperationType.UpdateText,
+                    Type = DomPatchType.UpdateText,
                     NewNode = newNode,
                     OldNode = oldNode
                 });
@@ -70,7 +70,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 foreach (var child in oldNodeChildren) {
                     if (!newNodeKeys.ContainsKey(child.Props["key"].ToString())) {
                         patches.Add(new PatchOperation() {
-                            Type = PatchOperation.OperationType.Remove,
+                            Type = DomPatchType.Remove,
                             NewNode = null,
                             OldNode = child,
                             Parent = oldNode
@@ -82,7 +82,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 foreach (var addedChild in newNodeChildren) {
                     if (!oldNodeKeys.ContainsKey(addedChild.Props["key"].ToString())) {
                         patches.Add(new PatchOperation() {
-                            Type = PatchOperation.OperationType.Add,
+                            Type = DomPatchType.Add,
                             NewNode = addedChild,
                             OldNode = null,
                             Parent = oldNode
@@ -107,7 +107,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 // Remove children that were in the old node but not in the new node
                 foreach (var removedChild in oldNodeChildren.Skip(childCount)) {
                     patches.Add(new PatchOperation() {
-                        Type = PatchOperation.OperationType.Remove,
+                        Type = DomPatchType.Remove,
                         NewNode = null,
                         OldNode = removedChild,
                         Parent = oldNode
@@ -117,7 +117,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
                 // Add children that are in the new node but not in the old node
                 foreach (var addedChild in newNodeChildren.Skip(childCount)) {
                     patches.Add(new PatchOperation() {
-                        Type = PatchOperation.OperationType.Add,
+                        Type = DomPatchType.Add,
                         NewNode = addedChild,
                         OldNode = null,
                         Parent = oldNode
@@ -151,12 +151,12 @@ namespace Core.UI.Lib.RmlUi.VDom {
             var parentNode = patch.Parent;
             try {
                 switch (patch.Type) {
-                    case PatchOperation.OperationType.Replace:
+                    case DomPatchType.Replace:
                         newNode.UpdateElement(oldNode.Element.DocEl.GetParentNode().AppendChildTag(newNode.Type));
                         newNode.Element.DocEl.GetParentNode().ReplaceChild(newNode.Element.DocEl, oldNode.Element.DocEl);
                         break;
 
-                    case PatchOperation.OperationType.UpdateProps:
+                    case DomPatchType.UpdateProps:
                         if (newNode?.Props is not null) {
                             var toUpdate = new Dictionary<string, object>(newNode.Props);
                             var updated = new List<string>();
@@ -175,15 +175,15 @@ namespace Core.UI.Lib.RmlUi.VDom {
                         }
                         break;
 
-                    case PatchOperation.OperationType.UpdateText:
+                    case DomPatchType.UpdateText:
                         newNode.Element.DocEl.SetInnerRml(newNode.Text);
                         break;
 
-                    case PatchOperation.OperationType.Add:
+                    case DomPatchType.Add:
                         newNode.UpdateElement(parentNode.Element.DocEl.AppendChildTag(patch.NewNode.Type));
                         break;
 
-                    case PatchOperation.OperationType.Remove:
+                    case DomPatchType.Remove:
                         parentNode.Element.DocEl.RemoveChild(oldNode.Element.DocEl);
                         oldNode.Dispose();
                         break;

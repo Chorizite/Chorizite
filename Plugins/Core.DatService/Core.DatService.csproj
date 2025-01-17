@@ -11,6 +11,8 @@
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -42,9 +44,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <PropertyGroup>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-  </PropertyGroup>
-
-
 </Project>

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
 
     public class PacketWriter : IDisposable {
         private readonly MemoryStream _stream;

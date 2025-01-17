@@ -3,6 +3,7 @@ using Autofac.Core;
 using Chorizite.ACProtocol.Types;
 using Chorizite.Common.Enums;
 using Chorizite.Core.Backend;
+using Chorizite.Core.Backend.Client;
 using Chorizite.Core.Plugins;
 using DatReaderWriter.Enums;
 using DatReaderWriter.Types;
@@ -116,7 +117,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
 
         private static GameObjectDragDropEventArgs BuildDragDropEventArgs(bool isDropping, UIElement* element, uint itemId, uint spellId, DropItemFlags flags) {
             GameObjectDragDropEventArgs? eventArgs = null;
-            var iconData = new Core.Backend.IconData();
+            var iconData = new Core.Backend.Client.IconData();
             if (itemId != 0) {
                 var itemName = $"Object[0x{itemId:X8}]";
                 try {
@@ -130,7 +131,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
                         var wIconData = physicsObj->weenie_obj->GetIconData();
                         // TODO: read default underlay based on item type from did 0x25000008
                         uint defaultUnderlay = GetDefaultUnderlayFromItemType(wIconData->m_itemType);
-                        iconData = new Core.Backend.IconData() {
+                        iconData = new Core.Backend.Client.IconData() {
                             Icon = wIconData->m_idIcon,
                             Underlay = wIconData->m_idCustomUnderlay > 0 ? wIconData->m_idCustomUnderlay : defaultUnderlay,
                             Overlay = wIconData->m_idCustomOverlay,
@@ -152,7 +153,7 @@ namespace Chorizite.Loader.Standalone.Hooks {
                         var isSelfSpell = (spellFlags.HasFlag(SpellFlags.SelfTargeted) && spell.MetaSpellType.HasFlag(DatReaderWriter.Enums.SpellType.Enchantment)) || spell.MetaSpellType.HasFlag(DatReaderWriter.Enums.SpellType.PortalSending) || spell.MetaSpellType.HasFlag(DatReaderWriter.Enums.SpellType.PortalRecall);
                         var isFellowSpell = spellFlags.HasFlag(SpellFlags.FellowshipSpell);
 
-                        iconData = new Core.Backend.IconData() {
+                        iconData = new Core.Backend.Client.IconData() {
                             Icon = spell.Icon,
                             Underlay = 0x060013F4u + GetSpellLevel(spell.Components.FirstOrDefault()) - 1,
                             Overlay = isSelfSpell ? 0x060013F3u : (isFellowSpell ? 0x060030D7u : 0),

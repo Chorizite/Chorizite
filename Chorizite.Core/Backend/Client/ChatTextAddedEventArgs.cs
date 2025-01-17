@@ -1,7 +1,7 @@
 ﻿using Chorizite.Common;
 using Chorizite.Core.Lib;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
     public class ChatTextAddedEventArgs : EatableEventArgs {
         /// <summary>
         /// The text being added to the chat window

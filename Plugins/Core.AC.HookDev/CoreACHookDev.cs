@@ -5,9 +5,9 @@ using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core;
 using Core.AC.HookDev.Lib;
-using Chorizite.Core.Backend;
 using AcClient;
 using Chorizite.Common.Enums;
+using Chorizite.Core.Backend.Client;
 
 namespace Core.AC.HookDev {
     unsafe public class CoreACHookDev : IPluginCore {
