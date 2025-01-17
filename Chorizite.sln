@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Launcher", "Plugins\Co
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{522C4DD8-4502-4BD9-9010-A5F5AE96FDC9}"
 	ProjectSection(SolutionItems) = preProject
+		Installer\dotnetcore.nsh = Installer\dotnetcore.nsh
+		Installer\Installer.nsi = Installer\Installer.nsi
 		LICENSE.md = LICENSE.md
 		README.md = README.md
 	EndProjectSection
@@ -69,7 +71,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.DocGen.LuaDefs", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{189167BA-01A1-44D2-91FF-C2618E096B8D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chorizite.Core.Tests", "Tests\Chorizite.Core.Tests\Chorizite.Core.Tests.csproj", "{94F24AF9-BFD2-41B2-9052-3696EC93357C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Core.Tests", "Tests\Chorizite.Core.Tests\Chorizite.Core.Tests.csproj", "{94F24AF9-BFD2-41B2-9052-3696EC93357C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
