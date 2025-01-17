@@ -7,7 +7,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.CodeDom" Version="9.0.0" />
+    <PackageReference Include="System.CodeDom" Version="9.0.1" />
   </ItemGroup>
 
   <ItemGroup>
