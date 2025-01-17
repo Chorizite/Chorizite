@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Chorizite.Common;
 
 namespace Chorizite.Core.Render {
-    internal class NullRenderInterface : IRenderInterface {
+    public class NullRenderInterface : IRenderInterface {
         internal class NullTexture : ITexture {
             public IntPtr TexturePtr { get; }
 

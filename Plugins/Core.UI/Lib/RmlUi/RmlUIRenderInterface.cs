@@ -1,5 +1,4 @@
-﻿using Core.DearImGui;
-using Chorizite.Core.Render;
+﻿using Chorizite.Core.Render;
 using RmlUiNet;
 using System;
 using System.Collections.Generic;

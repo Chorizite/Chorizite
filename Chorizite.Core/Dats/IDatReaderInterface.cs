@@ -1,4 +1,6 @@
-﻿using DatReaderWriter;
+﻿using Chorizite.Core.Lua;
+using Chorizite.Core.Net;
+using DatReaderWriter;
 using DatReaderWriter.DBObjs;
 using DatReaderWriter.Lib.IO;
 using System;
@@ -8,8 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Dats {
-    public interface IDatReaderInterface
-    {
+    [LuaModuleNamespace("DatReaderWriter")]
+    public interface IDatReaderInterface {
         public PortalDatabase Portal { get; }
         public CellDatabase Cell { get; }
         SpellTable SpellTable { get; }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
     /// <summary>
     /// Chat types
     /// </summary>

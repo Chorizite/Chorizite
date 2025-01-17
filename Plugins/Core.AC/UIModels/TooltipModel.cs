@@ -5,10 +5,10 @@ using Chorizite.ACProtocol.Messages.S2C;
 using Chorizite.Core.Net;
 using Core.UI.Lib.Serialization;
 using System.Text.Json.Serialization;
-using Chorizite.Core.Backend;
 using System;
 using Microsoft.Extensions.Logging;
-using ChatType = Chorizite.Core.Backend.ChatType;
+using ChatType = Chorizite.Core.Backend.Client.ChatType;
+using Chorizite.Core.Backend.Client;
 
 namespace Core.AC.UIModels {
     [JsonConverter(typeof(UIDataModelJsonConverter))]

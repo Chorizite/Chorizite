@@ -20,8 +20,12 @@ using Core.AC.Lib.Screens;
 using ACUI.Lib;
 using Core.AC.API;
 using Chorizite.Core.Dats;
+using Chorizite.Core.Backend.Client;
 
 namespace Core.AC {
+    /// <summary>
+    /// Core AC Plugin. Provides api access to ACClient stuffs.
+    /// </summary>
     public class CoreACPlugin : IPluginCore, IScreenProvider<GameScreen>, ISerializeState<PluginState> {
         private readonly Dictionary<GameScreen, string> _registeredGameScreens = [];
         private PluginState _state;

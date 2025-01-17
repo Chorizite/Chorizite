@@ -31,6 +31,9 @@ namespace Chorizite.Core.Plugins {
         [JsonIgnore]
         public string ManifestFile { get; set; } = "";
 
+        [JsonIgnore]
+        public string BaseDirectory => Path.GetDirectoryName(ManifestFile)!;
+
         public static bool TryLoadManifest<T>(string filename, out T manifest, out string? errorString) where T : PluginManifest {
             try {
                 manifest = JsonSerializer.Deserialize<T>(File.ReadAllText(filename), _serializerOptions)!;

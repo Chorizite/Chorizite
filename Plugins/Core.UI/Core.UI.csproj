@@ -14,13 +14,15 @@
     <Nullable>enable</Nullable>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="CoreUIPlugin.cs" />
     <Content Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.1.1" ExcludeAssets="runtime" />
+    <PackageReference Include="Autofac" Version="8.2.0" ExcludeAssets="runtime" />
     <PackageReference Include="Cortex.Net" Version="0.4.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="NSIS-Tool" Version="3.10.0">
@@ -99,9 +101,6 @@
   <ItemGroup>
     <Folder Include="lua\" />
   </ItemGroup>
-  <PropertyGroup>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-  </PropertyGroup>
   <Target Name="DeleteFiles" AfterTargets="Build">
      <ItemGroup>
        <FilesToDelete Include="$(OutDir)\Microsoft.AspNetCore.*" />

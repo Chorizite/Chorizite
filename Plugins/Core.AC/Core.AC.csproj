@@ -12,6 +12,8 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -49,7 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="8.1.1" ExcludeAssets="runtime" />
+    <PackageReference Include="Autofac" Version="8.2.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" ExcludeAssets="runtime" />
   </ItemGroup>
@@ -83,8 +85,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <PropertyGroup>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-  </PropertyGroup>
 
 </Project>

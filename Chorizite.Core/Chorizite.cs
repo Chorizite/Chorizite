@@ -1,6 +1,8 @@
 ﻿using Autofac;
 using Chorizite.Common;
 using Chorizite.Core.Backend;
+using Chorizite.Core.Backend.Client;
+using Chorizite.Core.Backend.Launcher;
 using Chorizite.Core.Dats;
 using Chorizite.Core.Input;
 using Chorizite.Core.Lib;
@@ -10,6 +12,7 @@ using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core.Render;
+using DatReaderWriter.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -114,31 +117,45 @@ namespace Chorizite.Core {
                     .SingleInstance();
 
                 if (Config.Environment.HasFlag(ChoriziteEnvironment.Client)) {
-                    IClientBackend clientBackend;
+                    IClientBackend? clientBackend = null;
                     if (Backend.GetType().IsAssignableTo(typeof(IClientBackend))) {
                         clientBackend = (IClientBackend)Backend;
-                    }
-                    else {
-                        throw new Exception("Client environments must provide an IClientBackend");
+                        Backend.RegisterLuaModule("ClientBackend", clientBackend);
                     }
 
-                    builder.RegisterInstance(clientBackend)
-                        .As<IClientBackend>();
-                    builder.RegisterType<NetworkParser>()
-                        .SingleInstance();
+                    if (Config.Environment != ChoriziteEnvironment.DocGen) {
+                        if (clientBackend is null) {
+                            throw new Exception("Client environments must provide an IClientBackend");
+                        }
+
+                        builder.RegisterInstance(clientBackend)
+                            .As<IClientBackend>();
+
+                        builder.RegisterInstance(new NetworkParser(clientBackend, _container.Resolve<ILogger<NetworkParser>>()));
+                    }
+                    else {
+                        builder.RegisterInstance(new NetworkParser(_container.Resolve<ILogger<NetworkParser>>()));
+                    }
                 }
                 if (Config.Environment.HasFlag(ChoriziteEnvironment.Launcher)) {
-                    ILauncherBackend launcherBackend;
+                    ILauncherBackend? launcherBackend = null;
                     if (Backend.GetType().IsAssignableTo(typeof(ILauncherBackend))) {
                         launcherBackend = (ILauncherBackend)Backend;
-                    }
-                    else {
-                        throw new Exception("Launcher environments must provide an ILauncherBackend");
+                        Backend.RegisterLuaModule("LauncherBackend", launcherBackend);
                     }
 
-                    builder.RegisterInstance(launcherBackend)
-                        .As<ILauncherBackend>();
+                    if (Config.Environment != ChoriziteEnvironment.DocGen) {
+                        if (launcherBackend is null) {
+                            throw new Exception("Launcher environments must provide an ILauncherBackend");
+                        }
+                        builder.RegisterInstance(launcherBackend)
+                            .As<ILauncherBackend>();
+                    }
+                    else {
+                    }
                 }
+
+                Backend.RegisterLuaModule("Backend", Backend);
 
                 builder.RegisterType<PluginManager>()
                     .As<IPluginManager>()
@@ -151,18 +168,22 @@ namespace Chorizite.Core {
             if (Config.Environment.HasFlag(ChoriziteEnvironment.Client)) {
                 var networkParser = Scope.Resolve<NetworkParser>();
                 networkParser.Init();
+
+                Backend.RegisterLuaModule("NetworkParser", networkParser);
             }
 
             _renderInterface = Scope.Resolve<IRenderInterface>();
             if (_renderInterface is null) {
                 throw new Exception("Failed to resolve IRenderInterface");
             }
+            Backend.RegisterLuaModule("Renderer", _renderInterface);
 
             _inputManager = Scope.Resolve<IInputManager>();
             if (_inputManager is null) {
                 throw new Exception("Failed to resolve IInputManager");
             }
             _inputManager.OnShutdown += InputManager_OnShutdown;
+            Backend.RegisterLuaModule("InputManager", _inputManager);
 
             var xluaPath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "xlua.dll");
             _log?.LogWarning($"Manually pre-loading {xluaPath}");
@@ -172,10 +193,15 @@ namespace Chorizite.Core {
 
             _pluginManager.RegisterPluginLoader(Scope.Resolve<AssemblyPluginLoader>());
             _pluginManager.LoadPluginManifests();
+            Backend.RegisterLuaModule("PluginManager", _pluginManager);
 
-            _pluginManager.StartPlugins();
+            if (Config.Environment == ChoriziteEnvironment.Launcher || Config.Environment == ChoriziteEnvironment.Client) {
+                _pluginManager.StartPlugins();
+            }
 
             Backend.Renderer.OnRender2D += OnRender2D;
+
+            Backend.RegisterLuaModule("DatReader", _container.Resolve<IDatReaderInterface>());
         }
 
         private void OnRender2D(object? sender, EventArgs e) {

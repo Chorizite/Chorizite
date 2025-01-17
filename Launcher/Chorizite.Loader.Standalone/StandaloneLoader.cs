@@ -54,7 +54,11 @@ namespace Chorizite.Loader.Standalone {
         public static void Startup(int unmanagedD3DPtr) {
             try {
                 UnmanagedD3DPtr = unmanagedD3DPtr;
-                Config = new ChoriziteConfig(ChoriziteEnvironment.Client, _pluginDirectory, _dataDirectory, _logDirectory, Environment.CurrentDirectory);
+                Config = new ChoriziteConfig(ChoriziteEnvironment.Client, AssemblyDirectory, Environment.CurrentDirectory) {
+                    LogDirectory = _logDirectory,
+                    PluginDirectory = _pluginDirectory,
+                    StorageDirectory = _dataDirectory
+                };
                 ChoriziteInstance = new Chorizite<ACChoriziteBackend>(Config);
 
                 Backend = (ChoriziteInstance.Backend as ACChoriziteBackend)!;

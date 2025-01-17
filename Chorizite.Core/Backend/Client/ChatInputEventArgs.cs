@@ -1,7 +1,7 @@
 ﻿using Chorizite.Common;
 using Chorizite.Core.Lib;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
     /// <summary>
     /// Used when chat text is typed and submitted into the chat box.
     /// </summary>
