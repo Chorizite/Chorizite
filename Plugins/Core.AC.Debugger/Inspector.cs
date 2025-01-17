@@ -30,49 +30,6 @@ namespace Core.AC.Debugger {
         public static object DRAG_SOURCE_OBJECT = null;
         private bool isOpen;
 
-        /// <summary>
-        /// An inspected object is an object wrapped with MemberInfo/Parent,
-        /// so we can reflect against the parent to get the current value of
-        /// primitives.
-        /// </summary>
-        public class InspectedObject {
-            /// <summary>
-            /// MemberInfo of an inspected object
-            /// </summary>
-            public MemberInfo MemberInfo = null;
-
-            /// <summary>
-            /// Parent object
-            /// </summary>
-            public object Parent = null;
-
-            /// <summary>
-            /// The type
-            /// </summary>
-            public Type Type {
-                get {
-                    switch (MemberInfo.MemberType) {
-                        case MemberTypes.Property:
-                            return (MemberInfo as PropertyInfo).PropertyType;
-                        case MemberTypes.Field:
-                            return (MemberInfo as FieldInfo).FieldType;
-                        default:
-                            return null;
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Value
-            /// </summary>
-            public object Value => GetMemberValue(Parent, MemberInfo);
-
-            public InspectedObject(MemberInfo memberInfo, object parent) {
-                MemberInfo = memberInfo;
-                Parent = parent;
-            }
-        }
-
         public string Name { get; }
 
         /// <summary>

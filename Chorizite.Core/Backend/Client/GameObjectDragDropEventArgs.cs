@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
     /// <summary>
     /// Flags that show what type of object is being dragged
     /// </summary>
@@ -31,7 +31,7 @@ namespace Chorizite.Core.Backend {
         /// <summary>
         /// Flags that show what type of object is being dragged
         /// </summary>
-        public DragDropFlags Flags { get; init;  }
+        public DragDropFlags Flags { get; init; }
 
         /// <summary>
         /// The name of the object / spell

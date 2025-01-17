@@ -77,6 +77,10 @@
       local RootElementId = CS.Chorizite.Common.Enums.RootElementId
       local backend = require('backend')
       local ui = require('plugins.Core.UI')
+      local DamageType = CS.Chorizite.Common.Enums.DamageType
+      print("DamageType:", 1 << 2, 0xFF & 0x0F)
+
+      print("Lua", typeof(CS.System.DateTime.UnderlyingSystemType))
 
       local initialPlugins = {}
 

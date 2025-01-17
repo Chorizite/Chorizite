@@ -2,7 +2,7 @@
 using System;
 using System.Numerics;
 
-namespace Chorizite.Core.Backend {
+namespace Chorizite.Core.Backend.Client {
     public interface IClientUIBackend {
         public event EventHandler<EventArgs> OnScreenChanged;
         public event EventHandler<GameObjectDragDropEventArgs> OnGameObjectDragEnd;

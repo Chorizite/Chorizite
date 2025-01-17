@@ -5,7 +5,7 @@ using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core;
 
-namespace Core.DearImGui {
+namespace Core.DatService {
     public class CoreDatService : IPluginCore {
         private IPluginManager _pluginManager;
         internal static ILogger Log;

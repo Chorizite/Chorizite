@@ -34,7 +34,7 @@ namespace Launcher {
 
             LaunchManager = new LaunchManager(Log);
 
-            Config = new ChoriziteConfig(ChoriziteEnvironment.Launcher, _pluginDirectory, _dataDirectory, _logDirectory, _datDirectory);
+            Config = new ChoriziteConfig(ChoriziteEnvironment.Launcher, AssemblyDirectory, _datDirectory);
             ChoriziteInstance = new Chorizite<LauncherChoriziteBackend>(Config);
 
             Input = (ChoriziteInstance.Backend.Input as SDLInputManager)!;

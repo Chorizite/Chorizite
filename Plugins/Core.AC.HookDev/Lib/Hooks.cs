@@ -1,6 +1,6 @@
 ﻿using AcClient;
 using Chorizite.Common.Enums;
-using Chorizite.Core.Backend;
+using Chorizite.Core.Backend.Client;
 using Chorizite.Loader.Standalone.Hooks;
 using Microsoft.Extensions.Logging;
 using Reloaded.Hooks.Definitions;

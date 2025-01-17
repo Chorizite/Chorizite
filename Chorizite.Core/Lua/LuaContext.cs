@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using Chorizite.Core.Backend;
+using Chorizite.Core.Backend.Client;
 using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
 using Microsoft.Extensions.Logging;
@@ -192,7 +192,7 @@ namespace Chorizite.Core.Lua {
                 }
 
                 // custom modules, registered with <see cref="IChoriziteBackend.RegisterLuaModule(string, object)" />
-                if (ChoriziteStatics.Backend._modules.TryGetValue(modulePath, out var moduleObj)) {
+                if (ChoriziteStatics.Backend.LuaModules.TryGetValue(modulePath, out var moduleObj)) {
                     return moduleObj;
                 }
 

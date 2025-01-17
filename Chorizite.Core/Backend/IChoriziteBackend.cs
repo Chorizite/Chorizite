@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Chorizite.Common;
 using Chorizite.Core.Input;
+using Chorizite.Core.Lua;
 using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
 using System;
@@ -10,8 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Backend {
+    [LuaModuleNamespace("Chorizite.Core.Backend")]
     public abstract class IChoriziteBackend {
-        internal readonly Dictionary<string, object> _modules = [];
+        public Dictionary<string, object> LuaModules { get; } = [];
 
         /// <summary>
         /// Get the <see cref="IRenderInterface"/> being used for this backend.
@@ -73,8 +75,8 @@ namespace Chorizite.Core.Backend {
         /// <param name="name"></param>
         /// <param name="module"></param>
         public virtual bool RegisterLuaModule(string name, object module) {
-            if (!_modules.TryAdd(name, module)) {
-                ChoriziteStatics.Log.LogWarning($"Failed to register lua module: {name}. Already exists with value: {_modules[name]}");
+            if (!LuaModules.TryAdd(name, module)) {
+                ChoriziteStatics.Log.LogWarning($"Failed to register lua module: {name}. Already exists with value: {LuaModules[name]}");
                 return false;
             }
             return true;
@@ -84,6 +86,6 @@ namespace Chorizite.Core.Backend {
         /// Unregister a lua module
         /// </summary>
         /// <param name="name"></param>
-        public virtual bool UnregisterLuaModule(string name) => _modules.Remove(name);
+        public virtual bool UnregisterLuaModule(string name) => LuaModules.Remove(name);
     }
 }

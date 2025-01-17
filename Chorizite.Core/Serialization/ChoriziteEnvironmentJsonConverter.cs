@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Serialization {
-    public class ChoriziteEnvironmentJsonConverter : JsonConverter<ChoriziteEnvironment> {
+    internal class ChoriziteEnvironmentJsonConverter : JsonConverter<ChoriziteEnvironment> {
         public override ChoriziteEnvironment Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
             ChoriziteEnvironment env = ChoriziteEnvironment.Unknown;
             reader.Read(); // start array

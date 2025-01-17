@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using Chorizite.Common;
 using Chorizite.Loader.Standalone.Hooks;
-using ChatType = Chorizite.Core.Backend.ChatType;
+using ChatType = Chorizite.Core.Backend.Client.ChatType;
 using System.Text;
 using System.Linq;
 using SharpDX;
@@ -28,6 +28,7 @@ using NAudio.Wave;
 using WaveFormat = NAudio.Wave.WaveFormat;
 using NAudio.Wave.SampleProviders;
 using Chorizite.Loader.Standalone.Lib;
+using Chorizite.Core.Backend.Client;
 
 namespace Chorizite.Loader.Standalone {
     public unsafe class ACChoriziteBackend : IChoriziteBackend, IClientBackend {

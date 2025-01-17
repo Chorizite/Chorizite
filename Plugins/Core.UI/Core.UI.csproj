@@ -14,6 +14,8 @@
     <Nullable>enable</Nullable>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="CoreUIPlugin.cs" />
@@ -99,9 +101,6 @@
   <ItemGroup>
     <Folder Include="lua\" />
   </ItemGroup>
-  <PropertyGroup>
-    <EnableDynamicLoading>true</EnableDynamicLoading>
-  </PropertyGroup>
   <Target Name="DeleteFiles" AfterTargets="Build">
      <ItemGroup>
        <FilesToDelete Include="$(OutDir)\Microsoft.AspNetCore.*" />
