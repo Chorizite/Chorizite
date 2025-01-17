@@ -18,8 +18,8 @@ local state = rx:CreateState({
 })
 
 local OpCodeHandlers = {
-  [0x0317] = function(evt)
-    print("-> AuctionQueryListings Event Handler")
+  [0x10000] = function(evt)
+    print("-> AuctionGetAllListings Event Handler")
     local stream = MemoryStream(evt.RawData)
     local reader = BinaryReader(stream)
     local length = reader:ReadUInt32()
@@ -27,7 +27,6 @@ local OpCodeHandlers = {
     local items = json.decode(jsonBytes)
 	reader:Dispose()
 
-	state.items = items;
 	state.loading = false;
   end
 }
@@ -50,13 +49,15 @@ end
 
 local BrowseHeader = function (state) 
     return rx:Div({ class = "browse-header"}, {
-        rx:H1("Auction Items"),
+        rx:H4("Auction Items"),
         rx:P("Browse and buy unique items")
     })
 end
 
 local BrowseSearch = function (state) 
-    return rx:Input({ type = "text", placeholder = "Serach items", class = "browse-search", value = state.searchTerm })
+    return rx:Div({ class = "browse-search" }, {
+        rx:Input({ type = "text", placeholder = "Serach items", value = state.searchTerm })
+    })
 end
 
 local BrowseLoader = function () 
@@ -83,7 +84,6 @@ local BrowseItems = function(state)
 end
 
 local BrowseAuctionView = function(state)
-  print("Rendering BrowwseAuctionView")
   return rx:Div({ class = "auction-browse", onMount = function () onMount() end }, {
       BrowseHeader(state),
       BrowseSearch(state),

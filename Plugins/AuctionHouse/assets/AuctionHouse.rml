@@ -4,41 +4,69 @@
 		<link type="text/template" href="../../Core.UI/assets/templates/tabpanel.rml" />
 		<style>
       body {
-        font-size: 33px;
-        min-width: 300px;
+        min-width: 80vw;
+        max-height: 90vh;
         font-family: Tahoma;
+        font-size: 1em;
+        overflow: auto;
       }
 
       .inner {
-        padding: 0px;
+        padding: 0;
         background-color: #000000dd;
       }
 
       body h4 {
+        font-size: 1.2rem;
         color: #eea300dd;
-        font-weight: bold;
-        font-size: 16px;
         padding: 0;
-        margin: 4dp 0 4dp 0;
+        margin: 0;
+        font-weight: bold;
       }
 
-      .post input[type="text"] {
-        width: 60px;
-      }
-
-      .flex {
+      .auction-post {
         display: flex;
+        flex-direction: row;
+        width: 100%;
       }
 
-      .post-area {
-        flex: 200dp;
-        padding: 6dp;
+      .post-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        width: 30%;
         border-right: 1px #eea300dd;
       }
 
-      #browse {
-        max-height: 300px;
-        overflow-y: auto;
+      .post-form-container {
+        display: flex;
+        justify-content: space-between;
+        height: 500px;
+        flex-direction: column;
+      }
+
+      .post-form-item-container {
+        display: flex;
+        flex-direction: column;
+        border-radius: 0.85rem;
+        background:rgba(59, 49, 27, 50%);
+        gap: 0.5rem;
+      }
+
+      .post-form-item {
+        display: flex;
+        height: 2.5rem;
+        gap: 0.5rem;
+      }
+
+      .icon-stack-label {
+        align-self: center;
+        font-size: 1.25rem;
+      }
+
+      .post-form input[type="text"] {
+        width: 5rem;
       }
 
       .post-comparisons {
@@ -55,82 +83,84 @@
         margin-right: 10px;
       }
 
-      .post-area .icon-stack {
+      .icon-stack {
         decorator: image(dat://0x06000F6E);
-        display: inline-block;
-        width: 32dp;
-        height: 32dp;
+        width: 2.5rem;
         position: relative;
       }
-      .post-area .icon-stack > * {
+
+      .icon-stack > * {
         position: absolute;
         top: 0;
         left: 0;
-        width: 32dp;
-        height: 32dp;
+        width: 2.5rem;
+        height: 2.5rem;
       }
 
-      .post-area .icon-stack .icon-drag-invalid {
+      .icon-stack .icon-drag-invalid {
         decorator: image(dat://0x060011F8);
         display: none;
       }
 
-      .post-area .icon-stack .icon-drag-accept {
+      .icon-stack .icon-drag-accept {
         decorator: image(dat://0x060011F9);
         display: none;
       }
 
-      .post-area.has-drag-over .icon-stack .icon-drag-accept {
+      .has-drag-over .icon-stack .icon-drag-accept {
         display: inline-block;
       }
 
-      .post-area.has-drag-over-invalid .icon-stack .icon-drag-invalid {
+      .has-drag-over-invalid .icon-stack .icon-drag-invalid {
         display: inline-block;
       }
 
-      .post-area .icon-stack .icon-item {
+     .icon-stack .icon-item {
         display: none;
       }
 
-      .post-area.has-item .icon-stack .icon-item {
+     .has-item .icon-stack .icon-item {
         display: inline-block;
       }
       
-      .post-area .name {
+      .name {
         flex: 1;
         font-size: 16px;
         padding-left: 8dp;
       }
 
-      .post-area button.create-auction-button{
-        margin: 6px 0 0 0;
+      .create-auction-button {
+        width: 100%;
       }
 
       .auction-browse {
-        width: 800px;
+        display: flex;
+        flex-direction: column;
+        text-align: left;
         padding: 1rem;
-	  }
+        padding-right: 2rem;
+        margin: 0;
+        overflow-y: auto;
+      }
 
       .browse-header {
         margin-bottom: 1rem;
-	  }
+        font-size: 1rem;
+      }
 
       .browse-header h1 {
-		color: #eea300dd;
-        font-size: 1rem;
-		margin-bottom: 0.5rem;
-	  }
+        color: #eea300dd;
+        margin-bottom: 0.5rem;
+      }
 
       .browse-header p {
         color: #ddd;
-	  }
+      }
 
-      .browse-search {
-        width: 700px;
-		margin-bottom: 1rem;
-        border: 1px solid #ddd;
-        border-radius: 0.5rem;
-	  }
+      .browse-search input {
+        width: 100%;
+      }
+      
     </style>
     <script src="browse.lua"></script>
     <script src="post.lua"></script>

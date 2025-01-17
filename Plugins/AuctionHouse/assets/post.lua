@@ -5,14 +5,20 @@ local ChatType = CS.Chorizite.Core.Backend.ChatType
 local PacketWriter = CS.Chorizite.Core.Backend.Client.PacketWriter
 local PropertyInt = CS.Chorizite.Common.Enums.PropertyInt
 local ObjectClass = CS.Chorizite.Common.Enums.ObjectClass
+local json = require('json')
 
 local state = rx:CreateState({
   selectedId = 0,
   selectedIcon = "",
   selectedName = nil,
+  selectedCurrencyId = 0,
+  selectedCurrencyIcon = "",
+  selectedCurrencyName = nil,
+  selectedCurrencyWcid = 0,
   stackSize = 1,
   stackCount = 1,
-  price = 1,
+  startingPrice = 1,
+  buyoutPrice = 1,
   duration = 1,
   isDragging = false,
   allowDragging = true,
@@ -30,122 +36,234 @@ local state = rx:CreateState({
   end,
   SetMaximumStackSize = function(self)
     local wobject = ac.World:Get(self.selectedId)
+    print(self.selectedId)
     if wobject == nil or not wobject.IsStackable then return end
     self.stackSize = math.min(wobject:Value(PropertyInt.StackSize), wobject:Value(PropertyInt.MaxStackSize))
   end,
-  PostItem = function(self)
+  PostAuction = function(self)
     if self.selectedId == 0 then
       backend:AddChatText("Select an item first!", ChatType.HelpChannel)
       return
     end
     print(string.format("Sending: Number: %d, String: %s", self.selectedId, self.selectedName))
 
+    local auctionItem = {
+      ItemId = self.selectedId,
+      StackSize = self.stackSize,
+      NumberOfStacks = self.stackCount,
+      StartPrice = self.startingPrice,
+      BuyoutPrice = self.buyoutPrice,
+      CurrencyType = self.selectedCurrencyWcid,
+      HoursDuration = self.duration
+    }
+
+    local requestPayload = {
+      Data = auctionItem
+    }
+
+    local jsonString = json.encode(requestPayload)
+    local len = #jsonString
     local writer = PacketWriter()
-    writer:WriteUInt32(0xF7CA) -- opcode
-    writer:WriteUInt32(self.selectedId) -- selected id
-    writer:WriteString(self.selectedName) -- selected name
+    writer:WriteUInt32(0x10001) -- opcode
+    writer:WriteUInt32(len) -- json length
+    writer:WriteString(jsonString) -- json string
     backend:SendProtoUIMessage(writer)
     writer:Dispose()
   end
 })
 
-local PostItemView = function(state)
-  return rx:Div({ class="post flex" }, {
-    -- post area
-    rx:Div({ class = {
-        ["post-area"] = true,
-        ["has-item"] = state.selectedId ~= 0,
-        ["has-drag-over"] = state.isDragging and state.allowDragging,
-        ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
-      }}, {
-        rx:H4("Auction Item"),
-        rx:Div({
-          class = "flex item",
-          ondragdrop = function(evt)
-            if state.allowDragging == false then return end
-
-            if evt.Params.ObjectId == nil or evt.Params.ObjectName == nil then return end
-            state.selectedId = evt.Params.ObjectId
-            state.selectedIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
-            state.selectedName = evt.Params.ObjectName
-            state:SelectItem(state.selectedId)
-          end,
-          ondragover = function(evt)
-            state.isDragging = true
-            state.allowDragging = evt.Params.IsSpell == false
-            state.dragError = ""
-
-            if not evt.Params.IsSpell then
-              local wobject = ac.World:Get(evt.Params.ObjectId)
-              if wobject.ObjectClass == ObjectClass.Container then
-                state.allowDragging = false
-                state.dragError = "Containers are not allowed on the Auction House"
-                return
-              elseif wobject.IsAttuned then
-                state.allowDragging = false
-                state.dragError = "Can't sell attuned items on the Auction House"
-                return
-              end
-            end
-          end,
-          ondragout = function(evt)
-            state.isDragging = false
-            state.dragError = ""
-          end
-        }, {
-          rx:Div({ class = "icon-stack" }, {
-            rx:Div({
-              class = "icon-item",
-              style = state.selectedId == 0 and "" or string.format("decorator: image( %s )", state.selectedIcon)
-            }),
-            rx:Div({ class = "icon-drag-accept" }),
-            rx:Div({ class = "icon-drag-invalid" }),
-          }),
-          rx:Div({ class = "name" }, state.selectedName or "Drop an item here"),
-      }),
-
-      rx:H4("Stack Size"),
-      rx:Div({ class = "flex" }, {
-        rx:Input({ type = "text", id="post-item-stack-size", value = state.stackSize, disabled = not state.canStack }),
-        rx:Button({
-          class = "secondary",
-          disabled = not state.canStack,
-          onclick = function(evt) state:SetMaximumStackSize() end
-        }, "Maximum"),
-      }),
-
-      rx:H4("Number of Stacks"),
-      rx:Div({ class = "flex" }, {
-        rx:Input({ type = "text", id="post-item-stacks", value = state.stackCount, disabled = not state.canStack }),
-        rx:Button({
-          class = "secondary",
-          disabled = not state.canStack
-        }, "Maximum"),
-      }),
-
-      rx:H4("Price"),
-      rx:Div({ class = "flex" }, {
-        rx:Input({ type = "text", id="post-item-stack-size", value = state.price })
-      }),
-
-      rx:H4("Duration"),
-      rx:Div({ class = "flex" }, {
-        rx:Input({ type = "text", id="post-item-duration", value = state.duration })
-      }),
-
-      rx:Button({
-        class = "primary create-auction-button",
-        onclick = function(evt) state:PostItem() end
-      }, "Create Auction")
-    }),
-
+local PostFormItemDrop = function(state) 
+   return rx:Div({ class = "post-form-item-container" }, {
+    rx:H4("Auction Item"),
     rx:Div({
-      class = {
-        ["post-comparisons"] = true,
-        ["has-error"] = #state.dragError > 0
-      }
-    }, (#state.dragError > 0 and state.dragError or "post comparison area...."))
+      class = "post-form-item",
+      ondragdrop = function(evt)
+        if state.allowDragging == false then return end
+
+        if evt.Params.ObjectId == nil or evt.Params.ObjectName == nil then return end
+        state.selectedId = evt.Params.ObjectId
+        state.selectedIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
+        state.selectedName = evt.Params.ObjectName
+        state:SelectItem(state.selectedId)
+      end,
+      ondragover = function(evt)
+        state.isDragging = true
+        state.allowDragging = evt.Params.IsSpell == false
+        state.dragError = ""
+
+        if not evt.Params.IsSpell then
+          local wobject = ac.World:Get(evt.Params.ObjectId)
+          if wobject.ObjectClass == ObjectClass.Container then
+            state.allowDragging = false
+            state.dragError = "Containers are not allowed on the Auction House"
+            return
+          elseif wobject.IsAttuned then
+            state.allowDragging = false
+            state.dragError = "Can't sell attuned items on the Auction House"
+            return
+          end
+        end
+      end,
+      ondragout = function(evt)
+        state.isDragging = false
+        state.dragError = ""
+      end
+    }, {
+      rx:Div({ class = "icon-stack" }, {
+        rx:Div({
+          class = "icon-item",
+          style = state.selectedId == 0 and "" or string.format("decorator: image( %s )", state.selectedIcon)
+        }),
+        rx:Div({ class = "icon-drag-accept" }),
+        rx:Div({ class = "icon-drag-invalid" }),
+      }),
+      rx:Div({ class = "icon-stack-label" }, state.selectedName or "Drop an item here"),
+    })
   })
 end
 
-document:Mount(function() return PostItemView(state) end, "#post")
+local PostFormItemStackSize = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:H4("Stack Size"),
+    rx:Div({ class = "post-form-item" }, {
+      rx:Input({ type = "text", id="post-item-stack-size", value = state.stackSize, disabled = not state.canStack }),
+      rx:Button({
+        class = "secondary",
+        disabled = not state.canStack,
+        onclick = function(evt) state:SetMaximumStackSize() end
+      }, "Maximum"),
+    })
+  })
+end
+
+local PostFormItemStacks = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:H4("Number of Stacks"),
+    rx:Div({ class = "post-form-item" }, {
+      rx:Input({ type = "text", id="post-item-stacks", value = state.stackCount, disabled = not state.canStack }),
+      rx:Button({
+        class = "secondary",
+        disabled = not state.canStack
+      }, "Maximum"),
+    })
+  })
+end
+
+local PostFormItemStartPrice = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:H4("Starting Price"),
+    rx:Div({ class = "post-form-item" }, {
+      rx:Input({ type = "text", id="post-item-stack-size", value = state.startingPrice })
+    })
+  })
+end
+
+local PostFormItemBuyoutPrice = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:H4("Buyout Price"),
+    rx:Div({ class = "post-form-item" }, {
+      rx:Input({ type = "text", id="post-item-stack-size", value = state.buyoutPrice })
+    })
+  })
+end
+
+local PostFormDuration = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:H4("Duration"),
+    rx:Div({ class = "post-form-item" }, {
+      rx:Input({ type = "text", id="post-item-duration", value = state.duration })
+    })
+  })
+end
+
+local PostFormCurrencyType = function(state) 
+   return rx:Div({ class = "post-form-item-container" }, {
+    rx:H4("Currency Type"),
+    rx:Div({
+      class = "post-form-item",
+      ondragdrop = function(evt)
+        if state.allowDragging == false then return end
+
+        if evt.Params.ObjectId == nil or evt.Params.ObjectName == nil then return end
+        local wobject = ac.World:Get(evt.Params.ObjectId)
+        if wobject:Value(PropertyInt.ItemWorkmanship) > 0 then return end
+
+        state.selectedCurrencyId = evt.Params.ObjectId
+        state.selectedCurrencyIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
+        state.selectedCurrencyName = evt.Params.ObjectName
+        state.selectedCurrencyWcid = wobject.ClassId
+      end,
+      ondragover = function(evt)
+        state.isDragging = true
+        state.allowDragging = evt.Params.IsSpell == false
+        state.dragError = ""
+
+        if not evt.Params.IsSpell then
+          local wobject = ac.World:Get(evt.Params.ObjectId)
+          if wobject.ObjectClass == ObjectClass.Container then
+            state.allowDragging = false
+            state.dragError = "Containers are not allowed on the Auction House"
+            return
+          elseif wobject.IsAttuned then
+            state.allowDragging = false
+            state.dragError = "Can't sell attuned items on the Auction House"
+            return
+          end
+        end
+      end,
+      ondragout = function(evt)
+        state.isDragging = false
+        state.dragError = ""
+      end
+    }, {
+      rx:Div({ class = "icon-stack" }, {
+        rx:Div({
+          class = "icon-item",
+          style = state.selectedCurrencyId == 0 and "" or string.format("decorator: image( %s )", state.selectedCurrencyIcon)
+        }),
+        rx:Div({ class = "icon-drag-accept" }),
+        rx:Div({ class = "icon-drag-invalid" }),
+      }),
+      rx:Div({ class = "icon-stack-label" }, state.selectedCurrencyName or "Drop an currency here"),
+    })
+  })
+end
+
+local PostFormSubmit = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:Div({ class = "post-form-item" }, {
+      rx:Button({
+        class = "primary create-auction-button",
+        onclick = function(evt) state:PostAuction() end
+      }, "Create Auction")
+    })
+  })
+end
+
+local PostForm = function(state)
+  return rx:Div({ class = "post-form" }, {
+    rx:Div({ class = {
+      ["post-form-container"] = true,
+      ["has-item"] = state.selectedId ~= 0,
+      ["has-drag-over"] = state.isDragging and state.allowDragging,
+      ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
+    }}, {
+      PostFormItemDrop(state),
+      PostFormCurrencyType(state),
+      PostFormItemStackSize(state),
+      PostFormItemStacks(state),
+      PostFormItemStartPrice(state),
+      PostFormItemBuyoutPrice(state),
+      PostFormDuration(state),
+    }),
+    PostFormSubmit(state)
+  })
+end
+
+local PostAuctionView = function(state)
+  return rx:Div({ class = "auction-post" }, {
+    PostForm(state),
+  })
+end
+
+document:Mount(function() return PostAuctionView(state) end, "#post")
