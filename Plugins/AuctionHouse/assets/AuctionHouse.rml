@@ -4,10 +4,11 @@
 		<link type="text/template" href="../../Core.UI/assets/templates/tabpanel.rml" />
 		<style>
       body {
-        min-width: 80vw;
-        max-height: 90vh;
+        max-width: 70vw;
+        width: 100%;
         font-family: Tahoma;
-        font-size: 1em;
+        font-size: 0.9em;
+        font-weight: bold;
         overflow: auto;
       }
 
@@ -17,17 +18,30 @@
       }
 
       body h4 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         color: #eea300dd;
         padding: 0;
         margin: 0;
         font-weight: bold;
       }
 
+      .auction-listings {
+        width: 100%;
+      }
+
+      .auction-listings-title {
+        width: 100%;
+        padding: 0.2rem;
+        font-size: 1rem;
+        font-weight: bold;
+        color: green;
+        border-bottom: 1px #eea300dd;
+        text-align: center;
+      }
+
       .auction-post {
         display: flex;
         flex-direction: row;
-        width: 100%;
       }
 
       .post-form {
@@ -41,8 +55,7 @@
 
       .post-form-container {
         display: flex;
-        justify-content: space-between;
-        height: 500px;
+        gap: 1rem;
         flex-direction: column;
       }
 
@@ -71,6 +84,7 @@
 
       .post-form input[type="text"] {
         width: 5rem;
+        align-self: center;
       }
 
       .post-comparisons {

@@ -18,6 +18,7 @@ local state = rx:CreateState({
   selectedCurrencyIcon = "",
   selectedCurrencyName = nil,
   selectedCurrencyWcid = 0,
+  listings = nil,
   stackSize = 1,
   stackCount = 1,
   startingPrice = 1,
@@ -277,15 +278,7 @@ end
 local PostFormError = function(state) 
   return rx:Div({ class = "post-form-item-container" }, {
     rx:Div({ class = "post-form-item" }, {
-      rx:Div({ class = "post-form-error" }, state.dragError),
-    })
-  })
-end
-
-local PostFormTitle = function(state) 
-  return rx:Div({ class = "post-form-item-container" }, {
-    rx:Div({ class = "post-form-item" }, {
-      rx:Div({ class = "post-form-error" }, state.dragError),
+      rx:Div({ class = "post-form-error" }, state.dragError)
     })
   })
 end
@@ -305,17 +298,27 @@ local PostForm = function(state)
       PostFormItemStartPrice(state),
       PostFormItemBuyoutPrice(state),
       PostFormDuration(state),
+      PostFormSubmit(state),
+      PostFormError(state)
     }),
-    PostFormSubmit(state),
-    PostFormError(state)
+  })
+end
+
+local AuctionListingsTitle = function(state) 
+    return rx:Div({ class = "auction-listings-title"}, ac.Character.Name .. "'s" .. " Auctions")
+end
+
+local AuctionListings = function (state) 
+  return rx:Div({ class = "auction-listings"}, {
+    AuctionListingsTitle(state)
   })
 end
 
 local PostAuctionView = function(state)
   return rx:Div({
-    rx:Div({ class = "auction-post-title"}, ac.Character.Name),
     rx:Div({ class = "auction-post", onMount = function () onMount() end }, {
       PostForm(state),
+      AuctionListings(state)
     })
   })
 end
