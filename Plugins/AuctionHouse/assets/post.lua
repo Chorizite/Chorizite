@@ -4,6 +4,7 @@ local ac = require('Plugins.Core.AC').Game
 local ChatType = CS.Chorizite.Core.Backend.ChatType
 local PacketWriter = CS.Chorizite.Core.Backend.Client.PacketWriter
 local PropertyInt = CS.Chorizite.Common.Enums.PropertyInt
+local PropertyInt = CS.Chorizite.Common.Enums.PropertyString
 local ObjectClass = CS.Chorizite.Common.Enums.ObjectClass
 local json = require('json')
 
@@ -47,7 +48,7 @@ local state = rx:CreateState({
     end
     print(string.format("Sending: Number: %d, String: %s", self.selectedId, self.selectedName))
 
-    local auctionItem = {
+    local sellAuctionRequest = {
       ItemId = self.selectedId,
       StackSize = self.stackSize,
       NumberOfStacks = self.stackCount,
@@ -58,7 +59,7 @@ local state = rx:CreateState({
     }
 
     local requestPayload = {
-      Data = auctionItem
+      Data = sellAuctionRequest
     }
 
     local jsonString = json.encode(requestPayload)
@@ -71,6 +72,28 @@ local state = rx:CreateState({
     writer:Dispose()
   end
 })
+
+local OpCodeHandlers = {
+  [0x10002] = function(evt)
+    print("-> AuctionProcessSell Event Handler")
+    local stream = MemoryStream(evt.RawData)
+    local reader = BinaryReader(stream)
+    local length = reader:ReadUInt32()
+    local jsonBytes = reader:ReadBytes(length)
+    local auctionSellResponse = json.decode(jsonBytes)
+    print(auctionSellResponse.Success)
+    reader:Dispose()
+    state.loading = false;
+  end
+}
+
+local onMount = function () 
+	Net.Messages:OnUnknownMessage('+', function(sender, evt)
+	  if OpCodeHandlers[evt.OpCode] then
+      OpCodeHandlers[evt.OpCode](evt)
+	  end
+	end)
+end
 
 local PostFormItemDrop = function(state) 
    return rx:Div({ class = "post-form-item-container" }, {
@@ -186,7 +209,7 @@ local PostFormCurrencyType = function(state)
 
         if evt.Params.ObjectId == nil or evt.Params.ObjectName == nil then return end
         local wobject = ac.World:Get(evt.Params.ObjectId)
-        if wobject:Value(PropertyInt.ItemWorkmanship) > 0 then return end
+        if wobject.ItemWorkmanship > 0 then return end
 
         state.selectedCurrencyId = evt.Params.ObjectId
         state.selectedCurrencyIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
@@ -200,9 +223,14 @@ local PostFormCurrencyType = function(state)
 
         if not evt.Params.IsSpell then
           local wobject = ac.World:Get(evt.Params.ObjectId)
+          print(wobject.ItemWorkmanship)
           if wobject.ObjectClass == ObjectClass.Container then
             state.allowDragging = false
             state.dragError = "Containers are not allowed on the Auction House"
+            return
+          elseif wobject.ItemWorkmanship > 0 then
+            state.allowDragging = false
+            state.dragError = "Currency cannot be an item with workmanship"
             return
           elseif wobject.IsAttuned then
             state.allowDragging = false
@@ -240,11 +268,19 @@ local PostFormSubmit = function(state)
   })
 end
 
+local PostFormError = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:Div({ class = "post-form-item" }, {
+      rx:Div({ class = "post-form-error" }, state.dragError),
+    })
+  })
+end
+
 local PostForm = function(state)
   return rx:Div({ class = "post-form" }, {
     rx:Div({ class = {
       ["post-form-container"] = true,
-      ["has-item"] = state.selectedId ~= 0,
+      ["has-item"] = state.selectedId ~= 0 or state.selectedCurrencyId ~= 0,
       ["has-drag-over"] = state.isDragging and state.allowDragging,
       ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
     }}, {
@@ -256,7 +292,8 @@ local PostForm = function(state)
       PostFormItemBuyoutPrice(state),
       PostFormDuration(state),
     }),
-    PostFormSubmit(state)
+    PostFormSubmit(state),
+    PostFormError(state)
   })
 end
 

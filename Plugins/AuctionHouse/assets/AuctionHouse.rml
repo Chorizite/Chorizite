@@ -60,6 +60,10 @@
         gap: 0.5rem;
       }
 
+      .post-form-error {
+        color: red;
+      }
+
       .icon-stack-label {
         align-self: center;
         font-size: 1.25rem;
