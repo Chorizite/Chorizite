@@ -4,8 +4,10 @@ local ac = require('Plugins.Core.AC').Game
 local ChatType = CS.Chorizite.Core.Backend.ChatType
 local PacketWriter = CS.Chorizite.Core.Backend.Client.PacketWriter
 local PropertyInt = CS.Chorizite.Common.Enums.PropertyInt
-local PropertyInt = CS.Chorizite.Common.Enums.PropertyString
+local PropertyString = CS.Chorizite.Common.Enums.PropertyString
 local ObjectClass = CS.Chorizite.Common.Enums.ObjectClass
+local BinaryReader = CS.System.IO.BinaryReader
+local MemoryStream = CS.System.IO.MemoryStream
 local json = require('json')
 
 local state = rx:CreateState({
@@ -80,8 +82,12 @@ local OpCodeHandlers = {
     local reader = BinaryReader(stream)
     local length = reader:ReadUInt32()
     local jsonBytes = reader:ReadBytes(length)
-    local auctionSellResponse = json.decode(jsonBytes)
-    print(auctionSellResponse.Success)
+    local response = json.decode(jsonBytes)
+
+    if response.Success then
+
+    end
+    print(response.Success)
     reader:Dispose()
     state.loading = false;
   end
@@ -252,7 +258,7 @@ local PostFormCurrencyType = function(state)
         rx:Div({ class = "icon-drag-accept" }),
         rx:Div({ class = "icon-drag-invalid" }),
       }),
-      rx:Div({ class = "icon-stack-label" }, state.selectedCurrencyName or "Drop an currency here"),
+      rx:Div({ class = "icon-stack-label" }, state.selectedCurrencyName or "Drop a currency item here"),
     })
   })
 end
@@ -276,6 +282,14 @@ local PostFormError = function(state)
   })
 end
 
+local PostFormTitle = function(state) 
+  return rx:Div({ class = "post-form-item-container" }, {
+    rx:Div({ class = "post-form-item" }, {
+      rx:Div({ class = "post-form-error" }, state.dragError),
+    })
+  })
+end
+
 local PostForm = function(state)
   return rx:Div({ class = "post-form" }, {
     rx:Div({ class = {
@@ -285,9 +299,9 @@ local PostForm = function(state)
       ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
     }}, {
       PostFormItemDrop(state),
-      PostFormCurrencyType(state),
       PostFormItemStackSize(state),
       PostFormItemStacks(state),
+      PostFormCurrencyType(state),
       PostFormItemStartPrice(state),
       PostFormItemBuyoutPrice(state),
       PostFormDuration(state),
@@ -298,8 +312,11 @@ local PostForm = function(state)
 end
 
 local PostAuctionView = function(state)
-  return rx:Div({ class = "auction-post" }, {
-    PostForm(state),
+  return rx:Div({
+    rx:Div({ class = "auction-post-title"}, ac.Character.Name),
+    rx:Div({ class = "auction-post", onMount = function () onMount() end }, {
+      PostForm(state),
+    })
   })
 end
 
