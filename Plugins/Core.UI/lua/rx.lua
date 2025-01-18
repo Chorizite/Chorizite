@@ -1,5 +1,14 @@
+---@meta rx
 local rx = {}
+local UI = require("Plugins.Core.UI")
 
+---@alias VirtualNodeArg CS.Core.UI.Lib.RmlUi.VDom.VirtualNode | string | { [number]: CS.Core.UI.Lib.RmlUi.VDom.VirtualNode } | fun(): { [number]: CS.Core.UI.Lib.RmlUi.VDom.VirtualNode}
+
+
+---Create a VirtualNode
+---@param elType string The type of element (div, span, etc)
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 local MakeElement = function(elType, ...)
   local args = table.pack(...)
   local props = {}
@@ -186,31 +195,121 @@ function make_reactive(original_value, name, parent, seen)
   end
 end
 
+local _nextStateId = 0
 
-function rx:CreateState(tbl)
-  return make_reactive(tbl, "default")
+---Create an observable state from a table
+---@generic T : any
+---@param tbl T
+---@param name? string An optional name for the state, used for debugging
+---@return T
+function rx:CreateState(tbl, name)
+  _nextStateId = _nextStateId + 1
+  return make_reactive(tbl, name or ("state_" .. _nextStateId))
 end
 
+---Create a reactive Div element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Div(...) return MakeElement("div", ...) end
+
+---Create a reactive Span element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Span(...) return MakeElement("span", ...) end
+
+---Create a reactive P element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:P(...) return MakeElement("p", ...) end
+
+---Create a reactive H1 element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:H1(...) return MakeElement("h1", ...) end
+
+---Create a reactive H2 element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:H2(...) return MakeElement("h2", ...) end
+
+---Create a reactive H3 element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:H3(...) return MakeElement("h3", ...) end
+
+---Create a reactive H4 element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:H4(...) return MakeElement("h4", ...) end
+
+---Create a reactive H5 element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:H5(...) return MakeElement("h5", ...) end
+
+---Create a reactive H6 element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:H6(...) return MakeElement("h6", ...) end
+
+---Create a reactive Ul element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Ul(...) return MakeElement("ul", ...) end
+
+---Create a reactive Li element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Li(...) return MakeElement("li", ...) end
+
+---Create a reactive Form element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Form(...) return MakeElement("form", ...) end
+
+---Create a reactive Input element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Input(...) return MakeElement("input", ...) end
+
+---Create a reactive Button element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Button(...) return MakeElement("button", ...) end
+
+---Create a reactive Progress element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Progress(...) return MakeElement("progress", ...) end
+
+---Create a reactive Br element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Br(...) return MakeElement("br", ...) end
+
+---Create a reactive Img element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Img(...) return MakeElement("img", ...) end
+
+---Create a reactive Handle element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Handle(...) return MakeElement("handle", ...) end
+
+---Create a reactive Tabset element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Tabset(...) return MakeElement("tabset", ...) end
+
+---Create a reactive Tab element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Tab(...) return MakeElement("tab", ...) end
+
+---Create a reactive Panel element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Panel(...) return MakeElement("panel", ...) end
 
 return rx;

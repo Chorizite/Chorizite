@@ -33,6 +33,7 @@ namespace Chorizite.DocGen.LuaDefs {
             if (!Directory.Exists(_outPath)) {
                 Directory.CreateDirectory(_outPath);
             }
+
             GenerateCSDefs();
             GenerateCoreModuleDefs();
             GenerateCoreDefs();
@@ -80,6 +81,8 @@ namespace Chorizite.DocGen.LuaDefs {
             _out.AppendLine();
             _out.AppendLine("local _defs = {}");
             _out.AppendLine();
+
+            _out.AppendLine(File.ReadAllText("globals.lua"));
 
             foreach (var e in typeFinder.CoreRegistry.Enums) {
                 if (!IsWantedType(e.Value)) continue;
@@ -152,8 +155,20 @@ namespace Chorizite.DocGen.LuaDefs {
 
             foreach (var r in typeFinder.PluginRegistry.Values) {
                 _namespaces = [];
+                if (!Directory.Exists(Path.Combine(_outPath, "Plugins", r.PluginInstance.Name))) {
+                    Directory.CreateDirectory(Path.Combine(_outPath, "Plugins", r.PluginInstance.Name));
+                }
 
                 GeneratePluginDef(r);
+
+                // find all lua meta files and copy them to the plugin folder
+                var files = Directory.GetFiles(r.PluginInstance.Manifest.BaseDirectory, "*.lua", SearchOption.AllDirectories);
+                foreach (var f in files) {
+                    var contents = File.ReadAllText(f);
+                    if (contents.Contains("---@meta")) {
+                        File.Copy(f, Path.Combine(_outPath, "Plugins", r.PluginInstance.Name, Path.GetFileName(f)), true);
+                    }
+                }
             }
         }
 
@@ -178,7 +193,7 @@ namespace Chorizite.DocGen.LuaDefs {
 
             _out.AppendLine($"return moduleInstance");
 
-            File.WriteAllText(Path.Combine(_outPath, "Plugins", $"{r.PluginInstance.Name}.lua"), _out.ToString());
+            File.WriteAllText(Path.Combine(_outPath, "Plugins", r.PluginInstance.Name, $"{r.PluginInstance.Name}.lua"), _out.ToString());
         }
 
         private void WriteClassDef(ClassDef value, StringBuilder _out, TypeRegistry r, bool isEntryClass = false) {
@@ -225,8 +240,22 @@ namespace Chorizite.DocGen.LuaDefs {
             }
 
             var localName = "_defs." + name.Split('.').Last();
-            _out.AppendLine($"{localName} = {{}}");
+            if (isEntryClass) {
+                localName = "moduleInstance";
+                _out.AppendLine($"local moduleInstance = {{}}");
+            }
+            else {
+                _out.AppendLine($"{localName} = {{}}");
+            }
             _out.AppendLine();
+
+            foreach (var evt in value.Events) {
+                WriteSummary(_out, evt);
+                _out.AppendLine($"---@param addremove '+' | '-' Use '+' to subscribe and '-' to unsubscribe");
+                _out.AppendLine($"---@param callback fun(evt: {MakeLuaType(r, evt.EventInfo.EventHandlerType.GetGenericArguments().FirstOrDefault() ?? evt.EventInfo.EventHandlerType)})");
+                _out.AppendLine($"function {localName}:{evt.EventInfo.Name}(addremove, callback) end");
+                _out.AppendLine();
+            }
 
             foreach (var method in value.Methods) {
                 if (method.Method.Name.StartsWith("<")) continue;
@@ -246,10 +275,6 @@ namespace Chorizite.DocGen.LuaDefs {
                 WriteSummary(_out, method);
                 _out.AppendLine($"function {localName}:{method.Method.Name}({string.Join(", ", method.Method.GetParameters().Select(p => FixParameterName(p.Name)))}) end");
                 _out.AppendLine();
-            }
-
-            if (isEntryClass) {
-                _out.AppendLine($"local moduleInstance = {{}}");
             }
 
             _out.AppendLine();

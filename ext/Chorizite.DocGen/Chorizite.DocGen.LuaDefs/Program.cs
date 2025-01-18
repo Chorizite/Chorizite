@@ -11,8 +11,17 @@ namespace Chorizite.DocGen.LuaDefs {
         private static ScriptableTypeFinder _typeFinder;
 
         static void Main(string[] args) {
-            var baseDirectory = @"D:\projects\Chorizite\bin\net8.0\";
+            var baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "..", "..", "bin", "net8.0");
             var datDirectory = @"C:\Turbine\Asheron's Call\";
+
+            if (!Directory.Exists(datDirectory)) {
+                throw new Exception("Dat directory not found: " + datDirectory);
+            }
+
+            if (!Directory.Exists(baseDirectory)) {
+                throw new Exception($"Base directory not found: " + baseDirectory);
+            }
+
             var config = new ChoriziteConfig(ChoriziteEnvironment.DocGen, baseDirectory, datDirectory);
 
             Log = new ChoriziteLogger("DocGen", config.LogDirectory);
