@@ -1,5 +1,6 @@
 {
   "name": "chorizite-scripting",
+  "publisher": "Chorizite",
   "displayName": "Chorizite Scripting",
   "description": "Helpers for Chorizite scripting environment",
   "version": "0.0.1",
