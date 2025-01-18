@@ -58,6 +58,12 @@ namespace Core.AC.API.WorldObjects {
         public int Burden => Value(PropertyInt.EncumbranceVal);
 
         /// <summary>
+        /// Workmanship
+        /// </summary>
+        [JsonIgnore]
+        public int ItemWorkmanship => Value(PropertyInt.ItemWorkmanship);
+
+        /// <summary>
         /// Is this item owned by you (in your backpack or one of your side packs).
         /// </summary>
         [JsonIgnore]
