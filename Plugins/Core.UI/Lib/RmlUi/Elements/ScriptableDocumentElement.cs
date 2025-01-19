@@ -80,6 +80,11 @@ namespace Core.UI.Lib.RmlUi.Elements {
                 return File.ReadAllBytes(rxPath);
             }
 
+            var jsonPath = Path.Combine(CoreUIPlugin.Instance.AssemblyDirectory, "lua", "json.lua");
+            if (filepath == "json" && File.Exists(jsonPath)) {
+                return File.ReadAllBytes(jsonPath);
+            }
+
             return null;
         }
 

@@ -1,10 +1,14 @@
 <template name="tabpanel" content="content">
 	<head>
 		<style>
+      rml {
+        font-size: 12px;
+      }
+
       body {
         position: absolute;
-        top: 90px;
-        left: 90px;
+        top: 5rem;
+        left: 5rem;
         font-family: Tahoma;
       }
 
@@ -12,8 +16,7 @@
         display: block;
         decorator: ninepatch(panel, panel-inner);
         position: absolute;
-        padding: 4px 4px 4px 4px;
-        font-size: 13dp;
+        padding: 0.3rem;
       }
 
       #content {
@@ -21,11 +24,11 @@
       }
 
       #window-close {
-        width: 24px;
-        height: 25px;
+        width: 2rem;
+        height: 2rem;
         position: absolute;
-        bottom: 0px;
-        right: 0px;
+        bottom: 0;
+        right: 0;
         decorator: image(window-close);
       }
 
