@@ -75,7 +75,7 @@ namespace Chorizite.Core.Backend {
         /// <param name="name"></param>
         /// <param name="module"></param>
         public virtual bool RegisterLuaModule(string name, object module) {
-            if (!LuaModules.TryAdd(name, module)) {
+            if (!LuaModules.TryAdd(name.ToLower(), module)) {
                 ChoriziteStatics.Log.LogWarning($"Failed to register lua module: {name}. Already exists with value: {LuaModules[name]}");
                 return false;
             }

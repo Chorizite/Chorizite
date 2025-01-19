@@ -185,6 +185,7 @@ namespace Chorizite.Core.Lua {
                 return ChoriziteStatics.Scope.Resolve(moduleType);
             }
             else if (module is string modulePath) {
+                modulePath = modulePath.ToLower();
                 if (modulePath.StartsWith("plugins.") && !modulePath.EndsWith(".lua")) {
                     var lib = modulePath.Substring("plugins.".Length);
                     var pluginManager = ChoriziteStatics.Scope.Resolve<IPluginManager>();
@@ -197,8 +198,8 @@ namespace Chorizite.Core.Lua {
                 }
 
                 return modulePath switch {
-                    "backend" => ChoriziteStatics.Backend,
-                    "net" => ChoriziteStatics.Scope.Resolve<NetworkParser>(),
+                    "Backend" => ChoriziteStatics.Backend,
+                    "NetworkParser" => ChoriziteStatics.Scope.Resolve<NetworkParser>(),
                     _ => _originalRequire.Call(modulePath).FirstOrDefault(),
                 };
             }
