@@ -11,9 +11,9 @@ local json = require('json')
 local ClientState = CS.Core.AC.API.ClientState
 
 local state = rx:CreateState({
-	items = { { ListingId = 1, Info = "Test" } },
+    items = { { ListingId = 1, Info = "Test" } },
     searchTerm = "",
-	loading = true,
+    loading = true,
 })
 
 local OpCodeHandlers = {
