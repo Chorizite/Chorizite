@@ -81,6 +81,9 @@ namespace Core.UI.Lib.RmlUi.VDom {
         }
 
         internal void UpdateProp(string key, object? value, object? oldValue) {
+            if (key == "value" && value != null && value is not string)
+                value = value.ToString();
+
             if (value?.Equals(oldValue) == true) {
                 return;
             }
