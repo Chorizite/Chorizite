@@ -209,11 +209,7 @@
           <div id="browse">
           </div>
         </panel>
-        <tab>My Listings</tab>
-        <panel>
-          <div id="my-listings" />
-        </panel>
-      </tabset>
+	   </tabset>
     </div>
 	</body>
 </rml>
