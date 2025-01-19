@@ -82,7 +82,6 @@ namespace Core.AC {
         private void Init() {
             DragDropManager = new DragDropManager();
 
-            ChoriziteBackend.RegisterLuaModule("ac", Game);
             CoreUI.RegisterUIModel("Tooltip", _state.TooltipModel);
 
             RegisterScreen(GameScreen.CharSelect, Path.Combine(AssemblyDirectory, "assets", "screens", "CharSelect.rml"));

@@ -75,8 +75,8 @@
     </style>
     <script type="">
       local rx = require('rx')
-      local backend = require('backend')
-      local ac = require('ac')
+      local backend = require('ClientBackend')
+      local ac = require('Plugins.Core.AC').Game
 
       local state = rx:CreateState({
         ConnectPercentage = ac.PatchProgress.ConnectPercentage,

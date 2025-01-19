@@ -111,7 +111,7 @@
         }
     </style>
     <script> 
-        local backend = require("backend")
+        local backend = require("ClientBackend")
         local container = nil
         local scoreEl = nil
         local WINDOW_WIDTH = 490

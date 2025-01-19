@@ -108,9 +108,9 @@
     </style>
     <script type="">
       local rx = require('rx')
-      local backend = require('backend')
-      local ac = require('ac')
-      local ui = require('plugins.Core.UI')
+      local backend = require('ClientBackend')
+      local ac = require('Plugins.Core.AC').Game
+      local ui = require('Plugins.Core.UI')
       local GameScreen = CS.Core.AC.Lib.Screens.GameScreen
 
       local state = rx:CreateState({

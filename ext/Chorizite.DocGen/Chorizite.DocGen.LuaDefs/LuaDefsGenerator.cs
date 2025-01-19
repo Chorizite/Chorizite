@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using Autofac.Core;
 using Chorizite.Core.Backend.Client;
 using Chorizite.Core.Backend.Launcher;
+using System.Reflection;
 
 namespace Chorizite.DocGen.LuaDefs {
     internal class LuaDefsGenerator {
@@ -252,7 +253,7 @@ namespace Chorizite.DocGen.LuaDefs {
             foreach (var evt in value.Events) {
                 WriteSummary(_out, evt);
                 _out.AppendLine($"---@param addremove '+' | '-' Use '+' to subscribe and '-' to unsubscribe");
-                _out.AppendLine($"---@param callback fun(evt: {MakeLuaType(r, evt.EventInfo.EventHandlerType.GetGenericArguments().FirstOrDefault() ?? evt.EventInfo.EventHandlerType)})");
+                _out.AppendLine($"---@param callback fun(sender: any, evt: {MakeLuaType(r, evt.EventInfo.EventHandlerType.GetGenericArguments().FirstOrDefault() ?? evt.EventInfo.EventHandlerType)})");
                 _out.AppendLine($"function {localName}:{evt.EventInfo.Name}(addremove, callback) end");
                 _out.AppendLine();
             }
@@ -267,21 +268,24 @@ namespace Chorizite.DocGen.LuaDefs {
                 if (method.Method.GetParameters().Any(p => p.ParameterType.Name.Contains("&"))) continue;
                 if (method.Method.GetParameters().Any(p => p.ParameterType.ContainsGenericParameters)) continue;
                 foreach (var param in method.Method.GetParameters()) {
-                    _out.AppendLine($"---@param {FixParameterName(param.Name)} {MakeLuaType(r, param.ParameterType)}");
+                    _out.AppendLine($"---@param {FixParameterName(param)}{(param.HasDefaultValue ? "?" : "")} {MakeLuaType(r, param.ParameterType)}");
                 }
                 if (method.Method.ReturnType.Name != "Void") {
                     _out.AppendLine($"---@return {MakeLuaType(r, method.Method.ReturnType)}");
                 }
                 WriteSummary(_out, method);
-                _out.AppendLine($"function {localName}:{method.Method.Name}({string.Join(", ", method.Method.GetParameters().Select(p => FixParameterName(p.Name)))}) end");
+                _out.AppendLine($"function {localName}:{method.Method.Name}({string.Join(", ", method.Method.GetParameters().Select(p => FixParameterName(p)))}) end");
                 _out.AppendLine();
             }
 
             _out.AppendLine();
         }
 
-        private string? FixParameterName(string? name) {
-            if (name == "end") return "endValue";
+        private string? FixParameterName(ParameterInfo p) {
+            if (p is null) return "null";
+            var name = p.Name;
+            if (name == "end") name = "endValue";
+
             return name;
         }
 

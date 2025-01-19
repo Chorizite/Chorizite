@@ -22,7 +22,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
 
         protected void GenerateMemberDocs(string dllPath) {
             var assemblyXmlFile = dllPath.Replace(".dll", ".xml");
-            if (!File.Exists(assemblyXmlFile)) {
+            if (!File.Exists(assemblyXmlFile) || !Path.GetExtension(assemblyXmlFile).Equals(".xml")) {
                 return;
             }
             XDocument xdoc = new XDocument();

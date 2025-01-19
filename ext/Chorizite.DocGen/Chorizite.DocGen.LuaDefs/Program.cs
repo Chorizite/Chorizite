@@ -11,7 +11,7 @@ namespace Chorizite.DocGen.LuaDefs {
         private static ScriptableTypeFinder _typeFinder;
 
         static void Main(string[] args) {
-            var baseDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "..", "..", "bin", "net8.0");
+            var baseDirectory = Directory.GetCurrentDirectory();
             var datDirectory = @"C:\Turbine\Asheron's Call\";
 
             if (!Directory.Exists(datDirectory)) {

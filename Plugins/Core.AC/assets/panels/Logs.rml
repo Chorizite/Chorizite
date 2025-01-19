@@ -42,7 +42,7 @@
       }
     </style>
     <script> 
-      local backend = require("backend")
+      local backend = require("Backend")
       local ScrollBehavior = CS.RmlUiNet.ScrollBehavior
 
       document:OnLoad(function()

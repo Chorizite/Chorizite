@@ -41,7 +41,7 @@
       }
     </style>
     <script> 
-      local backend = require("backend")
+      local backend = require("Backend")
 
       function handleLogMessage(sender, evt)
         local logs = document:GetElementById("logs")
