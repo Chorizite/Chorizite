@@ -26,6 +26,7 @@ local state = rx:CreateState({
   duration = 1,
   isDragging = false,
   allowDragging = true,
+  auctionError = "",
   dragError = "",
   canStack = false,
   SelectItem = function(self, objectId)
@@ -42,7 +43,10 @@ local state = rx:CreateState({
     local wobject = ac.World:Get(self.selectedId)
     print(self.selectedId)
     if wobject == nil or not wobject.IsStackable then return end
-    self.stackSize = math.min(wobject:Value(PropertyInt.StackSize), wobject:Value(PropertyInt.MaxStackSize))
+    local stackSize = math.min(wobject:Value(PropertyInt.StackSize), wobject:Value(PropertyInt.MaxStackSize))
+    self.stackSize = stackSize
+    print(self.stackSize)
+    print(stackSize)
   end,
   PostAuction = function(self)
     if self.selectedId == 0 then
@@ -57,7 +61,7 @@ local state = rx:CreateState({
       NumberOfStacks = self.stackCount,
       StartPrice = self.startingPrice,
       BuyoutPrice = self.buyoutPrice,
-      CurrencyType = self.selectedCurrencyWcid,
+      CurrencyWcid = self.selectedCurrencyWcid,
       HoursDuration = self.duration
     }
 
@@ -79,18 +83,18 @@ local state = rx:CreateState({
 local OpCodeHandlers = {
   [0x10002] = function(evt)
     print("-> AuctionProcessSell Event Handler")
+    print(evt.RawData)
     local stream = MemoryStream(evt.RawData)
     local reader = BinaryReader(stream)
     local length = reader:ReadUInt32()
     local jsonBytes = reader:ReadBytes(length)
     local response = json.decode(jsonBytes)
 
-    if response.Success then
-
+    if not response.Success then
+      state.auctionError = response.ErrorMessage
     end
-    print(response.Success)
+
     reader:Dispose()
-    state.loading = false;
   end
 }
 
@@ -198,7 +202,9 @@ local PostFormItemBuyoutPrice = function(state)
 end
 
 local PostFormDuration = function(state) 
-  return rx:Div({ class = "post-form-item-container" }, {
+  return rx:Div({ class = {
+    ["post-form-item-container"] = true,
+  } }, {
     rx:H4("Duration"),
     rx:Div({ class = "post-form-item" }, {
       rx:Input({ type = "text", id="post-item-duration", value = state.duration })
@@ -275,11 +281,17 @@ local PostFormSubmit = function(state)
   })
 end
 
-local PostFormError = function(state) 
-  return rx:Div({ class = "post-form-item-container" }, {
-    rx:Div({ class = "post-form-item" }, {
-      rx:Div({ class = "post-form-error" }, state.dragError)
-    })
+local PostAuctionError = function(state) 
+  return rx:Div({
+    rx:Div({ class = "post-auction-error" }, state.dragError)
+  })
+end
+
+local PostFormTitle = function(state) 
+  return rx:Div({ class = {
+    ["post-form-title"] = true,
+  }}, {
+    rx:H4("Create a Sell Order")
   })
 end
 
@@ -291,6 +303,7 @@ local PostForm = function(state)
       ["has-drag-over"] = state.isDragging and state.allowDragging,
       ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
     }}, {
+      PostFormTitle(state),
       PostFormItemDrop(state),
       PostFormItemStackSize(state),
       PostFormItemStacks(state),
@@ -299,13 +312,14 @@ local PostForm = function(state)
       PostFormItemBuyoutPrice(state),
       PostFormDuration(state),
       PostFormSubmit(state),
-      PostFormError(state)
     }),
   })
 end
 
 local AuctionListingsTitle = function(state) 
-    return rx:Div({ class = "auction-listings-title"}, ac.Character.Name .. "'s" .. " Auctions")
+  return rx:Div({ class = "auction-listings-title"}, {
+    rx:H4(ac.Character.Name .. "'s" .. " Auctions")
+  })
 end
 
 local AuctionListings = function (state) 
@@ -319,7 +333,8 @@ local PostAuctionView = function(state)
     rx:Div({ class = "auction-post", onMount = function () onMount() end }, {
       PostForm(state),
       AuctionListings(state)
-    })
+    }),
+    PostAuctionError(state),
   })
 end
 
