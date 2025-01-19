@@ -46,6 +46,23 @@ function utils.sendAuctionRequest(opcode, payload)
     writer:Dispose()
 end
 
+function utils.getAuctionResponse(rawData)
+  print("Raw response data: ")
+  print(rawData)
+
+  local stream = MemoryStream(rawData)
+  local reader = BinaryReader(stream)
+
+  local length = reader:ReadUInt32()
+
+  local jsonBytes = reader:ReadBytes(length)
+
+  local response = json.decode(jsonBytes)
+  reader:Dispose()
+
+  return response;
+end
+
 local state = rx:CreateState({
   selectedId = 0,
   selectedIcon = "",
@@ -112,18 +129,12 @@ local state = rx:CreateState({
 local OpCodeHandlers = {
   [0x10002] = function(evt)
     print("-> AuctionProcessSellResponse Event Handler")
-    print(evt.RawData)
-    local stream = MemoryStream(evt.RawData)
-    local reader = BinaryReader(stream)
-    local length = reader:ReadUInt32()
-    local jsonBytes = reader:ReadBytes(length)
-    local response = json.decode(jsonBytes)
 
-    if not response.Success then
+    local sellOrderResponse = utils.getAuctionResponse(evt.RawData)
+
+    if not sellOrderResponse.Success then
       state.auctionError = response.ErrorMessage
     end
-
-    reader:Dispose()
   end
 }
 
@@ -333,7 +344,7 @@ end
 
 local PostAuctionError = function(state) 
   return rx:Div({
-    rx:Div({ class = "post-auction-error" }, state.dragError)
+    rx:Div({ class = "post-auction-error" }, state.dragError or state.auctionError)
   })
 end
 
