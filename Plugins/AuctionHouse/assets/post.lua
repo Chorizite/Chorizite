@@ -1,6 +1,7 @@
 local rx = require('rx')
 local backend = require('ClientBackend')
 local ac = require('Plugins.Core.AC').Game
+local Net = require(typeof(CS.Chorizite.Core.Net.NetworkParser))
 local ChatType = CS.Chorizite.Core.Backend.ChatType
 local PacketWriter = CS.Chorizite.Core.Backend.Client.PacketWriter
 local PropertyInt = CS.Chorizite.Common.Enums.PropertyInt
