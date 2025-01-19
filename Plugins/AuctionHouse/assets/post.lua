@@ -11,6 +11,41 @@ local BinaryReader = CS.System.IO.BinaryReader
 local MemoryStream = CS.System.IO.MemoryStream
 local json = require('json')
 
+local utils = {}
+
+function utils.printTable(tbl, indent)
+    indent = indent or 0
+    local indentString = string.rep("  ", indent)
+
+    for key, value in pairs(tbl) do
+        if type(value) == "table" then
+            print(indentString .. tostring(key) .. ":")
+            printTable(value, indent + 1)
+        else
+            print(indentString .. tostring(key) .. ": " .. tostring(value))
+        end
+    end
+end
+
+function utils.sendAuctionRequest(opcode, payload)
+    if type(payload) ~= "table" then
+        error("Payload must be a table")
+    end
+
+    local jsonString = json.encode(payload)
+
+    local len = #jsonString
+
+    local writer = PacketWriter()
+    writer:WriteUInt32(opcode)    
+    writer:WriteUInt32(len)
+    writer:WriteString(jsonString) 
+
+    backend:SendProtoUIMessage(writer)
+
+    writer:Dispose()
+end
+
 local state = rx:CreateState({
   selectedId = 0,
   selectedIcon = "",
@@ -40,14 +75,14 @@ local state = rx:CreateState({
       self.stackSize = wobject:Value(PropertyInt.StackSize)
     end
   end,
+  SetMaximumStackCount = function(self)
+    printTable(self, 1)
+  end,
   SetMaximumStackSize = function(self)
     local wobject = ac.World:Get(self.selectedId)
-    print(self.selectedId)
     if wobject == nil or not wobject.IsStackable then return end
     local stackSize = math.min(wobject:Value(PropertyInt.StackSize), wobject:Value(PropertyInt.MaxStackSize))
     self.stackSize = stackSize
-    print(self.stackSize)
-    print(stackSize)
   end,
   PostAuction = function(self)
     if self.selectedId == 0 then
@@ -70,20 +105,13 @@ local state = rx:CreateState({
       Data = sellAuctionRequest
     }
 
-    local jsonString = json.encode(requestPayload)
-    local len = #jsonString
-    local writer = PacketWriter()
-    writer:WriteUInt32(0x10001) -- opcode
-    writer:WriteUInt32(len) -- json length
-    writer:WriteString(jsonString) -- json string
-    backend:SendProtoUIMessage(writer)
-    writer:Dispose()
+    utils.sendAuctionRequest(0x10001, requestPayload)
   end
 })
 
 local OpCodeHandlers = {
   [0x10002] = function(evt)
-    print("-> AuctionProcessSell Event Handler")
+    print("-> AuctionProcessSellResponse Event Handler")
     print(evt.RawData)
     local stream = MemoryStream(evt.RawData)
     local reader = BinaryReader(stream)
@@ -161,7 +189,11 @@ local PostFormItemStackSize = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Stack Size"),
     rx:Div({ class = "post-form-item" }, {
-      rx:Input({ type = "text", id="post-item-stack-size", value = state.stackSize, disabled = not state.canStack }),
+      rx:Input({
+         type = "text", 
+         id="post-item-stack-size", 
+         onChange = function(evt) state.stackSize = tonumber(evt.Params.value) end,  
+        value = state.stackSize, disabled = not state.canStack }),
       rx:Button({
         class = "secondary",
         disabled = not state.canStack,
@@ -175,10 +207,15 @@ local PostFormItemStacks = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Number of Stacks"),
     rx:Div({ class = "post-form-item" }, {
-      rx:Input({ type = "text", id="post-item-stacks", value = state.stackCount, disabled = not state.canStack }),
+      rx:Input({
+         type = "text", 
+         id="post-item-stacks", 
+         onChange = function(evt) state.stackCount = tonumber(evt.Params.value) end, 
+         value = state.stackCount, disabled = not state.canStack }),
       rx:Button({
         class = "secondary",
-        disabled = not state.canStack
+        disabled = not state.canStack,
+        onClick = function(evt) state:SetMaximumStackCount() end
       }, "Maximum"),
     })
   })
@@ -188,7 +225,11 @@ local PostFormItemStartPrice = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Starting Price"),
     rx:Div({ class = "post-form-item" }, {
-      rx:Input({ type = "text", id="post-item-stack-size", value = state.startingPrice })
+      rx:Input({
+         type = "text", 
+         id="post-item-stack-size", 
+         onChange = function(evt) state.startingPrice = tonumber(evt.Params.value) end, 
+         value = state.startingPrice })
     })
   })
 end
@@ -197,7 +238,11 @@ local PostFormItemBuyoutPrice = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Buyout Price"),
     rx:Div({ class = "post-form-item" }, {
-      rx:Input({ type = "text", id="post-item-stack-size", value = state.buyoutPrice })
+      rx:Input({
+         type = "text", 
+         id="post-item-stack-size", 
+         onChange = function(evt) state.buyoutPrice = tonumber(evt.Params.value) end, 
+         value = state.buyoutPrice })
     })
   })
 end
@@ -208,7 +253,11 @@ local PostFormDuration = function(state)
   } }, {
     rx:H4("Duration"),
     rx:Div({ class = "post-form-item" }, {
-      rx:Input({ type = "text", id="post-item-duration", value = state.duration })
+      rx:Input({ 
+        type = "text", 
+        id="post-item-duration", 
+         onChange = function(evt) state.duration = tonumber(evt.Params.value) end, 
+        value = state.duration })
     })
   })
 end
