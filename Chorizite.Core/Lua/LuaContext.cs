@@ -5,6 +5,7 @@ using Chorizite.Core.Plugins;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -13,6 +14,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using XLua;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Chorizite.Core.Lua {
     public partial class LuaContext : LuaEnv {
@@ -185,6 +187,40 @@ namespace Chorizite.Core.Lua {
                 return ChoriziteStatics.Scope.Resolve(moduleType);
             }
             else if (module is string modulePath) {
+                if (modulePath.ToLower() != "debug") {
+                    var path = DoString($""""
+                        function traceback ()
+                          local level = 1
+                          while true do
+                            local info = debug.getinfo(level, "Sl")
+                            if not info then break end
+                            if info.what == "C" then   -- is a C function?
+                              -- print(level, "C function")
+                            else   -- a Lua function
+                              if #info.source > 3 and (info.source:find('.rml') or info.source:find('.lua')) then
+                                return info.source
+                              end
+                              --print(string.format("(%d)[%s]:%d", level, info.source, info.currentline))
+                            end
+                            level = level + 1
+                          end
+                        end
+                        return traceback()
+                        """");
+                    if (path is not null && path.Length > 0) {
+                        var pathStr = RemoveLastNumberSuffix(path[0].ToString()?.Replace("|", ":"));
+                        if (!string.IsNullOrEmpty(pathStr) && File.Exists(pathStr)) {
+                            var scriptDir = Path.GetDirectoryName(pathStr);
+                            if (File.Exists(Path.Combine(scriptDir, $"{modulePath}.lua"))) {
+                                var choriziteCorePath = Path.Combine(ChoriziteStatics.Config.BaseDirectory, "Lua", "LuaScripts").Replace("\\", "\\\\") + "\\\\?.lua";
+                                scriptDir = scriptDir.Replace("\\", "\\\\") + "\\\\?.lua";
+                                DoString($"package.path = \"{choriziteCorePath};{scriptDir}\"");
+                                return _originalRequire.Call($"{modulePath}").FirstOrDefault();
+                            }
+                        }
+                    }
+                }
+
                 modulePath = modulePath.ToLower();
                 if (modulePath.StartsWith("plugins.") && !modulePath.EndsWith(".lua")) {
                     var lib = modulePath.Substring("plugins.".Length);
@@ -208,6 +244,22 @@ namespace Chorizite.Core.Lua {
 
             return null;
         }
+        private static string RemoveLastNumberSuffix(string? input) {
+            if (string.IsNullOrEmpty(input))
+                return input ?? "";
+
+            int lastColonIndex = input.LastIndexOf(':');
+            if (lastColonIndex == -1)
+                return input;
+
+            // Check if everything after the colon is a number
+            string numberPart = input.Substring(lastColonIndex + 1);
+            if (int.TryParse(numberPart, out _)) {
+                return input.Substring(0, lastColonIndex);
+            }
+
+            return input;
+        }
 
         private void SetTimeout(Action cb, int timeoutInMilliseconds = 1) {
             if (_isDisposed) return;
@@ -218,7 +270,7 @@ namespace Chorizite.Core.Lua {
         }
 
         private void Print(params object[] args) {
-            var message = string.Join(" ", args.Select(a => FormatStackTraces(FormatLuaResult([ a ])).TrimEnd()));
+            var message = string.Join(" ", args.Select(a => FormatStackTraces(FormatLuaResult([a])).TrimEnd()));
             _log.LogDebug(message);
             if (ChoriziteStatics.Backend.Environment == ChoriziteEnvironment.Client) {
                 try {
@@ -247,7 +299,7 @@ namespace Chorizite.Core.Lua {
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
             PreDispose();
-            
+
             FullGc();
 
             for (int i = 0; i < 50; i++) {
@@ -256,7 +308,7 @@ namespace Chorizite.Core.Lua {
                 System.GC.WaitForPendingFinalizers();
                 System.GC.Collect();
             }
-            
+
             DoString("require('xlua.util').print_func_ref_by_csharp()");
             _originalRequire = null!;
 

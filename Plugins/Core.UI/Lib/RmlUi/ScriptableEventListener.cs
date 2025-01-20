@@ -18,7 +18,7 @@ namespace Core.UI.Lib.RmlUi {
         public override void ProcessEvent(Event ev) {
             try {
                 var scriptableDoc = _scriptableDocumentInstancer.GetDocument(ev.TargetElement?.OwnerDocument.NativePtr ?? ev.CurrentElement.OwnerDocument.NativePtr);
-                scriptableDoc?.LuaContext.DoString(value);
+                scriptableDoc?.LuaContext.DoString(value, scriptableDoc.Panel.File);
             }
             catch (Exception ex) {
                 _log.LogError(ex, $"Error running script event: {ev.Id} {value}: {ex.Message}");
