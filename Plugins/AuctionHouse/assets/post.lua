@@ -13,6 +13,8 @@ local json = require('json')
 
 local utils = {}
 
+
+
 function utils.printTable(tbl, indent)
     indent = indent or 0
     local indentString = string.rep("  ", indent)
@@ -33,10 +35,9 @@ function utils.sendAuctionRequest(opcode, payload)
     end
 
     local jsonString = json.encode(payload)
-
     local len = #jsonString
-
     local writer = PacketWriter()
+
     writer:WriteUInt32(opcode)    
     writer:WriteUInt32(len)
     writer:WriteString(jsonString) 
@@ -47,9 +48,6 @@ function utils.sendAuctionRequest(opcode, payload)
 end
 
 function utils.getAuctionResponse(rawData)
-  print("Raw response data: ")
-  print(rawData)
-
   local stream = MemoryStream(rawData)
   local reader = BinaryReader(stream)
 
@@ -82,6 +80,26 @@ local state = rx:CreateState({
   auctionError = "",
   dragError = "",
   canStack = false,
+  ClearPostForm = function(self)
+    self.selectedId = 0
+    self.selectedIcon = ""
+    self.selectedName = nil
+    self.selectedCurrencyId = 0
+    self.selectedCurrencyIcon = ""
+    self.selectedCurrencyName = nil
+    self.selectedCurrencyWcid = 0
+    self.listings = nil
+    self.stackSize = 1
+    self.stackCount = 1
+    self.startingPrice = 1
+    self.buyoutPrice = 1
+    self.duration = 1
+    self.isDragging = false
+    self.allowDragging = true
+    self.auctionError = ""
+    self.dragError = ""
+    self.canStack = false
+  end,
   SelectItem = function(self, objectId)
     local wobject = ac.World:Get(objectId)
     self.canStack = wobject.IsStackable
@@ -101,12 +119,14 @@ local state = rx:CreateState({
     local stackSize = math.min(wobject:Value(PropertyInt.StackSize), wobject:Value(PropertyInt.MaxStackSize))
     self.stackSize = stackSize
   end,
-  PostAuction = function(self)
+  CreateSellOrder = function(self)
     if self.selectedId == 0 then
       backend:AddChatText("Select an item first!", ChatType.HelpChannel)
       return
     end
     print(string.format("Sending: Number: %d, String: %s", self.selectedId, self.selectedName))
+
+    self.loading = true
 
     local sellAuctionRequest = {
       ItemId = self.selectedId,
@@ -123,22 +143,46 @@ local state = rx:CreateState({
     }
 
     utils.sendAuctionRequest(0x10001, requestPayload)
+  end,
+  FetchAuctionListings = function(self) 
+    self.loading = true
+    utils.sendAuctionRequest(0x10003, {})
+  end,
+  HandleSellOrderResponse = function (self, response) 
+    self.loading = false
+    if response.Success then
+      self.ClearPostForm()
+      self.FetchAuctionListings()
+    else
+      self.auctionError = response.ErrorMessage
+    end
+  end,
+  HandleGetListingsResponse = function(self, response) 
+    self.loading = false
+    if response.Success then
+      self.listings = response.Data
+    else
+      self.auctionError = response.ErrorMessage
+    end
   end
 })
 
+
 local OpCodeHandlers = {
   [0x10002] = function(evt)
-    print("-> AuctionProcessSellResponse Event Handler")
-
+    print("-> CreateSellOrderResponse Event Handler")
     local sellOrderResponse = utils.getAuctionResponse(evt.RawData)
-
-    if not sellOrderResponse.Success then
-      state.auctionError = response.ErrorMessage
-    end
+    state.HandleSellOrderResponse(sellOrderResponse)
+  end,
+  [0x10004] = function(evt) 
+    print("-> GetListingsResponse")
+    local getListingsResponse = utils.getAuctionResponse(evt.RawData)
+    state.HandleGetListingsResponse(getListingsResponse)
   end
 }
 
 local onMount = function () 
+  state.FetchAuctionListings()
 	Net.Messages:OnUnknownMessage('+', function(sender, evt)
 	  if OpCodeHandlers[evt.OpCode] then
       OpCodeHandlers[evt.OpCode](evt)
@@ -297,7 +341,6 @@ local PostFormCurrencyType = function(state)
 
         if not evt.Params.IsSpell then
           local wobject = ac.World:Get(evt.Params.ObjectId)
-          print(wobject.ItemWorkmanship)
           if wobject.ObjectClass == ObjectClass.Container then
             state.allowDragging = false
             state.dragError = "Containers are not allowed on the Auction House"
@@ -336,7 +379,7 @@ local PostFormSubmit = function(state)
     rx:Div({ class = "post-form-item" }, {
       rx:Button({
         class = "primary create-auction-button",
-        onclick = function(evt) state:PostAuction() end
+        onclick = function(evt) state:CreateSellOrder() end
       }, "Create Auction")
     })
   })
@@ -344,7 +387,7 @@ end
 
 local PostAuctionError = function(state) 
   return rx:Div({
-    rx:Div({ class = "post-auction-error" }, state.dragError or state.auctionError)
+    rx:Div({ class = "post-auction-error" }, state.auctionError)
   })
 end
 
@@ -383,9 +426,41 @@ local AuctionListingsTitle = function(state)
   })
 end
 
+local AuctionListingsItem = function(item) 
+  local icon = string.format("dat://0x%08X", tonumber(item.ItemIconId))
+  return rx:Div({ class = "auction-listings-item", key = item.Id }, {
+    rx:Div({ class = "auction-listings-item-icon-container"}, {
+      rx:Div({
+        style = string.format("decorator: image( %s )", icon),
+        class = "auction-listings-item-icon",
+      }),
+      rx:Div({ class = "auction-listings-item-icon-label"}, "x" .. item.StackSize or "1"),
+      rx:Div({ class = "auction-listings-item-name"}, item.)
+    }),
+  })
+end
+
+local AuctionListingsList = function(state) 
+  return rx:Div({ class = {
+    ["has-item"] = true,
+    ["auction-listings-list"] = true
+  }}, {
+    state.listings 
+      and rx:Div({ class = "auction-listings-list-container" }, function ()
+        local ret = {}
+        for i, item in ipairs(state.listings) do
+          table.insert(ret, AuctionListingsItem(item))
+        end
+        return ret
+      end)
+      or rx:Div({ class = "auction-listings-list-empty"}, "You have no auction listings.")
+  })
+end
+
 local AuctionListings = function (state) 
   return rx:Div({ class = "auction-listings"}, {
-    AuctionListingsTitle(state)
+    AuctionListingsTitle(state),
+    AuctionListingsList(state)
   })
 end
 
