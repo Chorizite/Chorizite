@@ -262,6 +262,36 @@ function rx:Ul(...) return MakeElement("ul", ...) end
 ---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Li(...) return MakeElement("li", ...) end
 
+---Create a reactive Table element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Table(...) return MakeElement("table", ...) end
+
+---Create a reactive Thead element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Thead(...) return MakeElement("thead", ...) end
+
+---Create a reactive Th element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Th(...) return MakeElement("th", ...) end
+
+---Create a reactive Tr element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Tr(...) return MakeElement("tr", ...) end
+
+---Create a reactive Td element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Td(...) return MakeElement("td", ...) end
+
+---Create a reactive Tbody element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Tbody(...) return MakeElement("tbody", ...) end
+
 ---Create a reactive Form element
 ---@param ... VirtualNodeArg
 ---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
