@@ -13,8 +13,6 @@ local json = require('json')
 
 local utils = {}
 
-
-
 function utils.printTable(tbl, indent)
     indent = indent or 0
     local indentString = string.rep("  ", indent)
@@ -167,7 +165,6 @@ local state = rx:CreateState({
   end
 })
 
-
 local OpCodeHandlers = {
   [0x10002] = function(evt)
     print("-> CreateSellOrderResponse Event Handler")
@@ -175,7 +172,7 @@ local OpCodeHandlers = {
     state.HandleSellOrderResponse(sellOrderResponse)
   end,
   [0x10004] = function(evt) 
-    print("-> GetListingsResponse")
+    print("-> GetListingsResponse Event Handler")
     local getListingsResponse = utils.getAuctionResponse(evt.RawData)
     state.HandleGetListingsResponse(getListingsResponse)
   end
@@ -427,33 +424,69 @@ local AuctionListingsTitle = function(state)
 end
 
 local AuctionListingsItem = function(item) 
-  local icon = string.format("dat://0x%08X", tonumber(item.ItemIconId))
-  return rx:Div({ class = "auction-listings-item", key = item.Id }, {
-    rx:Div({ class = "auction-listings-item-icon-container"}, {
-      rx:Div({
-        style = string.format("decorator: image( %s )", icon),
-        class = "auction-listings-item-icon",
-      }),
-      rx:Div({ class = "auction-listings-item-icon-label"}, "x" .. item.StackSize or "1"),
-      rx:Div({ class = "auction-listings-item-name"}, item.)
+  local itemIcon = string.format(
+    "dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", 
+    tonumber(item.ItemIconId),
+    tonumber(item.ItemIconUnderlay),
+    tonumber(item.ItemIconOverlay),
+    "")
+
+  local currencyIcon = string.format(
+    "dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", 
+    tonumber(item.CurrencyIconId),
+    tonumber(item.CurrencyIconUnderlay),
+    tonumber(item.CurrencyIconOverlay),
+    "")
+  return rx:Tr({ class = "auction-listings-item", key = item.Id }, {
+    rx:Td({
+      rx:Div({ class = "auction-listings-item-name-container" }, {
+        rx:Div({
+          style = string.format("decorator: image( %s )", itemIcon),
+          class = "auction-listings-item-icon"
+        }),
+        rx:Div({ class = "auction-listings-item-name"}, item.ItemName),
+      })
+    }),
+    rx:Td("x" .. item.StackSize or "1"),
+    rx:Td(tostring(item.BuyoutPrice)),
+    rx:Td(tostring(item.StartPrice)),
+    rx:Td(tostring(item.SellerName)),
+    rx:Td({
+      rx:Div({ class = "auction-listings-item-name-container" }, {
+        rx:Div({
+          style = string.format("decorator: image( %s )", currencyIcon),
+          class = "auction-listings-item-icon"
+        }),
+        rx:Div({ class = "auction-listings-item-name"}, item.CurrencyName),
+      })
     }),
   })
 end
 
-local AuctionListingsList = function(state) 
+local AuctionListingsList = function(state)
   return rx:Div({ class = {
     ["has-item"] = true,
     ["auction-listings-list"] = true
   }}, {
-    state.listings 
-      and rx:Div({ class = "auction-listings-list-container" }, function ()
+    rx:Table({ class = "auction-listings-table"}, {
+      rx:Thead({ class = "auction-listings-header"}, {
+        rx:Tr({
+          rx:Td({ class = "auction-listings-header-item"}, "Name"),
+          rx:Td({ class = "auction-listings-header-item"}, "Stack Size"),
+          rx:Td({ class = "auction-listings-header-item"}, "Buyout Price"),
+          rx:Td({ class = "auction-listings-header-item"}, "Starting Price"),
+          rx:Td({ class = "auction-listings-header-item"}, "Seller"),
+          rx:Td({ class = "auction-listings-header-item"}, "Currency"),
+        })
+      }),
+      state.listings and rx:Tbody(function()
         local ret = {}
         for i, item in ipairs(state.listings) do
-          table.insert(ret, AuctionListingsItem(item))
+          table.insert(ret, AuctionListingsItem(item)) 
         end
         return ret
       end)
-      or rx:Div({ class = "auction-listings-list-empty"}, "You have no auction listings.")
+    })
   })
 end
 
