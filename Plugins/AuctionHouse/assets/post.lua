@@ -447,7 +447,7 @@ local PostFormSubmit = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:Div({ class = "post-form-item" }, {
       rx:Button({
-        class = "primary create-auction-button",
+        class = "primary post-form-submit",
         onclick = function(evt) state:CreateSellOrder() end
       }, "Create Auction")
     })
