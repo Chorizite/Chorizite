@@ -136,9 +136,16 @@ local state = rx:CreateState({
 
     utils.sendAuctionRequest(0x10001, requestPayload)
   end,
-  FetchAuctionListings = function(self)
+  FetchAuctionListings = function(self, data)
     self.loading = true
-    utils.sendAuctionRequest(0x10003, {})
+    data = data or {
+      SearchQuery = "",
+      SortBy = 0,
+      SortDirection = 0
+    }
+    utils.sendAuctionRequest(0x10003, {
+      Data = data
+    })
   end,
   HandleSellOrderResponse = function(self, response)
     self.loading = false
