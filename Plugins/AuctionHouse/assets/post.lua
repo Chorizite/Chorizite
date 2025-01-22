@@ -53,6 +53,24 @@ function utils.getAuctionResponse(rawData)
   return response;
 end
 
+local columnEnumMap = {
+  name = 1,         -- ListingColumn.Name
+  stackSize = 2,    -- ListingColumn.StackSize
+  buyoutPrice = 3,  -- ListingColumn.BuyoutPrice
+  startPrice = 4,   -- ListingColumn.StartPrice
+  seller = 5,       -- ListingColumn.Seller
+  currency = 6,     -- ListingColumn.Currency
+  highestBidder = 7 -- ListingColumn.HighestBidder
+}
+
+local function getEnumRepresentation(column)
+  local enumValue = columnEnumMap[column]
+  if not enumValue then
+    error("Invalid column name: " .. tostring(column))
+  end
+  return enumValue
+end
+
 local state = rx:CreateState({
   selectedId = 0,
   selectedIcon = "",
@@ -72,6 +90,43 @@ local state = rx:CreateState({
   auctionError = "",
   dragError = "",
   canStack = false,
+  sortColumn = "name",
+  sortDirection = 1,
+  sortNameDirection = 1,
+  sortStackSizeDirection = 1,
+  sortBuyoutPriceDirection = 1,
+  sortStartPriceDirection = 1,
+  sortSellerDirection = 1,
+  sortCurrencyDirection = 1,
+  UpdateSortState = function(self, column)
+    local columnDirectionMap = {
+      name = "sortNameDirection",
+      stackSize = "sortStackSizeDirection",
+      buyoutPrice = "sortBuyoutPriceDirection",
+      startPrice = "sortStartPriceDirection",
+      seller = "sortSellerDirection",
+      currency = "sortCurrencyDirection"
+    }
+
+    local columnDirectionKey = columnDirectionMap[column]
+    if not columnDirectionKey then
+      error("Invalid column specified: " .. tostring(column))
+    end
+
+    self.sortColumn = column
+
+    if self[columnDirectionKey] == 1 then
+      self[columnDirectionKey] = 2
+    elseif self[columnDirectionKey] == 2 then
+      self[columnDirectionKey] = 1
+    else
+      error("Invalid sort direction. Direction must be either 1 (ascending) or 2 (descending).")
+    end
+
+    self.sortDirection = self[columnDirectionKey]
+    self.listings = nil
+    self.FetchAuctionListings()
+  end,
   ClearPostForm = function(self)
     self.selectedId = 0
     self.selectedIcon = ""
@@ -137,11 +192,10 @@ local state = rx:CreateState({
     utils.sendAuctionRequest(0x10001, requestPayload)
   end,
   FetchAuctionListings = function(self, data)
-    self.loading = true
     data = data or {
       SearchQuery = "",
-      SortBy = 0,
-      SortDirection = 0
+      SortBy = getEnumRepresentation(self.sortColumn),
+      SortDirection = self.sortDirection
     }
     utils.sendAuctionRequest(0x10003, {
       Data = data
@@ -495,12 +549,84 @@ local AuctionListingsList = function(state)
     rx:Table({ class = "auction-listings-table" }, {
       rx:Thead({ class = "auction-listings-header" }, {
         rx:Tr({
-          rx:Td({ class = "auction-listings-header-item" }, "Name"),
-          rx:Td({ class = "auction-listings-header-item" }, "Stack Size"),
-          rx:Td({ class = "auction-listings-header-item" }, "Buyout Price"),
-          rx:Td({ class = "auction-listings-header-item" }, "Starting Price"),
-          rx:Td({ class = "auction-listings-header-item" }, "Seller"),
-          rx:Td({ class = "auction-listings-header-item" }, "Currency"),
+          rx:Td({
+            class = "auction-listings-header-item",
+            onClick = function() state.UpdateSortState("name") end
+          }, {
+            rx:Div({ class = "auction-listings-header-item-container" }, {
+              rx:Div("Name"),
+              rx:Img({
+                sprite = state.sortNameDirection == 1
+                    and "combo-up-arrow"
+                    or "combo-down-arrow"
+              }),
+            })
+          }),
+          rx:Td({
+            class = "auction-listings-header-item",
+            onClick = function() state.UpdateSortState("stackSize") end
+          }, {
+            rx:Div({ class = "auction-listings-header-item-container" }, {
+              rx:Div("Stack Size"),
+              rx:Img({
+                sprite = state.sortStackSizeDirection == 1
+                    and "combo-up-arrow"
+                    or "combo-down-arrow"
+              }),
+            })
+          }),
+          rx:Td({
+            class = "auction-listings-header-item",
+            onClick = function() state.UpdateSortState("buyoutPrice") end
+          }, {
+            rx:Div({ class = "auction-listings-header-item-container" }, {
+              rx:Div("Buyout Price"),
+              rx:Img({
+                sprite = state.sortBuyoutPriceDirection == 1
+                    and "combo-up-arrow"
+                    or "combo-down-arrow"
+              }),
+            })
+          }),
+          rx:Td({
+            class = "auction-listings-header-item",
+            onClick = function() state.UpdateSortState("startPrice") end
+          }, {
+            rx:Div({ class = "auction-listings-header-item-container" }, {
+              rx:Div("Start Price"),
+              rx:Img({
+                sprite = state.sortStartPriceDirection == 1
+                    and "combo-up-arrow"
+                    or "combo-down-arrow"
+              }),
+            })
+          }),
+          rx:Td({
+            class = "auction-listings-header-item",
+            onClick = function() state.UpdateSortState("seller") end
+          }, {
+            rx:Div({ class = "auction-listings-header-item-container" }, {
+              rx:Div("Seller"),
+              rx:Img({
+                sprite = state.sortSellerDirection == 1
+                    and "combo-up-arrow"
+                    or "combo-down-arrow"
+              }),
+            })
+          }),
+          rx:Td({
+            class = "auction-listings-header-item",
+            onClick = function() state.UpdateSortState("currency") end
+          }, {
+            rx:Div({ class = "auction-listings-header-item-container" }, {
+              rx:Div("Currency"),
+              rx:Img({
+                sprite = state.sortCurrencyDirection == 1
+                    and "combo-up-arrow"
+                    or "combo-down-arrow"
+              }),
+            })
+          }),
         })
       }),
       state.listings and rx:Tbody(function()

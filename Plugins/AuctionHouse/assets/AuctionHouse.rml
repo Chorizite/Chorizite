@@ -12,7 +12,7 @@
         max-width: 70vw;
         width: 100%;
         font-family: Tahoma;
-        font-size: 0.9em;
+        font-size: 0.7em;
         font-weight: bold;
       }
 
@@ -68,6 +68,17 @@
         background:rgba(59, 49, 27, 50%);
         margin-bottom: 0.5rem;
         text-align: center;
+      }
+
+      .auction-listings-header-item-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+      }
+
+      .auction-listings-header-item-container img {
+        width: 1rem;
+        height: 1rem;
       }
 
       .auction-listings-item td {
