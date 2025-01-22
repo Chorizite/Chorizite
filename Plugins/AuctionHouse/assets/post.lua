@@ -5,7 +5,6 @@ local Net = require(typeof(CS.Chorizite.Core.Net.NetworkParser))
 local ChatType = CS.Chorizite.Core.Backend.ChatType
 local PacketWriter = CS.Chorizite.Core.Backend.Client.PacketWriter
 local PropertyInt = CS.Chorizite.Common.Enums.PropertyInt
-local PropertyString = CS.Chorizite.Common.Enums.PropertyString
 local ObjectClass = CS.Chorizite.Common.Enums.ObjectClass
 local BinaryReader = CS.System.IO.BinaryReader
 local MemoryStream = CS.System.IO.MemoryStream
@@ -14,45 +13,40 @@ local json = require('json')
 local utils = {}
 
 function utils.printTable(tbl, indent)
-    indent = indent or 0
-    local indentString = string.rep("  ", indent)
+  indent = indent or 0
+  local indentString = string.rep("  ", indent)
 
-    for key, value in pairs(tbl) do
-        if type(value) == "table" then
-            print(indentString .. tostring(key) .. ":")
-            printTable(value, indent + 1)
-        else
-            print(indentString .. tostring(key) .. ": " .. tostring(value))
-        end
+  for key, value in pairs(tbl) do
+    if type(value) == "table" then
+      print(indentString .. tostring(key) .. ":")
+      utils.printTable(value, indent + 1)
+    else
+      print(indentString .. tostring(key) .. ": " .. tostring(value))
     end
+  end
 end
 
 function utils.sendAuctionRequest(opcode, payload)
-    if type(payload) ~= "table" then
-        error("Payload must be a table")
-    end
+  if type(payload) ~= "table" then
+    error("Payload must be a table")
+  end
 
-    local jsonString = json.encode(payload)
-    local len = #jsonString
-    local writer = PacketWriter()
+  local jsonString = json.encode(payload)
+  local len = #jsonString
+  local writer = PacketWriter()
 
-    writer:WriteUInt32(opcode)    
-    writer:WriteUInt32(len)
-    writer:WriteString(jsonString) 
-
-    backend:SendProtoUIMessage(writer)
-
-    writer:Dispose()
+  writer:WriteUInt32(opcode)
+  writer:WriteUInt32(len)
+  writer:WriteString(jsonString)
+  backend:SendProtoUIMessage(writer)
+  writer:Dispose()
 end
 
 function utils.getAuctionResponse(rawData)
   local stream = MemoryStream(rawData)
   local reader = BinaryReader(stream)
-
   local length = reader:ReadUInt32()
-
   local jsonBytes = reader:ReadBytes(length)
-
   local response = json.decode(jsonBytes)
   reader:Dispose()
 
@@ -109,7 +103,7 @@ local state = rx:CreateState({
     end
   end,
   SetMaximumStackCount = function(self)
-    printTable(self, 1)
+    utils.printTable(self, 1)
   end,
   SetMaximumStackSize = function(self)
     local wobject = ac.World:Get(self.selectedId)
@@ -142,11 +136,11 @@ local state = rx:CreateState({
 
     utils.sendAuctionRequest(0x10001, requestPayload)
   end,
-  FetchAuctionListings = function(self) 
+  FetchAuctionListings = function(self)
     self.loading = true
     utils.sendAuctionRequest(0x10003, {})
   end,
-  HandleSellOrderResponse = function (self, response) 
+  HandleSellOrderResponse = function(self, response)
     self.loading = false
     if response.Success then
       self.ClearPostForm()
@@ -155,7 +149,7 @@ local state = rx:CreateState({
       self.auctionError = response.ErrorMessage
     end
   end,
-  HandleGetListingsResponse = function(self, response) 
+  HandleGetListingsResponse = function(self, response)
     self.loading = false
     if response.Success then
       self.listings = response.Data
@@ -171,24 +165,24 @@ local OpCodeHandlers = {
     local sellOrderResponse = utils.getAuctionResponse(evt.RawData)
     state.HandleSellOrderResponse(sellOrderResponse)
   end,
-  [0x10004] = function(evt) 
+  [0x10004] = function(evt)
     print("-> GetListingsResponse Event Handler")
     local getListingsResponse = utils.getAuctionResponse(evt.RawData)
     state.HandleGetListingsResponse(getListingsResponse)
   end
 }
 
-local onMount = function () 
+local onMount = function()
   state.FetchAuctionListings()
-	Net.Messages:OnUnknownMessage('+', function(sender, evt)
-	  if OpCodeHandlers[evt.OpCode] then
+  Net.Messages:OnUnknownMessage('+', function(sender, evt)
+    if OpCodeHandlers[evt.OpCode] then
       OpCodeHandlers[evt.OpCode](evt)
-	  end
-	end)
+    end
+  end)
 end
 
-local PostFormItemDrop = function(state) 
-   return rx:Div({ class = "post-form-item-container" }, {
+local PostFormItemDrop = function(state)
+  return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Auction Item"),
     rx:Div({
       class = "post-form-item",
@@ -197,7 +191,13 @@ local PostFormItemDrop = function(state)
 
         if evt.Params.ObjectId == nil or evt.Params.ObjectName == nil then return end
         state.selectedId = evt.Params.ObjectId
-        state.selectedIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
+        state.selectedIcon = string.format(
+          "dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s",
+          evt.Params.IconId,
+          evt.Params.IconUnderlay,
+          evt.Params.IconOverlay,
+          evt.Params.IconEffects:ToString()
+        )
         state.selectedName = evt.Params.ObjectName
         state:SelectItem(state.selectedId)
       end,
@@ -237,15 +237,17 @@ local PostFormItemDrop = function(state)
   })
 end
 
-local PostFormItemStackSize = function(state) 
+local PostFormItemStackSize = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Stack Size"),
     rx:Div({ class = "post-form-item" }, {
       rx:Input({
-         type = "text", 
-         id="post-item-stack-size", 
-         onChange = function(evt) state.stackSize = tonumber(evt.Params.value) end,  
-        value = state.stackSize, disabled = not state.canStack }),
+        type = "text",
+        id = "post-item-stack-size",
+        onChange = function(evt) state.stackSize = tonumber(evt.Params.value) end,
+        value = state.stackSize,
+        disabled = not state.canStack
+      }),
       rx:Button({
         class = "secondary",
         disabled = not state.canStack,
@@ -255,15 +257,17 @@ local PostFormItemStackSize = function(state)
   })
 end
 
-local PostFormItemStacks = function(state) 
+local PostFormItemStacks = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Number of Stacks"),
     rx:Div({ class = "post-form-item" }, {
       rx:Input({
-         type = "text", 
-         id="post-item-stacks", 
-         onChange = function(evt) state.stackCount = tonumber(evt.Params.value) end, 
-         value = state.stackCount, disabled = not state.canStack }),
+        type = "text",
+        id = "post-item-stacks",
+        onChange = function(evt) state.stackCount = tonumber(evt.Params.value) end,
+        value = state.stackCount,
+        disabled = not state.canStack
+      }),
       rx:Button({
         class = "secondary",
         disabled = not state.canStack,
@@ -273,49 +277,54 @@ local PostFormItemStacks = function(state)
   })
 end
 
-local PostFormItemStartPrice = function(state) 
+local PostFormItemStartPrice = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Starting Price"),
     rx:Div({ class = "post-form-item" }, {
       rx:Input({
-         type = "text", 
-         id="post-item-stack-size", 
-         onChange = function(evt) state.startingPrice = tonumber(evt.Params.value) end, 
-         value = state.startingPrice })
+        type = "text",
+        id = "post-item-stack-size",
+        onChange = function(evt) state.startingPrice = tonumber(evt.Params.value) end,
+        value = state.startingPrice
+      })
     })
   })
 end
 
-local PostFormItemBuyoutPrice = function(state) 
+local PostFormItemBuyoutPrice = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Buyout Price"),
     rx:Div({ class = "post-form-item" }, {
       rx:Input({
-         type = "text", 
-         id="post-item-stack-size", 
-         onChange = function(evt) state.buyoutPrice = tonumber(evt.Params.value) end, 
-         value = state.buyoutPrice })
+        type = "text",
+        id = "post-item-stack-size",
+        onChange = function(evt) state.buyoutPrice = tonumber(evt.Params.value) end,
+        value = state.buyoutPrice
+      })
     })
   })
 end
 
-local PostFormDuration = function(state) 
-  return rx:Div({ class = {
-    ["post-form-item-container"] = true,
-  } }, {
+local PostFormDuration = function(state)
+  return rx:Div({
+    class = {
+      ["post-form-item-container"] = true,
+    }
+  }, {
     rx:H4("Duration"),
     rx:Div({ class = "post-form-item" }, {
-      rx:Input({ 
-        type = "text", 
-        id="post-item-duration", 
-         onChange = function(evt) state.duration = tonumber(evt.Params.value) end, 
-        value = state.duration })
+      rx:Input({
+        type = "text",
+        id = "post-item-duration",
+        onChange = function(evt) state.duration = tonumber(evt.Params.value) end,
+        value = state.duration
+      })
     })
   })
 end
 
-local PostFormCurrencyType = function(state) 
-   return rx:Div({ class = "post-form-item-container" }, {
+local PostFormCurrencyType = function(state)
+  return rx:Div({ class = "post-form-item-container" }, {
     rx:H4("Currency Type"),
     rx:Div({
       class = "post-form-item",
@@ -327,7 +336,8 @@ local PostFormCurrencyType = function(state)
         if wobject.ItemWorkmanship > 0 then return end
 
         state.selectedCurrencyId = evt.Params.ObjectId
-        state.selectedCurrencyIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
+        state.selectedCurrencyIcon = string.format("dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s",
+          evt.Params.IconId, evt.Params.IconUnderlay, evt.Params.IconOverlay, evt.Params.IconEffects:ToString())
         state.selectedCurrencyName = evt.Params.ObjectName
         state.selectedCurrencyWcid = wobject.ClassId
       end,
@@ -361,7 +371,8 @@ local PostFormCurrencyType = function(state)
       rx:Div({ class = "icon-stack" }, {
         rx:Div({
           class = "icon-item",
-          style = state.selectedCurrencyId == 0 and "" or string.format("decorator: image( %s )", state.selectedCurrencyIcon)
+          style = state.selectedCurrencyId == 0 and "" or
+              string.format("decorator: image( %s )", state.selectedCurrencyIcon)
         }),
         rx:Div({ class = "icon-drag-accept" }),
         rx:Div({ class = "icon-drag-invalid" }),
@@ -371,7 +382,7 @@ local PostFormCurrencyType = function(state)
   })
 end
 
-local PostFormSubmit = function(state) 
+local PostFormSubmit = function(state)
   return rx:Div({ class = "post-form-item-container" }, {
     rx:Div({ class = "post-form-item" }, {
       rx:Button({
@@ -382,28 +393,32 @@ local PostFormSubmit = function(state)
   })
 end
 
-local PostAuctionError = function(state) 
+local PostAuctionError = function(state)
   return rx:Div({
     rx:Div({ class = "post-auction-error" }, state.auctionError)
   })
 end
 
-local PostFormTitle = function(state) 
-  return rx:Div({ class = {
-    ["post-form-title"] = true,
-  }}, {
+local PostFormTitle = function(state)
+  return rx:Div({
+    class = {
+      ["post-form-title"] = true,
+    }
+  }, {
     rx:H4("Create a Sell Order")
   })
 end
 
 local PostForm = function(state)
   return rx:Div({ class = "post-form" }, {
-    rx:Div({ class = {
-      ["post-form-container"] = true,
-      ["has-item"] = state.selectedId ~= 0 or state.selectedCurrencyId ~= 0,
-      ["has-drag-over"] = state.isDragging and state.allowDragging,
-      ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
-    }}, {
+    rx:Div({
+      class = {
+        ["post-form-container"] = true,
+        ["has-item"] = state.selectedId ~= 0 or state.selectedCurrencyId ~= 0,
+        ["has-drag-over"] = state.isDragging and state.allowDragging,
+        ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
+      }
+    }, {
       PostFormTitle(state),
       PostFormItemDrop(state),
       PostFormItemStackSize(state),
@@ -417,22 +432,22 @@ local PostForm = function(state)
   })
 end
 
-local AuctionListingsTitle = function(state) 
-  return rx:Div({ class = "auction-listings-title"}, {
+local AuctionListingsTitle = function(state)
+  return rx:Div({ class = "auction-listings-title" }, {
     rx:H4(ac.Character.Name .. "'s" .. " Auctions")
   })
 end
 
-local AuctionListingsItem = function(item) 
+local AuctionListingsItem = function(item)
   local itemIcon = string.format(
-    "dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", 
+    "dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s",
     tonumber(item.ItemIconId),
     tonumber(item.ItemIconUnderlay),
     tonumber(item.ItemIconOverlay),
     "")
 
   local currencyIcon = string.format(
-    "dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s", 
+    "dat://0x%08X?underlay=0x%08X&overlay=0x%08X&uieffect=%s",
     tonumber(item.CurrencyIconId),
     tonumber(item.CurrencyIconUnderlay),
     tonumber(item.CurrencyIconOverlay),
@@ -444,10 +459,10 @@ local AuctionListingsItem = function(item)
           style = string.format("decorator: image( %s )", itemIcon),
           class = "auction-listings-item-icon"
         }),
-        rx:Div({ class = "auction-listings-item-name"}, item.ItemName),
+        rx:Div({ class = "auction-listings-item-name" }, item.ItemName),
       })
     }),
-    rx:Td("x" .. item.StackSize or "1"),
+    rx:Td("x" .. (item.StackSize or "1")),
     rx:Td(tostring(item.BuyoutPrice)),
     rx:Td(tostring(item.StartPrice)),
     rx:Td(tostring(item.SellerName)),
@@ -457,32 +472,34 @@ local AuctionListingsItem = function(item)
           style = string.format("decorator: image( %s )", currencyIcon),
           class = "auction-listings-item-icon"
         }),
-        rx:Div({ class = "auction-listings-item-name"}, item.CurrencyName),
+        rx:Div({ class = "auction-listings-item-name" }, item.CurrencyName),
       })
     }),
   })
 end
 
 local AuctionListingsList = function(state)
-  return rx:Div({ class = {
-    ["has-item"] = true,
-    ["auction-listings-list"] = true
-  }}, {
-    rx:Table({ class = "auction-listings-table"}, {
-      rx:Thead({ class = "auction-listings-header"}, {
+  return rx:Div({
+    class = {
+      ["has-item"] = true,
+      ["auction-listings-list"] = true
+    }
+  }, {
+    rx:Table({ class = "auction-listings-table" }, {
+      rx:Thead({ class = "auction-listings-header" }, {
         rx:Tr({
-          rx:Td({ class = "auction-listings-header-item"}, "Name"),
-          rx:Td({ class = "auction-listings-header-item"}, "Stack Size"),
-          rx:Td({ class = "auction-listings-header-item"}, "Buyout Price"),
-          rx:Td({ class = "auction-listings-header-item"}, "Starting Price"),
-          rx:Td({ class = "auction-listings-header-item"}, "Seller"),
-          rx:Td({ class = "auction-listings-header-item"}, "Currency"),
+          rx:Td({ class = "auction-listings-header-item" }, "Name"),
+          rx:Td({ class = "auction-listings-header-item" }, "Stack Size"),
+          rx:Td({ class = "auction-listings-header-item" }, "Buyout Price"),
+          rx:Td({ class = "auction-listings-header-item" }, "Starting Price"),
+          rx:Td({ class = "auction-listings-header-item" }, "Seller"),
+          rx:Td({ class = "auction-listings-header-item" }, "Currency"),
         })
       }),
       state.listings and rx:Tbody(function()
         local ret = {}
         for i, item in ipairs(state.listings) do
-          table.insert(ret, AuctionListingsItem(item)) 
+          table.insert(ret, AuctionListingsItem(item))
         end
         return ret
       end)
@@ -490,8 +507,8 @@ local AuctionListingsList = function(state)
   })
 end
 
-local AuctionListings = function (state) 
-  return rx:Div({ class = "auction-listings"}, {
+local AuctionListings = function(state)
+  return rx:Div({ class = "auction-listings" }, {
     AuctionListingsTitle(state),
     AuctionListingsList(state)
   })
@@ -499,7 +516,7 @@ end
 
 local PostAuctionView = function(state)
   return rx:Div({
-    rx:Div({ class = "auction-post", onMount = function () onMount() end }, {
+    rx:Div({ class = "auction-post", onMount = function() onMount() end }, {
       PostForm(state),
       AuctionListings(state)
     }),
