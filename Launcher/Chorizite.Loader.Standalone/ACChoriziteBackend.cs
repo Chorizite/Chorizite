@@ -29,6 +29,7 @@ using WaveFormat = NAudio.Wave.WaveFormat;
 using NAudio.Wave.SampleProviders;
 using Chorizite.Loader.Standalone.Lib;
 using Chorizite.Core.Backend.Client;
+using System.Runtime.InteropServices;
 
 namespace Chorizite.Loader.Standalone {
     public unsafe class ACChoriziteBackend : IChoriziteBackend, IClientBackend {
@@ -275,13 +276,21 @@ namespace Chorizite.Loader.Standalone {
         }
 
         public void SendProtoUIMessage(byte[] message) {
-            StandaloneLoader.Log.LogDebug($"Sending ProtoUI message of length {message.Length}: {string.Join(" ", message.Select(b => b.ToString("X2")))}");
-            fixed (byte* ptr = message) {
-                Proto_UI.SendToControl(ptr, message.Length);
+            if (message is null || message.Length == 0) return;
+            try {
+                var bytePtr = (byte*)NativeMemory.AlignedAlloc((uint)message.Length, 4);
+                Marshal.Copy(message, 0, (IntPtr)bytePtr, message.Length);
+                // a NetBlob is created from bytePtr and will free it
+                Proto_UI.SendToControl(bytePtr, message.Length);
+            }
+            catch (Exception ex) {
+                Log.LogError(ex, "Failed to send ProtoUI message");
             }
         }
 
         public void SendProtoUIMessage(PacketWriter stream) {
+            if (stream is null) return;
+
             SendProtoUIMessage(stream.ToArray());
         }
 
