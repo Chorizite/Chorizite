@@ -63,66 +63,30 @@ namespace Core.UI.Lib.RmlUi.VDom {
             var oldNodeChildren = oldNode.Children;
             var newNodeChildren = newNode.Children;
 
-            if (oldNodeChildren.FirstOrDefault()?.Props.ContainsKey("key") == true && newNodeChildren.FirstOrDefault()?.Props.ContainsKey("key") == true) {
-                var oldNodeKeys = oldNodeChildren.ToDictionary(c => c.Props["key"]?.ToString() ?? "", c => c);
-                var newNodeKeys = newNodeChildren.ToDictionary(c => c.Props["key"]?.ToString() ?? "", c => c);
-                // remove children that were in the old node but not in the new node
-                foreach (var child in oldNodeChildren) {
-                    if (!newNodeKeys.ContainsKey(child.Props["key"].ToString())) {
-                        patches.Add(new PatchOperation() {
-                            Type = DomPatchType.Remove,
-                            NewNode = null,
-                            OldNode = child,
-                            Parent = oldNode
-                        });
-                    }
-                }
+            var childCount = Math.Min(oldNodeChildren.Count, newNodeChildren.Count);
 
-                // Add children that are in the new node but not in the old node
-                foreach (var addedChild in newNodeChildren) {
-                    if (!oldNodeKeys.ContainsKey(addedChild.Props["key"].ToString())) {
-                        patches.Add(new PatchOperation() {
-                            Type = DomPatchType.Add,
-                            NewNode = addedChild,
-                            OldNode = null,
-                            Parent = oldNode
-                        });
-                    }
-                }
-
-                // compare children that are in both nodes
-                foreach (var child in oldNodeChildren) {
-                    if (newNodeKeys.TryGetValue(child.Props["key"].ToString(), out var matchingNode)) {
-                        DiffRecursive(child, matchingNode, patches);
-                    }
-                }
+            foreach (var i in Enumerable.Range(0, childCount)) {
+                DiffRecursive(oldNodeChildren[i], newNodeChildren[i], patches);
             }
-            else {
-                var childCount = Math.Min(oldNodeChildren.Count, newNodeChildren.Count);
 
-                foreach (var i in Enumerable.Range(0, childCount)) {
-                    DiffRecursive(oldNodeChildren[i], newNodeChildren[i], patches);
-                }
+            // Remove children that were in the old node but not in the new node
+            foreach (var removedChild in oldNodeChildren.Skip(childCount)) {
+                patches.Add(new PatchOperation() {
+                    Type = DomPatchType.Remove,
+                    NewNode = null,
+                    OldNode = removedChild,
+                    Parent = oldNode
+                });
+            }
 
-                // Remove children that were in the old node but not in the new node
-                foreach (var removedChild in oldNodeChildren.Skip(childCount)) {
-                    patches.Add(new PatchOperation() {
-                        Type = DomPatchType.Remove,
-                        NewNode = null,
-                        OldNode = removedChild,
-                        Parent = oldNode
-                    });
-                }
-
-                // Add children that are in the new node but not in the old node
-                foreach (var addedChild in newNodeChildren.Skip(childCount)) {
-                    patches.Add(new PatchOperation() {
-                        Type = DomPatchType.Add,
-                        NewNode = addedChild,
-                        OldNode = null,
-                        Parent = oldNode
-                    });
-                }
+            // Add children that are in the new node but not in the old node
+            foreach (var addedChild in newNodeChildren.Skip(childCount)) {
+                patches.Add(new PatchOperation() {
+                    Type = DomPatchType.Add,
+                    NewNode = addedChild,
+                    OldNode = null,
+                    Parent = oldNode
+                });
             }
         }
 
@@ -154,6 +118,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
                     case DomPatchType.Replace:
                         newNode.UpdateElement(oldNode.Element.DocEl.GetParentNode().AppendChildTag(newNode.Type));
                         newNode.Element.DocEl.GetParentNode().ReplaceChild(newNode.Element.DocEl, oldNode.Element.DocEl);
+                        oldNode.Dispose();
                         break;
 
                     case DomPatchType.UpdateProps:
