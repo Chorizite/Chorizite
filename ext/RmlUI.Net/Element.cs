@@ -373,7 +373,7 @@ namespace RmlUiNet
         /// <param name="rml">The new content of the element.</param>
         public void SetInnerRml(string rml)
         {
-            Native.Element.SetInnerRml(NativePtr, rml);
+            Native.Element.SetInnerRml(NativePtr, rml ?? "");
         }
 
         /// <summary>
