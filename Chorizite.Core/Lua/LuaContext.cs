@@ -211,16 +211,28 @@ namespace Chorizite.Core.Lua {
                         var pathStr = RemoveLastNumberSuffix(path[0].ToString()?.Replace("|", ":"));
                         if (!string.IsNullOrEmpty(pathStr) && File.Exists(pathStr)) {
                             var scriptDir = Path.GetDirectoryName(pathStr);
-                            if (File.Exists(Path.Combine(scriptDir, $"{modulePath}.lua"))) {
+
+                            var parentDir = Path.GetDirectoryName(scriptDir); 
+
+                            if (File.Exists(Path.Combine(scriptDir, $"{modulePath}.lua")) ||
+                                (parentDir != null && File.Exists(Path.Combine(parentDir, $"{modulePath}.lua")))) {
+
                                 var choriziteCorePath = Path.Combine(ChoriziteStatics.Config.BaseDirectory, "Lua", "LuaScripts").Replace("\\", "\\\\") + "\\\\?.lua";
                                 scriptDir = scriptDir.Replace("\\", "\\\\") + "\\\\?.lua";
-                                DoString($"package.path = \"{choriziteCorePath};{scriptDir}\"");
+
+                                if (parentDir != null) {
+                                    parentDir = parentDir.Replace("\\", "\\\\") + "\\\\?.lua";
+                                    DoString($"package.path = \"{choriziteCorePath};{scriptDir};{parentDir}\"");
+                                }
+                                else {
+                                    DoString($"package.path = \"{choriziteCorePath};{scriptDir}\"");
+                                }
+
                                 return _originalRequire.Call($"{modulePath}").FirstOrDefault();
                             }
                         }
                     }
                 }
-
                 modulePath = modulePath.ToLower();
                 if (modulePath.StartsWith("plugins.") && !modulePath.EndsWith(".lua")) {
                     var lib = modulePath.Substring("plugins.".Length);
