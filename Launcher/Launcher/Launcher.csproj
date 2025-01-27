@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="RmlUI.Net" Version="1.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
     <PackageReference Include="WaveEngine.Bindings.OpenGL" Version="1.0.4998" />
@@ -35,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ext\RmlUI.Net\RmlUI.Net.csproj" />
+    <ProjectReference Include="..\..\ext\RmlUI.Net\RmlUI.Net\RmlUI.Net.csproj" />
     <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
   </ItemGroup>
 
