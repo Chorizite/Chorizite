@@ -17,7 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Chorizite.Common\Chorizite.Common.csproj" />
     <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
   </ItemGroup>
 
