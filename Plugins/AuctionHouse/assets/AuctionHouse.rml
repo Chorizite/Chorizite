@@ -2,18 +2,18 @@
 	<head>
     <title>Auction House</title>
 		<link type="text/template" href="../../Core.UI/assets/templates/tabpanel.rml" />
-		<style>
+    <script src="post/post-form.lua"></script>
+    <script src="post/post-auction-listings.lua"></script>
+    <style>
       * {
         box-sizing: border-box;
       }
+
       body {
         position: relative;
-        max-width: 70vw;
-        width: 100%;
         font-family: Tahoma;
-        font-size: 0.9em;
+        font-size: 0.8em;
         font-weight: bold;
-        overflow: auto;
       }
 
       .inner {
@@ -26,16 +26,98 @@
         color: #eea300dd;
         margin: 0;
         font-weight: bold;
+      } 
+
+      #post {
+        display: flex;
+        width: 70vw;
+        height: 60vh;
       }
 
-      .auction-listings {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
+      .post-auction-form {
+        width: 25%;
+        padding: 1rem;
+        border-right: 1px #eea300dd;
+      }
+
+      .post-auction-listings {
+        width: 100%;
         padding: 1rem;
       }
 
-      .auction-listings-title, .post-form-title {
+      .post-auction-listings-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .post-auction-listings-list {
+        max-height: 100%;
+        overflow: auto;
+      }
+
+      .post-auction-listings-table {
+        position: relative;
+        padding: 1rem;
+      }
+
+      .post-auction-listings-header {
+        margin-bottom: 1rem;
+      }
+
+      .post-auction-listings-header-item {
+        border: 1px rgba(59, 49, 27, 90%);
+        border-radius: 0.2rem;
+        padding: 0.5rem;
+      }
+
+      .post-auction-listings-list-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .post-auction-listings-item {
+        padding: 0.5rem;
+        border-radius: 0.85rem;
+        background: rgba(59, 49, 27, 50%);
+        margin-bottom: 0.5rem;
+        text-align: center;
+      }
+
+      .post-auction-listings-header-item-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+      }
+
+      .post-auction-listings-header-item-container img {
+        width: 1rem;
+        height: 1rem;
+      }
+
+      .post-auction-listings-item td {
+        vertical-align: middle;
+      }
+
+      .post-auction-listings-item-name-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .post-auction-listings-item-name {
+        margin: auto;
+      }
+
+      .post-auction-listings-item-icon {
+        display: inline-block;
+        width: 2rem;
+        height: 2rem;
+        decorator: image(dat://0x06000F6E);
+      }
+
+      .post-auction-listings-title, .post-form-title {
         width: 100%;
         background-color: #000000dd;
         padding: 0.2rem;
@@ -56,24 +138,11 @@
         color: red;
       }
 
-      .auction-post {
-        display: flex;
-        flex-direction: row;
-      }
-
       .post-form {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-        width: 30%;
-        border-right: 1px #eea300dd;
-      }
-
-      .post-form-container {
-        display: flex;
-        gap: 1rem;
-        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
       }
 
       .post-form-item-container {
@@ -90,29 +159,18 @@
         gap: 0.5rem;
       }
 
-      
-      .icon-stack-label {
-        align-self: center;
-        font-size: 1.25rem;
-      }
-
       .post-form input[type="text"] {
         width: 5rem;
         align-self: center;
       }
 
-      .post-comparisons {
-        flex: 1;
-        padding: 6dp;
-        min-width: 400px;
+      .post-form-submit {
+        width: 100%;
       }
 
-      .post-comparisons.has-error {
-        color: red;
-      }
-
-      .post-area .item {
-        margin-right: 10px;
+      .icon-stack-label {
+        align-self: center;
+        font-size: 1.1rem;
       }
 
       .icon-stack {
@@ -147,32 +205,27 @@
         display: inline-block;
       }
 
-     .icon-stack .icon-item {
+      .icon-stack .icon-item {
         display: none;
       }
 
-     .has-item .icon-stack .icon-item {
+      .has-item .icon-stack .icon-item {
         display: inline-block;
       }
-      
+
       .name {
         flex: 1;
         font-size: 16px;
         padding-left: 8dp;
       }
 
-      .create-auction-button {
-        width: 100%;
-      }
-
-      .auction-browse {
+      .post-auction-browse {
         display: flex;
         flex-direction: column;
         text-align: left;
         padding: 1rem;
         padding-right: 2rem;
         margin: 0;
-        overflow-y: auto;
       }
 
       .browse-header {
@@ -192,17 +245,17 @@
       .browse-search input {
         width: 100%;
       }
-      
     </style>
-    <script src="browse.lua"></script>
-    <script src="post.lua"></script>
 	</head>
 	<body class="window" template="tabpanel">
     <div class="inner">
       <tabset>
         <tab>Post</tab>
         <panel>
-          <div id="post" />
+          <div id="post">
+            <div class="post-auction-form" />
+            <div class="post-auction-listings" />
+          </div>
         </panel>
         <tab>Browse</tab>
         <panel>
