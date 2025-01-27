@@ -71,6 +71,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{189167BA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Core.Tests", "Tests\Chorizite.Core.Tests\Chorizite.Core.Tests.csproj", "{94F24AF9-BFD2-41B2-9052-3696EC93357C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RmlUi.Net", "ext\RmlUi.Net\RmlUi.Net\RmlUi.Net.csproj", "{7E9F651E-0D05-452B-92C3-895F56F2AAA8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -173,6 +175,10 @@ Global
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E9F651E-0D05-452B-92C3-895F56F2AAA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E9F651E-0D05-452B-92C3-895F56F2AAA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E9F651E-0D05-452B-92C3-895F56F2AAA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E9F651E-0D05-452B-92C3-895F56F2AAA8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -202,6 +208,7 @@ Global
 		{1B04BB5A-0007-417F-A5C2-94BA8CD162E1} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
 		{2F2F828C-4F8B-4EF4-9E0F-0148D9B05A26} = {1B04BB5A-0007-417F-A5C2-94BA8CD162E1}
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C} = {189167BA-01A1-44D2-91FF-C2618E096B8D}
+		{7E9F651E-0D05-452B-92C3-895F56F2AAA8} = {52AEE83B-EC3B-4515-ADD1-14F30847B5F8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

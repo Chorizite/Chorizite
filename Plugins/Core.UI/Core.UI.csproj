@@ -45,6 +45,7 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
+    <ProjectReference Include="..\..\ext\RmlUi.Net\RmlUi.Net\RmlUi.Net.csproj" />
     <ProjectReference Include="..\Core.DatService\Core.DatService.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>

@@ -38,7 +38,7 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\ext\RmlUI.Net\RmlUI.Net.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\ext\RmlUI.Net\RmlUI.Net\RmlUI.Net.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

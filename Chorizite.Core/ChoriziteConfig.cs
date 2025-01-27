@@ -33,7 +33,7 @@ namespace Chorizite.Core {
 
             PluginDirectory = Path.Combine(baseDirectory, "plugins");
             StorageDirectory = Path.Combine(baseDirectory, "data");
-            LogDirectory = Path.Combine(baseDirectory, "logs");
+            LogDirectory = Path.Combine(StorageDirectory, "logs");
             DatDirectory = datDirectory;
         }
     }
