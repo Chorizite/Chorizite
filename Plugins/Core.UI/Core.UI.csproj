@@ -29,6 +29,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="RmlUi.Net" Version="1.0.0" />
     <PackageReference Include="RoyT.TrueType" Version="0.2.0" />
     <PackageReference Include="System.Collections" Version="4.3.0" ExcludeAssets="runtime" />
     <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" ExcludeAssets="runtime" />
@@ -39,7 +40,6 @@
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\..\ext\RmlUI.Net\RmlUI.Net.csproj" />
     <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
