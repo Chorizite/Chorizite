@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Chorizite.Common" Version="1.0.0" />
     <PackageReference Include="Medo.PcapRW" Version="1.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageReference Include="System.Memory" Version="4.6.0" />

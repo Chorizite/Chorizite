@@ -53,8 +53,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceAnalyzer.Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.SourceAnalyzer.Vsix", "Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.Vsix\Chorizite.SourceAnalyzer.Vsix.csproj", "{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Common", "Chorizite.Common\Chorizite.Common.csproj", "{04A378EC-18B3-42A8-923A-6A8D4B8F4716}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuctionHouse", "Plugins\AuctionHouse\AuctionHouse.csproj", "{FAF72E7C-9EFC-43EC-BA04-E5EACCF3FEA0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DearImGui", "Plugins\Core.DearImGui\Core.DearImGui.csproj", "{BDE2D3AD-FEE6-43A5-9428-176B232DC07B}"
@@ -72,6 +70,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Core.Tests", "Tests\Chorizite.Core.Tests\Chorizite.Core.Tests.csproj", "{94F24AF9-BFD2-41B2-9052-3696EC93357C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RmlUi.Net", "ext\RmlUi.Net\RmlUi.Net\RmlUi.Net.csproj", "{7E9F651E-0D05-452B-92C3-895F56F2AAA8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Common", "Chorizite.Common\Chorizite.Common.csproj", "{38BE2920-7ADF-483D-AF21-2A1D2EDF7515}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -147,10 +147,6 @@ Global
 		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC9553C6-DB9F-4D52-9EDF-F392AA7EC6C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{04A378EC-18B3-42A8-923A-6A8D4B8F4716}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FAF72E7C-9EFC-43EC-BA04-E5EACCF3FEA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FAF72E7C-9EFC-43EC-BA04-E5EACCF3FEA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAF72E7C-9EFC-43EC-BA04-E5EACCF3FEA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -179,6 +175,10 @@ Global
 		{7E9F651E-0D05-452B-92C3-895F56F2AAA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E9F651E-0D05-452B-92C3-895F56F2AAA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E9F651E-0D05-452B-92C3-895F56F2AAA8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38BE2920-7ADF-483D-AF21-2A1D2EDF7515}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38BE2920-7ADF-483D-AF21-2A1D2EDF7515}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38BE2920-7ADF-483D-AF21-2A1D2EDF7515}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38BE2920-7ADF-483D-AF21-2A1D2EDF7515}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

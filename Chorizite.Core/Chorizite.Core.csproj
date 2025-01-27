@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Chorizite.Common" Version="1.0.0" />
     <PackageReference Include="Autofac" Version="8.2.0" />
     <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
