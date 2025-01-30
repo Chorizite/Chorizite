@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Chorizite.ACProtocol" Version="1.0.0" />
     <PackageReference Include="Chorizite.Common" Version="1.0.0" />
     <PackageReference Include="Autofac" Version="8.2.0" />
     <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" />
@@ -31,21 +32,6 @@
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!--
-    <ProjectReference Include="..\Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>Analyzer</OutputItemType>
-    </ProjectReference>
-    <ProjectReference Include="..\Chorizite.SourceGen\Chorizite.SourceAnalyzer\Chorizite.SourceAnalyzer.CodeFixes\Chorizite.SourceAnalyzer.CodeFixes.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <OutputItemType>Analyzer</OutputItemType>
-    </ProjectReference>
-    -->
-    <ProjectReference Include="..\Chorizite.Common\Chorizite.Common.csproj" />
-    <ProjectReference Include="..\ext\ACProtocol\Chorizite.ACProtocol\Chorizite.ACProtocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>
