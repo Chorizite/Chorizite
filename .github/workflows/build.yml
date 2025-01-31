@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: |
           dotnet restore                        # install packages
-          dotnet build -c Release --no-restore  # build
+          dotnet build -c Release --no-restore --property WarningLevel=0 # build
           ls -lah "${{ github.workspace }}bin/"
           ls -lah "${{ github.workspace }}bin/net8.0"
         
