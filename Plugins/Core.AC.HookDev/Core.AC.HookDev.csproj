@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Launcher\Chorizite.Loader.Standalone\Chorizite.Loader.Standalone.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\Launcher\Chorizite.NativeClientBootstrapper\Chorizite.NativeClientBootstrapper.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>

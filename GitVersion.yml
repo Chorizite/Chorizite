@@ -1,0 +1,7 @@
+next-version: 0.0.1
+tag-prefix: '^(release\/)?'
+assembly-versioning-scheme: Major
+branches:
+  main:
+    label: beta
+    increment: Patch

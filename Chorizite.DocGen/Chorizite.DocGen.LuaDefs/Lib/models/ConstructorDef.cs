@@ -1,5 +1,4 @@
-﻿using NuDoq;
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace Chorizite.DocGen.LuaDefs.Lib.models {
     public class ConstructorDef : Def {

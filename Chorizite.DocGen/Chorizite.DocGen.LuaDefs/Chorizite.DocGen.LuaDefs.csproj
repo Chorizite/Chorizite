@@ -5,26 +5,26 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <OutputPath>..\..\..\bin\net8.0\</OutputPath>
+    <OutputPath>..\..\bin\net8.0\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuDoc" Version="0.5.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Chorizite.Core\Chorizite.Core.csproj" />
+    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="globals.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="cs.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="lua\globals.lua" />
+    <EmbeddedResource Include="lua\cs.lua" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="lua\" />
   </ItemGroup>
 </Project>

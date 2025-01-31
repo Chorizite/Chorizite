@@ -12,7 +12,7 @@ namespace Launcher {
         private readonly ILogger _log;
 
 
-        [DllImport("Chorizite.Bootstrapper.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        [DllImport("Chorizite.Injector.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
         private static extern int LaunchInjected(string command_line, string working_directory, IntPtr entryPts, int numEntries);
 
         public LaunchManager(ILogger log) {
@@ -25,7 +25,7 @@ namespace Launcher {
                 var port = server.Split(":").Last();
                 var clientArgs = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
 
-                var choriziteDll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "Chorizite.Bootstrapper.dll");
+                var choriziteDll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "Chorizite.Injector.dll");
 
                 EntryPointParameters[] dllsToInject = [
                     new EntryPointParameters(choriziteDll, "Bootstrap"),
