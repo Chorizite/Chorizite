@@ -18,7 +18,7 @@ jobs:
           versionSpec: '6.0.x'
       
       - name: Install makensis
-        run: sudo apt-get install -y makensis
+        run: sudo apt update && sudo apt install -y nsis nsis-pluginapi
 
       - name: Determine Version
         id: version_step # step id used as reference for output values
