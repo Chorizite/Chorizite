@@ -42,7 +42,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with: 
-          name: "Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.zip"
+          name: "Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe"
           path: "${{ github.workspace }}/bin/Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe"
 
       - name: Push NuGet Package
