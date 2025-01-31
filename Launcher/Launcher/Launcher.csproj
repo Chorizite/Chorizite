@@ -33,7 +33,7 @@
     <RemoveDir Directories="@(DirsToClean)" />
   </Target>
 
-  <Target Name="Build Installer" Condition="$(MSBuildRuntimeType)=='Full'" AfterTargets="Build">
+  <Target Name="Build Installer" Condition="$(Configuration) == 'Release' And $(MSBuildRuntimeType)=='Full'" AfterTargets="Build">
     <Message Text="Build Installer" Importance="High" />
     <Exec Command="$(NuGetPackageRoot)\nsis-tool\3.0.8\tools\makensis.exe -DVERSION=$(Version) $(MSBuildProjectDirectory)\..\..\Installer\Installer.nsi" />
   </Target>

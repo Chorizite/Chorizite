@@ -8,6 +8,7 @@ SetCompressor LZMA
 !include "MUI.nsh"
 !include "WordFunc.nsh"
 !include "DotNetCore.nsh"
+!include "vcredist.nsh"
 
 Name "${APPNAME} ${VERSION}"
 InstallDir "C:\Games\Chorizite"
@@ -57,6 +58,7 @@ Section -FinishSection
 	WriteUninstaller "$INSTDIR\uninstall.exe"
 
 	!insertmacro CheckDotNetCore 8.0
+	!insertmacro CheckVCRedist
 	
 SectionEnd
 

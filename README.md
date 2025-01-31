@@ -18,7 +18,9 @@ Chorizite serves as a plugin framework for *Asheron's Call*, allowing developers
 
 ## Dependencies
 
-- [.NET 8.0+](https://dotnet.microsoft.com/en-us/download/dotnet)
+- [.NET 8.0+](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+  - Runtime is needed for all users
+  - SDK is needed for building
 - [Microsoft Visual C++ Redistributable](https://aka.ms/vs/17/release/vc_redist.x86.exe)
 - [DirectX End-User Runtimes (June 2010)](https://www.microsoft.com/en-ie/download/details.aspx?id=8109)
 
@@ -32,7 +34,8 @@ Chorizite serves as a plugin framework for *Asheron's Call*, allowing developers
 1. Install [Dependencies](#dependencies)
 2. Install GitVersion Tool: `dotnet tool install --global GitVersion.Tool --framework net8.0`
 3. Clone repository: `git clone git@github.com:Chorizite/Chorizite.git`
-4. Build in visual studio / dotnet build
+4. Build `Release` in visual studio / `dotnet restore && dotnet build -c Release`
+5. Run installer at bin/Chorizite-Installer*. Make sure you change the installation directory to the bin/net8.0/ directory you just built to (only needs to be done once)
 
 ## Contributing
 

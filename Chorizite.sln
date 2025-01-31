@@ -28,6 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		LICENSE.md = LICENSE.md
 		.github\workflows\make-release.yml = .github\workflows\make-release.yml
 		README.md = README.md
+		Installer\vcredist.nsh = Installer\vcredist.nsh
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.NativeClientBootstrapper", "Launcher\Chorizite.NativeClientBootstrapper\Chorizite.NativeClientBootstrapper.csproj", "{A9FB6442-D33F-4D41-AA9F-0916F1750565}"
