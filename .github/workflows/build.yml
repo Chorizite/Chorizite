@@ -25,13 +25,13 @@ jobs:
         run: |
           dotnet restore                        # install packages
           dotnet build -c Release --no-restore --property WarningLevel=0 # build
-          ls -lah "${{ github.workspace }}bin/"
-          ls -lah "${{ github.workspace }}bin/net8.0"
+          ls -lah "${{ github.workspace }}/bin/"
+          ls -lah "${{ github.workspace }}/bin/net8.0"
         
       - uses: actions/upload-artifact@v4
         with: 
           name: "Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
-          path: "${{ github.workspace }}bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
+          path: "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
 
       - uses: actions/upload-artifact@v4
         with: 
