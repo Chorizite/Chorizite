@@ -1,7 +1,7 @@
 ﻿using AcClient;
 using Chorizite.Common.Enums;
 using Chorizite.Core.Backend.Client;
-using Chorizite.Loader.Standalone.Hooks;
+using Chorizite.NativeClientBootstrapper.Hooks;
 using Microsoft.Extensions.Logging;
 using Reloaded.Hooks.Definitions;
 using Reloaded.Hooks.Definitions.X86;

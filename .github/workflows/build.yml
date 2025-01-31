@@ -1,0 +1,45 @@
+name: 'Build'
+on:
+  push:
+    branches:
+    - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.2
+        with:
+          versionSpec: '6.0.x'
+
+      - name: Determine Version
+        id: version_step # step id used as reference for output values
+        uses: gittools/actions/gitversion/execute@v3.1.2
+
+      - name: Build
+        run: |
+          dotnet restore                        # install packages
+          dotnet build -c Release --no-restore  # build
+          ls -lah "${{ github.workspace }}bin/"
+          ls -lah "${{ github.workspace }}bin/net8.0"
+        
+      - uses: actions/upload-artifact@v4
+        with: 
+          name: "Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
+          path: "${{ github.workspace }}bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
+
+      - uses: actions/upload-artifact@v4
+        with: 
+          name: "Launcher.${{ env.GitVersion_FullSemVer }}.zip"
+          path: "${{ github.workspace }}/bin/net8.0/"
+
+      - name: Push NuGet Package
+        run: |
+          dotnet nuget add source --username Chorizite --password ${{ secrets.CI_NUGET_API_KEY }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Chorizite/index.json"
+          dotnet nuget push "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg" --api-key ${{ secrets.CI_NUGET_API_KEY }} --source "github"
+      

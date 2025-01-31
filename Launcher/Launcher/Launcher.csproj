@@ -12,6 +12,16 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 
+  <Target Name="SampleTarget" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
+    <Exec Command="dotnet-gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="Version" />
+      <Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />
+    </Exec>
+    <Exec Command="dotnet-gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="AssemblyVersion" />
+    </Exec>
+  </Target>
+
   <ItemGroup>
     <None Remove="Render\Shaders\VertexPositionColor.frag" />
     <None Remove="Render\Shaders\VertexPositionColor.vert" />
@@ -27,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="NSIS" Version="2.51.0" />
     <PackageReference Include="RmlUi.Net" Version="1.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
@@ -37,6 +48,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Chorizite.Injector.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

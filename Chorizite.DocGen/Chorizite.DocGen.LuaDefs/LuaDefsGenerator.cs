@@ -3,7 +3,6 @@ using Chorizite.Core.Logging;
 using Chorizite.DocGen.LuaDefs.Lib;
 using Chorizite.DocGen.LuaDefs.Lib.models;
 using Microsoft.Win32;
-using NuDoq;
 using System;
 using Autofac;
 using System.Net;
@@ -50,7 +49,11 @@ namespace Chorizite.DocGen.LuaDefs {
             _out.AppendLine("local _defs = {}");
             _out.AppendLine();
 
-            _out.AppendLine(File.ReadAllText("cs.lua"));
+            var assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.cs.lua"))
+            using (StreamReader reader = new StreamReader(stream)) {
+                _out.AppendLine(reader.ReadToEnd());
+            }
 
             foreach (var e in typeFinder.SystemRegistry.Enums) {
                 if (!IsWantedType(e.Value)) continue;
@@ -83,7 +86,11 @@ namespace Chorizite.DocGen.LuaDefs {
             _out.AppendLine("local _defs = {}");
             _out.AppendLine();
 
-            _out.AppendLine(File.ReadAllText("globals.lua"));
+            var assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.globals.lua"))
+            using (StreamReader reader = new StreamReader(stream)) {
+                _out.AppendLine(reader.ReadToEnd());
+            }
 
             foreach (var e in typeFinder.CoreRegistry.Enums) {
                 if (!IsWantedType(e.Value)) continue;

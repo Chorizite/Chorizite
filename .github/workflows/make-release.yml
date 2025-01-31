@@ -1,0 +1,80 @@
+name: 'Make Release'
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.1.2
+        with:
+          versionSpec: '6.0.x'
+
+      - name: Determine Version
+        id: version_step
+        uses: gittools/actions/gitversion/execute@v3.1.2
+
+      - name: Generate release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+              --method POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              "/repos/$GITHUB_REPOSITORY/releases/generate-notes" \
+               -f "tag_name=release/$GitVersion_MajorMinorPatch" -f "target_commitish=master" \
+          | jq .body -r > release-notes.md
+
+      - name: Git config
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git remote set-url origin https://x-access-token:${{ secrets.CI_PAT }}@github.com/${{ github.repository }}
+
+      - name: Create release tag
+        run: |
+          git tag -a "release/${{ env.GitVersion_MajorMinorPatch }}" -F release-notes.md
+          git push origin "release/${{ env.GitVersion_MajorMinorPatch }}"
+
+      - name: Build
+        run: |
+          dotnet restore                        # install packages
+          dotnet build -c Release --no-restore "-p:PackageReleaseNotes=$(cat release-notes.md 2>/dev/null)"  # build
+        
+      - uses: actions/upload-artifact@v4
+        with: 
+          name: "Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
+          path: "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
+
+      - uses: actions/upload-artifact@v4
+        with: 
+          name: "Chorizite.Core.${{ env.GitVersion_FullSemVer }}.zip"
+          path: "${{ github.workspace }}bin/net8.0/"
+      
+      - name: Push GitHub NuGet Package
+        run: |
+          dotnet nuget add source --username Chorizite --password ${{ secrets.CI_NUGET_API_KEY }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Chorizite/index.json"
+          dotnet nuget push "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg" --api-key ${{ secrets.CI_NUGET_API_KEY }} --source "github"
+          dotnet nuget push "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg" --api-key ${{ secrets.NUGET_DEPLOY_KEY }} --source https://api.nuget.org/v3/index.json
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: release/${{ env.GitVersion_FullSemVer }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="Release v${{ env.GitVersion_FullSemVer }}" \
+              --generate-notes \
+              "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg#Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
+              
+      - name: Bump version
+        run: |
+          git commit --allow-empty -m "Bump version"
+          git push origin master
