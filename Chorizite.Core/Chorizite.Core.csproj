@@ -17,7 +17,7 @@
     <IsPackable>True</IsPackable>
   </PropertyGroup>
 
-  <Target Name="SampleTarget" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
+  <Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
     <Exec Command="dotnet-gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Version" />
       <Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />

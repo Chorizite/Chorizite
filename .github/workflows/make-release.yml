@@ -14,6 +14,9 @@ jobs:
         uses: gittools/actions/gitversion/setup@v3.1.2
         with:
           versionSpec: '6.0.x'
+      
+      - name: Install makensis
+        run: sudo apt-get install -y makensis
 
       - name: Determine Version
         id: version_step
@@ -46,16 +49,20 @@ jobs:
         run: |
           dotnet restore                        # install packages
           dotnet build -c Release --no-restore "-p:PackageReleaseNotes=$(cat release-notes.md 2>/dev/null)"  # build
+
+      - name: Build installer
+        run: |
+          makensis -DVERSION="${{ env.GitVersion_FullSemVer }}" Installer/Installer.nsi
         
       - uses: actions/upload-artifact@v4
         with: 
           name: "Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
           path: "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
-
+          
       - uses: actions/upload-artifact@v4
         with: 
-          name: "Chorizite.Core.${{ env.GitVersion_FullSemVer }}.zip"
-          path: "${{ github.workspace }}bin/net8.0/"
+          name: "Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.zip"
+          path: "${{ github.workspace }}/bin/Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe"
       
       - name: Push GitHub NuGet Package
         run: |
@@ -73,6 +80,7 @@ jobs:
               --title="Release v${{ env.GitVersion_FullSemVer }}" \
               --generate-notes \
               "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg#Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
+              "${{ github.workspace }}/bin/Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe#Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe"
               
       - name: Bump version
         run: |

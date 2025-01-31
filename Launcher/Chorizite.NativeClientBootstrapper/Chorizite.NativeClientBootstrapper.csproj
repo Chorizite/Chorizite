@@ -34,18 +34,10 @@
 
   <ItemGroup>
     <NativeLibs Remove="NetHooks.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <NativeLibs Remove="ACCLientHooks.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <NativeLibs Remove="ACChoriziteBackend.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <NativeLibs Remove="StandaloneLoader.cs" />
+    <NativeLibs Remove="ACClientUIBackend.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,13 +46,5 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Render\Shaders\Basic.fx" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <NativeLibs Remove="ACChoriziteBackend.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <NativeLibs Remove="ACClientUIBackend.cs" />
   </ItemGroup>
 </Project>

@@ -9,9 +9,6 @@ SetCompressor LZMA
 !include "WordFunc.nsh"
 !include "DotNetCore.nsh"
 
-!getdllversion "${BUILDPATH}\Chorizite.Core.dll" Expv_
-!define VERSION ${Expv_1}.${Expv_2}.${Expv_3}
-
 Name "${APPNAME} ${VERSION}"
 InstallDir "C:\Games\Chorizite"
 InstallDirRegKey HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" ""

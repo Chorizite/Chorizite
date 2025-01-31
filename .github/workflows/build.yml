@@ -16,6 +16,9 @@ jobs:
         uses: gittools/actions/gitversion/setup@v3.1.2
         with:
           versionSpec: '6.0.x'
+      
+      - name: Install makensis
+        run: sudo apt-get install -y makensis
 
       - name: Determine Version
         id: version_step # step id used as reference for output values
@@ -27,6 +30,10 @@ jobs:
           dotnet build -c Release --no-restore --property WarningLevel=0 # build
           ls -lah "${{ github.workspace }}/bin/"
           ls -lah "${{ github.workspace }}/bin/net8.0"
+
+      - name: Build installer
+        run: |
+          makensis -DVERSION="${{ env.GitVersion_FullSemVer }}" Installer/Installer.nsi
         
       - uses: actions/upload-artifact@v4
         with: 
@@ -35,8 +42,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with: 
-          name: "Launcher.${{ env.GitVersion_FullSemVer }}.zip"
-          path: "${{ github.workspace }}/bin/net8.0/"
+          name: "Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.zip"
+          path: "${{ github.workspace }}/bin/Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe"
 
       - name: Push NuGet Package
         run: |
