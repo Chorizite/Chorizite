@@ -16,7 +16,7 @@ jobs:
           versionSpec: '6.0.x'
       
       - name: Install makensis
-        run: sudo apt-get install -y makensis
+        run: sudo apt-get install -y nsis
 
       - name: Determine Version
         id: version_step
@@ -79,7 +79,6 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --title="Release v${{ env.GitVersion_FullSemVer }}" \
               --generate-notes \
-              "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg#Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg"
               "${{ github.workspace }}/bin/Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe#Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe"
               
       - name: Bump version
