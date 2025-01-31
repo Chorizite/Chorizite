@@ -33,7 +33,7 @@ jobs:
 
       - name: Build installer
         run: |
-          makensis -DVERSION="${{ env.GitVersion_FullSemVer }}" Installer/Installer.nsi
+          makensis -DVERSION="${{ env.GitVersion_FullSemVer }}" "${{ github.workspace }}/Installer/Installer.nsi"
         
       - uses: actions/upload-artifact@v4
         with: 
