@@ -10,14 +10,19 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>..\..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>true</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+    <UpdateAssemblyInfo>false</UpdateAssemblyInfo>
+    <UseProjectNamespaceForGitVersionInformation>true</UseProjectNamespaceForGitVersionInformation>
   </PropertyGroup>
 
   <Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
-    <Exec Command="dotnet-gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
+    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Version" />
       <Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />
     </Exec>
-    <Exec Command="dotnet-gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
+    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="AssemblyVersion" />
     </Exec>
   </Target>
@@ -35,7 +40,7 @@
 
   <Target Name="Build Installer" Condition="$(Configuration) == 'Release' And $(MSBuildRuntimeType)=='Full'" AfterTargets="Build">
     <Message Text="Build Installer" Importance="High" />
-    <Exec Command="$(NuGetPackageRoot)\nsis-tool\3.0.8\tools\makensis.exe -DVERSION=$(Version) $(MSBuildProjectDirectory)\..\..\Installer\Installer.nsi" />
+    <Exec Command="$(NuGetPackageRoot)\nsis-tool\3.10.0\tools\makensis.exe -DVERSION=$(Version) $(MSBuildProjectDirectory)\..\..\Installer\Installer.nsi" />
   </Target>
 
   <ItemGroup>
@@ -53,7 +58,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NSIS-Tool" Version="3.0.8">
+    <PackageReference Include="GitVersion.MsBuild" Version="6.1.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="NSIS-Tool" Version="3.10.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
