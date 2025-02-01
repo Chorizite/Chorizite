@@ -17,6 +17,7 @@ local state = rx:CreateState({
   selectedCurrencyName = nil,
   selectedCurrencyWcid = 0,
   listings = nil,
+  pageSize = 25,
   stackSize = 1,
   stackCount = 1,
   startingPrice = 1,
@@ -85,13 +86,13 @@ local state = rx:CreateState({
       HoursDuration = self.duration
     }
 
-    request.CreateSellOrder(sellAuctionRequest)
+    request.createSellOrder(sellAuctionRequest)
   end,
   HandleSellOrderResponse = function(self, response)
     self.loading = false
     if response.Success then
       self.ClearPostForm()
-      request.FetchPostListings("", 1, "name")
+      request.fetchPostListings("", 1, "name", 1, self.pageSize)
     else
       self.auctionError = response.ErrorMessage
     end
@@ -169,7 +170,7 @@ local PostFormItemStackSize = function(state)
         class = "secondary",
         disabled = not state.canStack,
         onclick = function(evt) state:SetMaximumStackSize() end
-      }, "Maximum"),
+      }, "Max"),
     })
   })
 end
@@ -184,12 +185,7 @@ local PostFormItemStacks = function(state)
         onChange = function(evt) state.stackCount = tonumber(evt.Params.value) end,
         value = state.stackCount,
         disabled = not state.canStack
-      }),
-      rx:Button({
-        class = "secondary",
-        disabled = not state.canStack,
-        onClick = function(evt) state:SetMaximumStackCount() end
-      }, "Maximum"),
+      })
     })
   })
 end
@@ -304,7 +300,7 @@ local PostFormSubmit = function(state)
     rx:Div({ class = "post-form-item" }, {
       rx:Button({
         class = "primary post-form-submit",
-        onclick = function(evt) state:CreateSellOrder() end
+        onclick = function() state:CreateSellOrder() end
       }, "Create Auction")
     })
   })
