@@ -2,11 +2,15 @@ local rx = require("rx")
 local request = require("request")
 local Net = require(typeof(CS.Chorizite.Core.Net.NetworkParser))
 local ac = require('Plugins.Core.AC').Game
+local utils = require('utils')
 
 local state = rx:CreateState({
   loading = true,
   listings = nil,
   auctionError = "",
+  pageSize = 25,
+  pageNumber = 1,
+  hasNextPage = true,
   sortColumn = "name",
   sortDirection = 1,
   sortNameDirection = 1,
@@ -44,30 +48,50 @@ local state = rx:CreateState({
     end
 
     self.sortDirection = self[columnDirectionKey]
+    self.pageNumber = 1
     self.listings = nil
-    request.FetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn)
+    request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, self.pageNumber, self.pageSize)
   end,
-  HandleGetListingsResponse = function(self, response)
+  HandleGetPostListingsResponse = function(self, response)
     self.loading = false;
     if response.Success then
       self.listings = response.Data
+      self.hasNextPage = #response.Data == self.pageSize
     else
       self.auctionError = response.ErrorMessage
     end
+  end,
+  HandleNextPage = function(self)
+    if self.hasNextPage then
+      self.pageNumber = self.pageNumber + 1
+      self.listings = nil
+      request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, self.pageNumber, self.pageSize)
+    end
+  end,
+  HandlePreviousPage = function(self)
+    if self.pageNumber > 1 then
+      self.pageNumber = self.pageNumber - 1
+      self.listings = nil
+      request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, self.pageNumber, self.pageSize)
+    end
+  end,
+  HandlePageNumberInput = function(self, pageNumber)
+    self.pageNumber = pageNumber
+    self.listings = nil
+    request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, pageNumber, self.pageSize)
   end
 })
 
 local OpCodeHandlers = {
   [0x10004] = function(evt)
-    print("-> GetListingsResponse Event Handler")
-    local getListingsResponse = request.read(evt.RawData)
-    state.HandleGetListingsResponse(getListingsResponse)
+    print("-> GetPostListingsResponse Event Handler")
+    local getPostListingsResponse = request.read(evt.RawData)
+    state.HandleGetPostListingsResponse(getPostListingsResponse)
   end
 }
 
-
 local onMount = function()
-  request.FetchPostListings("", 1, "name")
+  request.fetchPostListings("", 1, "name", state.pageNumber, state.pageSize)
   Net.Messages:OnUnknownMessage('+', function(sender, evt)
     if OpCodeHandlers[evt.OpCode] then
       OpCodeHandlers[evt.OpCode](evt)
@@ -124,7 +148,6 @@ end
 local AuctionListingsList = function(state)
   return rx:Div({
     class = {
-      ["has-item"] = true,
       ["post-auction-listings-list"] = true
     }
   }, {
@@ -222,6 +245,32 @@ local AuctionListingsList = function(state)
   })
 end
 
+local AuctionListingsPagination = function(state)
+  return rx:Div({ class = "post-auction-listings-pagination" }, {
+    rx:Input({
+      type = "text",
+      value = state.pageNumber,
+      onChange = function(evt) state.HandlePageNumberInput(tonumber(evt.Params.value)) end
+    }),
+    rx:Button({
+      disabled = state.pageNumber <= 1,
+      class = {
+        ["post-auction-listings-pagination-previous"] = true,
+        ["primary"] = true
+      },
+      onClick = function() state.HandlePreviousPage() end
+    }, "Previous"),
+    rx:Button({
+      disabled = not state.hasNextPage,
+      class = {
+        ["post-auction-listings-pagination-next"] = true,
+        ["primary"] = true
+      },
+      onClick = function() state.HandleNextPage() end
+    }, "Next")
+  })
+end
+
 local AuctionListings = function(state)
   print("RENDERED AUCTION LISTINGS")
   return rx:Div({
@@ -230,6 +279,7 @@ local AuctionListings = function(state)
   }, {
     AuctionListingsTitle(state),
     AuctionListingsList(state),
+    AuctionListingsPagination(state)
   })
 end
 
