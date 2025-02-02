@@ -45,7 +45,6 @@
       .post-auction-listings {
         display: flex;
         width: 100%;
-        flex-grow: 1;
         padding: 1rem;
       }
 
@@ -54,13 +53,20 @@
         flex-direction: column;
       }
 
+      .post-auction-listings-search {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        justify-content: flex-end;
+      }
+
       .post-auction-listings-list {
         overflow: auto;
-        max-height: 90%;
+        height: 80%;
       }
 
       .post-auction-listings-table {
-        padding: 1rem;
+        padding: 0 1rem;
       }
 
       .post-auction-listings-pagination {
@@ -83,7 +89,6 @@
       
       .post-auction-listings-table {
         position: relative;
-        padding: 2rem;
       }
 
       .post-auction-listings-header {
@@ -102,8 +107,8 @@
       }
 
       .post-auction-listings-item {
-        padding: 0.5rem;
         border-radius: 0.85rem;
+        padding: 1rem;
         background: rgba(59, 49, 27, 50%);
         margin-bottom: 0.5rem;
         text-align: center;
