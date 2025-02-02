@@ -20,9 +20,13 @@ namespace Chorizite.Core.Lua {
     public partial class LuaContext : LuaEnv {
         private static Regex _luaDocExceptionRe = new Regex("""\[string "([^:]+\.rml):(\d+)"\]:(\d+)""", RegexOptions.Singleline);
         private static List<LuaContext> _contexts = new List<LuaContext>();
+
+        private int _nextTimeoutId = 0;
+
         private class TimeoutEntry {
-            public Action Callback;
-            public DateTime Expiration;
+            public int Id { get; set; }  
+            public Action Callback { get; set; }
+            public DateTime Expiration { get; set; }
         }
 
         private readonly string _luaScriptsPath;
@@ -30,7 +34,7 @@ namespace Chorizite.Core.Lua {
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private LuaFunction _originalRequire;
         private bool _isDisposed;
-        private List<TimeoutEntry> _timeoutQueue = new();
+        private readonly Dictionary<int, TimeoutEntry> _timeouts = new();
         private List<LuaCoroutine> _luaThreads = new();
 
         public LuaContext() : base() {
@@ -77,6 +81,7 @@ namespace Chorizite.Core.Lua {
             Global.Set("__sleep", Sleep);
             Global.Set("print", Print);
             Global.Set("setTimeout", SetTimeout);
+            Global.Set("clearTimeout", ClearTimeout);
 
             _originalRequire = Global.Get<LuaFunction>("require");
             Global.Set("require", Require);
@@ -109,9 +114,11 @@ namespace Chorizite.Core.Lua {
             }
 
             // timeouts
-            var timeouts = _timeoutQueue.Where(x => x.Expiration <= DateTime.Now).ToArray();
-            foreach (var timeout in timeouts) {
-                _timeoutQueue.Remove(timeout);
+            var now = DateTime.Now;
+            var expiredTimeouts = _timeouts.Values.Where(x => x.Expiration <= now).ToArray();
+
+            foreach (var timeout in expiredTimeouts) {
+                _timeouts.Remove(timeout.Id);
                 try {
                     timeout.Callback();
                 }
@@ -273,12 +280,22 @@ namespace Chorizite.Core.Lua {
             return input;
         }
 
-        private void SetTimeout(Action cb, int timeoutInMilliseconds = 1) {
-            if (_isDisposed) return;
-            _timeoutQueue.Add(new TimeoutEntry {
+        private int SetTimeout(Action cb, int timeoutInMilliseconds = 1) {
+            if (_isDisposed) return -1;
+
+            var id = Interlocked.Increment(ref _nextTimeoutId);
+            var entry = new TimeoutEntry {
+                Id = id,
                 Callback = cb,
                 Expiration = DateTime.Now.AddMilliseconds(timeoutInMilliseconds),
-            });
+            };
+
+            _timeouts[id] = entry;
+            return id;
+        }
+
+        private void ClearTimeout(int timeoutId) {
+            _timeouts.Remove(timeoutId);
         }
 
         private void Print(params object[] args) {
@@ -306,7 +323,7 @@ namespace Chorizite.Core.Lua {
             _isDisposed = true;
 
             _luaThreads.Clear();
-            _timeoutQueue.Clear();
+            _timeouts.Clear();
             _contexts.Remove(this);
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
