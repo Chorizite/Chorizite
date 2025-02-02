@@ -49,10 +49,10 @@ local state = rx:CreateState({
 
     self.sortDirection = self[columnDirectionKey]
     self.pageNumber = 1
-    self.listings = nil
     request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, self.pageNumber, self.pageSize)
   end,
   HandleGetPostListingsResponse = function(self, response)
+    self.listings = nil;
     self.loading = false;
     if response.Success then
       self.listings = response.Data
@@ -64,21 +64,22 @@ local state = rx:CreateState({
   HandleNextPage = function(self)
     if self.hasNextPage then
       self.pageNumber = self.pageNumber + 1
-      self.listings = nil
       request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, self.pageNumber, self.pageSize)
     end
   end,
   HandlePreviousPage = function(self)
     if self.pageNumber > 1 then
       self.pageNumber = self.pageNumber - 1
-      self.listings = nil
       request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, self.pageNumber, self.pageSize)
     end
   end,
   HandlePageNumberInput = function(self, pageNumber)
     self.pageNumber = pageNumber
-    self.listings = nil
     request.fetchPostListings(self.searchQuery, self.sortDirection, self.sortColumn, pageNumber, self.pageSize)
+  end,
+  HandleListingsSearch = function(self, searchQuery)
+    self.searchQuery = searchQuery;
+    request.fetchPostListings(searchQuery, self.sortDirection, self.sortColumn, self.pageNumber, self.pageSize)
   end
 })
 
@@ -89,6 +90,10 @@ local OpCodeHandlers = {
     state.HandleGetPostListingsResponse(getPostListingsResponse)
   end
 }
+
+local onSearchChange = utils.debounce(function(evt)
+  state.HandleListingsSearch(evt.Params.value)
+end, 1000)
 
 local onMount = function()
   request.fetchPostListings("", 1, "name", state.pageNumber, state.pageSize)
@@ -271,6 +276,16 @@ local AuctionListingsPagination = function(state)
   })
 end
 
+local AuctionListingsSearch = function(state)
+  return rx:Div({ class = "post-auction-listings-search" }, {
+    rx:Div("Search: "),
+    rx:Input({
+      type = "text",
+      onChange = onSearchChange
+    })
+  })
+end
+
 local AuctionListings = function(state)
   print("RENDERED AUCTION LISTINGS")
   return rx:Div({
@@ -278,6 +293,7 @@ local AuctionListings = function(state)
     onMount = function() onMount() end
   }, {
     AuctionListingsTitle(state),
+    AuctionListingsSearch(state),
     AuctionListingsList(state),
     AuctionListingsPagination(state)
   })
