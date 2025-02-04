@@ -22,6 +22,13 @@ namespace Chorizite.Core.Lua {
         private static List<LuaContext> _contexts = new List<LuaContext>();
 
         private int _nextTimeoutId = 0;
+        private int _nextIntervalId = 0;
+
+        private class IntervalEntry {
+            public int Id { get; set; }
+            public Action Callback { get; set; }
+            public Timer Timer { get; set; }
+        }
 
         private class TimeoutEntry {
             public int Id { get; set; }  
@@ -34,6 +41,7 @@ namespace Chorizite.Core.Lua {
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private LuaFunction _originalRequire;
         private bool _isDisposed;
+        private Dictionary<int, IntervalEntry> _intervals = new();
         private readonly Dictionary<int, TimeoutEntry> _timeouts = new();
         private List<LuaCoroutine> _luaThreads = new();
 
@@ -82,6 +90,8 @@ namespace Chorizite.Core.Lua {
             Global.Set("print", Print);
             Global.Set("setTimeout", SetTimeout);
             Global.Set("clearTimeout", ClearTimeout);
+            Global.Set("setInterval", SetInterval);
+            Global.Set("clearInterval", ClearInterval);
 
             _originalRequire = Global.Get<LuaFunction>("require");
             Global.Set("require", Require);
@@ -298,6 +308,36 @@ namespace Chorizite.Core.Lua {
             _timeouts.Remove(timeoutId);
         }
 
+        private int SetInterval(Action cb, int intervalInMilliseconds = 1) {
+            if (_isDisposed) return -1;
+
+            var id = Interlocked.Increment(ref _nextIntervalId);
+
+            var entry = new IntervalEntry {
+                Id = id,
+                Callback = cb,
+                Timer = new Timer(CallbackWrapper, id, intervalInMilliseconds, intervalInMilliseconds),
+            };
+
+            _intervals[id] = entry;
+            return id;
+        }
+
+        private void CallbackWrapper(object state) {
+            var intervalId = (int)state;
+
+            if (_intervals.TryGetValue(intervalId, out var entry)) {
+                entry.Callback.Invoke();
+            }
+        }
+
+        public void ClearInterval(int intervalId) {
+            if (_intervals.TryGetValue(intervalId, out var entry)) {
+                entry.Timer?.Dispose();
+                _intervals.Remove(intervalId);
+            }
+        }
+
         private void Print(params object[] args) {
             var message = string.Join(" ", args.Select(a => FormatStackTraces(FormatLuaResult([a])).TrimEnd()));
             _log.LogDebug(message);
@@ -324,6 +364,7 @@ namespace Chorizite.Core.Lua {
 
             _luaThreads.Clear();
             _timeouts.Clear();
+            _intervals.Clear();
             _contexts.Remove(this);
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
