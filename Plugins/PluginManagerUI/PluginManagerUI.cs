@@ -30,7 +30,6 @@ namespace PluginManagerUI {
             
             if (_panel is not null) {
                 _panel.ShowInBar = true;
-                _panel.Show();
             }
         }
 
