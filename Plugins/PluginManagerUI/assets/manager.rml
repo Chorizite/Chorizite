@@ -1,0 +1,162 @@
+﻿<rml>
+	<head>
+    <title>Plugin Manager</title>
+		<link type="text/template" href="../../Core.UI/assets/templates/tabpanel.rml" />
+    <script src="manager.lua"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Consolas;
+        font-weight: bold;
+      }
+
+      .inner {
+        background-color: #000000f0;
+      }
+
+      .contents {
+        max-height: 320dp;
+        padding: 0 4dp 0 4dp;
+        display: flex;
+      }
+
+      .contents .list, .contents details {
+        overflow-y: auto;
+      }
+
+      .details {
+        flex: 3;
+        padding: 6dp;
+        overflow-y: auto;
+        min-width: 290dp;
+      }
+
+      body input.checkbox {
+        height: 16px;
+        width: 16px;
+        line-height: 16px;
+      }
+
+      body h2 {
+        margin: 8px 0;
+        color: #df77ff;
+        font-size: 20px;
+      }
+
+      .settings {
+        padding: 6dp;
+        border-bottom: 1px;
+        border-color: #b99043;
+        font-size: 14px;
+      }
+
+      .settings span {
+        position: relative;
+        top: -3dp;
+        padding-left: 6px;
+      }
+
+      .settings button, .settings button:hover, .settings button:active {
+        float: right;
+        decorator: image(dat://0x060011F7);
+        margin: 0;
+        padding: 12px;
+      }
+
+      .plugin {
+        display: flex;
+        border-color: #ffffff77;
+        border-top: 1px;
+      }
+
+      .plugin:hover {
+        background-color: #f5ff6866;
+      }
+
+      .plugin .info {
+        flex-grow: 2;
+      }
+
+      .plugin p {
+        padding: 0;
+        margin: 6dp 0;
+      }
+
+      body h3 {
+        margin: 0;
+        padding: 0;
+        font-size: 18dp;
+        white-space: nowrap;
+        color: #15ff00;
+      }
+
+      body h3 span {
+        font-size: 12dp;
+        white-space: nowrap;
+      }
+
+      .plugin .version {
+        margin-left: 16dp;
+        margin-right: 6dp;
+        text-align: right;
+      }
+
+      .plugin .version div {
+        margin: 6dp 0;
+      }
+
+      .details h3 {
+        border-bottom: 1px;
+        border-color: #66644d;
+      }
+
+      .details .release {
+        padding-left: 6dp;
+        max-width: 300px;
+        word-break: break-all;
+      }
+
+      .details .release h5 {
+        font-size: 16dp;
+        margin: 0;
+        margin-top: 4dp;
+      }
+
+      .details .release p {
+        padding: 0;
+        margin: 6dp;
+      }
+
+      .details .action {
+        position: relative;
+        height: 28dp;
+        border-bottom: 1px;
+        border-color: #66644d;
+        margin: 6dp 0;
+        display: flex;
+      }
+
+      .details .action > div {
+        flex-grow: 2;
+      }
+
+      .details .action .install {
+        line-height: 22dp;
+      }
+
+      .details .action button {
+         font-size: 12dp;
+         height: 22dp;
+         padding-top: 5px;
+      }
+    </style>
+	</head>
+	<body class="window" template="tabpanel">
+    <div class="inner">
+      <div id="plugin-manager" />
+    </div>
+	</body>
+</rml>

@@ -1,0 +1,158 @@
+<rml>
+	<head>
+    <title>Plugins</title>
+	<style>
+      body {
+        font-size: 14px;
+        font-family: Tahoma;
+        z-index: 5000;
+      }
+
+      #handle {
+        width: 20px;
+        height: 20px;
+        decorator: image(dat://0x060074C9);
+        background-color: #222;
+        cursor: 0x06006119 14 14;
+      }
+
+      .panel {
+        padding: 4px 4px 4px 4px;
+      }
+
+      .panel-inner {
+        display: flex;
+        padding: 1px 1px 0px 1px;
+        background-color: #111;
+      }
+
+      .game-icons {
+        display: flex;
+        overflow: hidden;
+        height: 21px;
+      }
+
+      .plugin-icons {
+        display: flex;
+      }
+
+      .plugin-icons button.icon {
+        height: 20px;
+        width: 20px;
+        padding: 0;
+        margin: 0;
+        decorator: image(dat://0x06004D20);
+        color: #aaa;
+        position: relative;
+        display: block;
+      }
+
+      .plugin-icons button.icon.visible {
+        color: #fff;
+        font-weight: bold;
+      }
+
+      .plugin-icons button.icon .overlay {
+        height: 20px;
+        width: 20px;
+        line-height: 20px;
+      }
+
+      .plugin-icons button.icon.visible .overlay {
+        decorator: image(dat://0x0600749B);
+      }
+
+      button.icon {
+        height: 20px;
+        width: 20px;
+        margin: 0px;
+        padding: 0px;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+    <script type="">
+      local rx = require('rx')
+      local ui = require('Plugins.Core.UI')
+
+      local initialPlugins = {}
+
+      for i=0,ui.PanelManager.Panels.Count-1 do
+        if ui.PanelManager.Panels[i].ShowInBar then
+          initialPlugins[ui.PanelManager.Panels[i].Name] = ui.PanelManager.Panels[i].IsVisible
+        end
+      end
+
+      local state = rx:CreateState({
+        Plugins = initialPlugins,
+        Cheating = 1
+      })
+
+      ui.PanelManager:OnPanelAdded('+', function(s, e)
+        if e.Panel.ShowInBar then
+          state.Plugins[e.Panel.Name] = e.Panel.IsVisible
+          state.Cheating = state.Cheating + 1
+        end
+      end)
+
+      ui.PanelManager:OnPanelRemoved('+', function(s, e)
+        state.Plugins[e.Panel.Name] = nil
+        state.Cheating = state.Cheating + 1
+      end)
+
+      ui.PanelManager:OnPanelVisibilityChanged('+', function(s, e)
+        if e.Panel.ShowInBar then
+          state.Plugins[e.Panel.Name] = e.Panel.IsVisible
+          state.Cheating = state.Cheating + 1
+        end
+      end)
+
+      local PluginsBarView = function(state)
+        return rx:Div({ class="panel" }, {
+          rx:Div({ class="panel-inner" }, {
+            rx:Handle({
+              move_target="#document"
+            }, {
+              rx:Div({ id="handle" })
+            }),
+            rx:Div({ class="game-icons"}, {
+              rx:Div({
+                class="plugin-icons",
+                count = state.Cheating
+              }, function()
+                local res = {}
+                for panelName,isVisible in pairs(state.Plugins) do
+                  res[#res + 1] = rx:Button({
+                    key=k,
+                    class={
+                      icon = true,
+                      visible = isVisible
+                    },
+                    onclick=function()
+                      if isVisible then
+                        ui.PanelManager:GetPanel(panelName):Hide()
+                      else
+                        ui.PanelManager:GetPanel(panelName):Show()
+                        ui.PanelManager:GetPanel(panelName):PullToFront()
+                      end
+                    end
+                  }, {
+                    rx:Div({ class="overlay" }, string.sub(panelName, 1, 1))
+                  })
+                end
+                return res
+              end)
+            })
+          })
+        })
+      end
+
+      document:Mount(function() return PluginsBarView(state) end, "#pluginsbar-wrapper")
+    </script>
+	</head>
+	<body>
+    <div id="pluginsbar-wrapper"></div>
+	</body>
+</rml>

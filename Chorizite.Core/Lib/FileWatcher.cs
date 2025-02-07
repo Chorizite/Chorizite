@@ -35,11 +35,16 @@ namespace Chorizite.Core.Lib {
                 return;
             }
 
+            try {
+                ChoriziteStatics.Log.LogDebug("FileWatcher created: {0} ({1})", directory, pattern);
+            }
+            catch { }
+
             _onFileChanged = onFileChanged;
 
             _docWatcher = new FileSystemWatcher();
             _docWatcher.Path = directory;
-            _docWatcher.NotifyFilter = NotifyFilters.LastWrite;
+            _docWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size;
             _docWatcher.Filter = pattern;
             _docWatcher.Changed += DocWatcher_Changed;
             _docWatcher.EnableRaisingEvents = true;
@@ -47,6 +52,11 @@ namespace Chorizite.Core.Lib {
 
         private void DocWatcher_Changed(object sender, FileSystemEventArgs e) {
             _changedAt = DateTime.Now;
+
+            try {
+                ChoriziteStatics.Log.LogDebug("FileWatcher changed: {0}", e.FullPath);
+            }
+            catch { }
             if (!_needsReload) {
                 _needsReload = true;
                 _changedFile = e.FullPath;

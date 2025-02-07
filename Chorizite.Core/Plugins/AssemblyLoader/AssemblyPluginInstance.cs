@@ -37,6 +37,11 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             });
         }
 
+        public override void Initialize() {
+            base.Initialize();
+            PluginInstance?.Initialize();
+        }
+
         public int CountLoadedAssemblies() {
             var count = 0;
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
@@ -211,7 +216,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
             // handle other plugin instances
             if (resolved is null && parameter.ParameterType.IsAssignableTo(typeof(IPluginCore))) {
-                resolved = _manager.Plugins
+                resolved = _manager.Plugins.Values
                     .Where(p => p is AssemblyPluginInstance)
                     .Cast<AssemblyPluginInstance>()
                     .FirstOrDefault(p => p.PluginInstance?.GetType() == parameter.ParameterType)?.PluginInstance;
@@ -248,7 +253,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
                 for (int i = 0; (i < 50); i++) {
                     GC.Collect();
-                    GC.WaitForPendingFinalizers();
+                    //GC.WaitForPendingFinalizers();
                 }
 
                 IsLoaded = false;
@@ -381,6 +386,13 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TrySerializeState() {
             TrySerializeType(typeof(ISerializeState<>));
+        }
+
+        internal override void UpdateManifest() {
+            base.UpdateManifest();
+            if (PluginManifest.TryLoadManifest<AssemblyPluginManifest>(Manifest.ManifestFile, out var manifest, out string? errors)) {
+                Manifest = manifest;
+            }
         }
 
         public override void Dispose() {

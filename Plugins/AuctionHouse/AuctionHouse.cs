@@ -9,7 +9,7 @@ using Core.AC;
 using Core.AC.API;
 using ACUI.Lib;
 
-namespace AuctionHouse {
+namespace PluginManagerUI {
     public class AuctionHousePlugin : IPluginCore {
         internal static ILogger Log;
         private Panel? _panel;

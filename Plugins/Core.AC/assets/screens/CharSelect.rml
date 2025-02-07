@@ -6,6 +6,7 @@
               height: 100%;
               width: 100%;
               decorator: image( dat://0x06004d63 );
+              z-index: -5000;
             }
 
             #panel {

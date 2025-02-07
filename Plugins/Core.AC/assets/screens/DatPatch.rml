@@ -9,6 +9,7 @@
         color: #fff;
         background-color: black;
         font-size: 20px;
+        z-index: -5000;
       }
 
       div.wrapper {

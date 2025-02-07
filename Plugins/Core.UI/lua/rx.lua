@@ -176,7 +176,7 @@ function make_reactive(original_value, name, parent, seen)
             return nil
           end
           
-          local value = readValue(nextKey)
+          local value = t[nextKey]
           
           return nextKey, value
         end
@@ -206,6 +206,12 @@ function rx:CreateState(tbl, name)
   _nextStateId = _nextStateId + 1
   return make_reactive(tbl, name or ("state_" .. _nextStateId))
 end
+
+---Create a reactive element
+---@param tag string
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Element(tag, ...) return MakeElement(tag, ...) end
 
 ---Create a reactive Div element
 ---@param ... VirtualNodeArg
@@ -301,6 +307,21 @@ function rx:Form(...) return MakeElement("form", ...) end
 ---@param ... VirtualNodeArg
 ---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
 function rx:Input(...) return MakeElement("input", ...) end
+
+---Create a reactive Label element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Label(...) return MakeElement("label", ...) end
+
+---Create a reactive Select element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Select(...) return MakeElement("select", ...) end
+
+---Create a reactive Option element
+---@param ... VirtualNodeArg
+---@return CS.Core.UI.Lib.RmlUi.VDom.VirtualNode
+function rx:Option(...) return MakeElement("option", ...) end
 
 ---Create a reactive Button element
 ---@param ... VirtualNodeArg

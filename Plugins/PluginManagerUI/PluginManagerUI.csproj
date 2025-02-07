@@ -4,31 +4,24 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\$(TargetFramework)\plugins\Core.Launcher\</OutputPath>
+    <OutputPath>..\..\bin\$(TargetFramework)\plugins\PluginManagerUI\</OutputPath>
     <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>pdbonly</DebugType>
-    <AssemblyVersion>0.0.1</AssemblyVersion>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="deps\**" />
-    <EmbeddedResource Remove="deps\**" />
-    <None Remove="deps\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\Core.UI\Core.UI.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-    <ProjectReference Include="..\Core.UI\Core.UI.csproj" ExcludeAssets="runtime">
+    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
@@ -43,10 +36,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="assets\panels\pluginsbar.rml">
+    <None Update="assets\manager.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="assets\screens\Simple.rml">
+    <None Update="assets\manager.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\versionutils.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="manifest.json">

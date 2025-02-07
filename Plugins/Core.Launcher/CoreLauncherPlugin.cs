@@ -12,6 +12,7 @@ using Chorizite.Core.Backend;
 using Chorizite.Common;
 using System.Text.Json.Serialization.Metadata;
 using Chorizite.Core.Backend.Launcher;
+using ACUI.Lib;
 
 namespace Core.Launcher {
     public class CoreLauncherPlugin : IPluginCore, IScreenProvider<LauncherScreen>, ISerializeState<LauncherState>, ISerializeSettings<LauncherSettings> {
@@ -23,6 +24,7 @@ namespace Core.Launcher {
 
         internal static CoreLauncherPlugin? Instance { get; private set; }
         internal static ILogger? Log;
+        private Panel? _panel;
         internal readonly ILauncherBackend LauncherBackend;
         internal readonly IChoriziteBackend Backend;
 
@@ -65,6 +67,9 @@ namespace Core.Launcher {
 
             CoreUI.RegisterUIModel("SimpleLoginScreen", _settings.SimpleLoginScreenModel);
             RegisterScreen(LauncherScreen.Simple, Path.Combine(AssemblyDirectory, "assets", "screens", "Simple.rml"));
+
+            _panel = CoreUI.CreatePanel("PluginsBar", Path.Combine(AssemblyDirectory, "assets", "panels", "pluginsbar.rml"));
+            _panel.Show();
         }
 
         LauncherSettings ISerializeSettings<LauncherSettings>.SerializeBeforeUnload() => _settings;

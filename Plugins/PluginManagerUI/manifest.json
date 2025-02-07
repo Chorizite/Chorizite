@@ -1,0 +1,9 @@
+{
+  "name": "PluginManagerUI",
+  "author": "Chorizite",
+  "entryfile": "PluginManagerUI.dll",
+  "version": "0.0.1",
+  "description": "PluginManagerUI",
+  "dependencies": [ "Core.UI@0.0.1" ],
+  "environments": [ "Client", "Launcher" ]
+}
