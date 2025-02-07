@@ -102,7 +102,7 @@ namespace PluginManagerUI {
                 }
                 zip.ExtractToDirectory(pluginDir, true);
                 if (!Manager.Plugins.ContainsKey(name)) {
-                    //Manager.LoadPlugin(name);
+                    Manager.LoadPlugin(name);
                 }
                 return true;
             }

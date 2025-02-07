@@ -120,6 +120,8 @@ local releases = {}
 local Reload = async(function()
   state.isLoading = true 
   releases = json.decode(await(PluginManagerUI:GetReleasesJson())) --[[@as ReleaseJson]]
+  state.installedPlugins = nil
+  state.availablePlugins = nil
   state.installedPlugins = {}
   state.availablePlugins = {}
   
@@ -225,17 +227,19 @@ local PluginDetailsView = function()
       rx:Div(function()
         local res = {}
 
-        if state.installedPlugins[plugin.Name] ~= nil then
+        if state.installedPlugins ~= nil and state.installedPlugins[plugin.Name] ~= nil then
           local installed = state.installedPlugins[plugin.Name]
           table.insert(res, rx:Div({ class = "action" }, {
             rx:Div("Installed: " .. installed.version, { class = "install"}),
             rx:Button({ 
               class = "secondary uninstall",
               onclick = function()
-                setTimeout(async(function()
+                (async(function()
+                  print("before")
                   await(PluginManagerUI:UninstallPlugin(plugin.Name))
+                  print("after")
                   Reload()
-                end), 1)
+                end))()
               end
             }, "Uninstall"),
           }))
@@ -244,16 +248,21 @@ local PluginDetailsView = function()
         if #plugin.Releases > 0 then
           table.insert(res, rx:Div({ class = "action" }, {
             rx:Div("Version: ", { class="update" }, {
-              rx:Select({
+              rx:Select({ id = "selected-version"}, {
                 onchange = function(evt)
                   state.selectedVersion = evt.Params.value
+                  print("selected:", state.selectedVersion)
                 end
               }, function()
                 local res = {}
                 for k,v in ipairs(plugin.Releases) do
                   if state.showBetas or v.IsBeta == false then 
                     table.insert(res, rx:Option({
-                      value = v.Version
+                      value = v.Version,
+                      onclick = function()
+                        state.selectedVersion = v.Version
+                        print("selected:", state.selectedVersion)
+                      end
                     }, v.Version))
                   end
                 end
@@ -262,15 +271,27 @@ local PluginDetailsView = function()
             }),
             rx:Button({ 
               class = "secondary update",
-              disabled = state.installedPlugins[plugin.Name] and state.selectedVersion == state.installedPlugins[plugin.Name].version,
+              disabled = state.installedPlugins and state.installedPlugins[plugin.Name] and state.selectedVersion == state.installedPlugins[plugin.Name].version,
               onclick = function()
-                if state.installedPlugins[plugin.Name] and state.selectedVersion == state.installedPlugins[plugin.Name].version then
+                print("click")
+                if state.installedPlugins and state.installedPlugins[plugin.Name] and state.selectedVersion == state.installedPlugins[plugin.Name].version then
+                  print("return early", state.selectedVersion)
                   return
                 else
                   (async(function()
-                    local latest = state.showBetas and plugin.LatestBeta or plugin.Latest
-                    await(PluginManagerUI:InstallPlugin(plugin.Name, latest.DownloadUrl))
-                    Reload()
+                    local release = nil;
+                    for k,v in ipairs(plugin.Releases) do
+                      if v.Version == state.selectedVersion then 
+                        release = v
+                      end
+                    end
+                    if release ~= nil then
+                      print(plugin.Name, release.DownloadUrl)
+                      await(PluginManagerUI:InstallPlugin(plugin.Name, release.DownloadUrl))
+                      --Reload()
+                    else
+                      print("Could not find release:", state.selectedVersion)
+                    end
                   end))()
                 end
               end

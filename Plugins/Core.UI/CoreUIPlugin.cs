@@ -113,6 +113,7 @@ namespace Core.UI {
             //_panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
             //_panel.OnAfterReload += Panel_OnAfterReload;
             //MakeReactive();
+            ToggleDebugger();
         }
 
         private void Input_OnKeyDown(object? sender, KeyDownEventArgs e) {
