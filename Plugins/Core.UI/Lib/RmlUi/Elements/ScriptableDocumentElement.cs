@@ -65,7 +65,6 @@ namespace Core.UI.Lib.RmlUi.Elements {
             SharedState.Configuration.EnforceActions = EnforceAction.Never;
             SharedState.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex.ExceptionObject}");
 
-            LuaContext.Global.Set("__Rx", Rx);
 
             LuaContext.AddLoader(UIModulesLoader);
 
@@ -92,6 +91,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
         }
 
         internal void HandleLoad() {
+            LuaContext.Global.Set("__Rx", Rx);
             LuaContext.Global.Set("document", Panel);
             foreach (var script in _scripts) {
                 try {
