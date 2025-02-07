@@ -49,6 +49,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.DocGen.LuaDefs", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PluginManagerUI", "Plugins\PluginManagerUI\PluginManagerUI.csproj", "{7442F7F9-F0A8-4633-9E88-AF09949CE606}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lua", "Plugins\Lua\Lua.csproj", "{5A1D4E81-BFC2-4251-A9D1-CEA5D787E9A0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -111,6 +113,10 @@ Global
 		{7442F7F9-F0A8-4633-9E88-AF09949CE606}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7442F7F9-F0A8-4633-9E88-AF09949CE606}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7442F7F9-F0A8-4633-9E88-AF09949CE606}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A1D4E81-BFC2-4251-A9D1-CEA5D787E9A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A1D4E81-BFC2-4251-A9D1-CEA5D787E9A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A1D4E81-BFC2-4251-A9D1-CEA5D787E9A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A1D4E81-BFC2-4251-A9D1-CEA5D787E9A0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -128,6 +134,7 @@ Global
 		{ED482583-1872-4784-A7C3-3AD07AB0FA14} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C} = {189167BA-01A1-44D2-91FF-C2618E096B8D}
 		{7442F7F9-F0A8-4633-9E88-AF09949CE606} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
+		{5A1D4E81-BFC2-4251-A9D1-CEA5D787E9A0} = {5F6E6896-96C7-4C1A-A82C-F3B73BAA045D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D5286075-97E5-49DE-8AF3-E6209692A3AF}

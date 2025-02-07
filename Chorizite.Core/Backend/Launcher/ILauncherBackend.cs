@@ -1,5 +1,4 @@
-﻿using Chorizite.Core.Lua;
-using Chorizite.Core.Net;
+﻿using Chorizite.Core.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,8 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Backend.Launcher {
-
-    [LuaModuleNamespace("Chorizite.Core.Backend.Launcher")]
     public interface ILauncherBackend : IDisposable {
         void SetWindowSize(int width, int height);
         void Exit();

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Chorizite.Core.Lua {
+namespace Lua {
     internal class LuaModuleNamespaceAttribute : Attribute {
         public LuaModuleNamespaceAttribute(params string[] ns) {
             Namespaces = ns;

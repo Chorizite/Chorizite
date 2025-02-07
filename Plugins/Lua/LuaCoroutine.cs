@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using XLua;
 
-namespace Chorizite.Core.Lua {
+namespace Lua {
     internal class LuaCoroutine : IDisposable {
         private ILogger _log;
 

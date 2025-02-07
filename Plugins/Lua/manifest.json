@@ -1,0 +1,8 @@
+{
+  "name": "Lua",
+  "author": "Chorizite",
+  "entryfile": "Lua.dll",
+  "version": "0.0.1",
+  "description": "Provides lua scripting support.",
+  "environments": [ "Client", "Launcher" ]
+}

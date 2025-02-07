@@ -12,6 +12,10 @@ using Autofac.Core;
 using Chorizite.Core.Backend.Client;
 using Chorizite.Core.Backend.Launcher;
 using System.Reflection;
+using Chorizite.Core.Net;
+using Chorizite.Core.Render;
+using Chorizite.Core.Input;
+using Chorizite.Core.Dats;
 
 namespace Chorizite.DocGen.LuaDefs {
     internal class LuaDefsGenerator {
@@ -69,10 +73,14 @@ namespace Chorizite.DocGen.LuaDefs {
         }
 
         private void GenerateCoreModuleDefs() {
-            foreach (var kv in chorizite.Backend.LuaModules) {
-                GenerateModuledefs(kv.Key, kv.Value.GetType());
-            }
+            // foreach (var kv in chorizite.Backend.LuaModules) {
+            //     GenerateModuledefs(kv.Key, kv.Value.GetType());
+            // }
 
+            GenerateModuledefs("DatReader", typeof(IDatReaderInterface));
+            GenerateModuledefs("InputManager", typeof(IInputManager));
+            GenerateModuledefs("Renderer", typeof(IRenderInterface));
+            GenerateModuledefs("NetworkParser", typeof(NetworkParser));
             GenerateModuledefs("ClientBackend", typeof(IClientBackend));
             GenerateModuledefs("LauncherBackend", typeof(ILauncherBackend));
             GenerateModuledefs("Backend", typeof(Chorizite.Core.Backend.IChoriziteBackend));

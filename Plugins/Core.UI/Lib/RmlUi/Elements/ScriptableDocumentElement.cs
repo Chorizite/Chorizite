@@ -1,11 +1,11 @@
 ﻿using Chorizite.Common;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Lib;
-using Chorizite.Core.Lua;
 using Core.UI.Lib.RmlUi.VDom;
 using Cortex.Net;
 using Cortex.Net.Api;
 using Cortex.Net.Core;
+using Lua;
 using Microsoft.Extensions.Logging;
 using RmlUiNet;
 using RoyT.TrueType.Tables.Kern;
@@ -45,7 +45,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
 
         internal UIDocument Panel { get; set; }
 
-        public LuaContext LuaContext { get; private set; }
+        public LuaContext LuaContext => CoreUIPlugin.Lua.Context;
         public ISharedState SharedState { get; private set; }
         public ReactiveHelpers Rx { get; private set; }
         public string DocumentDirectory => Path.GetDirectoryName(GetSourceURL());
@@ -65,7 +65,6 @@ namespace Core.UI.Lib.RmlUi.Elements {
             SharedState.Configuration.EnforceActions = EnforceAction.Never;
             SharedState.UnhandledReactionException += (s, ex) => _log.LogError($"Unhandled reaction exception: {ex.ExceptionObject}");
 
-            LuaContext = new LuaContext();
             LuaContext.Global.Set("__Rx", Rx);
 
             LuaContext.AddLoader(UIModulesLoader);
@@ -197,9 +196,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
             _mounts.Clear();
             SharedState = null;
             _observables.Clear();
-            LuaContext?.Dispose();
             base.Dispose();
-            LuaContext = null;
         }
     }
 }

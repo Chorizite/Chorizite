@@ -1,6 +1,5 @@
 ﻿using ACUI.Lib.RmlUi;
 using Chorizite.Common;
-using Chorizite.Core.Lua;
 using Chorizite.Core.Render;
 using Core.UI;
 using Core.UI.Lib;
@@ -12,7 +11,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
-using XLua;
 
 namespace ACUI.Lib {
     /// <summary>

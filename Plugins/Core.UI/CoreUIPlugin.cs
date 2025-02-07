@@ -23,6 +23,7 @@ using System.Xml.Linq;
 using System.Linq;
 using Cortex.Net;
 using Chorizite.Core.Input;
+using Lua;
 
 namespace Core.UI {
     /// <summary>
@@ -30,6 +31,7 @@ namespace Core.UI {
     /// </summary>
     public class CoreUIPlugin : IPluginCore, ISerializeState<UIState> {
         internal static ILogger Log;
+        internal static LuaPluginCore Lua;
         internal static Context? RmlContext;
         internal readonly IChoriziteBackend Backend;
         internal ScriptableDocumentInstancer ScriptableDocumentInstancer;
@@ -85,12 +87,13 @@ namespace Core.UI {
         }
         private readonly WeakEvent<EventArgs> _OnScreenChanged = new WeakEvent<EventArgs>();
 
-        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, ILifetimeScope scope, IDatReaderInterface dat, ILogger log) : base(manifest) {
+        protected CoreUIPlugin(AssemblyPluginManifest manifest, IChoriziteConfig config, IPluginManager pluginManager, IChoriziteBackend ChoriziteBackend, Lua.LuaPluginCore lua, ILifetimeScope scope, IDatReaderInterface dat, ILogger log) : base(manifest) {
             Instance = this;
             Log = log;
             PluginManager = pluginManager;
             Backend = ChoriziteBackend;
             FontManager = new FontManager(Log);
+            Lua = lua;
             _dat = dat;
 
             var rmlUINativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
@@ -371,6 +374,8 @@ namespace Core.UI {
                 PanelManager.Dispose();
                 ShutdownRmlUI();
                 FontManager?.Dispose();
+
+                Lua = null!;
             }
             catch (Exception ex) {
                 Log?.LogError(ex, "Error during shutdown");

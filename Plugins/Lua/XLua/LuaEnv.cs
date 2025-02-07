@@ -23,7 +23,7 @@ namespace XLua
     using System.Collections.Generic;
     using static XLua.LuaEnv;
 
-    public class LuaEnv : IDisposable
+    public class LuaEnv
     {
         public const string CSHARP_NAMESPACE = "xlua_csharp_namespace";
         public const string MAIN_SHREAD = "xlua_main_thread";
@@ -385,7 +385,7 @@ namespace XLua
 
         private bool disposed = false;
 
-        public void Dispose()
+        internal void Dispose()
         {
             FullGc();
             System.GC.Collect();
