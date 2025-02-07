@@ -76,19 +76,29 @@
     <script type="">
       local rx = require('rx')
       local ui = require('Plugins.Core.UI')
+      local PluginManager = require('PluginManager')
 
       local initialPlugins = {}
 
-      for i=0,ui.PanelManager.Panels.Count-1 do
-        if ui.PanelManager.Panels[i].ShowInBar then
-          initialPlugins[ui.PanelManager.Panels[i].Name] = ui.PanelManager.Panels[i].IsVisible
-        end
-      end
-
       local state = rx:CreateState({
-        Plugins = initialPlugins,
+        Plugins = {},
         Cheating = 1
       })
+
+      local function LoadPlugins()
+        for i=0,ui.PanelManager.Panels.Count-1 do
+          if ui.PanelManager.Panels[i].ShowInBar then
+          print("Load plugin", ui.PanelManager.Panels[i].Name)
+            state.Plugins[ui.PanelManager.Panels[i].Name] = ui.PanelManager.Panels[i].IsVisible
+          end
+        end
+        state.Cheating = state.Cheating + 1
+      end
+
+      PluginManager:OnPluginsLoaded('+', function(s, e)
+        LoadPlugins()
+      end)
+      LoadPlugins()
 
       ui.PanelManager:OnPanelAdded('+', function(s, e)
         if e.Panel.ShowInBar then
