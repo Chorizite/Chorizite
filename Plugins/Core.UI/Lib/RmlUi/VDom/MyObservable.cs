@@ -134,7 +134,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
 
         // Helper method to get all available keys
         public IReadOnlyList<string> GetKeys() {
-            return _orderedKeys.AsReadOnly();
+            return _orderedKeys;
         }
     }
 }

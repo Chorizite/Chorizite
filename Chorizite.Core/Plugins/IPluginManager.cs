@@ -13,17 +13,17 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// A list of currently registered plugin loaders.
         /// </summary>
-        IReadOnlyList<IPluginLoader> PluginLoaders { get; }
+        List<IPluginLoader> PluginLoaders { get; }
 
         /// <summary>
         /// A list of currently loaded plugin manifests.
         /// </summary>
-        IReadOnlyList<PluginManifest> PluginManifests { get; }
+        List<PluginManifest> PluginManifests { get; }
 
         /// <summary>
         /// A list of currently loaded plugins.
         /// </summary>
-        IReadOnlyList<PluginInstance> Plugins { get; }
+        List<PluginInstance> Plugins { get; }
 
         /// <summary>
         /// Fired after all plugins have been loaded.
@@ -46,6 +46,11 @@ namespace Chorizite.Core.Plugins {
         /// </summary>
         /// <param name="isReloading">True if plugins are reloading</param>
         void UnloadPlugins(bool isReloading = false);
+
+        /// <summary>
+        /// This will trigger a reload of all plugins on the next frame.
+        /// </summary>
+        void ReloadPlugins();
 
         /// <summary>
         /// Get a plugin by name.

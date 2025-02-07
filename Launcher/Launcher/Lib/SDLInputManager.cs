@@ -16,6 +16,7 @@ namespace Launcher.Lib {
     /// </summary>
     public class SDLInputManager : IInputManager {
         private readonly ILogger<SDLInputManager> _log;
+        private readonly Dictionary<Key, bool> _pressedKeys = [];
 
         public SDLInputManager(ILogger<SDLInputManager> log) {
             _log = log;
@@ -87,7 +88,7 @@ namespace Launcher.Lib {
         private readonly WeakEvent<KeyUpEventArgs> _OnKeyUp = new();
 
         public bool IsKeyPressed(Key key) {
-            return false;
+            return _pressedKeys.TryGetValue(key, out bool value) && value;
         }
 
         public void HandleShutdown() {
@@ -141,9 +142,15 @@ namespace Launcher.Lib {
                         _OnMouseWheel?.Invoke(this, new MouseWheelEventArgs(e.wheel.x, e.wheel.y));
                         break;
                     case SDL_EventType.SDL_KEYDOWN:
+                        if (!_pressedKeys.TryAdd(ConvertSDLToKey(e.key.keysym.sym), true)) {
+                            _pressedKeys[ConvertSDLToKey(e.key.keysym.sym)] = true;
+                        }
                         _OnKeyDown?.Invoke(this, new KeyDownEventArgs(ConvertSDLToKey(e.key.keysym.sym)));
                         break;
                     case SDL_EventType.SDL_KEYUP:
+                        if (!_pressedKeys.TryAdd(ConvertSDLToKey(e.key.keysym.sym), false)) {
+                            _pressedKeys[ConvertSDLToKey(e.key.keysym.sym)] = false;
+                        }
                         _OnKeyUp?.Invoke(this, new KeyUpEventArgs(ConvertSDLToKey(e.key.keysym.sym)));
                         break;
                     case SDL_EventType.SDL_TEXTINPUT:

@@ -25,6 +25,7 @@ namespace XLua
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using Microsoft.Extensions.Logging;
 
     class ReferenceEqualsComparer : IEqualityComparer<object>
     {

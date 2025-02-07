@@ -44,6 +44,9 @@ namespace Chorizite.Core.Logging {
             try {
                 var msg = $"[{Name}:{logLevel}] {formatter(state, exception)} {exception?.ToString() ?? ""}\n";
                 Console.Write(msg);
+                if (!System.IO.Directory.Exists(LogDirectory)) {
+                    System.IO.Directory.CreateDirectory(LogDirectory);
+                }
                 var logPath = System.IO.Path.Combine(LogDirectory, $"log.txt");
                 System.IO.File.AppendAllText(logPath, msg);
             } catch { }

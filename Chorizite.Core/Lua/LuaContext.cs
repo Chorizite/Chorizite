@@ -250,11 +250,11 @@ namespace Chorizite.Core.Lua {
                         }
                     }
                 }
-                modulePath = modulePath.ToLower();
-                if (modulePath.StartsWith("plugins.") && !modulePath.EndsWith(".lua")) {
-                    var lib = modulePath.Substring("plugins.".Length);
+                if (modulePath.StartsWith("Plugins.") && !modulePath.EndsWith(".lua")) {
+                    var lib = modulePath.Substring("Plugins.".Length);
                     var pluginManager = ChoriziteStatics.Scope.Resolve<IPluginManager>();
-                    return pluginManager?.GetPlugin<IPluginCore>(lib);
+                    var plugin = pluginManager?.GetPlugin<IPluginCore>(lib);
+                    return plugin;
                 }
 
                 // custom modules, registered with <see cref="IChoriziteBackend.RegisterLuaModule(string, object)" />
@@ -376,7 +376,7 @@ namespace Chorizite.Core.Lua {
             for (int i = 0; i < 50; i++) {
                 GC();
                 Tick();
-                System.GC.WaitForPendingFinalizers();
+                //System.GC.WaitForPendingFinalizers();
                 System.GC.Collect();
             }
             */

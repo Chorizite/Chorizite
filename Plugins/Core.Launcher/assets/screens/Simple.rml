@@ -12,6 +12,7 @@
         background: black;
         width: 800dp;
         height: 600dp;
+        z-index: -5000;
       }
 
       .window {

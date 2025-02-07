@@ -248,7 +248,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
                 for (int i = 0; (i < 50); i++) {
                     GC.Collect();
-                    GC.WaitForPendingFinalizers();
+                    //GC.WaitForPendingFinalizers();
                 }
 
                 IsLoaded = false;
@@ -381,6 +381,13 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TrySerializeState() {
             TrySerializeType(typeof(ISerializeState<>));
+        }
+
+        internal override void UpdateManifest() {
+            base.UpdateManifest();
+            if (PluginManifest.TryLoadManifest<AssemblyPluginManifest>(Manifest.ManifestFile, out var manifest, out string? errors)) {
+                Manifest = manifest;
+            }
         }
 
         public override void Dispose() {

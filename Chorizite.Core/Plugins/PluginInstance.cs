@@ -12,10 +12,18 @@ using Chorizite.Common;
 namespace Chorizite.Core.Plugins {
 
     public class PluginInstance<T> : PluginInstance where T : PluginManifest {
-        public new T Manifest { get; }
+        public new T Manifest { get; internal set; }
 
         public PluginInstance(T manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             Manifest = manifest;
+        }
+
+        public override void Initialize() {
+            
+        }
+
+        internal override void UpdateManifest() {
+            
         }
     }
 
@@ -202,8 +210,12 @@ namespace Chorizite.Core.Plugins {
         }
         #endregion // Event Triggers
 
+        public abstract void Initialize();
+
         public virtual void Dispose() {
             Unload(true);
         }
+
+        internal abstract void UpdateManifest();
     }
 }

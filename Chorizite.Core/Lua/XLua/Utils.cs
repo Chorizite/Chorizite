@@ -11,6 +11,8 @@ using System;
 using System.Reflection;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.Logging;
+
 
 #if USE_UNI_LUA
 using LuaAPI = UniLua.Lua;
@@ -349,7 +351,7 @@ namespace XLua
 						type_def_extention_method.Add(type);
 					}
 
-					if (!type.IsAbstract() || !type.IsSealed()) continue;
+					//if (!type.IsAbstract() || !type.IsSealed()) continue;
 
 					var fields = type.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 					for (int i = 0; i < fields.Length; i++)
@@ -1370,7 +1372,7 @@ namespace XLua
 				{
 					var err = LuaAPI.lua_tostring(L, -1);
 					LuaAPI.lua_settop(L, oldTop);
-					throw new Exception("SetCSTable for [" + type + "] error: " + err);
+					throw new Exception("SetCSTable for [" + type + "] error: " + err + "(" + string.Join(",", path.ToArray()) + ")");
 				}
 				if (LuaAPI.lua_isnil(L, -1))
 				{

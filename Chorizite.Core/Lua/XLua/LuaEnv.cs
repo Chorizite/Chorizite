@@ -389,12 +389,12 @@ namespace XLua
         {
             FullGc();
             System.GC.Collect();
-            System.GC.WaitForPendingFinalizers();
+            //System.GC.WaitForPendingFinalizers();
 
             Dispose(true);
 
             System.GC.Collect();
-            System.GC.WaitForPendingFinalizers();
+            //System.GC.WaitForPendingFinalizers();
         }
 
         internal virtual void PreDispose() {
@@ -402,7 +402,7 @@ namespace XLua
             GC();
             Tick();
             System.GC.Collect();
-            System.GC.WaitForPendingFinalizers();
+            //System.GC.WaitForPendingFinalizers();
         }
 
         public virtual void Dispose(bool dispose)
@@ -419,7 +419,7 @@ namespace XLua
                     GC();
                     Tick();
                     System.GC.Collect();
-                    System.GC.WaitForPendingFinalizers();
+                    //System.GC.WaitForPendingFinalizers();
                 }
 
                 if (!translator.AllDelegateBridgeReleased())

@@ -1,0 +1,6 @@
+---@meta
+---@alias PluginReleaseInfo { Name: string, Description: string, Author: string, RepoUrl: string, Latest: ReleaseInfo, LatestBeta: ReleaseInfo | nil, Releases: ReleaseInfo[] }
+---@alias ReleaseInfo { Name: string, Version: string, IsBeta: boolean, Changelog: string, DownloadUrl: string, Date: string }
+---@alias ReleaseJson { Name: string, Description: string, Author: string, RepoUrl: string, Latest: ReleaseInfo, LatestBeta: ReleaseInfo | nil }[]
+---@alias PluginInfo { name: string, version: string, latestVersion: string, isInstalled: boolean, description: string, author: string }
+---@alias PluginManagerUIState { isLoading: boolean, isLoadingDetails: boolean, showBetas: boolean, selectedVersion: string, selectedPluginDetails: PluginReleaseInfo | nil, selectedPlugin: string, availablePlugins: { string: PluginInfo }, installedPlugins:{string: PluginInfo} }
