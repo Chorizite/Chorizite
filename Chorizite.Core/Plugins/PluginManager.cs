@@ -96,7 +96,7 @@ namespace Chorizite.Core.Plugins {
 
             LoadPluginManifests();
 
-            _log.LogDebug($"Found {_loadedManifests.Count} plugin manifests");
+            _log.LogDebug($"Found {_loadedManifests.Count} plugin manifests: {string.Join(", ", _loadedManifests.Values.Select(m => $"{m.Name}({m.Version})"))}");
 
             foreach (var manifest in _loadedManifests.Values) {
                 if (manifest.Environments.HasFlag(_config.Environment)) {
@@ -137,7 +137,7 @@ namespace Chorizite.Core.Plugins {
                 UnloadPluginAndDependents(plugin, ref unloadedPlugins, isReloading);
             }
 
-            for (var i = 0; i < 50; i++) {
+            for (var i = 0; i < 20; i++) {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }

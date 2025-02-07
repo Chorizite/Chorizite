@@ -291,31 +291,21 @@ namespace Core.UI {
         }
 
         private void LoadDefaultFonts() {
-            if (!FontManager.TryGetFont("Palatino Linotype", "regular", out var fontInfo)) {
-                if (!FontManager.TryGetFont("Arial", "regular", out fontInfo)) {
-                    Log.LogWarning("Could not find default fonts Palatino Linotype or Arial");
+            var fontDir = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
+            if (Directory.Exists(fontDir)) {
+                if (File.Exists(Path.Combine(fontDir, "tahoma.ttf"))) {
+                    Rml.LoadFontFace(Path.Combine(fontDir, "tahoma.ttf"), true, FontWeight.Normal);
                 }
-            }
-
-            if (fontInfo is not null) {
-                Rml.LoadFontFace(fontInfo.Filename, true, FontWeight.Normal);
-            }
-
-            if (!FontManager.TryGetFont("Palatino Linotype", "bold", out var fontInfoBold)) {
-                if (!FontManager.TryGetFont("Arial", "bold", out fontInfoBold)) {
-                    Log.LogWarning("Could not find default fonts Palatino Linotype or Arial");
+                else if (File.Exists(Path.Combine(fontDir, "arial.ttf"))) {
+                    Rml.LoadFontFace(Path.Combine(fontDir, "arial.ttf"), true, FontWeight.Normal);
                 }
-            }
 
-            if (fontInfoBold is not null) {
-                Rml.LoadFontFace(fontInfoBold.Filename, false, FontWeight.Bold);
-            }
-
-            if (FontManager.TryGetFont("Tahoma", "regular", out var fontInfoTahoma)) {
-                Rml.LoadFontFace(fontInfoTahoma.Filename, true, FontWeight.Normal);
-            }
-            if (FontManager.TryGetFont("Tahoma", "bold", out var fontInfoTahomaBold)) {
-                Rml.LoadFontFace(fontInfoTahomaBold.Filename, true, FontWeight.Bold);
+                if (File.Exists(Path.Combine(fontDir, "tahomabd.ttf"))) {
+                    Rml.LoadFontFace(Path.Combine(fontDir, "tahomabd.ttf"), true, FontWeight.Bold);
+                }
+                else if (File.Exists(Path.Combine(fontDir, "arialbd.ttf"))) {
+                    Rml.LoadFontFace(Path.Combine(fontDir, "arialbd.ttf"), true, FontWeight.Normal);
+                }
             }
         }
 
@@ -339,7 +329,7 @@ namespace Core.UI {
         }
 
         private void ShutdownRmlUI() {
-            Log?.LogDebug($"ShutdownRmlUI");
+            Log?.LogTrace($"ShutdownRmlUI");
 
             RmlContext?.Dispose();
             

@@ -368,6 +368,7 @@ namespace Chorizite.Core.Lua {
             _contexts.Remove(this);
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
+            /*
             PreDispose();
 
             FullGc();
@@ -378,8 +379,9 @@ namespace Chorizite.Core.Lua {
                 System.GC.WaitForPendingFinalizers();
                 System.GC.Collect();
             }
+            */
 
-            DoString("require('xlua.util').print_func_ref_by_csharp()");
+            //DoString("require('xlua.util').print_func_ref_by_csharp()");
             _originalRequire = null!;
 
             try {
