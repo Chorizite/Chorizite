@@ -19,16 +19,20 @@ namespace Core.AC.Debugger {
             Log = log;
             _ac = ac;
             _imgui = imgui;
+        }
 
+        protected override void Initialize() {
             if (_ac.Game.State == ClientState.InGame) {
-                Init();
+                CreateInspector();
             }
             else {
                 _ac.Game.OnStateChanged += Game_OnStateChanged;
             }
         }
 
-        private void Init() {
+        private void CreateInspector() {
+            if (Inspector is not null) return;
+
             Inspector = new Inspector("Inspector", _ac.Game);
             _imgui.OnRender += ImGui_OnRender;
         }
@@ -44,7 +48,7 @@ namespace Core.AC.Debugger {
         private void Game_OnStateChanged(object? sender, GameStateChangedEventArgs e) {
             if (e.NewState == ClientState.InGame) {
                 _ac.Game.OnStateChanged -= Game_OnStateChanged;
-                Init();
+                CreateInspector();
             }
         }
 

@@ -62,12 +62,10 @@ namespace Chorizite.Core.Lua {
             }
             catch (LuaException ex) {
                 _log.LogError(Context.FormatDocumentException(ex));
-                _taskCompletionSource.SetException(ex);
                 return false;
             }
             catch (Exception ex) {
                 _log.LogError(ex, "Error resuming coroutine");
-                _taskCompletionSource.SetException(ex);
                 return false;
             }
         }

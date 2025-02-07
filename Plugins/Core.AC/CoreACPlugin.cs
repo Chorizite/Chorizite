@@ -79,7 +79,7 @@ namespace Core.AC {
             // ISerializeState{ACState}.DeserializeAfterLoad(ACState?) is now responsible for calling Init()
         }
 
-        private void Init() {
+        protected override void Initialize() {
             DragDropManager = new DragDropManager();
 
             CoreUI.RegisterUIModel("Tooltip", _state.TooltipModel);
@@ -102,6 +102,16 @@ namespace Core.AC {
                 ShowIndicatorsPanel();
             }
         }
+
+        #region State / Settings Serialization
+        PluginState ISerializeState<PluginState>.SerializeBeforeUnload() => _state;
+
+        void ISerializeState<PluginState>.DeserializeAfterLoad(PluginState? state) {
+            _state = state ?? new PluginState();
+            _state.TooltipModel ??= new TooltipModel();
+            _state.Game ??= new Game();
+        }
+        #endregion // State / Settings Serialization
 
         private void ClientBackend_OnShowRootElement(object? sender, ToggleElementVisibleEventArgs e) {
             if (e.ElementId == Chorizite.Common.Enums.RootElementId.Indicators) {
@@ -143,17 +153,6 @@ namespace Core.AC {
             //_tooltip?.Hide();
         }
 
-        #region State / Settings Serialization
-        PluginState ISerializeState<PluginState>.SerializeBeforeUnload() => _state;
-
-        void ISerializeState<PluginState>.DeserializeAfterLoad(PluginState? state) {
-            _state = state ?? new PluginState();
-            _state.TooltipModel ??= new TooltipModel();
-            _state.Game ??= new Game();
-            
-            Init();
-        }
-        #endregion // State / Settings Serialization
 
         #region ScreenProvider
         private void SetScreen(GameScreen value, bool force = false) {

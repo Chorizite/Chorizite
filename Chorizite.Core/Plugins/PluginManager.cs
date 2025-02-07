@@ -19,6 +19,8 @@ namespace Chorizite.Core.Plugins {
     /// A plugin manager.
     /// </summary>
     public class PluginManager : IPluginManager {
+        private bool _hasPluginsLoaded = false;
+        private readonly Dictionary<string, PluginManifest> _loadedManifests = [];
         private readonly Dictionary<string, PluginInstance> _loadedPlugins = [];
         private readonly List<IPluginLoader> _pluginLoaders = [];
         private readonly IChoriziteConfig _config;
@@ -35,18 +37,21 @@ namespace Chorizite.Core.Plugins {
         public IReadOnlyList<IPluginLoader> PluginLoaders => _pluginLoaders;
 
         /// <inheritdoc />
-        public event EventHandler<PluginLoadedEventArgs>? OnPluginLoaded {
-            add { _OnPluginLoaded.Subscribe(value); }
-            remove { _OnPluginLoaded.Unsubscribe(value); }
-        }
-        private readonly WeakEvent<PluginLoadedEventArgs> _OnPluginLoaded = new();
+        public IReadOnlyList<PluginManifest> PluginManifests => [.. _loadedManifests.Values];
 
         /// <inheritdoc />
-        public event EventHandler<PluginUnloadedEventArgs>? OnPluginUnloaded {
-            add { _OnPluginUnloaded.Subscribe(value); }
-            remove { _OnPluginUnloaded.Unsubscribe(value); }
+        public event EventHandler<EventArgs>? OnPluginsLoaded {
+            add { _OnPluginsLoaded.Subscribe(value); }
+            remove { _OnPluginsLoaded.Unsubscribe(value); }
         }
-        private readonly WeakEvent<PluginUnloadedEventArgs> _OnPluginUnloaded = new();
+        private readonly WeakEvent<EventArgs> _OnPluginsLoaded = new();
+
+        /// <inheritdoc />
+        public event EventHandler<PluginsUnloadedEventArgs>? OnBeforePluginsUnloaded {
+            add { _OnBeforePluginsUnloaded.Subscribe(value); }
+            remove { _OnBeforePluginsUnloaded.Unsubscribe(value); }
+        }
+        private readonly WeakEvent<PluginsUnloadedEventArgs> _OnBeforePluginsUnloaded = new();
 
         public PluginManager(IChoriziteConfig config, ILogger log) {
             _config = config;
@@ -75,7 +80,7 @@ namespace Chorizite.Core.Plugins {
             }
 
             var loader = _pluginLoaders.Where(l => l.CanLoadPlugin(plugin.Manifest)).FirstOrDefault();
-            if (plugin is null) {
+            if (loader is null) {
                 return default;
             }
 
@@ -83,34 +88,86 @@ namespace Chorizite.Core.Plugins {
         }
 
         /// <inheritdoc />
-        public void LoadPluginManifests() {
-            _log?.LogTrace($"Loading plugin manifests");
-            if (!Directory.Exists(PluginDirectory)) {
-                _log?.LogWarning($"Plugin directory does not exist: {PluginDirectory}");
-                return;
-            }
-
-            foreach (var file in Directory.EnumerateDirectories(PluginDirectory)) {
-                var manifestFile = Path.GetFullPath(Path.Combine(file, "manifest.json"));
-                if (!LoadPluginManifest(manifestFile, out PluginInstance? plugin) || plugin is null) {
-                    continue;
-                }
-
-                if (plugin.Manifest.Environments.HasFlag(_config.Environment) || _config.Environment == ChoriziteEnvironment.DocGen) {
-                    _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
-                }
-            }
-        }
-
-        /// <inheritdoc />
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public void StartPlugins() {
+        public void LoadPlugins(bool isReloading = false) {
+            if (_hasPluginsLoaded) {
+                UnloadPlugins(isReloading);
+            }
+
+            LoadPluginManifests();
+
+            _log.LogDebug($"Found {_loadedManifests.Count} plugin manifests: {string.Join(", ", _loadedManifests.Values.Select(m => $"{m.Name}({m.Version})"))}");
+
+            foreach (var manifest in _loadedManifests.Values) {
+                if (manifest.Environments.HasFlag(_config.Environment)) {
+                    if (TryGetPluginLoader(manifest, out IPluginLoader? loader)) {
+                        if (loader?.LoadPluginInstance(manifest, out var plugin) == true && plugin is not null) {
+                            _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
+                        }
+                    }
+                    else {
+                        _log?.LogError($"Failed to find plugin loader for {manifest.Name}");
+                    }
+                }
+            }
+
             var plugins = _loadedPlugins.Values.ToArray();
             var startedPlugins = new List<string>();
+
             _log?.LogDebug($"Starting all plugins: {string.Join(", ", plugins.Select(p => $"{p.Name}({p.Manifest.Version})"))}");
 
             foreach (var plugin in plugins) {
                 StartPlugin(plugin, ref startedPlugins);
+            }
+
+            _hasPluginsLoaded = true;
+            _OnPluginsLoaded.Invoke(this, EventArgs.Empty);
+        }
+
+        /// <inheritdoc />
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void UnloadPlugins(bool isReloading = false) {
+            _log.LogDebug("Unloading plugins");
+
+            _OnBeforePluginsUnloaded.Invoke(this, new PluginsUnloadedEventArgs(isReloading));
+
+            var pluginsToUnload = _loadedPlugins.Values.ToArray();
+            var unloadedPlugins = new List<PluginInstance>();
+            foreach (var plugin in pluginsToUnload) {
+                UnloadPluginAndDependents(plugin, ref unloadedPlugins, isReloading);
+            }
+
+            for (var i = 0; i < 20; i++) {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            var failedToUnload = new List<string>();
+            foreach (var plugin in pluginsToUnload) {
+                var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(plugin.Name) == true);
+                if (isAlive) {
+                    failedToUnload.Add(plugin.Name);
+                }
+            }
+
+            if (failedToUnload.Count > 0) {
+                _log?.LogWarning($"Failed to unload plugins: {string.Join(", ", failedToUnload)}");
+            }
+
+            _loadedPlugins.Clear();
+            _loadedManifests.Clear();
+
+            _hasPluginsLoaded = false;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void ReloadPlugins() {
+            try {
+                _log.LogDebug("Reloading plugins");
+                LoadPlugins(true);
+            }
+            catch (Exception ex) {
+                _log?.LogError(ex, "Error reloading plugins: {0}", ex.Message);
             }
         }
 
@@ -120,57 +177,48 @@ namespace Chorizite.Core.Plugins {
             }
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void ReloadPlugins() {
-            try {
-                var pluginsToReload = _loadedPlugins.Values.Where(p => p.WantsReload).ToArray();
-                var unloadedPlugins = new List<PluginInstance>();
-                foreach (var plugin in pluginsToReload) {
-                    UnloadPluginAndDependents(plugin, ref unloadedPlugins);
-                    var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(plugin.Name) == true);
-                    if (isAlive) {
-                        System.Diagnostics.Debugger.Break();
-                        _log?.LogWarning($"Failed to unload plugin assembly: {plugin.Name}");
-                        //_log?.LogWarning($"\t Assemblies: {string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).Where(a => a?.Contains(Name) == true))}");
-                    }
-                }
-
-                var startedPlugins = new List<string>();
-                foreach (var plugin in unloadedPlugins) {
-                    StartPlugin(plugin, ref startedPlugins);
-                }
+        /// <inheritdoc />
+        private void LoadPluginManifests() {
+            _log?.LogTrace($"Loading plugin manifests");
+            if (!Directory.Exists(PluginDirectory)) {
+                _log?.LogWarning($"Plugin directory does not exist: {PluginDirectory}");
+                return;
             }
-            catch (Exception ex) {
-                _log?.LogError(ex, "Error reloading plugins: {0}", ex.Message);
+
+            foreach (var file in Directory.EnumerateDirectories(PluginDirectory)) {
+                try {
+                    var manifestFile = Path.GetFullPath(Path.Combine(file, "manifest.json"));
+                    if (!LoadPluginManifest(manifestFile, out PluginManifest? manifest) || manifest is null) {
+                        _log?.LogWarning($"Failed to load plugin manifest: {manifestFile}");
+                        continue;
+                    }
+
+                    _loadedManifests.Add(manifest.ManifestFile, manifest);
+                }
+                catch (Exception ex) {
+                    _log?.LogError(ex, "Error loading plugin: {0}: {1}", PluginDirectory, ex.Message);
+                }
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void UnloadPluginAndDependents(PluginInstance plugin, ref List<PluginInstance> unloadedPlugins) {
+        private void UnloadPluginAndDependents(PluginInstance plugin, ref List<PluginInstance> unloadedPlugins, bool isReloading) {
             foreach (var depPlugin in _loadedPlugins.Values.Where(p => p.Manifest.Dependencies.Select(d => d.Split('@').First()).Contains(plugin.Name))) {
                 if (!unloadedPlugins.Contains(depPlugin)) {
-                    UnloadPluginAndDependents(depPlugin, ref unloadedPlugins);
+                    UnloadPluginAndDependents(depPlugin, ref unloadedPlugins, isReloading);
                 }
             }
             unloadedPlugins.Add(plugin);
-            plugin.Unload();
-            _OnPluginUnloaded?.Invoke(this, new PluginUnloadedEventArgs(plugin.Name));
+            plugin.Unload(isReloading);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool LoadPluginManifest(string manifestFile, out PluginInstance? plugin) {
+        private bool LoadPluginManifest(string manifestFile, out PluginManifest manifest) {
             try {
                 _log?.LogTrace($"Loading plugin manifest: {manifestFile}");
-                if (PluginManifest.TryLoadManifest(manifestFile, out PluginManifest manifest, out string? errorStr)) {
+                if (PluginManifest.TryLoadManifest(manifestFile, out manifest, out string? errorStr)) {
                     _log?.LogTrace($"Loaded plugin manifest {manifest.Name} v{manifest.Version} which depends on: {string.Join(", ", manifest.Dependencies)}");
-                    if (TryGetPluginLoader(manifest, out IPluginLoader? loader)) {
-                        if (loader?.LoadPluginInstance(manifest, out plugin) == true && plugin is not null) {
-                            return true;
-                        }
-                    }
-                    else {
-                        _log?.LogError("Failed to find plugin loader for: {0}", manifest.EntryFile);
-                    }
+                    return true;
                 }
                 else {
                     _log?.LogError(errorStr);
@@ -179,7 +227,7 @@ namespace Chorizite.Core.Plugins {
             catch (Exception ex) {
                 _log?.LogError(ex, "Error loading plugin manifest: {0}: {1}", manifestFile, ex.Message);
             }
-            plugin = null;
+            manifest = default;
             return false;
         }
 
@@ -252,10 +300,8 @@ namespace Chorizite.Core.Plugins {
                 _loadedPlugins.Remove(plugin.Manifest.EntryFile);
             }
 
-            _log?.LogDebug($"Started plugin: {plugin.Name}");
+            _log?.LogTrace($"Started plugin: {plugin.Name}");
             startedPlugins.Add(plugin.Name.ToLower());
-
-            _OnPluginLoaded?.Invoke(this, new PluginLoadedEventArgs(plugin.Name));
 
             return true;
         }

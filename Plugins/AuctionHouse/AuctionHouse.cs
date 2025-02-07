@@ -21,9 +21,11 @@ namespace AuctionHouse {
             Log = log;
             UI = coreUI;
             AC = coreAC;
+        }
 
+        protected override void Initialize() {
             if (AC.Game.State == ClientState.InGame) {
-                Init();
+                CreatePanel();
             }
             else {
                 AC.Game.OnStateChanged += Game_OnStateChanged;
@@ -33,11 +35,11 @@ namespace AuctionHouse {
         private void Game_OnStateChanged(object? sender, GameStateChangedEventArgs e) {
             if (e.NewState == ClientState.InGame) {
                 AC.Game.OnStateChanged -= Game_OnStateChanged;
-                Init();
+                CreatePanel();
             }
         }
 
-        private void Init() {
+        private void CreatePanel() {
             _panel = UI.CreatePanel("ActionHouse", Path.Combine(AssemblyDirectory, "assets", "AuctionHouse.rml"));
             if (_panel is not null) {
                 _panel.ShowInBar = true;

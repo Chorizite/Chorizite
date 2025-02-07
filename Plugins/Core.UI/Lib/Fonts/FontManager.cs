@@ -21,6 +21,9 @@ namespace Core.UI.Lib.Fonts {
             _log = log;
 
             var fontFiles = new List<string>();
+
+            // TODO: this is very slow...
+            /*
             var fontDir = Environment.GetFolderPath(Environment.SpecialFolder.Fonts);
             if (Directory.Exists(fontDir)) {
                 var winfontsList = Directory.GetFiles(fontDir, "*.ttf");
@@ -34,6 +37,7 @@ namespace Core.UI.Lib.Fonts {
                     RegisterFontFile(file);
                 }
             }
+            */
         }
 
         public bool RegisterFontFile(string filename) {

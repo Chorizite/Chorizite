@@ -186,17 +186,16 @@ namespace Chorizite.Core {
             Backend.RegisterLuaModule("InputManager", _inputManager);
 
             var xluaPath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "xlua.dll");
-            _log?.LogWarning($"Manually pre-loading {xluaPath}");
+            _log?.LogTrace($"Manually pre-loading {xluaPath}");
             Native.LoadLibrary(xluaPath);
 
             _pluginManager = Scope.Resolve<IPluginManager>();
 
             _pluginManager.RegisterPluginLoader(Scope.Resolve<AssemblyPluginLoader>());
-            _pluginManager.LoadPluginManifests();
             Backend.RegisterLuaModule("PluginManager", _pluginManager);
 
             if (Config.Environment == ChoriziteEnvironment.Launcher || Config.Environment == ChoriziteEnvironment.Client) {
-                _pluginManager.StartPlugins();
+                _pluginManager.LoadPlugins();
             }
 
             Backend.Renderer.OnRender2D += OnRender2D;
@@ -236,7 +235,9 @@ namespace Chorizite.Core {
                 return Assembly.Load(File.ReadAllBytes(localDllPath));
             }
 
-            _log?.LogError($"Failed to resolve assembly {name.Name} @ {localDllPath}");
+            if (!localDllPath.EndsWith("RoyT.TrueType.resources.dll")) {
+                _log?.LogError($"Failed to resolve assembly {name.Name} @ {localDllPath}");
+            }
 
             return null;
         }

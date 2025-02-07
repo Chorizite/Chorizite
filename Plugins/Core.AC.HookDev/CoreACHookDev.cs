@@ -20,7 +20,9 @@ namespace Core.AC.HookDev {
             Log = log;
             Hooks = new Hooks(log, clientBackend);
             Client = clientBackend;
+        }
 
+        protected override void Initialize() {
             Client.OnChatInput += Client_OnChatInput;
         }
 

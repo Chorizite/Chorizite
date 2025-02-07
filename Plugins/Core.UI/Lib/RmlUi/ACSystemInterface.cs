@@ -53,6 +53,12 @@ namespace ACUI.Lib.RmlUi {
                 _log?.LogWarning($"[RmlUi] Missing font: {fontName} ({fontStyle}) - this may cause text to not display correctly.");
                 return true;
             }
+
+            // loaded font face
+            if (message.Contains("Loaded font face")) {
+                type = LogType.Assert;
+            }
+
             switch (type) {
                 case LogType.Assert:
                     _log?.LogTrace($"[RmlUi] {message}");

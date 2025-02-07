@@ -16,29 +16,36 @@ namespace Chorizite.Core.Plugins {
         IReadOnlyList<IPluginLoader> PluginLoaders { get; }
 
         /// <summary>
+        /// A list of currently loaded plugin manifests.
+        /// </summary>
+        IReadOnlyList<PluginManifest> PluginManifests { get; }
+
+        /// <summary>
         /// A list of currently loaded plugins.
         /// </summary>
         IReadOnlyList<PluginInstance> Plugins { get; }
 
         /// <summary>
-        /// An event that is triggered when a plugin is loaded.
+        /// Fired after all plugins have been loaded.
         /// </summary>
-        public event EventHandler<PluginLoadedEventArgs> OnPluginLoaded;
+        public event EventHandler<EventArgs> OnPluginsLoaded;
 
         /// <summary>
-        /// An event that is triggered when a plugin is unloaded.
+        /// An event that is triggered before plugins are unloaded.
         /// </summary>
-        public event EventHandler<PluginUnloadedEventArgs> OnPluginUnloaded;
+        public event EventHandler<PluginsUnloadedEventArgs> OnBeforePluginsUnloaded;
 
         /// <summary>
-        /// Load all plugin manifests from the <see cref="PluginDirectory"/>.
+        /// Load all plugins for the current environment.
         /// </summary>
-        void LoadPluginManifests();
+        /// <param name="isReloading">True if plugins are reloading</param>
+        void LoadPlugins(bool isReloading = false);
 
         /// <summary>
-        /// Start all plugins. Make sure you call <see cref="LoadPluginManifests"/> first.
+        /// Unload all plugins.
         /// </summary>
-        void StartPlugins();
+        /// <param name="isReloading">True if plugins are reloading</param>
+        void UnloadPlugins(bool isReloading = false);
 
         /// <summary>
         /// Get a plugin by name.

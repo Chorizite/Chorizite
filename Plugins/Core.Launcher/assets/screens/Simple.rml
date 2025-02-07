@@ -2,7 +2,7 @@
   <head>
     <style>
       body {
-        font-family: Palatino Linotype;
+        font-family: Tahoma;
         font-size: 15px;
         color: #fff;
         display: block;
