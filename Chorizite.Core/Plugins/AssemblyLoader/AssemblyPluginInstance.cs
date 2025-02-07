@@ -125,6 +125,14 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             }
 
             _pluginInstance = InstantiatePlugin(pluginType);
+            if (_pluginInstance is not null) {
+                try {
+                    _pluginInstance.GetType().GetMethod("Initialize", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(_pluginInstance, []);
+                }
+                catch (Exception ex) {
+                    _log?.LogError(ex, "Error initializing plugin: {0}: {1}", Name, ex.Message);
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

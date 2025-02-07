@@ -17,6 +17,10 @@ namespace Core.DatService {
             Log?.LogDebug($"CoreDatService Version: {Manifest.Version}");
         }
 
+        protected override void Initialize() {
+            
+        }
+
         protected override void Dispose() {
             
         }

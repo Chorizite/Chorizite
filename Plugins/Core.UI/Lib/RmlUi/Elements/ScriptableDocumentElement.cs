@@ -173,8 +173,6 @@ namespace Core.UI.Lib.RmlUi.Elements {
                         }
                         currentVDom = newVDom;
                     }
-
-                    el.OwnerDocument.GetElementById("render-time")?.SetInnerRml($"Rendered {CoreUIPlugin.TaskCount} tasks in {(double)sw.ElapsedTicks / (double)TimeSpan.TicksPerMillisecond:N4}ms");
                 }
                 catch (Exception e) {
                     CoreUIPlugin.Log.LogError($"Failed to patch ui from state: {LuaContext.FormatDocumentException(e)}");

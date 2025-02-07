@@ -52,6 +52,7 @@ namespace Core.UI {
         private RenderObjElementInstancer _renderObjInstancer;
         private bool _needsViewportUpdate;
         private Panel? _panel;
+        internal bool _isTogglingDebugger;
 
         public PanelManager PanelManager { get; private set; }
 
@@ -73,6 +74,8 @@ namespace Core.UI {
 
         JsonTypeInfo<UIState> ISerializeState<UIState>.TypeInfo => SourceGenerationContext.Default.UIState;
 
+        UIState ISerializeState<UIState>.SerializeBeforeUnload() => _state;
+
         /// <summary>
         /// Fired when the screen changes
         /// </summary>
@@ -93,16 +96,19 @@ namespace Core.UI {
             var rmlUINativePath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "RmlUiNative.dll");
             Log?.LogTrace($"Manually pre-loading {rmlUINativePath}");
             Native.LoadLibrary(rmlUINativePath);
+        }
 
+        protected override void Initialize() {
             InitRmlUI();
 
             OnScreenChanged += CoreUIPlugin_OnScreenChanged;
-            PluginManager.OnPluginUnloaded += PluginManager_OnPluginUnloaded;
 
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
             Backend.Renderer.OnGraphicsPostReset += Renderer_OnGraphicsPostReset;
 
             Backend.Input.OnKeyDown += Input_OnKeyDown;
+
+            SetScreen(_state.Screen, true);
 
             //_panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
             //_panel.OnAfterReload += Panel_OnAfterReload;
@@ -116,163 +122,8 @@ namespace Core.UI {
             }
         }
 
-        private void Panel_OnAfterReload(object? sender, EventArgs e) {
-            MakeReactive();
-        }
-
-        // Observable state class
-        [Observable]
-        public class AppState {
-            private int _nextTodoId = 1;
-            private ReactiveHelpers _rx;
-
-            public string Title { get; set; }
-
-            public ICollection<TodoItem> Todos { get; set; }
-
-            public AppState(ReactiveHelpers rx) {
-                _rx = rx;
-            }
-
-            [Action]
-            public void AddTodo(string text, bool isCompleted = false) {
-                Todos.Add(_rx.CreateState(() => new TodoItem { Id = _nextTodoId++, Text = text, IsCompleted = isCompleted }));
-                TaskCount = Todos.Count;
-            }
-
-            [Action]
-            public void ToggleTodo(TodoItem todo) {
-                if (todo is null) return;
-                todo.IsCompleted = !todo.IsCompleted;
-            }
-
-            [Action]
-            public void CompleteTodo(TodoItem todo, bool isCompleted = true) {
-                if (todo is null) return;
-                todo.IsCompleted = isCompleted;
-            }
-
-            [Action]
-            public void RemoveTodo(TodoItem todo) {
-                Todos.Remove(todo);
-                TaskCount = Todos.Count;
-            }
-
-            public override string ToString() {
-                return $"{Title}:\n{string.Join("\n", Todos.Select(x => $"\t[{(x.IsCompleted ? "x" : " ")}] {x.Text}"))}";
-            }
-        }
-
-        // Observable Todo Item
-        [Observable]
-        public class TodoItem {
-            public int Id { get; set; }
-
-            public string Text { get; set; }
-
-            public bool IsCompleted { get; set; }
-        }
-
-        public static int TaskCount = 0;
-        internal bool _isTogglingDebugger;
-
-        private class MyEnhancer : IEnhancer {
-            public T Enhance<T>(T newValue, T originalValue, string name) {
-                return newValue;
-            }
-        }
-
-        private void MakeReactive() {
-            try {
-                return;
-                var doc = _panel?.ScriptableDocument;
-                if (doc is null) return;
-                var rx = doc.Rx;
-
-                // Create a reactive state
-                var state = rx.CreateState(() => new AppState(rx) {
-                    Title = "My Reactive Todo List"
-                });
-
-                // Initial todos
-                state.AddTodo("Learn Cortex.Net", true);
-                state.AddTodo("Build a Virtual DOM");
-
-                var nextTodoId = 1;
-                var AddTodo = new Action<Event>((evt) => {
-                    if (doc.GetElementById("new-todo-text") is ElementFormControlInput input) {
-                        var text = input.GetValue();
-                        if (!string.IsNullOrEmpty(text)) state.AddTodo(text);
-                        else state.AddTodo($"Blank todo {nextTodoId++}");
-                        input.SetValue("");
-                    }
-                });
-
-                var TodoApp = (AppState state) => rx.Div(children: [
-                    // Title
-                    rx.H1(text: state.Title ?? "Todo List"),
-
-                    // form
-                    rx.Div(new() {
-                            { "class", "actions" }
-                        }, children: [
-                        rx.Input(new() {
-                                { "id", "new-todo-text" },
-                                { "type", "text" }
-                            }),
-                        rx.Button(new() {
-                                { "onclick", AddTodo }
-                            },
-                            text: "Add Todo")
-                        ]
-                    ),
-                
-                    // Todo list
-                    rx.Ul(children: state.Todos.Select(todo =>
-                        rx.Li(new() {
-                                { "key", todo.Id },
-                                { "class", todo.IsCompleted ? "completed" : "" }
-                            }, children: [
-                                rx.Input(new() {
-                                        { "type", "checkbox" },
-                                        { "checked", todo.IsCompleted },
-                                        { "onchange", (Action<Event>)((e) => {
-                                            todo.IsCompleted = (e.TargetElement as ElementFormControlInput).HasAttribute("checked");
-                                        }) },
-                                    }
-                                ),
-                                rx.Span(new(){
-                                        { "onclick", (Action<Event>)((e) => state.ToggleTodo(todo)) },
-                                }, text: todo.Text),
-                                rx.Button(new() {
-                                        { "class", "small" },
-                                        { "onclick", (Action<Event>)((e) => state.RemoveTodo(todo)) }
-                                    },
-                                    text: "x"
-                                )
-                            ])
-                    ).ToList())
-                ]);
-
-                doc.Mount(() => TodoApp(state), "#app");
-
-                Log.LogWarning("Reactive state manager initialized");
-            }
-            catch (Exception e) {
-                Log.LogError(e, "Failed to create reactive state manager");
-            }
-        }
-
         private void Renderer_OnGraphicsPostReset(object? sender, EventArgs e) {
             _needsViewportUpdate = true;
-        }
-
-        private void PluginManager_OnPluginUnloaded(object? sender, PluginUnloadedEventArgs e) {
-            foreach (var kv in _models) {
-                if (kv.Value.GetType().Assembly.GetName().Name?.Contains(e.Name) == true) {
-                    _models.Remove(kv.Key);
-                }
-            }
         }
 
         private void SetScreen(string value, bool force = false) {
@@ -282,12 +133,8 @@ namespace Core.UI {
             }
         }
 
-        UIState ISerializeState<UIState>.SerializeBeforeUnload() => _state;
-
         void ISerializeState<UIState>.DeserializeAfterLoad(UIState? state) {
             _state = state ?? new UIState();
-
-            SetScreen(_state.Screen, true);
         }
 
         #region Public API
@@ -536,7 +383,6 @@ namespace Core.UI {
                 Backend.Input.OnKeyDown -= Input_OnKeyDown;
 
                 PanelManager.Dispose();
-                PluginManager.OnPluginUnloaded -= PluginManager_OnPluginUnloaded;
                 ShutdownRmlUI();
                 FontManager?.Dispose();
             }

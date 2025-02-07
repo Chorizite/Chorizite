@@ -55,6 +55,10 @@ namespace Core.Launcher {
             Backend.Renderer.OnRender2D += Renderer_OnRender2D;
         }
 
+        protected override void Initialize() {
+            SetScreen(_state.CurrentScreen, true);
+        }
+
         void ISerializeSettings<LauncherSettings>.DeserializeAfterLoad(LauncherSettings? settings) {
             _settings = settings ?? new LauncherSettings();
             _settings.SimpleLoginScreenModel ??= new SimpleLoginScreenModel();
@@ -67,7 +71,6 @@ namespace Core.Launcher {
 
         void ISerializeState<LauncherState>.DeserializeAfterLoad(LauncherState? state) {
             _state = state ?? new LauncherState(LauncherScreen.Simple);
-            SetScreen(_state.CurrentScreen, true);
         }
         LauncherState ISerializeState<LauncherState>.SerializeBeforeUnload() => _state;
 

@@ -44,6 +44,10 @@ namespace Core.DearImGui {
             }
         }
 
+        protected override void Initialize() {
+
+        }
+
         private unsafe void InitImGui() {
             _context = ImGui.CreateContext();
             ImGui.SetCurrentContext(_context);

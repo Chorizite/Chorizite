@@ -69,6 +69,7 @@ namespace Chorizite.Core.Plugins {
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.NoInlining)]
         public T? GetPlugin<T>(string name) where T : IPluginCore {
+            _log.LogWarning($"Getting plugin: {name} ({string.Join(", ", _loadedPlugins.Values.Select(p => p.Name))})");
             var plugin = _loadedPlugins.Values.Where(p => p.Name.ToLower() == name.ToLower()).FirstOrDefault();
             if (plugin is null) {
                 return default;
@@ -96,7 +97,7 @@ namespace Chorizite.Core.Plugins {
                     continue;
                 }
 
-                if (plugin.Manifest.Environments.HasFlag(_config.Environment) || _config.Environment == ChoriziteEnvironment.DocGen) {
+                if (plugin.Manifest.Environments.HasFlag(_config.Environment)) {
                     _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
                 }
             }
@@ -123,16 +124,29 @@ namespace Chorizite.Core.Plugins {
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void ReloadPlugins() {
             try {
-                var pluginsToReload = _loadedPlugins.Values.Where(p => p.WantsReload).ToArray();
+                _log.LogWarning("Reloading plugins");
+
+                var pluginsToReload = _loadedPlugins.Values.ToArray();
                 var unloadedPlugins = new List<PluginInstance>();
                 foreach (var plugin in pluginsToReload) {
                     UnloadPluginAndDependents(plugin, ref unloadedPlugins);
+                }
+
+                for (var i = 0; i < 50; i++) {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+
+                var failedToUnload = new List<string>();
+                foreach (var plugin in pluginsToReload) {
                     var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(plugin.Name) == true);
                     if (isAlive) {
-                        System.Diagnostics.Debugger.Break();
-                        _log?.LogWarning($"Failed to unload plugin assembly: {plugin.Name}");
-                        //_log?.LogWarning($"\t Assemblies: {string.Join(", ", AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).Where(a => a?.Contains(Name) == true))}");
+                        failedToUnload.Add(plugin.Name);
                     }
+                }
+
+                if (failedToUnload.Count > 0) {
+                    _log?.LogWarning($"Failed to unload plugins: {string.Join(", ", failedToUnload)}");
                 }
 
                 var startedPlugins = new List<string>();
