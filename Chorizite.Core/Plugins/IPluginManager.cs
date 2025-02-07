@@ -51,6 +51,11 @@ namespace Chorizite.Core.Plugins {
         void ReloadPlugins();
 
         /// <summary>
+        /// Load all plugin manifests
+        /// </summary>
+        void LoadPluginManifests();
+
+        /// <summary>
         /// Get a plugin by name.
         /// </summary>
         /// <typeparam name="T"></typeparam>

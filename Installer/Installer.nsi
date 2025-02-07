@@ -40,9 +40,6 @@ Section "" CoreSection
 	SetOutPath "$INSTDIR\"
 	File "${BUILDPATH}\*.*"
 
-	SetOutPath "$INSTDIR\Lua\LuaScripts"
-	File /r "${BUILDPATH}\Lua\LuaScripts\"
-
 	SetOutPath "$INSTDIR\runtimes\win-x86\native"
 	File "${BUILDPATH}\runtimes\win-x86\native\*.*"
 

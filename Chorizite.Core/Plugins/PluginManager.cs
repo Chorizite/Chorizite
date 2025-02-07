@@ -101,10 +101,13 @@ namespace Chorizite.Core.Plugins {
             _log.LogDebug($"Found {_loadedManifests.Count} plugin manifests: {string.Join(", ", _loadedManifests.Values.Select(m => $"{m.Name}({m.Version})"))}");
 
             foreach (var manifest in _loadedManifests.Values) {
-                if (manifest.Environments.HasFlag(_config.Environment)) {
+                if (manifest.Environments.HasFlag(_config.Environment) || _config.Environment == ChoriziteEnvironment.DocGen) {
                     if (TryGetPluginLoader(manifest, out IPluginLoader? loader)) {
                         if (loader?.LoadPluginInstance(manifest, out var plugin) == true && plugin is not null) {
                             _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
+                        }
+                        else {
+                            _log?.LogError($"Failed to load plugin {manifest.Name}");
                         }
                     }
                     else {
@@ -167,26 +170,8 @@ namespace Chorizite.Core.Plugins {
             WantsReload = true;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void ReloadPluginsInternal() {
-            try {
-                _log.LogDebug("Reloading plugins");
-                LoadPlugins(true);
-            }
-            catch (Exception ex) {
-                _log?.LogError(ex, "Error reloading plugins: {0}", ex.Message);
-            }
-        }
-
-        private void Render_OnRender2D(object? sender, EventArgs e) {
-            if (WantsReload || Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
-                WantsReload = false;
-                ReloadPluginsInternal();
-            }
-        }
-
         /// <inheritdoc />
-        private void LoadPluginManifests() {
+        public void LoadPluginManifests() {
             _log?.LogTrace($"Loading plugin manifests");
             if (!Directory.Exists(PluginDirectory)) {
                 _log?.LogWarning($"Plugin directory does not exist: {PluginDirectory}");
@@ -206,6 +191,24 @@ namespace Chorizite.Core.Plugins {
                 catch (Exception ex) {
                     _log?.LogError(ex, "Error loading plugin: {0}: {1}", PluginDirectory, ex.Message);
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ReloadPluginsInternal() {
+            try {
+                _log.LogDebug("Reloading plugins");
+                LoadPlugins(true);
+            }
+            catch (Exception ex) {
+                _log?.LogError(ex, "Error reloading plugins: {0}", ex.Message);
+            }
+        }
+
+        private void Render_OnRender2D(object? sender, EventArgs e) {
+            if (WantsReload || Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
+                WantsReload = false;
+                ReloadPluginsInternal();
             }
         }
 

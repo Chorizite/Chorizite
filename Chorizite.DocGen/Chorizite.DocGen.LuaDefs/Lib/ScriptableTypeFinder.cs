@@ -35,18 +35,14 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
 
         internal void LoadPluginTypes() {
             var pluginManager = _chorizite.Scope.Resolve<IPluginManager>();
-            foreach (var plugin in pluginManager.Plugins) {
-                if (plugin is AssemblyPluginInstance assemblyPlugin) {
-                    try {
-                        PluginRegistry.Add(assemblyPlugin.Name, new PluginTypeRegistry(this, _chorizite, assemblyPlugin));
-                    }
-                    catch (Exception ex) { 
-                        Console.WriteLine($"Error loading types for plugin: {assemblyPlugin.Name}");
-                        Console.WriteLine(ex.ToString());
-                    }
+            pluginManager.LoadPlugins();
+            foreach (var plugin in pluginManager.PluginManifests) {
+                try {
+                    PluginRegistry.Add(plugin.Name, new PluginTypeRegistry(this, _chorizite, plugin));
                 }
-                else {
-                    Console.WriteLine($"\t Skipping docs for unsupported plugin: {plugin.Name}");
+                catch (Exception ex) {
+                    Console.WriteLine($"Error loading types for plugin: {plugin.Name}");
+                    Console.WriteLine(ex.ToString());
                 }
             }
         }

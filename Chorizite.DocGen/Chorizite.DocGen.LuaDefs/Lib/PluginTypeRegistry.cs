@@ -7,6 +7,7 @@ using Autofac;
 using Chorizite.DocGen.LuaDefs.Lib.models;
 using System.Xml.Linq;
 using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 
 namespace Chorizite.DocGen.LuaDefs.Lib {
     public class PluginTypeRegistry : TypeRegistry {
@@ -15,19 +16,19 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
         public Assembly Assembly { get; private set; }
 
         private Assembly _choriziteAssembly;
-        public AssemblyPluginInstance PluginInstance { get; set; }
+        public PluginManifest Manifest { get; set; }
         public string EntryAssemblyPath { get; }
         public List<string> AllAssemblyPaths { get; }
 
         public override MetadataLoadContext LoadContext => _loadContext;
         public override Assembly ChoriziteAssembly => _choriziteAssembly;
 
-        public PluginTypeRegistry(ScriptableTypeFinder scriptableTypeFinder, Chorizite<DocGenBackend> chorizite, AssemblyPluginInstance pluginInstance) : base(chorizite, scriptableTypeFinder) {
-            PluginInstance = pluginInstance;
+        public PluginTypeRegistry(ScriptableTypeFinder scriptableTypeFinder, Chorizite<DocGenBackend> chorizite, PluginManifest manifest) : base(chorizite, scriptableTypeFinder) {
+            Manifest = manifest;
 
-            EntryAssemblyPath = Path.Combine(PluginInstance.Manifest.BaseDirectory, PluginInstance.Manifest.EntryFile);
+            EntryAssemblyPath = Path.Combine(Manifest.BaseDirectory, Manifest.EntryFile);
 
-            AllAssemblyPaths = Directory.GetFiles(PluginInstance.Manifest.BaseDirectory, "*.dll").ToList();
+            AllAssemblyPaths = Directory.GetFiles(Manifest.BaseDirectory, "*.dll").ToList();
             Init([ EntryAssemblyPath ]);
         }
 
@@ -37,7 +38,10 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
             foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory(), "*.dll")) {
                 paths.Add(file);
             }
-            foreach (var plugin in Chorizite.Scope.Resolve<IPluginManager>().Plugins) {
+
+            var plugins = Chorizite.Scope.Resolve<IPluginManager>().Plugins;
+
+            foreach (var plugin in plugins) {
                 foreach (var file in Directory.GetFiles(plugin.Manifest.BaseDirectory, "*.dll")) {
                     if (!paths.Contains(file)) {
                         paths.Add(file);
@@ -50,7 +54,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
                     GenerateMemberDocs(path);
                 }
                 catch (Exception ex) {
-                    Console.WriteLine($"Error loading doc types for plugin: {PluginInstance.Name}: {path}");
+                    Console.WriteLine($"Error loading doc types for plugin: {Manifest.Name}: {path}");
                     Console.WriteLine(ex.ToString());
                 }
             }
@@ -66,12 +70,12 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
 
             foreach (var assemblyPath in AllAssemblyPaths) {
                 if (assemblyPath == EntryAssemblyPath) continue;
-                Console.WriteLine($"Loading doc types for plugin: {PluginInstance.Name}: {assemblyPath}");
+                Console.WriteLine($"Loading doc types for plugin: {Manifest.Name}: {assemblyPath}");
                 try {
                     LoadAssemblyTypes(LoadContext.LoadFromAssemblyPath(assemblyPath));
                 }
                 catch (Exception ex) {
-                    Console.WriteLine($"Error loading doc types for plugin: {PluginInstance.Name}: {assemblyPath}");
+                    Console.WriteLine($"Error loading doc types for plugin: {Manifest.Name}: {assemblyPath}");
                     Console.WriteLine(ex.ToString());
                 }
 

@@ -37,17 +37,6 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             });
         }
 
-        public int CountLoadedAssemblies() {
-            var count = 0;
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
-                if (assembly.GetName().Name == Name) {
-                    count++;
-                }
-            }
-
-            return count;
-        }
-
         /// <inheritdoc cref="PluginInstance.Load()"/>
         [MethodImpl(MethodImplOptions.NoInlining)]
         public override bool Load() {
@@ -121,6 +110,10 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
             if (pluginType is null) {
                 _log?.LogError($"Unable to find plugin type in assembly: {Name}");
+                return;
+            }
+
+            if (ChoriziteStatics.Config.Environment == ChoriziteEnvironment.DocGen) {
                 return;
             }
 

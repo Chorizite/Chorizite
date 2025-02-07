@@ -176,18 +176,18 @@ namespace Chorizite.DocGen.LuaDefs {
 
             foreach (var r in typeFinder.PluginRegistry.Values) {
                 _namespaces = [];
-                if (!Directory.Exists(Path.Combine(_outPath, "Plugins", r.PluginInstance.Name))) {
-                    Directory.CreateDirectory(Path.Combine(_outPath, "Plugins", r.PluginInstance.Name));
+                if (!Directory.Exists(Path.Combine(_outPath, "Plugins", r.Manifest.Name))) {
+                    Directory.CreateDirectory(Path.Combine(_outPath, "Plugins", r.Manifest.Name));
                 }
 
                 GeneratePluginDef(r);
 
                 // find all lua meta files and copy them to the plugin folder
-                var files = Directory.GetFiles(r.PluginInstance.Manifest.BaseDirectory, "*.lua", SearchOption.AllDirectories);
+                var files = Directory.GetFiles(r.Manifest.BaseDirectory, "*.lua", SearchOption.AllDirectories);
                 foreach (var f in files) {
                     var contents = File.ReadAllText(f);
                     if (contents.Contains("---@meta")) {
-                        File.Copy(f, Path.Combine(_outPath, "Plugins", r.PluginInstance.Name, Path.GetFileName(f)), true);
+                        File.Copy(f, Path.Combine(_outPath, "Plugins", r.Manifest.Name, Path.GetFileName(f)), true);
                     }
                 }
             }
@@ -195,9 +195,9 @@ namespace Chorizite.DocGen.LuaDefs {
 
         private void GeneratePluginDef(PluginTypeRegistry r) {
             var _out = new StringBuilder();
-            _out.AppendLine($"-- {r.PluginInstance.Name} (version {r.PluginInstance.Manifest.Version} by {r.PluginInstance.Manifest.Author})<br />");
-            _out.AppendLine($"-- {r.PluginInstance.Manifest.Description}");
-            _out.AppendLine($"---@meta Plugins.{r.PluginInstance.Name}");
+            _out.AppendLine($"-- {r.Manifest.Name} (version {r.Manifest.Version} by {r.Manifest.Author})<br />");
+            _out.AppendLine($"-- {r.Manifest.Description}");
+            _out.AppendLine($"---@meta Plugins.{r.Manifest.Name}");
             _out.AppendLine();
             _out.AppendLine("local _defs = {}");
             _out.AppendLine();
@@ -214,7 +214,7 @@ namespace Chorizite.DocGen.LuaDefs {
 
             _out.AppendLine($"return moduleInstance");
 
-            File.WriteAllText(Path.Combine(_outPath, "Plugins", r.PluginInstance.Name, $"{r.PluginInstance.Name}.lua"), _out.ToString());
+            File.WriteAllText(Path.Combine(_outPath, "Plugins", r.Manifest.Name, $"{r.Manifest.Name}.lua"), _out.ToString());
         }
 
         private void WriteClassDef(ClassDef value, StringBuilder _out, TypeRegistry r, bool isEntryClass = false) {
