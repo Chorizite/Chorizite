@@ -110,7 +110,7 @@ namespace Chorizite.DocGen.LuaDefs {
                 WriteClassDef(cls.Value, _out, typeFinder.SystemRegistry);
             }
 
-            var initPath = Path.Combine(Path.GetDirectoryName(assembly.Location), "Lua", "LuaScripts", "init.lua");
+            var initPath = Path.Combine(Path.GetDirectoryName(assembly.Location), "Plugins", "Lua", "LuaScripts", "init.lua");
 
             _out.AppendLine();
             _out.AppendLine(File.ReadAllText(initPath));
