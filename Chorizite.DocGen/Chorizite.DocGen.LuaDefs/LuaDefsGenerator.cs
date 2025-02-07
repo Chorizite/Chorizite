@@ -50,7 +50,7 @@ namespace Chorizite.DocGen.LuaDefs {
             _out.AppendLine();
 
             var assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.cs.lua"))
+            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.lua.cs.lua"))
             using (StreamReader reader = new StreamReader(stream)) {
                 _out.AppendLine(reader.ReadToEnd());
             }
@@ -87,7 +87,7 @@ namespace Chorizite.DocGen.LuaDefs {
             _out.AppendLine();
 
             var assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.globals.lua"))
+            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.lua.globals.lua"))
             using (StreamReader reader = new StreamReader(stream)) {
                 _out.AppendLine(reader.ReadToEnd());
             }
