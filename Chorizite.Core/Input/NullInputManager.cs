@@ -1,12 +1,10 @@
-﻿using Chorizite.Core.Lua;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Input {
-    [HideScripting]
     public class NullInputManager : IInputManager {
         public bool MouseIsOverWindow => false;
 

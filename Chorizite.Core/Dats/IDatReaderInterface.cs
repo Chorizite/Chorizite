@@ -1,5 +1,4 @@
-﻿using Chorizite.Core.Lua;
-using Chorizite.Core.Net;
+﻿using Chorizite.Core.Net;
 using DatReaderWriter;
 using DatReaderWriter.DBObjs;
 using DatReaderWriter.Lib.IO;
@@ -10,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Dats {
-    [LuaModuleNamespace("DatReaderWriter")]
     public interface IDatReaderInterface {
         public PortalDatabase Portal { get; }
         public CellDatabase Cell { get; }

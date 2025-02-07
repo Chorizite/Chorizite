@@ -3,10 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Chorizite.Common;
-using Chorizite.Core.Lua;
 
 namespace Chorizite.Core.Render {
-    [LuaModuleNamespace("Chorizite.Core.Render")]
     public interface IRenderInterface : IDisposable {
         /// <summary>
         /// The size of the viewport (game window)

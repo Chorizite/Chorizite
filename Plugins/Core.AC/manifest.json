@@ -4,6 +4,6 @@
   "entryfile": "Core.AC.dll",
   "version": "0.0.1",
   "description": "Game interface",
-  "dependencies": [ "Core.UI@0.0.1" ],
+  "dependencies": [ "Core.UI@0.0.1", "Lua@0.0.1" ],
   "environments": [ "Client" ]
 }

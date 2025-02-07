@@ -1,9 +1,7 @@
-﻿using Chorizite.Core.Lua;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Chorizite.Core.Plugins {
-    [LuaModuleNamespace("Chorizite.Core.Plugins")]
     public interface IPluginManager : IDisposable {
         /// <summary>
         /// The absolute path to the directory where plugins are stored.

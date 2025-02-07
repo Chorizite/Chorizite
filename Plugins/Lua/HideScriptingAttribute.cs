@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Chorizite.Core.Lua {
+namespace Lua {
     internal class HideScriptingAttribute : Attribute {
     }
 }

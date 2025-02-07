@@ -11,13 +11,11 @@ using System.Threading.Tasks;
 using Chorizite.Common;
 using System.IO;
 using System.Numerics;
-using Chorizite.Core.Lua;
 
 namespace Chorizite.Core.Backend.Client {
     /// <summary>
     /// Interface for the ac client
     /// </summary>
-    [LuaModuleNamespace("Chorizite.Core.Backend.Client")]
     public interface IClientBackend : IDisposable {
         int GameScreen { get; set; }
         uint SelectedObjectId { get; set; }

@@ -13,7 +13,6 @@
     <OutputPath>..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <DefineConstants>$(DefineConstants);XLUA_GENERAL;THREAD_SAFE</DefineConstants>
     <IsPackable>True</IsPackable>
   </PropertyGroup>
 
@@ -75,17 +74,5 @@
     <PackageReference Include="System.Text.Json" Version="8.0.5" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Lua\LuaScripts\init.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Lua\LuaScripts\xlua\util.lua">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="runtimes\win-x86\native\xlua.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 </Project>

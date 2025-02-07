@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Chorizite.Core;
 using Chorizite.Core.Backend.Client;
 using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
@@ -16,7 +17,7 @@ using System.Threading.Tasks;
 using XLua;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace Chorizite.Core.Lua {
+namespace Lua {
     public partial class LuaContext : LuaEnv {
         private static Regex _luaDocExceptionRe = new Regex("""\[string "([^:]+\.rml):(\d+)"\]:(\d+)""", RegexOptions.Singleline);
         private static List<LuaContext> _contexts = new List<LuaContext>();
@@ -36,6 +37,7 @@ namespace Chorizite.Core.Lua {
             public DateTime Expiration { get; set; }
         }
 
+        private readonly LuaPluginCore _plugin;
         private readonly string _luaScriptsPath;
         private readonly ILogger _log;
         CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -45,10 +47,11 @@ namespace Chorizite.Core.Lua {
         private readonly Dictionary<int, TimeoutEntry> _timeouts = new();
         private List<LuaCoroutine> _luaThreads = new();
 
-        public LuaContext() : base() {
+        internal LuaContext(LuaPluginCore plugin, ILogger log) : base() {
             _contexts.Add(this);
-            _luaScriptsPath = Path.Combine(ChoriziteStatics.AssemblyDirectory, "Lua", "LuaScripts");
-            _log = ChoriziteStatics.MakeLogger("Lua");
+            _plugin = plugin;
+            _luaScriptsPath = Path.Combine(_plugin.AssemblyDirectory, "LuaScripts");
+            _log = log;
 
             AddLoader(BuiltinModuleLoader);
             InitGlobals();
@@ -201,7 +204,7 @@ namespace Chorizite.Core.Lua {
                 return null;
             }
             else if (module is Type moduleType) {
-                return ChoriziteStatics.Scope.Resolve(moduleType);
+                return _plugin.Scope.Resolve(moduleType);
             }
             else if (module is string modulePath) {
                 if (modulePath.ToLower() != "debug") {
@@ -234,7 +237,7 @@ namespace Chorizite.Core.Lua {
                             if (File.Exists(Path.Combine(scriptDir, $"{modulePath}.lua")) ||
                                 (parentDir != null && File.Exists(Path.Combine(parentDir, $"{modulePath}.lua")))) {
 
-                                var choriziteCorePath = Path.Combine(ChoriziteStatics.Config.BaseDirectory, "Lua", "LuaScripts").Replace("\\", "\\\\") + "\\\\?.lua";
+                                var choriziteCorePath = Path.Combine(_luaScriptsPath).Replace("\\", "\\\\") + "\\\\?.lua";
                                 scriptDir = scriptDir.Replace("\\", "\\\\") + "\\\\?.lua";
 
                                 if (parentDir != null) {
@@ -252,21 +255,17 @@ namespace Chorizite.Core.Lua {
                 }
                 if (modulePath.StartsWith("Plugins.") && !modulePath.EndsWith(".lua")) {
                     var lib = modulePath.Substring("Plugins.".Length);
-                    var pluginManager = ChoriziteStatics.Scope.Resolve<IPluginManager>();
+                    var pluginManager = _plugin.Scope.Resolve<IPluginManager>();
                     var plugin = pluginManager?.GetPlugin<IPluginCore>(lib);
                     return plugin;
                 }
 
                 // custom modules, registered with <see cref="IChoriziteBackend.RegisterLuaModule(string, object)" />
-                if (ChoriziteStatics.Backend.LuaModules.TryGetValue(modulePath, out var moduleObj)) {
+                if (_plugin.LuaModules.TryGetValue(modulePath, out var moduleObj)) {
                     return moduleObj;
                 }
 
-                return modulePath switch {
-                    "Backend" => ChoriziteStatics.Backend,
-                    "NetworkParser" => ChoriziteStatics.Scope.Resolve<NetworkParser>(),
-                    _ => _originalRequire.Call(modulePath).FirstOrDefault(),
-                };
+                return _originalRequire.Call(modulePath).FirstOrDefault();
             }
 
             _log.LogWarning($"Unknown module: [{module?.GetType().Name}] {module}");
@@ -341,9 +340,9 @@ namespace Chorizite.Core.Lua {
         private void Print(params object[] args) {
             var message = string.Join(" ", args.Select(a => FormatStackTraces(FormatLuaResult([a])).TrimEnd()));
             _log.LogDebug(message);
-            if (ChoriziteStatics.Backend.Environment == ChoriziteEnvironment.Client) {
+            if (_plugin.Backend.Environment.HasFlag(ChoriziteEnvironment.Client)) {
                 try {
-                    (ChoriziteStatics.Backend as IClientBackend)?.AddChatText(message, ChatType.WorldBroadcast);
+                    (_plugin.Backend as IClientBackend)?.AddChatText(message, ChatType.WorldBroadcast);
                 }
                 catch { }
             }
@@ -368,18 +367,6 @@ namespace Chorizite.Core.Lua {
             _contexts.Remove(this);
             cancellationTokenSource.Cancel();
             cancellationTokenSource.Dispose();
-            /*
-            PreDispose();
-
-            FullGc();
-
-            for (int i = 0; i < 50; i++) {
-                GC();
-                Tick();
-                //System.GC.WaitForPendingFinalizers();
-                System.GC.Collect();
-            }
-            */
 
             //DoString("require('xlua.util').print_func_ref_by_csharp()");
             _originalRequire = null!;

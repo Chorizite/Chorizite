@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\$(TargetFramework)\plugins\PluginManagerUI\</OutputPath>
+    <OutputPath>..\..\bin\$(TargetFramework)\plugins\Lua\</OutputPath>
     <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
@@ -13,20 +13,11 @@
     <DebugType>pdbonly</DebugType>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <DefineConstants>$(DefineConstants);XLUA_GENERAL;THREAD_SAFE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core.UI\Core.UI.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
     <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
-    <ProjectReference Include="..\Lua\Lua.csproj" ExcludeAssets="runtime">
       <Private>False</Private>
       <ExcludeAssets>all</ExcludeAssets>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
@@ -34,20 +25,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RmlUi.Net" Version="1.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="Chorizite.Common" Version="1.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="Autofac" Version="8.2.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="assets\manager.lua">
+    <None Update="LuaScripts\init.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="assets\manager.rml">
+    <None Update="LuaScripts\xlua\util.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="assets\versionutils.lua">
+    <None Update="runtimes\win-x86\native\xlua.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="manifest.json">

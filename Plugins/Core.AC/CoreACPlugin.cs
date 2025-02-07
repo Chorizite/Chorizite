@@ -202,7 +202,6 @@ namespace Core.AC {
             ClientBackend.UIBackend.OnShowRootElement -= ClientBackend_OnShowRootElement;
             ClientBackend.UIBackend.OnHideRootElement -= ClientBackend_OnHideRootElement;
 
-            ChoriziteBackend.UnregisterLuaModule("ac");
             DragDropManager.Dispose();
             CoreUI.Screen = "None";
 

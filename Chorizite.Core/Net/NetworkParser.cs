@@ -1,6 +1,5 @@
 ﻿using Chorizite.ACProtocol;
 using Chorizite.Core.Backend.Client;
-using Chorizite.Core.Lua;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -12,7 +11,6 @@ namespace Chorizite.Core.Net {
     /// <summary>
     /// Network parser
     /// </summary>
-    [LuaModuleNamespace("Chorizite.ACProtocol", "Chorizite.Core.Net")]
     public class NetworkParser : PacketReader, IDisposable {
         private readonly IClientBackend _backend;
 
