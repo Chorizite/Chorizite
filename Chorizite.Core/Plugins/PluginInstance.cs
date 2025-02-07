@@ -142,7 +142,7 @@ namespace Chorizite.Core.Plugins {
         /// Unload the plugin.
         /// </summary>
         /// <returns></returns>
-        public virtual bool Unload() {
+        public virtual bool Unload(bool isReloading) {
             return true;
         }
 
@@ -203,7 +203,7 @@ namespace Chorizite.Core.Plugins {
         #endregion // Event Triggers
 
         public virtual void Dispose() {
-            Unload();
+            Unload(true);
         }
     }
 }

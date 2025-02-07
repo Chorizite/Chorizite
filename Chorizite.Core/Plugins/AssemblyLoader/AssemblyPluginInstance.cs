@@ -21,7 +21,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
     public class AssemblyPluginInstance : PluginInstance<AssemblyPluginManifest> {
         private readonly IPluginManager _manager;
         private readonly FileWatcher _fileWatcher;
-        private readonly Dictionary<string, string> _serializedState = [];
+        private static readonly Dictionary<string, Dictionary<string, string>> _serializedStates = [];
         private IPluginCore? _pluginInstance;
 
         public IPluginCore? PluginInstance => _pluginInstance;
@@ -65,11 +65,11 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
         /// <inheritdoc cref="PluginInstance.Unload()"/>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public override bool Unload() {
-            if (!base.Unload()) return false;
+        public override bool Unload(bool isReloading) {
+            if (!base.Unload(isReloading)) return false;
 
             try {
-                UnloadPluginAssembly();
+                UnloadPluginAssembly(isReloading);
                 return true;
             }
             catch (Exception ex) {
@@ -83,7 +83,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             try {
                 if (IsLoaded) {
                     TriggerOnBeforeReload(this, EventArgs.Empty);
-                    UnloadPluginAssembly();
+                    UnloadPluginAssembly(true);
                 }
 
                 TriggerOnBeforeLoad(this, EventArgs.Empty);
@@ -226,7 +226,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void UnloadPluginAssembly() {
+        private void UnloadPluginAssembly(bool isReloading) {
             if (IsLoaded) {
                 _log?.LogTrace($"Unloading plugin assembly: {Name}");
                 TriggerOnBeforeUnload(this, EventArgs.Empty);
@@ -287,8 +287,8 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName)) {
                 jsonState = File.ReadAllText(fileName);
             }
-            if (string.IsNullOrEmpty(jsonState)) {
-                _serializedState.TryGetValue(serializedName, out jsonState);
+            if (string.IsNullOrEmpty(jsonState) && _serializedStates.TryGetValue(Name, out var serializedState)) {
+                serializedState.TryGetValue(serializedName, out jsonState);
             }
 
             object? serializedObj = null;
@@ -344,8 +344,12 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             }
             else {
                 var stateName = $"{stateType.Namespace}.{stateType.Name}_{type.Name}";
-                if (!_serializedState.TryAdd(stateName, jsonState)) {
-                    _serializedState[stateName] = jsonState;
+                if (!_serializedStates.ContainsKey(Name)) {
+                    _serializedStates.Add(Name, new Dictionary<string, string>());
+                }
+
+                if (!_serializedStates[Name].TryAdd(stateName, jsonState)) {
+                    _serializedStates[Name][stateName] = jsonState;
                 }
             }
         }
@@ -381,7 +385,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
         public override void Dispose() {
             _fileWatcher?.Dispose();
-            UnloadPluginAssembly();
+            UnloadPluginAssembly(true);
             base.Dispose();
         }
     }

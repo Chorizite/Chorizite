@@ -134,7 +134,7 @@ namespace Chorizite.Core.Plugins {
             var pluginsToUnload = _loadedPlugins.Values.ToArray();
             var unloadedPlugins = new List<PluginInstance>();
             foreach (var plugin in pluginsToUnload) {
-                UnloadPluginAndDependents(plugin, ref unloadedPlugins);
+                UnloadPluginAndDependents(plugin, ref unloadedPlugins, isReloading);
             }
 
             for (var i = 0; i < 50; i++) {
@@ -202,14 +202,14 @@ namespace Chorizite.Core.Plugins {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void UnloadPluginAndDependents(PluginInstance plugin, ref List<PluginInstance> unloadedPlugins) {
+        private void UnloadPluginAndDependents(PluginInstance plugin, ref List<PluginInstance> unloadedPlugins, bool isReloading) {
             foreach (var depPlugin in _loadedPlugins.Values.Where(p => p.Manifest.Dependencies.Select(d => d.Split('@').First()).Contains(plugin.Name))) {
                 if (!unloadedPlugins.Contains(depPlugin)) {
-                    UnloadPluginAndDependents(depPlugin, ref unloadedPlugins);
+                    UnloadPluginAndDependents(depPlugin, ref unloadedPlugins, isReloading);
                 }
             }
             unloadedPlugins.Add(plugin);
-            plugin.Unload();
+            plugin.Unload(isReloading);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
