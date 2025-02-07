@@ -4,105 +4,7 @@ local ui = require('Plugins.Core.UI')
 local PluginManagerUI = require('Plugins.PluginManagerUI')
 local PluginManager = require('PluginManager')
 local json = require('json')
-
-
-
-  -- Split version and pre-release parts
-  local function splitVersionParts(v)
-    local version, prerelease = v:match("^([^-]+)%-?(.*)$")
-    return version, prerelease
-end
-
--- Split version numbers into table
-local function parseVersion(v)
-    local nums = {}
-    for num in v:gmatch("%d+") do
-        table.insert(nums, tonumber(num))
-    end
-    return nums
-end
-
--- Compare version numbers
-local function compareNumbers(n1, n2)
-    for i = 1, math.max(#n1, #n2) do
-        local num1 = n1[i] or 0
-        local num2 = n2[i] or 0
-        if num1 ~= num2 then
-            return num1 - num2
-        end
-    end
-    return 0
-end
-local function comparePrerelease(pre1, pre2)
-    -- If one has pre-release and other doesn't, the one without pre-release is greater
-    if pre1 == "" and pre2 ~= "" then return 1 end
-    if pre1 ~= "" and pre2 == "" then return -1 end
-    if pre1 == "" and pre2 == "" then return 0 end
-    
-    -- Split pre-release parts
-    local parts1 = {}
-    local parts2 = {}
-    
-    for part in pre1:gmatch("[^-]+") do
-        table.insert(parts1, part)
-    end
-    
-    for part in pre2:gmatch("[^-]+") do
-        table.insert(parts2, part)
-    end
-    
-    -- Compare each part
-    for i = 1, math.max(#parts1, #parts2) do
-        local p1 = parts1[i] or ""
-        local p2 = parts2[i] or ""
-        
-        -- Try to convert to numbers if possible
-        local n1 = tonumber(p1)
-        local n2 = tonumber(p2)
-        
-        if n1 and n2 then
-            if n1 ~= n2 then
-                return n1 - n2
-            end
-        else
-            if p1 ~= p2 then
-                return p1 < p2 and -1 or 1
-            end
-        end
-    end
-    
-    return #parts1 - #parts2
-end
-
-
---- Compare version strings.
---- Returns -integer if v1 is less than v2.
---- returns 0 if v1 is equal to v2.
---- returns +integer if v1 is greater than v2.
----@param v1 string
----@param v2 string
----@return integer
-local function compareVersions(v1, v2)
-  -- Main comparison logic
-  local version1, prerelease1 = splitVersionParts(v1)
-  local version2, prerelease2 = splitVersionParts(v2)
-  
-  local nums1 = parseVersion(version1)
-  local nums2 = parseVersion(version2)
-  
-  -- First compare version numbers
-  local versionCompare = compareNumbers(nums1, nums2)
-  if versionCompare ~= 0 then
-      return versionCompare
-  end
-  
-  -- If versions are equal, compare pre-release tags
-  return comparePrerelease(prerelease1, prerelease2)
-end
-
-local versionutils = {
-  compare = compareVersions
-}
+local versionutils = require("versionutils")
 
 local state = rx:CreateState({
   isLoading = true,
@@ -119,18 +21,17 @@ local state = rx:CreateState({
 local releases = {}
 local Reload = async(function()
   state.isLoading = true 
-  releases = json.decode(await(PluginManagerUI:GetReleasesJson())) --[[@as ReleaseJson]]
   state.installedPlugins = nil
   state.availablePlugins = nil
+  releases = json.decode(await(PluginManagerUI:GetReleasesJson())) --[[@as ReleaseJson]]
   state.installedPlugins = {}
   state.availablePlugins = {}
   
-  local installedPlugins = {}
-
-  for name,instance in pairs(PluginManager.Plugins) do
-    installedPlugins[name] = true
+  for i,instance in pairs(PluginManager.Plugins) do
+    local name = instance.Name
+    
     local latestVersion = ""
-    if  releases[name] then
+    if releases[name] then
       if state.showBetas and versionutils.compare(instance.Manifest.Version, releases[name].LatestBeta.Version) < 0 then
         latestVersion = releases[name].LatestBeta.Version
       elseif not state.showBetas and versionutils.compare(instance.Manifest.Version, releases[name].Latest.Version) < 0 then
@@ -148,7 +49,7 @@ local Reload = async(function()
   end
 
   for name,plugin in pairs(releases) do
-    if not installedPlugins[name] then
+    if not state.installedPlugins[name] then
       state.availablePlugins[name] = {
         name = name,
         version = state.showBetas and plugin.LatestBeta.Version or plugin.Latest.Version,
@@ -174,6 +75,17 @@ local PluginLineView = function(plugin)
         local jsonResult = await(PluginManagerUI:GetPluginReleasesJson(plugin.name))
         if jsonResult ~= nil then
           state.selectedPluginDetails = json.decode(jsonResult)
+        else
+          state.selectedPluginDetails = {
+            Author = plugin.author,
+            Name = plugin.name,
+            Description = plugin.description,
+            Latest = {
+              Name = plugin.version,
+              Description = plugin.description,
+            },
+            Releases = {}
+          }
         end
         state.isLoadingDetails = false
       end))()
@@ -203,7 +115,7 @@ local PluginsListView = function(title, plugins)
       local res = {}
       if state.isLoading then
         table.insert(res, rx:Div("Loading..."))
-      elseif #plugins == 0 then
+      elseif plugins == nil or #plugins == 0 then
         table.insert(res, rx:Div("None"))
       else
         for name,plugin in pairs(plugins) do
@@ -235,9 +147,7 @@ local PluginDetailsView = function()
               class = "secondary uninstall",
               onclick = function()
                 (async(function()
-                  print("before")
                   await(PluginManagerUI:UninstallPlugin(plugin.Name))
-                  print("after")
                   Reload()
                 end))()
               end
@@ -275,7 +185,6 @@ local PluginDetailsView = function()
               onclick = function()
                 print("click")
                 if state.installedPlugins and state.installedPlugins[plugin.Name] and state.selectedVersion == state.installedPlugins[plugin.Name].version then
-                  print("return early", state.selectedVersion)
                   return
                 else
                   (async(function()
@@ -288,7 +197,6 @@ local PluginDetailsView = function()
                     if release ~= nil then
                       print(plugin.Name, release.DownloadUrl)
                       await(PluginManagerUI:InstallPlugin(plugin.Name, release.DownloadUrl))
-                      --Reload()
                     else
                       print("Could not find release:", state.selectedVersion)
                     end
@@ -332,7 +240,7 @@ local PluginManagerView = function()
         checked = state.showBetas,
         onchange = function(evt)
           state.showBetas = #evt.Params.value > 0 and true or false
-          Reload()
+          Reload();
         end
       }),
       rx:Span("Show Betas"),
@@ -354,13 +262,5 @@ local PluginManagerView = function()
 end
 
 document:Mount(function() return PluginManagerView() end, "#plugin-manager")
-
-PluginManager:OnPluginLoaded('+', function (sender, evt) 
-  Reload()
-end)
-
-PluginManager:OnPluginUnloaded('+', function (sender, evt)
-  Reload()
-end)
 
 Reload()

@@ -9,8 +9,7 @@
       }
 
       body {
-        font-family: Consolas;
-        font-weight: bold;
+        font-family: Tahoma;
       }
 
       .inner {

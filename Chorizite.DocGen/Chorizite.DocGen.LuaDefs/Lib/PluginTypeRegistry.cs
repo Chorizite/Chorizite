@@ -37,7 +37,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
             foreach (var file in Directory.GetFiles(Directory.GetCurrentDirectory(), "*.dll")) {
                 paths.Add(file);
             }
-            foreach (var plugin in Chorizite.Scope.Resolve<IPluginManager>().Plugins.Values) {
+            foreach (var plugin in Chorizite.Scope.Resolve<IPluginManager>().Plugins) {
                 foreach (var file in Directory.GetFiles(plugin.Manifest.BaseDirectory, "*.dll")) {
                     if (!paths.Contains(file)) {
                         paths.Add(file);

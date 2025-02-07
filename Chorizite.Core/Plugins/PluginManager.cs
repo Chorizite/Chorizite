@@ -31,13 +31,15 @@ namespace Chorizite.Core.Plugins {
         public string PluginDirectory => _config.PluginDirectory;
 
         /// <inheritdoc />
-        public IReadOnlyList<PluginInstance> Plugins => [.. _loadedPlugins.Values];
+        public List<PluginInstance> Plugins => [.. _loadedPlugins.Values];
 
         /// <inheritdoc />
-        public IReadOnlyList<IPluginLoader> PluginLoaders => _pluginLoaders;
+        public List<IPluginLoader> PluginLoaders => _pluginLoaders;
 
         /// <inheritdoc />
-        public IReadOnlyList<PluginManifest> PluginManifests => [.. _loadedManifests.Values];
+        public List<PluginManifest> PluginManifests => [.. _loadedManifests.Values];
+
+        public bool WantsReload { get; private set; }
 
         /// <inheritdoc />
         public event EventHandler<EventArgs>? OnPluginsLoaded {
@@ -160,8 +162,13 @@ namespace Chorizite.Core.Plugins {
             _hasPluginsLoaded = false;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
+        /// <inheritdoc />
         public void ReloadPlugins() {
+            WantsReload = true;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private void ReloadPluginsInternal() {
             try {
                 _log.LogDebug("Reloading plugins");
                 LoadPlugins(true);
@@ -172,8 +179,9 @@ namespace Chorizite.Core.Plugins {
         }
 
         private void Render_OnRender2D(object? sender, EventArgs e) {
-            if (Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
-                ReloadPlugins();
+            if (WantsReload || Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
+                WantsReload = false;
+                ReloadPluginsInternal();
             }
         }
 

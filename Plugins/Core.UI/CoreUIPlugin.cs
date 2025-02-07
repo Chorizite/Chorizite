@@ -109,15 +109,10 @@ namespace Core.UI {
             Backend.Input.OnKeyDown += Input_OnKeyDown;
 
             SetScreen(_state.Screen, true);
-
-            //_panel = RegisterPanel("Test", Path.Combine(AssemblyDirectory, "assets", "panels", "Test.rml"));
-            //_panel.OnAfterReload += Panel_OnAfterReload;
-            //MakeReactive();
-            ToggleDebugger();
         }
 
         private void Input_OnKeyDown(object? sender, KeyDownEventArgs e) {
-            if (e.Key == Key.KEY_D && Backend.Input.IsKeyPressed(Key.CONTROL)) {
+            if (e.Key == Key.KEY_D && (Backend.Input.IsKeyPressed(Key.CONTROL) || Backend.Input.IsKeyPressed(Key.LCONTROL) || Backend.Input.IsKeyPressed(Key.RCONTROL))) {
                 e.Eat = true;
                 ToggleDebugger();
             }

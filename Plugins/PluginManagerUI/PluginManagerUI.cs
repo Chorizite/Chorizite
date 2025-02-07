@@ -25,7 +25,7 @@ namespace PluginManagerUI {
             Manager = manager;
         }
 
-        public override void Initialize() {
+        protected override void Initialize() {
             _panel = UI.CreatePanel("PluginManagerUI", Path.Combine(AssemblyDirectory, "assets", "manager.rml"));
             
             if (_panel is not null) {
@@ -40,7 +40,6 @@ namespace PluginManagerUI {
         /// <returns></returns>
         public async Task<string> GetReleasesJson() {
             // download the releases json
-            return File.ReadAllText(@"D:\projects\Chorizite.PluginIndex\site\index.json");
             var releases = await _http.GetStringAsync("https://chorizite.github.io/plugin-index/index.json");
             return releases;
         }
@@ -52,9 +51,6 @@ namespace PluginManagerUI {
         /// <returns>Release json</returns>
         public async Task<string?> GetPluginReleasesJson(string name) {
             try {
-                if (name == "PluginManagerUI") {
-                    return File.ReadAllText(@"D:\projects\Chorizite.PluginIndex\site\plugins\PluginManagerUI.json");
-                }
                 var releases = await _http.GetStringAsync($"https://chorizite.github.io/plugin-index/plugins/{name}.json");
                 return releases;
             }
@@ -65,9 +61,12 @@ namespace PluginManagerUI {
 
         public async Task<bool> UninstallPlugin(string name) {
             try {
-                Manager.UnloadPlugin(name);
-                Directory.Delete(Path.Combine(Manager.PluginDirectory, name), true);
-                return true;
+                if (Directory.Exists(Path.Combine(Manager.PluginDirectory, name))) {
+                    Directory.Delete(Path.Combine(Manager.PluginDirectory, name), true);
+                    Manager.ReloadPlugins();
+                    return true;
+                }
+                return false;
             }
             catch (Exception ex) {
                 Log.LogError(ex, "Failed to uninstall plugin");
@@ -101,9 +100,7 @@ namespace PluginManagerUI {
                     Directory.CreateDirectory(pluginDir);
                 }
                 zip.ExtractToDirectory(pluginDir, true);
-                if (!Manager.Plugins.ContainsKey(name)) {
-                    Manager.LoadPlugin(name);
-                }
+                Manager.ReloadPlugins();
                 return true;
             }
             catch (Exception ex) {

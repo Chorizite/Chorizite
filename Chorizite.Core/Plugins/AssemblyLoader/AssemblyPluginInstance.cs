@@ -37,11 +37,6 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             });
         }
 
-        public override void Initialize() {
-            base.Initialize();
-            PluginInstance?.Initialize();
-        }
-
         public int CountLoadedAssemblies() {
             var count = 0;
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
@@ -216,7 +211,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
             // handle other plugin instances
             if (resolved is null && parameter.ParameterType.IsAssignableTo(typeof(IPluginCore))) {
-                resolved = _manager.Plugins.Values
+                resolved = _manager.Plugins
                     .Where(p => p is AssemblyPluginInstance)
                     .Cast<AssemblyPluginInstance>()
                     .FirstOrDefault(p => p.PluginInstance?.GetType() == parameter.ParameterType)?.PluginInstance;
