@@ -342,7 +342,7 @@ namespace Core.UI {
             Log?.LogDebug($"ShutdownRmlUI");
 
             RmlContext?.Dispose();
-
+            
             if (_didInitRml) {
                 Rml.Shutdown();
             }

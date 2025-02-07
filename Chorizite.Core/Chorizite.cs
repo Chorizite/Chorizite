@@ -192,11 +192,10 @@ namespace Chorizite.Core {
             _pluginManager = Scope.Resolve<IPluginManager>();
 
             _pluginManager.RegisterPluginLoader(Scope.Resolve<AssemblyPluginLoader>());
-            _pluginManager.LoadPluginManifests();
             Backend.RegisterLuaModule("PluginManager", _pluginManager);
 
             if (Config.Environment == ChoriziteEnvironment.Launcher || Config.Environment == ChoriziteEnvironment.Client) {
-                _pluginManager.StartPlugins();
+                _pluginManager.LoadPlugins();
             }
 
             Backend.Renderer.OnRender2D += OnRender2D;
