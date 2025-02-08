@@ -10,6 +10,7 @@
 
       body {
         font-family: Tahoma;
+        width: 600px;
       }
 
       .inner {
@@ -20,9 +21,12 @@
         max-height: 320dp;
         padding: 0 4dp 0 4dp;
         display: flex;
+        height: 400px;
       }
 
       .contents .list, .contents details {
+        overflow-y: auto;
+        width: 300px;
         overflow-y: auto;
       }
 
@@ -30,7 +34,6 @@
         flex: 3;
         padding: 6dp;
         overflow-y: auto;
-        min-width: 290dp;
       }
 
       body input.checkbox {

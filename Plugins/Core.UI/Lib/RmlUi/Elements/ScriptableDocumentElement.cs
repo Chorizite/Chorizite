@@ -168,6 +168,7 @@ namespace Core.UI.Lib.RmlUi.Elements {
                         if (patches != null && patches.Count > 0) {
                             foreach (var patch in patches) {
                                 VirtualDom.Patch(patch);
+                                //_log.LogDebug($"Patched: {patch.Type} {patch.NewNode}");
                             }
                         }
                         mount.CurrentDom = newVDom;
