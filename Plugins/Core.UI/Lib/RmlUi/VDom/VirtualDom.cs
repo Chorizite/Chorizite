@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using XLua;
 using static RmlUiNet.Native.VariableDefinition;
 
 namespace Core.UI.Lib.RmlUi.VDom {
@@ -103,6 +104,7 @@ namespace Core.UI.Lib.RmlUi.VDom {
                    oldProps.Keys.All(k => {
                        if (string.IsNullOrEmpty(k)) return false;
                        if (oldProps[k] is Action<Event> && newProps[k] is Action<Event>) return true;
+                       if (oldProps[k] is LuaFunction && newProps[k] is LuaFunction) return true;
                        if (newProps is null || !newProps.ContainsKey(k)) return false;
 
                        return oldProps[k]?.Equals(newProps[k]) == true;

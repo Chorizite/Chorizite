@@ -126,6 +126,8 @@ namespace Core.UI.Lib {
             _scriptableDoc?.Mount(virtualNode, selector);
         }
 
+        public void Unmount(string selector) => _scriptableDoc?.Unmount(selector);
+
         public MyObservable? Observable(string name = "[anonymous]", MyObservable parent = null) {
             return _scriptableDoc?.Observable(name, parent);
         }

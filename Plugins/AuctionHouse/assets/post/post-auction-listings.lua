@@ -95,13 +95,18 @@ local onSearchChange = utils.debounce(function(evt)
   state.HandleListingsSearch(evt.Params.value)
 end, 1000)
 
+local unknownMessageHandler = function(sender, evt)
+  if OpCodeHandlers[evt.OpCode] then
+    OpCodeHandlers[evt.OpCode](evt)
+  end
+end
+
 local onMount = function()
   request.fetchPostListings("", 1, "name", state.pageNumber, state.pageSize)
-  Net.Messages:OnUnknownMessage('+', function(sender, evt)
-    if OpCodeHandlers[evt.OpCode] then
-      OpCodeHandlers[evt.OpCode](evt)
-    end
-  end)
+  Net.Messages:OnUnknownMessage('+', unknownMessageHandler)
+end
+local onUnmount = function()
+  Net.Messages:OnUnknownMessage('-', unknownMessageHandler)
 end
 
 local AuctionListingsTitle = function(state)
@@ -290,7 +295,8 @@ local AuctionListings = function(state)
   print("RENDERED AUCTION LISTINGS")
   return rx:Div({
     class = "post-auction-listings-container",
-    onMount = function() onMount() end
+    onMount = onMount,
+    onUnmount = onUnmount
   }, {
     AuctionListingsTitle(state),
     AuctionListingsSearch(state),
