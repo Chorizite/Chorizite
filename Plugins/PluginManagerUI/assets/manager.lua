@@ -21,8 +21,6 @@ local state = rx:CreateState({
 local releases = {}
 local Reload = async(function()
   state.isLoading = true 
-  state.installedPlugins = nil
-  state.availablePlugins = nil
   releases = json.decode(await(PluginManagerUI:GetReleasesJson())) --[[@as ReleaseJson]]
   state.installedPlugins = {}
   state.availablePlugins = {}
@@ -148,7 +146,6 @@ local PluginDetailsView = function()
               onclick = function()
                 (async(function()
                   await(PluginManagerUI:UninstallPlugin(plugin.Name))
-                  Reload()
                 end))()
               end
             }, "Uninstall"),
@@ -161,7 +158,6 @@ local PluginDetailsView = function()
               rx:Select({ id = "selected-version"}, {
                 onchange = function(evt)
                   state.selectedVersion = evt.Params.value
-                  print("selected:", state.selectedVersion)
                 end
               }, function()
                 local res = {}

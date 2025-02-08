@@ -328,12 +328,17 @@ local OpCodeHandlers = {
   end
 }
 
+local unknownMessageHandler = function(sender, evt)
+  if OpCodeHandlers[evt.OpCode] then
+    OpCodeHandlers[evt.OpCode](evt)
+  end
+end
+
 local onMount = function()
-  Net.Messages:OnUnknownMessage('+', function(sender, evt)
-    if OpCodeHandlers[evt.OpCode] then
-      OpCodeHandlers[evt.OpCode](evt)
-    end
-  end)
+  Net.Messages:OnUnknownMessage('+', unknownMessageHandler)
+end
+local onUnmount = function()
+  Net.Messages:OnUnknownMessage('-', unknownMessageHandler)
 end
 
 local PostForm = function(state)
@@ -344,7 +349,8 @@ local PostForm = function(state)
       ["has-drag-over"] = state.isDragging and state.allowDragging,
       ["has-drag-over-invalid"] = state.isDragging and not state.allowDragging,
     },
-    onMount = function() onMount() end
+    onMount = onMount,
+    onUnmount = onUnmount
   }, {
     PostFormTitle(state),
     PostFormItemDrop(state),

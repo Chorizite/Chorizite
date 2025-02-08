@@ -1,5 +1,6 @@
 ﻿using Chorizite.Common;
 using Chorizite.Core.Backend;
+using Chorizite.Core.Backend.Client;
 using Chorizite.Core.Lib;
 using Core.UI.Lib.RmlUi.VDom;
 using Cortex.Net;
@@ -147,36 +148,46 @@ namespace Core.UI.Lib.RmlUi.Elements {
             return observable;
         }
 
-        private List<IDisposable> _mounts = [];
+        private List<MountedElement> _mounts = [];
         internal Reaction? _currentReaction;
         internal void Mount(Func<Func<VirtualNode>> virtualNode, string selector) {
             var el = QuerySelector(selector) ?? throw new Exception($"Could not find element with selector '{selector}' to mount to");
             if (virtualNode is null) throw new ArgumentNullException(nameof(virtualNode));
 
-            VirtualNode? currentVDom = null;
+            var mount = new MountedElement(selector);
 
-            _mounts.Add(SharedState.Autorun((r) => {
+            mount.AutoRun = SharedState.Autorun((r) => {
                 try {
-                    var sw = System.Diagnostics.Stopwatch.StartNew();
-                    if (currentVDom is null) {
-                        currentVDom = virtualNode()();
-                        currentVDom.UpdateElement(el.AppendChildTag(currentVDom.Type));
+                    if (mount.CurrentDom is null) {
+                        mount.CurrentDom = virtualNode()();
+                        mount.CurrentDom.UpdateElement(el.AppendChildTag(mount.CurrentDom.Type));
                     }
                     else {
                         var newVDom = virtualNode()();
-                        var patches = VirtualDom.Diff(currentVDom, newVDom);
+                        var patches = VirtualDom.Diff(mount.CurrentDom, newVDom);
                         if (patches != null && patches.Count > 0) {
                             foreach (var patch in patches) {
                                 VirtualDom.Patch(patch);
+                                //_log.LogDebug($"Patched: {patch.Type} {patch.NewNode}");
                             }
                         }
-                        currentVDom = newVDom;
+                        mount.CurrentDom = newVDom;
                     }
                 }
                 catch (Exception e) {
                     CoreUIPlugin.Log.LogError($"Failed to patch ui from state: {LuaContext.FormatDocumentException(e)}");
                 }
-            }));
+            });
+
+            _mounts.Add(mount);
+        }
+
+        internal void Unmount(string selector) {
+            var mount = _mounts.FirstOrDefault(m => m.Selector == selector);
+            if (mount is not null) {
+                mount.Dispose();
+                _mounts.Remove(mount);
+            }
         }
 
         public override void Dispose() {

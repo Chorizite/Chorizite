@@ -233,6 +233,13 @@ namespace Core.UI.Lib.RmlUi.VDom {
 
         public void Dispose() {
             Element?.Dispose();
+            if (Props != null && Props.TryGetValue("onUnmount", out var onUnmount)) {
+                if (onUnmount is Action unmountAction)
+                    unmountAction.Invoke();
+                else if (onUnmount is LuaFunction unmountLuaFunction) {
+                    unmountLuaFunction.Call();
+                }
+            }
             foreach (var child in Children) {
                 child.Dispose();
             }
