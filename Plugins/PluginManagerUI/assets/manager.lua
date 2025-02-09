@@ -18,7 +18,7 @@ local state = rx:CreateState({
 }) --[[@as PluginManagerUIState]]
 
 ---@type ReleaseJson
-local releases = {}
+local releases = { Plugins = {} }
 local Reload = async(function()
   state.isLoading = true 
   releases = json.decode(await(PluginManagerUI:GetReleasesJson())) --[[@as ReleaseJson]]
@@ -29,11 +29,12 @@ local Reload = async(function()
     local name = instance.Name
     
     local latestVersion = ""
-    if releases[name] then
-      if state.showBetas and versionutils.compare(instance.Manifest.Version, releases[name].LatestBeta.Version) < 0 then
-        latestVersion = releases[name].LatestBeta.Version
-      elseif not state.showBetas and versionutils.compare(instance.Manifest.Version, releases[name].Latest.Version) < 0 then
-        latestVersion = releases[name].Latest.Version
+    if releases.Plugins[name] then
+      local latestBeta = releases.Plugins[name].LatestBeta
+      if state.showBetas and latestBeta and versionutils.compare(instance.Manifest.Version, latestBeta.Version) < 0 then
+        latestVersion = latestBeta.Version
+      else
+        latestVersion = releases.Plugins[name].Latest.Version
       end
     end
     state.installedPlugins[name] = {
@@ -46,14 +47,14 @@ local Reload = async(function()
     }
   end
 
-  for name,plugin in pairs(releases) do
+  for name,plugin in pairs(releases.Plugins) do
     if not state.installedPlugins[name] then
       state.availablePlugins[name] = {
         name = name,
-        version = state.showBetas and plugin.LatestBeta.Version or plugin.Latest.Version,
+        version = state.showBetas and plugin.LatestBeta.Version or plugin.Latest.Version or "0.0.0",
         description = plugin.Description,
         author = plugin.Author,
-        isInstalled = true
+        isInstalled = true,
       }
     end
   end
