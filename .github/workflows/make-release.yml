@@ -48,9 +48,7 @@ jobs:
       - name: Build
         run: |
           dotnet restore                        # install packages
-          echo dotnet build -c Release --no-restore --property WarningLevel=0 "-p:PackageReleaseNotes=$(cat release-notes.md 2>/dev/null)"  # build
-
-          dotnet build -c Release --no-restore --property WarningLevel=0 "-p:PackageReleaseNotes=$(cat release-notes.md 2>/dev/null)"  # build
+          dotnet build -c Release --no-restore --property WarningLevel=0 # build
           
       - name: Build installer
         run: |
