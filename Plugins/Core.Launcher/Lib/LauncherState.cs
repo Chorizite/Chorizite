@@ -1,6 +1,4 @@
-﻿using Core.Launcher.UIModels;
-
-namespace Core.Launcher.Lib {
+﻿namespace Launcher.Lib {
     internal class LauncherState {
         public LauncherScreen CurrentScreen { get; set; } = LauncherScreen.Simple;
 

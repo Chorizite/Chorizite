@@ -11,7 +11,7 @@ using Chorizite.Common;
 
 namespace Chorizite.Core.Plugins {
 
-    public class PluginInstance<T> : PluginInstance where T : PluginManifest {
+    public abstract class PluginInstance<T> : PluginInstance where T : PluginManifest {
         public new T Manifest { get; internal set; }
 
         public PluginInstance(T manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
@@ -58,6 +58,11 @@ namespace Chorizite.Core.Plugins {
         /// The plugin manifest.
         /// </summary>
         public PluginManifest Manifest { get; }
+
+        /// <summary>
+        /// The plugin dev manifest.
+        /// </summary>
+        public PluginDevManifest? DevManifest { get; }
 
         /// <summary>
         /// Fired directly before the plugin will be loaded.
@@ -132,6 +137,10 @@ namespace Chorizite.Core.Plugins {
         public PluginInstance(PluginManifest manifest, ILifetimeScope serviceProvider, Action<PluginInstance>? configure = null) {
             _serviceProvider = serviceProvider;
             Manifest = manifest;
+
+            if (PluginDevManifest.TryLoadManifest(Path.Combine(Manifest.BaseDirectory, "manifest.dev.json"), out var devManifest, out string? errors)) {
+                DevManifest = devManifest;
+            }
 
             _log = _serviceProvider.Resolve<ILogger<PluginInstance>>();
             configure?.Invoke(this);

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Core.Launcher.Lib {
+namespace Launcher.Lib {
     /// <summary>
     /// Screen changed
     /// </summary>

@@ -75,7 +75,7 @@
     </style>
     <script type="">
       local rx = require('rx')
-      local ui = require('Plugins.Core.UI')
+      local ui = require('Plugins.RmlUi')
       local PluginManager = require('PluginManager')
 
       local initialPlugins = {}

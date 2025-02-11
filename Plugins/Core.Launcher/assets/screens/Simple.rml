@@ -6,152 +6,53 @@
         font-size: 15px;
         color: #fff;
         display: block;
-        width: 432dp;
-        height: 232dp;
-        display: block;
         background: black;
         width: 800dp;
         height: 600dp;
         z-index: -5000;
       }
 
-      .window {
+      div.wrap {
+        padding: 5dp;
         display: block;
-        decorator: ninepatch(panel, panel-inner);
-        position: absolute;
-        padding: 4px 4px 4px 4px;
-        padding-top: 50px;
+        max-width: 400px;
+        margin: auto;
       }
 
-      .window-inner {
-        background: black;
-        height: 100%;
+      .formline {
+        margin-top: 10px;
+        height: 30px;
       }
 
-      #content {
-        display: block;
+      label {
+        padding-top: 4px;
+        float: left;
       }
 
-      #window-close {
-        width: 24px;
-        height: 25px;
-        position: absolute;
-        bottom: 0px;
-        right: 0px;
-        decorator: image(window-close);
+      input[type="text"], input[type="password"] {
+        decorator: ninepatch(input-bg, input-bg-inner);
+        font-effect: shadow(1px 1px black);
+        color: #f3be5d;
+        width: 280dp;
+        padding: 6px;
+        float: right;
       }
 
-      #window-close:hover {
-        decorator: image(window-close-hover);
-      }
-
-      #window-minimize {
-        width: 24px;
-        height: 25px;
-        position: absolute;
-        bottom: 0px;
-        right: 24px;
-        decorator: image(window-minimize);
-      }
-
-      #window-minimize:hover {
-        decorator: image(window-minimize-hover);
-      }
-
-      #title-bar {
-        position: relative;
-      }
-
-      #title-bar span {
-        margin-top: 1px;
-        display: block;
-        decorator: ninepatch(tab, tab-inner);
+      .actions {
+        margin-top: 20px;
         text-align: center;
-        padding: 4px 8px 4px 8px;
-        display: block;
-        font-effect: shadow(2px 2px black);
-        margin-right: 48px;
       }
 
-    div.wrap {
-      padding: 5dp;
-      display: block;
-    }
-
-    label {
-      display: block;
-      padding: 4dp;
-      clear: both;
-    }
-
-    label span {
-      font-weight: bold;
-      line-height: 28px;
-    }
-
-    input[type="text"], input[type="password"] {
-      decorator: ninepatch(input-bg, input-bg-inner);
-      font-effect: shadow(1px 1px black);
-      color: #f3be5d;
-      width: 280dp;
-      display: inline-block;
-      padding: 6px;
-      float: right;
-    }
-
-    .actions {
-      padding-top: 14px;
-      text-align: center;
-    }
-
-    .actions image {
-      display: block;
-      background-color: red;
-      width: 32px;
-      height: 32px;
-    }
-
-    .actions button {
-        padding: 14px 18px;
-        font-size: 22px;
-        font-weight: bold;
-        display: inline-block;
-    }
+      .actions button {
+          padding: 14px 18px;
+          font-size: 22px;
+          font-weight: bold;
+          display: inline-block;
+      }
     </style>
+    <script src="simple.lua"></script>
   </head>
-  <body data-model="SimpleLoginScreen" class="window">
-    <div class="window-inner">
-      <!--
-      <div id="title-bar">
-        <span id="title">Chorizite</span>
-        <div id="window-minimize" data-event-click="minimize()"></div>
-        <div id="window-close" data-event-click="exit()"></div>
-      </div>
-    -->
-      <div id="content">
-        <div class="wrap">
-          <label>
-            <span>Username:</span>
-            <input type="text" data-value="Username" />
-          </label>
-          <label>
-            <span>Password:</span>
-            <input type="password" data-value="Password" />
-          </label>
-          <label>
-            <span>Server:</span>
-            <input type="text" data-value="Server" />
-          </label>
-          <label>
-            <span>AC Path:</span>
-            <input type="text" data-value="ClientPath" />
-          </label>
-          <div class="actions">
-            <button id="launch-button" data-event-click="launch()">Launch</button>
-            <button id="test-button" data-event-click="test()">test</button>
-          </div>
-        </div>
-      </div>
-    </div>
+  <body class="window">
+    <div id="content" />
   </body>
 </html>

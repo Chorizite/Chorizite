@@ -1,6 +1,4 @@
-﻿using Core.Launcher.Lib;
-using Core.Launcher.UIModels;
-using Core.UI.Lib.Serialization;
+﻿using Launcher.Lib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,11 +6,10 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Core.Launcher {
+namespace Launcher {
     [JsonSourceGenerationOptions(WriteIndented = true, AllowTrailingCommas = true, UseStringEnumConverter = true)]
     [JsonSerializable(typeof(LauncherSettings))]
     [JsonSerializable(typeof(LauncherState))]
-    [JsonSerializable(typeof(SimpleLoginScreenModel))]
     [JsonSerializable(typeof(bool))]
     [JsonSerializable(typeof(byte))]
     [JsonSerializable(typeof(sbyte))]

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -266,6 +267,28 @@ namespace Chorizite.Core.Plugins {
             return false;
         }
 
+        /// <inheritdoc />
+        public bool TryGetPluginFromPath(string path, [NotNullWhen(true)] out PluginInstance? plugin) {
+            if (Path.HasExtension(path) || !File.Exists(path)) {
+                path = Path.GetDirectoryName(path)!;
+            }
+
+            foreach (var p in _loadedPlugins.Values) {
+                if (!string.IsNullOrWhiteSpace(p.DevManifest?.Source) && path.StartsWith(p.DevManifest.Source)) {
+                    plugin = p;
+                    return true;
+                }
+
+                if (!string.IsNullOrWhiteSpace(p.Manifest.BaseDirectory) && path.StartsWith(p.Manifest.BaseDirectory)) {
+                    plugin = p;
+                    return true;
+                }
+            }
+
+            plugin = null;
+            return false;
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool StartPlugin(PluginInstance plugin, ref List<string> startedPlugins) {
             if (plugin.IsLoaded || startedPlugins.Contains(plugin.Name.ToLower())) {
@@ -288,11 +311,8 @@ namespace Chorizite.Core.Plugins {
                     return false;
                 }
 
-                if (new Version(depPlugin.Manifest.Version) < depVersion) {
-                    if (isOptional) continue;
-
-                    _log?.LogError($"Failed to start plugin {plugin.Name}: Dependency {depName} version {depVersion} was less than the loaded version of {depPlugin.Manifest.Version}");
-                    return false;
+                if (new Version(depPlugin.Manifest.Version.Split('-').First()) < depVersion) {
+                    _log?.LogWarning($"Plugin {plugin.Name}: Dependency {depName} version {depVersion} was less than the loaded version of {depPlugin.Manifest.Version}");
                 }
 
                 if (startedPlugins.Contains(depName.ToLower())) {

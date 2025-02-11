@@ -36,7 +36,7 @@ namespace Chorizite.Core.Lib {
             }
 
             try {
-                ChoriziteStatics.Log.LogDebug("FileWatcher created: {0} ({1})", directory, pattern);
+                ChoriziteStatics.Log.LogTrace("FileWatcher created: {0} ({1})", directory, pattern);
             }
             catch { }
 
@@ -54,7 +54,7 @@ namespace Chorizite.Core.Lib {
             _changedAt = DateTime.Now;
 
             try {
-                ChoriziteStatics.Log.LogDebug("FileWatcher changed: {0}", e.FullPath);
+                ChoriziteStatics.Log.LogTrace("FileWatcher changed: {0}", e.FullPath);
             }
             catch { }
             if (!_needsReload) {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Chorizite.Core.Plugins {
     public interface IPluginManager : IDisposable {
@@ -71,12 +72,20 @@ namespace Chorizite.Core.Plugins {
         bool PluginIsLoaded(string name);
 
         /// <summary>
+        /// Try and get a plugin instance from a file path. This only works if the plugin is loaded.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="plugin"></param>
+        /// <returns>Returns true if a plugin was found</returns>
+        bool TryGetPluginFromPath(string path, [NotNullWhen(true)] out PluginInstance? plugin);
+
+        /// <summary>
         /// Try and get an <see cref="IPluginLoader"/> instance for the specified plugin manifest.
         /// </summary>
         /// <param name="manifest">The manifest to use</param>
         /// <param name="loader">The loader found, if any</param>
         /// <returns>Returns true if a loader was found.</returns>
-        bool TryGetPluginLoader(PluginManifest manifest, out IPluginLoader? loader);
+        bool TryGetPluginLoader(PluginManifest manifest, [NotNullWhen(true)] out IPluginLoader? loader);
 
         /// <summary>
         /// Register a plugin loader.

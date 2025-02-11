@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\$(TargetFramework)\plugins\Core.Launcher\</OutputPath>
+    <OutputPath>..\..\bin\$(TargetFramework)\plugins\Launcher\</OutputPath>
     <IntermediateOutputPath>obj\$(TargetFramework)\</IntermediateOutputPath>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
@@ -23,19 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
-    <ProjectReference Include="..\Core.UI\Core.UI.csproj" ExcludeAssets="runtime">
-      <Private>False</Private>
-      <ExcludeAssets>all</ExcludeAssets>
-      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
-    </ProjectReference>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Chorizite.Plugins.Lua" Version="0.0.4" ExcludeAssets="runtime" />
+    <PackageReference Include="Chorizite.Plugins.RmlUi" Version="0.0.1-beta.2" ExcludeAssets="runtime" />
     <PackageReference Include="RmlUi.Net" Version="1.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="Chorizite.Common" Version="1.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="Autofac" Version="8.2.0" ExcludeAssets="runtime" />
@@ -44,6 +33,9 @@
 
   <ItemGroup>
     <None Update="assets\panels\pluginsbar.rml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\screens\simple.lua">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="assets\screens\Simple.rml">
