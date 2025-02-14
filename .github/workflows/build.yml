@@ -17,8 +17,8 @@ jobs:
         with:
           versionSpec: '6.0.x'
       
-      #- name: Install makensis
-      #  run: sudo apt update && sudo apt install -y nsis nsis-pluginapi
+      - name: Install makensis
+        run: sudo apt update && sudo apt install -y nsis nsis-pluginapi
 
       - name: Determine Version
         id: version_step # step id used as reference for output values
@@ -28,7 +28,7 @@ jobs:
         run: |
           dotnet restore                        # install packages
           dotnet build -c Release --no-restore --property WarningLevel=0 Launcher/Chorizite.NativeClientBootstrapper/*.csproj
-          dotnet build -c Release --no-restore --property WarningLevel=0 --runtime win-x86 Chorizite.DocGen/Chorizite.DocGen.LuaDefs/Chorizite.DocGen.LuaDefs.csproj
+          dotnet build -c Release --no-restore --property WarningLevel=0 --runtime win-x86 Chorizite.DocGen/Chorizite.DocGen.LuaDefs/*.csproj
           dotnet build -c Release --no-restore --property WarningLevel=0 --runtime win-x86 Launcher/Launcher/*.csproj
           ls -lah "${{ github.workspace }}/bin/"
           ls -lah "${{ github.workspace }}/bin/net8.0"
