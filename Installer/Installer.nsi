@@ -41,6 +41,8 @@ Section "" CoreSection
 	; Set Section Files and Shortcuts
 	SetOutPath "$INSTDIR\"
 	File "${BUILDPATH}\*.*"
+	File "${BUILDPATH}\Chorizite.DocGen.LuaDefs.exe"
+	File "${BUILDPATH}\Launcher.exe"
 
 	SetOutPath "$INSTDIR\runtimes\win-x86\native"
 	File "${BUILDPATH}\runtimes\win-x86\native\*.*"
