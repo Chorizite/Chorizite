@@ -27,6 +27,7 @@ jobs:
       - name: Build
         run: |
           dotnet restore                        # install packages
+          dotnet build -c Release --no-restore --property WarningLevel=0 Chorizite.Core/*.csproj
           dotnet build -c Release --no-restore --property WarningLevel=0 Launcher/Chorizite.NativeClientBootstrapper/*.csproj
           dotnet build -c Release --no-restore --property WarningLevel=0 --runtime win-x86 Chorizite.DocGen/Chorizite.DocGen.LuaDefs/*.csproj
           dotnet build -c Release --no-restore --property WarningLevel=0 --runtime win-x86 Launcher/Launcher/*.csproj
