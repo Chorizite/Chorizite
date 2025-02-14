@@ -1,9 +1,0 @@
-{
-  "name": "Core.AC.Debugger",
-  "author": "Chorizite",
-  "entryfile": "Core.AC.Debugger.dll",
-  "version": "0.0.1",
-  "description": "Debugger for AC api",
-  "dependencies": [ "Core.DearImGui@0.0.1", "Core.AC@0.0.1" ],
-  "environments": [ "Client" ]
-}

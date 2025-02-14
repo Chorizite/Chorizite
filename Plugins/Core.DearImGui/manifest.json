@@ -1,8 +1,0 @@
-{
-  "name": "Core.DearImGui",
-  "author": "Chorizite",
-  "entryfile": "Core.DearImGui.dll",
-  "version": "0.0.1",
-  "description": "DearImGui",
-  "environments": [ "Client" ]
-}

@@ -1,9 +1,0 @@
-{
-  "name": "Launcher",
-  "author": "Chorizite",
-  "entryfile": "Launcher.dll",
-  "version": "0.0.1",
-  "description": "Launcher interface",
-  "dependencies": [ "RmlUi@0.0.1", "Lua@0.0.1" ],
-  "environments": [ "Launcher" ]
-}

@@ -1,9 +1,0 @@
-{
-  "name": "Core.UI",
-  "entryfile": "Core.UI.dll",
-  "author": "Chorizite",
-  "version": "0.0.1",
-  "description": "RmlUI backend for AC",
-  "dependencies": [ "Core.DatService@0.0.1", "Lua@0.0.1" ],
-  "environments": ["Launcher", "Client"]
-}
