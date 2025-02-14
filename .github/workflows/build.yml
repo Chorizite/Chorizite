@@ -26,10 +26,11 @@ jobs:
 
       - name: Build
         run: |
-          dotnet restore                        # install packages
-          dotnet build -c Release --no-restore --property WarningLevel=0
-          dotnet build -c Release --no-restore --property WarningLevel=0 --runtime win-x86 Chorizite.DocGen/Chorizite.DocGen.LuaDefs/*.csproj
-          dotnet build -c Release --no-restore --property WarningLevel=0 --runtime win-x86 Launcher/Launcher/*.csproj
+          dotnet build -c Release --property WarningLevel=0
+          dotnet build -c Release --property WarningLevel=0 --runtime win-x86 Chorizite.DocGen/Chorizite.DocGen.LuaDefs/*.csproj
+          dotnet build -c Release --property WarningLevel=0 --runtime win-x86 Launcher/Launcher/*.csproj
+          rm "${{ github.workspace }}/bin/net8.0/Launcher"
+          rm "${{ github.workspace }}/bin/net8.0/Chorizite.DocGen.LuaDefs"
           ls -lah "${{ github.workspace }}/bin/"
           ls -lah "${{ github.workspace }}/bin/net8.0"
 

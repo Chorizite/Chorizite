@@ -15,7 +15,6 @@
     <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
     <UpdateAssemblyInfo>false</UpdateAssemblyInfo>
     <UseProjectNamespaceForGitVersionInformation>true</UseProjectNamespaceForGitVersionInformation>
-    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
@@ -68,9 +67,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="RmlUi.Net" Version="1.0.0" />
     <PackageReference Include="NAudio" Version="2.2.1" />
-    <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" />
+    <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" IncludeAssets="all" />
     <PackageReference Include="WaveEngine.Bindings.OpenGL" Version="1.0.4998" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
@@ -82,6 +80,9 @@
 
   <ItemGroup>
     <None Update="Chorizite.Injector.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="runtimes\win-x86\native\SDL2.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
