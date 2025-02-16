@@ -138,7 +138,7 @@ namespace Launcher.Render {
             SDL_GetCurrentDisplayMode(0, out CurrentDisplayMode);
 
             var windowFlags = SDL_WindowFlags.SDL_WINDOW_SHOWN | SDL_WindowFlags.SDL_WINDOW_OPENGL/* | SDL_WindowFlags.SDL_WINDOW_BORDERLESS*/;
-            SDLWindowHandle = SDL_CreateWindow("Launcher", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Width, Height, windowFlags);
+            SDLWindowHandle = SDL_CreateWindow("Chorizite", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, Width, Height, windowFlags);
             if (SDLWindowHandle == nint.Zero) {
                 _log.LogError($"Failed to create window: {SDL_GetError()}");
                 return;
