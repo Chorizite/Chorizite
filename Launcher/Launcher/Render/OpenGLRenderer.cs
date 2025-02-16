@@ -12,6 +12,7 @@ using Chorizite.Common;
 using Chorizite.Common;
 using Launcher.Lib;
 using System.Runtime.InteropServices;
+using SDL2;
 
 namespace Launcher.Render {
     unsafe public class OpenGLRenderer : IRenderInterface {
@@ -96,6 +97,14 @@ namespace Launcher.Render {
 
             ColorShader = new GLSLShader("VertexPositionColor", GetEmbeddedResource("Render.Shaders.VertexPositionColor.vert"), GetEmbeddedResource("Render.Shaders.VertexPositionColor.frag"),  _log, shaderDir);
             TextureShader = new GLSLShader("VertexPositionColorTexture", GetEmbeddedResource("Render.Shaders.VertexPositionColorTexture.vert"), GetEmbeddedResource("Render.Shaders.VertexPositionColorTexture.frag"), _log, shaderDir);
+
+            SetWindowIcon();
+        }
+
+        private void SetWindowIcon() {
+            _icon = LoadPngToSdlSurface(Path.Combine(Program.AssemblyDirectory, "icon.png"));
+
+            SDL_SetWindowIcon(SDLWindowHandle, (nint)_icon);
         }
 
         private string GetEmbeddedResource(string filename) {
@@ -254,6 +263,7 @@ namespace Launcher.Render {
 
         private bool _x = false;
         private Matrix4x4 _transform = Matrix4x4.Identity;
+        private SDL_Surface* _icon;
 
         public void RenderGeometry(IntPtr geometry, Matrix4x4 translation, ITexture? texture) {
             var geom = _geometryBuffers[geometry];
@@ -344,7 +354,66 @@ namespace Launcher.Render {
             _transform = transform;
         }
 
+        public static unsafe SDL.SDL_Surface* LoadPngToSdlSurface(string filePath) {
+            // Load the image using ImageSharp
+            using var image = Image.Load<Rgba32>(filePath);
+
+            // Create a byte array to hold the pixel data
+            byte[] pixels = new byte[image.Width * image.Height * 4];
+
+            // Copy pixel data to the byte array
+            fixed (void* ptr = &pixels[0]) {
+                // Create SDL surface
+                var surface = (SDL.SDL_Surface*)SDL.SDL_CreateRGBSurface(
+                    0,
+                    image.Width,
+                    image.Height,
+                    32,
+                    0x000000FF,  // R mask
+                    0x0000FF00,  // G mask
+                    0x00FF0000,  // B mask
+                    0xFF000000   // A mask
+                );
+
+                if (surface == null) {
+                    throw new Exception($"Failed to create SDL surface: {SDL.SDL_GetError()}");
+                }
+
+                // Lock the surface for pixel access
+                SDL.SDL_LockSurface((nint)surface);
+
+                try {
+                    // Copy pixels from ImageSharp to SDL surface
+                    for (int y = 0; y < image.Height; y++) {
+                        for (int x = 0; x < image.Width; x++) {
+                            Rgba32 pixel = image[x, y];
+                            int offset = (y * image.Width + x) * 4;
+
+                            pixels[offset + 0] = pixel.R;     // Red
+                            pixels[offset + 1] = pixel.G;     // Green
+                            pixels[offset + 2] = pixel.B;     // Blue
+                            pixels[offset + 3] = pixel.A;     // Alpha
+                        }
+                    }
+
+                    // Copy the pixel array to the SDL surface
+                    System.Buffer.MemoryCopy(
+                        ptr,
+                        (void*)surface->pixels,
+                        surface->pitch * surface->h,
+                        pixels.Length
+                    );
+                }
+                finally {
+                    SDL.SDL_UnlockSurface((nint)surface);
+                }
+
+                return surface;
+            }
+        }
+
         public void Dispose() {
+            SDL_FreeSurface((nint)_icon);
             foreach (var texture in _textures) {
                 texture.Dispose();
             }
