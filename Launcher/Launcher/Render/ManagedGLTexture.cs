@@ -37,11 +37,6 @@ namespace Launcher.Render {
         }
 
         /// <inheritdoc/>
-        public ManagedGLTexture(string source, IDatReaderInterface _portalDat) : base(source, _portalDat) {
-
-        }
-
-        /// <inheritdoc/>
         protected ManagedGLTexture(Image bitmap) : base(bitmap) {
 
         }

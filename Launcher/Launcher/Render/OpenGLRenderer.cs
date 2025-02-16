@@ -26,7 +26,6 @@ namespace Launcher.Render {
         private nint SDLGLContext;
         private int _nextGeometryId = 1;
         private readonly ILogger _log;
-        private readonly IDatReaderInterface _datReader;
 
         private struct GeometryBufferRef : IDisposable {
             public readonly uint VAO;
@@ -88,9 +87,8 @@ namespace Launcher.Render {
         }
         private readonly WeakEvent<EventArgs> _OnGraphicsPostReset = new();
 
-        public OpenGLRenderer(ILogger<OpenGLRenderer> log, IDatReaderInterface datReader) {
+        public OpenGLRenderer(ILogger<OpenGLRenderer> log) {
             _log = log;
-            _datReader = datReader;
             SetupSDL();
             SetupOpenGL();
 
@@ -302,16 +300,9 @@ namespace Launcher.Render {
         public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
                 //_log?.LogTrace($"LoadTexture: {source}");
-                ManagedGLTexture texture;
+                var texture = new ManagedGLTexture(source);
 
-                if (_datFileRegex.IsMatch(source)) {
-                    texture = new ManagedGLTexture(source, _datReader);
-                }
-                else {
-                    texture = new ManagedGLTexture(source);
-                }
-
-                if (texture is null) {
+                if (texture.TexturePtr == IntPtr.Zero) {
                     _log?.LogError($"Failed to load texture: {source}");
                     textureDimensions = Vector2.Zero;
                     return default;

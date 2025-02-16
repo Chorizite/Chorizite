@@ -76,14 +76,16 @@ namespace Chorizite.Core {
 
             WeakEvent.Log = ChoriziteStatics.MakeLogger("WeakEvent");
 
-            builder.Register(c => {
+            if (Directory.Exists(Config.DatDirectory)) {
+                builder.Register(c => {
                     var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
                     datReader.Init(Config.DatDirectory);
                     return datReader;
                 })
-                .As<IDatReaderInterface>()
-                .SingleInstance()
-                .IfNotRegistered(typeof(IDatReaderInterface));
+                    .As<IDatReaderInterface>()
+                    .SingleInstance()
+                    .IfNotRegistered(typeof(IDatReaderInterface));
+            }
 
             builder.RegisterInstance(Config)
                 .As<IChoriziteConfig>()
