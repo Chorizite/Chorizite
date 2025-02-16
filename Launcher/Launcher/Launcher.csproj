@@ -16,6 +16,7 @@
     <UpdateAssemblyInfo>false</UpdateAssemblyInfo>
     <UseProjectNamespaceForGitVersionInformation>true</UseProjectNamespaceForGitVersionInformation>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <ApplicationIcon>chorizite.ico</ApplicationIcon>
   </PropertyGroup>
 
   <Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
@@ -80,6 +81,9 @@
 
   <ItemGroup>
     <None Update="Chorizite.Injector.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="runtimes\win-x86\native\SDL2.dll">

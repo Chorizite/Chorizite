@@ -14,6 +14,7 @@ using Chorizite.Core.Backend.Launcher;
 namespace Launcher.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
         private readonly ILogger _log;
+        private readonly IContainer _container;
         private readonly AudioPlaybackEngine _engine;
         private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
 
@@ -27,8 +28,6 @@ namespace Launcher.Lib {
 
         /// <inheritdoc/>
         public override IInputManager Input { get; }
-        /// <inheritdoc/>
-        public IDatReaderInterface DatReader { get; }
 
         /// <summary>
         /// The <see cref="SDLInputManager"/> used by this backend
@@ -53,19 +52,19 @@ namespace Launcher.Lib {
         public override ChoriziteEnvironment Environment => ChoriziteEnvironment.Launcher;
 
         public static IChoriziteBackend Create(IContainer container) {
-            var renderer = new OpenGLRenderer(container.Resolve<ILogger<OpenGLRenderer>>(), container.Resolve<IDatReaderInterface>());
+            var renderer = new OpenGLRenderer(container.Resolve<ILogger<OpenGLRenderer>>());
             var input = new SDLInputManager(container.Resolve<ILogger<SDLInputManager>>());
 
-            return new LauncherChoriziteBackend(renderer, input, container.Resolve<IDatReaderInterface>(), container.Resolve<ILogger<LauncherChoriziteBackend>>());
+            return new LauncherChoriziteBackend(renderer, input, container);
         }
 
-        private LauncherChoriziteBackend(OpenGLRenderer renderer, SDLInputManager input, IDatReaderInterface datReader, ILogger log) {
+        private LauncherChoriziteBackend(OpenGLRenderer renderer, SDLInputManager input, IContainer container) {
             GLRenderer = renderer;
             Renderer = renderer;
             SDLInput = input;
             Input = input;
-            DatReader = datReader;
-            _log = log;
+            _log = container.Resolve<ILogger<LauncherChoriziteBackend>>();
+            _container = container;
         }
 
         public void SetWindowSize(int width, int height) {
@@ -89,7 +88,8 @@ namespace Launcher.Lib {
 
         public override void PlaySound(uint soundId) {
             try {
-                if (DatReader.TryGet<Wave>(soundId, out var sound)) {
+                var reader = _container.Resolve<IDatReaderInterface>();
+                if (reader?.TryGet<Wave>(soundId, out var sound) == true) {
                     var stream = new MemoryStream();
                     using var binaryWriter = new BinaryWriter(stream, System.Text.Encoding.Default, true);
 
@@ -128,6 +128,9 @@ namespace Launcher.Lib {
                     }
 
                     _engine.PlaySound(stream);
+                }
+                else if (reader is null) {
+                    _log.LogWarning($"No IDatReaderInterface found, could not play sound {soundId:X8}");
                 }
                 else {
                     _log.LogDebug($"Sound {soundId:X8} not found");

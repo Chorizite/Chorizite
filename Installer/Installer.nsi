@@ -15,7 +15,7 @@ Name "${APPNAME} ${VERSION}"
 InstallDir "C:\Games\Chorizite"
 InstallDirRegKey HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" ""
 ;SetFont "Verdana" 8
-Icon ".\..\chorizite.ico"
+Icon ".\..\Launcher\Launcher\chorizite.ico"
 OutFile ".\..\bin\${APPNAME}-Installer-${VERSION}.exe"
 !define HttpWebRequestURL "https://chorizite.github.io/plugin-index/index.json"
 
