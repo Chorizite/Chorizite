@@ -23,6 +23,7 @@ namespace Chorizite.Core.Plugins {
         public string Version { get; set; } = "";
         public string Description { get; set; } = "";
         public string Repo { get; set; } = "";
+        public string Icon { get; set; } = "";
         public List<string> Dependencies { get; set; } = [];
         [JsonConverter(typeof(ChoriziteEnvironmentJsonConverter))]
         public ChoriziteEnvironment Environments { get; set; }
