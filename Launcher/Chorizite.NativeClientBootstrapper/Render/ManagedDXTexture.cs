@@ -64,7 +64,6 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             if (Bitmap != null) {
                 // Create the texture
                 Texture = new Texture(DX9RenderInterface.D3Ddevice, Width, Height, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
-
                 // Lock the texture to get access to the data
                 DataRectangle dataRectangle = Texture.LockRectangle(0, LockFlags.None);
 

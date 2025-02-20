@@ -203,6 +203,7 @@ namespace Launcher.Render {
             GL.glStencilMask(0xFFFFFFFF);
             GL.glStencilOp(StencilOp.Keep, StencilOp.Keep, StencilOp.Keep);
             GL.glDisable(EnableCap.DepthTest);
+            GL.glEnable(EnableCap.Multisample);
 
             ColorShader.SetUniform("xProjection", Matrix4x4.CreateOrthographicOffCenter(0, Width, Height, 0, -10000, 10000));
             TextureShader.SetUniform("xProjection", Matrix4x4.CreateOrthographicOffCenter(0, Width, Height, 0, -10000, 10000));

@@ -124,9 +124,6 @@ namespace Chorizite.NativeClientBootstrapper.Render {
                 D3Ddevice.SetRenderState(RenderState.DestinationBlendAlpha, Blend.Zero);
                 D3Ddevice.SetRenderState(RenderState.BlendOperationAlpha, BlendOperation.Add);
 
-                D3Ddevice.SetTextureStageState(0, TextureStage.ColorOperation, TextureOperation.Modulate);
-                D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg1, TextureArgument.Texture);
-                D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg2, TextureArgument.Diffuse);
                 D3Ddevice.SetTextureStageState(0, TextureStage.AlphaOperation, TextureOperation.Add);
                 D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg1, TextureArgument.Texture);
                 D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg2, TextureArgument.Diffuse);
