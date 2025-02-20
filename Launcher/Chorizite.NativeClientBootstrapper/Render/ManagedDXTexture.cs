@@ -56,7 +56,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
 
         }
 
-        protected override unsafe void CreateTexture() {
+        protected override unsafe void CreateTexture(bool premultiplyAlpha) {
             // Avoid creating a new texture and losing reference to the old one.
             if (Texture != null)
                 return;
@@ -78,10 +78,18 @@ namespace Chorizite.NativeClientBootstrapper.Render {
                     byte b = pixelData[i + 2];
                     byte a = pixelData[i + 3];
 
-                    pixelData[i] = b;
-                    pixelData[i + 1] = g;
-                    pixelData[i + 2] = r;
-                    pixelData[i + 3] = a;
+                    if (premultiplyAlpha) {
+                        pixelData[i] = (byte)(b * a / 255);
+                        pixelData[i + 1] = (byte)(g * a / 255);
+                        pixelData[i + 2] = (byte)(r * a / 255);
+                        pixelData[i + 3] = a;
+                    }
+                    else {
+                        pixelData[i] = b;
+                        pixelData[i + 1] = g;
+                        pixelData[i + 2] = r;
+                        pixelData[i + 3] = a;
+                    }
                 }
 
                 // Copy the swapped pixel data into the texture

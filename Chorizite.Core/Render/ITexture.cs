@@ -20,5 +20,10 @@ namespace Chorizite.Core.Render {
         /// The pointer to the texture
         /// </summary>
         IntPtr TexturePtr { get; }
+
+        /// <summary>
+        /// Whether the texture uses premultiplied alpha
+        /// </summary>
+        public bool PreMultipliedAlpha { get; }
     }
 }

@@ -195,9 +195,9 @@ namespace Launcher.Render {
             GL.glEnable(EnableCap.Blend);
             GL.glDisable(EnableCap.ScissorTest);
             GL.glDisable(EnableCap.CullFace);
-            GL.glBlendEquation(BlendEquationModeEXT.FuncAdd);
+            //GL.glBlendEquation(BlendEquationModeEXT.FuncAdd);
             GL.glBlendFunc(BlendingFactor.One, BlendingFactor.OneMinusSrcAlpha);
-            GL.glBlendFuncSeparate(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha, BlendingFactor.One, (BlendingFactor)0);
+            //GL.glBlendFuncSeparate(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha, BlendingFactor.One, (BlendingFactor)0);
             GL.glEnable(EnableCap.StencilTest);
             GL.glStencilFunc(StencilFunction.Always, 1, 0xFFFFFFFF);
             GL.glStencilMask(0xFFFFFFFF);

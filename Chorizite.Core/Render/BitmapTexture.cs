@@ -34,6 +34,9 @@ namespace Chorizite.Core.Render {
         /// <inheritdoc/>
         public abstract int Height { get; }
 
+        /// <inheritdoc/>
+        public bool PreMultipliedAlpha { get; set; }
+
         public BitmapTexture() {
 
         }
@@ -45,7 +48,8 @@ namespace Chorizite.Core.Render {
                     Bitmap[x, y] = Color.FromRgba(source[(y * width + x) * 4], source[(y * width + x) * 4 + 1], source[(y * width + x) * 4 + 2], source[(y * width + x) * 4 + 3]);
                 }
             }
-            CreateTexture();
+            CreateTexture(false);
+            PreMultipliedAlpha = false;
         }
 
         /// <summary>
@@ -56,13 +60,13 @@ namespace Chorizite.Core.Render {
             if (!System.IO.File.Exists(file)) {
                 ChoriziteStatics.Log.LogError($"Could not find texture file: {file}");
                 Bitmap = GetTextureMissing();
-                CreateTexture();
             }
             else {
                 using var img = Image.Load(file);
                 Bitmap = img.CloneAs<Rgba32>();
             }
-            CreateTexture();
+            CreateTexture(true);
+            PreMultipliedAlpha = true;
         }
 
         /// <summary>
@@ -72,7 +76,8 @@ namespace Chorizite.Core.Render {
         /// <param name="bitmap">The bitmap source for the texture.</param>
         protected BitmapTexture(Image bitmap) : base() {
             Bitmap = bitmap.CloneAs<Rgba32>();
-            CreateTexture();
+            CreateTexture(true);
+            PreMultipliedAlpha = true;
         }
 
         /// <summary>
@@ -88,7 +93,7 @@ namespace Chorizite.Core.Render {
 
             if (file?.Format == PixelFormat.PFID_CUSTOM_RAW_JPEG) {
                 Bitmap = baseBmp;
-                CreateTexture();
+                CreateTexture(false);
                 return;
             }
 
@@ -108,7 +113,7 @@ namespace Chorizite.Core.Render {
                 bmp2.Mutate(x => x.DrawImage(baseBmp, 1));
                 baseBmp.Dispose();
                 Bitmap = bmp2;
-                CreateTexture();
+                CreateTexture(true);
             }
             else {
                 var bmp = new Image<Rgba32>(baseBmp.Width, baseBmp.Height);
@@ -169,8 +174,9 @@ namespace Chorizite.Core.Render {
                 baseBmp.Dispose();
 
                 Bitmap = bmp;
-                CreateTexture();
+                CreateTexture(true);
             }
+            PreMultipliedAlpha = true;
         }
 
         private static Image<Rgba32> GetTextureMissing() {
@@ -277,7 +283,7 @@ namespace Chorizite.Core.Render {
             return image;
         }
 
-        protected abstract void CreateTexture();
+        protected abstract void CreateTexture(bool premultiplyAlpha);
         protected abstract void ReleaseTexture();
 
         /// <summary>
