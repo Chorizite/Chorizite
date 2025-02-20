@@ -184,86 +184,12 @@ namespace Launcher.Lib {
             */
         }
 
-        [DllImport("user32.dll")]
-        static extern IntPtr SetClipboardData(uint uFormat, IntPtr hMem);
-
-        [DllImport("user32.dll")]
-        static extern bool OpenClipboard(IntPtr hWndNewOwner);
-
-        [DllImport("user32.dll")]
-        static extern bool EmptyClipboard();
-
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern bool CloseClipboard();
-
-        [DllImport("user32.dll")]
-        static extern IntPtr GetClipboardData(uint uFormat);
-
-        [DllImport("user32.dll")]
-        static extern bool IsClipboardFormatAvailable(uint format);
-
-        [DllImport("kernel32.dll")]
-        static extern IntPtr GlobalLock(IntPtr hMem);
-        [DllImport("kernel32.dll")]
-        static extern bool GlobalUnlock(IntPtr hMem);
-
-        const uint CF_UNICODETEXT = 13;
-        const uint CF_TEXT = 1;
-
         public static void SetClipboardText(string text) {
-            string nullTerminatedStr = text + "\0";
-            byte[] strBytes = Encoding.Unicode.GetBytes(nullTerminatedStr);
-            IntPtr hglobal = Marshal.AllocHGlobal(strBytes.Length);
-            Marshal.Copy(strBytes, 0, hglobal, strBytes.Length);
-            OpenClipboard(IntPtr.Zero);
-            EmptyClipboard();
-            SetClipboardData(CF_UNICODETEXT, hglobal);
-            CloseClipboard();
-            Marshal.FreeHGlobal(hglobal);
+            SDL2.SDL.SDL_SetClipboardText(text);
         }
 
         public static string? GetClipboardText() {
-            if (IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-                return GetUnicodeClipboardText();
-            }
-            if (IsClipboardFormatAvailable(CF_TEXT)) {
-                return GetANSIClipboardText();
-            }
-            return null;
-        }
-
-        private static string? GetANSIClipboardText() {
-            if (!OpenClipboard(IntPtr.Zero))
-                return null;
-
-            string data = null;
-            var hGlobal = GetClipboardData(CF_TEXT);
-            if (hGlobal != IntPtr.Zero) {
-                var lpwcstr = GlobalLock(hGlobal);
-                if (lpwcstr != IntPtr.Zero) {
-                    data = Marshal.PtrToStringAnsi(lpwcstr);
-                    GlobalUnlock(lpwcstr);
-                }
-            }
-            CloseClipboard();
-            return data;
-        }
-
-        private static string? GetUnicodeClipboardText() {
-            if (!OpenClipboard(IntPtr.Zero))
-                return null;
-
-            string data = null;
-            var hGlobal = GetClipboardData(CF_UNICODETEXT);
-            if (hGlobal != IntPtr.Zero) {
-                var lpwcstr = GlobalLock(hGlobal);
-                if (lpwcstr != IntPtr.Zero) {
-                    data = Marshal.PtrToStringUni(lpwcstr);
-                    GlobalUnlock(lpwcstr);
-                }
-            }
-            CloseClipboard();
-            return data;
+            return SDL2.SDL.SDL_GetClipboardText();
         }
     }
 }

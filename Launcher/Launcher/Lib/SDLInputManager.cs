@@ -259,12 +259,12 @@ namespace Launcher.Lib {
                 case SDL_Keycode.SDLK_KP_MINUS: return Key.SUBTRACT;
                 case SDL_Keycode.SDLK_KP_DIVIDE: return Key.DIVIDE;
                 case SDL_Keycode.SDLK_KP_MULTIPLY: return Key.MULTIPLY;
-                case SDL_Keycode.SDLK_LCTRL: return Key.LCONTROL;
-                case SDL_Keycode.SDLK_RCTRL: return Key.RCONTROL;
-                case SDL_Keycode.SDLK_LSHIFT: return Key.LSHIFT;
-                case SDL_Keycode.SDLK_RSHIFT: return Key.RSHIFT;
-                case SDL_Keycode.SDLK_LALT: return Key.LMENU;
-                case SDL_Keycode.SDLK_RALT: return Key.RMENU;
+                case SDL_Keycode.SDLK_LCTRL: return Key.CONTROL;
+                case SDL_Keycode.SDLK_RCTRL: return Key.CONTROL;
+                case SDL_Keycode.SDLK_LSHIFT: return Key.SHIFT;
+                case SDL_Keycode.SDLK_RSHIFT: return Key.SHIFT;
+                case SDL_Keycode.SDLK_LALT: return Key.MENU;
+                case SDL_Keycode.SDLK_RALT: return Key.MENU;
                 case SDL_Keycode.SDLK_LGUI: return Key.LWIN;
                 case SDL_Keycode.SDLK_RGUI: return Key.RWIN;
                 default: return (Key)0; // Handle default case if no match is found
