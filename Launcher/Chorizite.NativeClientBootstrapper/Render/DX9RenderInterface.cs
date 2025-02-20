@@ -117,16 +117,17 @@ namespace Chorizite.NativeClientBootstrapper.Render {
                 D3Ddevice.SetRenderState(RenderState.MultisampleAntialias, true);
 
                 D3Ddevice.SetRenderState(RenderState.AlphaBlendEnable, true);
+                D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.BlendFactor);
+                D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.Zero);
                 D3Ddevice.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
-                D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.SourceAlpha);
-                D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
-                D3Ddevice.SetRenderState(RenderState.SourceBlendAlpha, Blend.One);
+                D3Ddevice.SetRenderState(RenderState.SourceBlendAlpha, Blend.BlendFactor);
                 D3Ddevice.SetRenderState(RenderState.DestinationBlendAlpha, Blend.Zero);
+                D3Ddevice.SetRenderState(RenderState.BlendOperationAlpha, BlendOperation.Add);
 
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorOperation, TextureOperation.Modulate);
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg1, TextureArgument.Texture);
                 D3Ddevice.SetTextureStageState(0, TextureStage.ColorArg2, TextureArgument.Diffuse);
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaOperation, TextureOperation.Modulate);
+                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaOperation, TextureOperation.Add);
                 D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg1, TextureArgument.Texture);
                 D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg2, TextureArgument.Diffuse);
 
@@ -196,6 +197,17 @@ namespace Chorizite.NativeClientBootstrapper.Render {
                 if (texture is ManagedDXTexture dxTexture && dxTexture is not null) {
                     D3Ddevice.SetTexture(0, dxTexture.Texture);
                     BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColorTexture");
+
+                    if (dxTexture.PreMultipliedAlpha) {
+                        D3Ddevice.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
+                        D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.SourceAlpha);
+                        D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
+                    }
+                    else {
+                        D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.BlendFactor);
+                        D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.Zero);
+                        D3Ddevice.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
+                    }
                 }
                 else {
                     D3Ddevice.SetTexture(0, null);

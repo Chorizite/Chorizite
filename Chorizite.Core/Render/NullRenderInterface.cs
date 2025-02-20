@@ -15,6 +15,8 @@ namespace Chorizite.Core.Render {
 
             public int Height => 0;
 
+            public bool PreMultipliedAlpha => true;
+
             public NullTexture(uint textureId) {
                 TexturePtr = (IntPtr)textureId;
             }

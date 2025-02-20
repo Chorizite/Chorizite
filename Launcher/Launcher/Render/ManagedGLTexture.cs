@@ -41,7 +41,7 @@ namespace Launcher.Render {
 
         }
 
-        protected override unsafe void CreateTexture() {
+        protected override unsafe void CreateTexture(bool premultiplyAlpha) {
             if (Bitmap != null) {
                 uint texture = 0;
                 GL.glGenTextures(1, &texture);
@@ -51,6 +51,15 @@ namespace Launcher.Render {
                 // Get the pixel data from the ImageSharp bitmap
                 byte[] pixelData = new byte[Bitmap.Width * Bitmap.Height * 4];
                 Bitmap.CopyPixelDataTo(pixelData);
+
+                // pre-multiply alpha
+                if (premultiplyAlpha) {
+                    for (int i = 0; i < pixelData.Length; i += 4) {
+                        pixelData[i] = (byte)(pixelData[i] * pixelData[i + 3] / 255f);
+                        pixelData[i + 1] = (byte)(pixelData[i + 1] * pixelData[i + 3] / 255f);
+                        pixelData[i + 2] = (byte)(pixelData[i + 2] * pixelData[i + 3] / 255f);
+                    }
+                }
 
                 fixed (byte* data = &pixelData[0]) {
                     GL.glTexImage2D(TextureTarget.Texture2d, 0, 0x8058, Bitmap.Width, Bitmap.Height, 0, PixelFormat.Rgba, (PixelType)0x1401, data);
