@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using DatReaderWriter.DBObjs;
+using Autofac;
 
 namespace Chorizite.Core.Render {
     public abstract class BitmapTexture : ITexture {
@@ -57,16 +58,21 @@ namespace Chorizite.Core.Render {
         /// </summary>
         /// <param name="file">The bitmap file path for the texture.</param>
         public BitmapTexture(string file) : base() {
-            if (!System.IO.File.Exists(file)) {
+            if (file.StartsWith("dat://")) {
+                MakeSourceTexture(file);
+            }
+            else if (!System.IO.File.Exists(file)) {
                 ChoriziteStatics.Log.LogError($"Could not find texture file: {file}");
                 Bitmap = GetTextureMissing();
+                CreateTexture(true);
+                PreMultipliedAlpha = true;
             }
             else {
                 using var img = Image.Load(file);
                 Bitmap = img.CloneAs<Rgba32>();
+                CreateTexture(true);
+                PreMultipliedAlpha = true;
             }
-            CreateTexture(true);
-            PreMultipliedAlpha = true;
         }
 
         /// <summary>
@@ -86,6 +92,11 @@ namespace Chorizite.Core.Render {
         /// <param name="source"></param>
         /// <param name="_portalDat"></param>
         public BitmapTexture(string source, IDatReaderInterface _portalDat) {
+            MakeSourceTexture(source);
+        }
+
+        private void MakeSourceTexture(string source) {
+            var _portalDat = ChoriziteStatics.Scope.Resolve<IDatReaderInterface>();
             var uri = new Uri(source);
             uint id = ParseDatId(uri.Host);
             using var img = GetIconBitmap(id, _portalDat, out var file);
