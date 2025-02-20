@@ -16,6 +16,7 @@ using Chorizite.Core.Net;
 using Chorizite.Core.Render;
 using Chorizite.Core.Input;
 using Chorizite.Core.Dats;
+using Chorizite.Core.Plugins;
 
 namespace Chorizite.DocGen.LuaDefs {
     internal class LuaDefsGenerator {
@@ -83,6 +84,7 @@ namespace Chorizite.DocGen.LuaDefs {
             GenerateModuledefs("NetworkParser", typeof(NetworkParser));
             GenerateModuledefs("ClientBackend", typeof(IClientBackend));
             GenerateModuledefs("LauncherBackend", typeof(ILauncherBackend));
+            GenerateModuledefs("PluginManager", typeof(IPluginManager));
             GenerateModuledefs("Backend", typeof(Chorizite.Core.Backend.IChoriziteBackend));
         }
 
