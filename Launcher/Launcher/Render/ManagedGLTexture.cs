@@ -64,9 +64,9 @@ namespace Launcher.Render {
                 fixed (byte* data = &pixelData[0]) {
                     GL.glTexImage2D(TextureTarget.Texture2d, 0, 0x8058, Bitmap.Width, Bitmap.Height, 0, PixelFormat.Rgba, (PixelType)0x1401, data);
                 }
+                GL.glTexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMinFilter, (int)TextureMinFilter.LinearMipmapNearest);
+                GL.glTexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
 
-                GL.glTexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMinFilter, 0x2601);
-                GL.glTexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureMagFilter, 0x2601);
 
                 GL.glTexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureWrapS, (int)TextureWrapMode.Repeat);
                 GL.glTexParameteri(TextureTarget.Texture2d, TextureParameterName.TextureWrapT, (int)TextureWrapMode.Repeat);

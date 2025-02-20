@@ -2,8 +2,7 @@
 
 precision highp float;
 precision highp int;
-precision lowp sampler2D;
-precision lowp samplerCube;
+precision highp sampler2D;
 
 out vec4 finalColor;
 in vec2 fragTexCoord;
