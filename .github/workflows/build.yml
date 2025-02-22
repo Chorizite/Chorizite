@@ -47,8 +47,10 @@ jobs:
           path: "${{ github.workspace }}/bin/Chorizite-Installer-${{ env.GitVersion_FullSemVer }}.exe"
 
       - name: Push NuGet Package
-        if: ${{ env.CI_NUGET_API_KEY != '' }}
+        env: 
+          nuget_api_key: ${{ secrets.CI_NUGET_API_KEY }}
+        if: ${{ env.nuget_api_key != '' }}
         run: |
-          dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ secrets.CI_NUGET_API_KEY }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-          dotnet nuget push "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg" --api-key ${{ secrets.CI_NUGET_API_KEY }} --source "github"
+          dotnet nuget add source --username ${{ github.repository_owner }} --password ${{ env.nuget_api_key }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          dotnet nuget push "${{ github.workspace }}/bin/Chorizite.Core.${{ env.GitVersion_FullSemVer }}.nupkg" --api-key ${{ env.nuget_api_key }} --source "github"
       
