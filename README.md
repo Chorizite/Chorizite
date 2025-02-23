@@ -33,7 +33,7 @@ Chorizite serves as a plugin framework for *Asheron's Call*, allowing developers
 
 1. Install [Dependencies](#dependencies)
 2. Clone repository: `git clone git@github.com:Chorizite/Chorizite.git`
-3. Build `Release` in visual studio / `dotnet restore && dotnet build -c Release`
+3. Build `Release` in visual studio
 4. Run installer at bin/Chorizite-Installer*. Make sure you change the installation directory to the bin/net8.0/ directory you just built to (only needs to be done once)
 
 ## Contributing
