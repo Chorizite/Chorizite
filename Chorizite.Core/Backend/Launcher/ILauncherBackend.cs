@@ -11,5 +11,6 @@ namespace Chorizite.Core.Backend.Launcher {
         void Exit();
         void LaunchClient(string clientPath, string server, string username, string password);
         void Minimize();
+        string GetDefaultClientPath();
     }
 }

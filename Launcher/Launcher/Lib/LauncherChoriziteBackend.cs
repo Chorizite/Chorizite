@@ -10,6 +10,7 @@ using DatReaderWriter.DBObjs;
 using NAudio.Wave;
 using Chorizite.Core;
 using Chorizite.Core.Backend.Launcher;
+using Microsoft.Win32;
 
 namespace Launcher.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
@@ -195,6 +196,27 @@ namespace Launcher.Lib {
 
         public void Dispose() {
             
+        }
+
+        public string GetDefaultClientPath() {
+            var defaultPath = "C:\\Turbine\\Asheron's Call\\acclient.exe";
+            try {
+                RegistryKey sk1 = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{F0EE55BA-193D-4670-90C0-76E0E25F3A08}");
+                if (sk1 == null) {
+                    return defaultPath;
+                }
+                string acInstallPath = (string)sk1.GetValue("InstallLocation", "");
+                if (!string.IsNullOrWhiteSpace(acInstallPath)) {
+                    var path = Path.Combine(acInstallPath, "acclient.exe");
+                    if (File.Exists(path)) {
+                        return path;
+                    }
+                }
+            }
+            catch (Exception ex) {
+                _log.LogWarning(ex, "Failed to get default client path");
+            }
+            return defaultPath;
         }
     }
 }
