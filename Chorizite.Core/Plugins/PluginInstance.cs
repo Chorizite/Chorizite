@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Chorizite.Common;
+using Chorizite.Core.Lib;
 
 namespace Chorizite.Core.Plugins {
 
@@ -34,6 +35,8 @@ namespace Chorizite.Core.Plugins {
         protected ILifetimeScope _serviceProvider;
         protected ILogger _log;
 
+        protected FileWatcher FileWatcher;
+
         /// <summary>
         /// The name of this plugin. Can be overriden with the configure callback during instantiation.
         /// </summary>
@@ -53,6 +56,11 @@ namespace Chorizite.Core.Plugins {
         /// Wether the plugin wants to be reloaded. It is up to the PluginManager to reload it and all dependent plugins.
         /// </summary>
         public bool WantsReload { get; protected set; }
+
+        /// <summary>
+        /// The plugin instance.
+        /// </summary>
+        public abstract object? Instance { get; }
 
         /// <summary>
         /// The plugin manifest.
@@ -142,6 +150,10 @@ namespace Chorizite.Core.Plugins {
                 DevManifest = devManifest;
             }
 
+            FileWatcher = new FileWatcher(Manifest.BaseDirectory, Manifest.EntryFile, (file) => {
+                WantsReload = true;
+            });
+
             _log = _serviceProvider.Resolve<ILogger<PluginInstance>>();
             configure?.Invoke(this);
         }
@@ -223,6 +235,7 @@ namespace Chorizite.Core.Plugins {
 
         public virtual void Dispose() {
             Unload(true);
+            FileWatcher?.Dispose();
         }
 
         internal abstract void UpdateManifest();

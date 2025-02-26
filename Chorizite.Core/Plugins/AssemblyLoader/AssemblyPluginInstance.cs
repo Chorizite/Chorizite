@@ -20,7 +20,6 @@ using System.Threading.Tasks;
 namespace Chorizite.Core.Plugins.AssemblyLoader {
     public class AssemblyPluginInstance : PluginInstance<AssemblyPluginManifest> {
         private readonly IPluginManager _manager;
-        private readonly FileWatcher _fileWatcher;
         private static readonly Dictionary<string, Dictionary<string, string>> _serializedStates = [];
         private IPluginCore? _pluginInstance;
 
@@ -28,13 +27,11 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
         public AssemblyPluginLoadContext LoadContext { get; private set; }
 
+        public override object? Instance => _pluginInstance;
+
         public AssemblyPluginInstance(IPluginManager manager, AssemblyPluginManifest manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             _serviceProvider = serviceProvider;
             _manager = manager;
-
-            _fileWatcher = new FileWatcher(Path.GetDirectoryName(Manifest.ManifestFile)!, Manifest.EntryFile, (file) => {
-                WantsReload = true;
-            });
         }
 
         /// <inheritdoc cref="PluginInstance.Load()"/>
@@ -77,7 +74,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
                 TriggerOnBeforeLoad(this, EventArgs.Empty);
 
-                var dllFile = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
+                var dllFile = Path.Combine(Manifest.BaseDirectory, Manifest.EntryFile);
                 LoadContext = new AssemblyPluginLoadContext(dllFile, _manager, _log);
 
                 InitPlugin();
@@ -93,7 +90,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void InitPlugin() {
-            var dllFile = Path.Combine(Path.GetDirectoryName(Manifest.ManifestFile), Manifest.EntryFile);
+            var dllFile = Path.Combine(Manifest.BaseDirectory, Manifest.EntryFile);
             var pdbFile = Path.ChangeExtension(dllFile, ".pdb");
             using var dllStream = File.OpenRead(dllFile);
             Assembly? loaded;
@@ -239,11 +236,6 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 LoadContext.Dispose();
                 LoadContext = null!;
 
-                for (int i = 0; (i < 50); i++) {
-                    GC.Collect();
-                    //GC.WaitForPendingFinalizers();
-                }
-
                 IsLoaded = false;
                 TriggerOnUnload(this, EventArgs.Empty);
             }
@@ -384,7 +376,6 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         }
 
         public override void Dispose() {
-            _fileWatcher?.Dispose();
             UnloadPluginAssembly(true);
             base.Dispose();
         }

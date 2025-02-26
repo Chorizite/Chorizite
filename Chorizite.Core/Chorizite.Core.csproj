@@ -17,6 +17,8 @@
   </PropertyGroup>
 
   <Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
+    <Message Text="Delete $(NuGetPackageRoot)$(PackageId)" Importance="high" />
+    <RemoveDir Directories="$(NuGetPackageRoot)$(PackageId)" />
     <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Version" />
       <Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />

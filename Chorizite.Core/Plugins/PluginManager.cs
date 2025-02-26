@@ -76,18 +76,10 @@ namespace Chorizite.Core.Plugins {
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public T? GetPlugin<T>(string name) where T : IPluginCore {
+        public PluginInstance? GetPlugin(string name) {
             var plugin = _loadedPlugins.Values.Where(p => p.Name.ToLower() == name.ToLower()).FirstOrDefault();
-            if (plugin is null) {
-                return default;
-            }
 
-            var loader = _pluginLoaders.Where(l => l.CanLoadPlugin(plugin.Manifest)).FirstOrDefault();
-            if (loader is null) {
-                return default;
-            }
-
-            return (T?)loader.GetPluginInterface(plugin);
+            return plugin;
         }
 
         /// <inheritdoc />
@@ -101,26 +93,10 @@ namespace Chorizite.Core.Plugins {
 
             _log.LogDebug($"Found {_loadedManifests.Count} plugin manifests: {string.Join(", ", _loadedManifests.Values.Select(m => $"{m.Name}({m.Version})"))}");
 
-            foreach (var manifest in _loadedManifests.Values) {
-                if (manifest.Environments.HasFlag(_config.Environment) || _config.Environment == ChoriziteEnvironment.DocGen) {
-                    if (TryGetPluginLoader(manifest, out IPluginLoader? loader)) {
-                        if (loader?.LoadPluginInstance(manifest, out var plugin) == true && plugin is not null) {
-                            _loadedPlugins.Add(plugin.Manifest.EntryFile, plugin);
-                        }
-                        else {
-                            _log?.LogError($"Failed to load plugin {manifest.Name}");
-                        }
-                    }
-                    else {
-                        _log?.LogError($"Failed to find plugin loader for {manifest.Name}");
-                    }
-                }
-            }
-
-            var plugins = _loadedPlugins.Values.ToArray();
+            var plugins = _loadedManifests.Values.ToArray();
             var startedPlugins = new List<string>();
 
-            _log?.LogDebug($"Starting all plugins: {string.Join(", ", plugins.Select(p => $"{p.Name}({p.Manifest.Version})"))}");
+            _log?.LogDebug($"Starting all plugins: {string.Join(", ", plugins.Select(p => $"{p.Name}({p.Version})"))}");
 
             foreach (var plugin in plugins) {
                 StartPlugin(plugin, ref startedPlugins);
@@ -128,6 +104,75 @@ namespace Chorizite.Core.Plugins {
 
             _hasPluginsLoaded = true;
             _OnPluginsLoaded.Invoke(this, EventArgs.Empty);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool StartPlugin(PluginManifest manifest, ref List<string> startedPlugins) {
+            if (_loadedPlugins.ContainsKey(manifest.EntryFile) || startedPlugins.Contains(manifest.Name.ToLower())) {
+                return true;
+            }
+
+
+            if (!(manifest.Environments.HasFlag(_config.Environment) || _config.Environment == ChoriziteEnvironment.DocGen)) {
+                return false;
+            }
+
+            _log?.LogTrace($"Starting plugin: {manifest.Name}");
+
+            foreach (var dep in manifest.Dependencies) {
+                var parts = dep.Split('@');
+                var depName = parts[0];
+                var depVersion = parts.Length > 1 ? new Version(parts[1].TrimEnd('?')) : new Version(0, 0, 0);
+                var isOptional = parts.Length > 1 ? parts[1].EndsWith("?") : false;
+
+                var depPlugin = _loadedManifests.Values.Where(p => p.Name.ToLower() == depName.ToLower()).FirstOrDefault();
+
+                if (depPlugin is null) {
+                    if (isOptional) continue;
+
+                    _log?.LogError($"Failed to start plugin {manifest.Name}: Dependency {depName} not found");
+                    return false;
+                }
+
+                if (new Version(manifest.Version.Split('-').First()) < depVersion) {
+                    _log?.LogWarning($"Plugin {manifest.Name}: Dependency {depName} version {depVersion} was less than the loaded version of {depPlugin.Version}");
+                }
+
+                if (startedPlugins.Contains(depName.ToLower())) {
+                    continue;
+                }
+
+                if (!StartPlugin(depPlugin, ref startedPlugins)) {
+                    if (isOptional) continue;
+
+                    _log?.LogError($"Failed to start plugin {manifest.Name}: Dependency {depName} failed to start");
+                    return false;
+                }
+            }
+
+            if (TryGetPluginLoader(manifest, out IPluginLoader? loader)) {
+                if (loader?.LoadPluginInstance(manifest, out var plugin) == true && plugin is not null) {
+                    _loadedPlugins.Add(manifest.EntryFile, plugin);
+                    startedPlugins.Add(plugin.Name.ToLower());
+
+                    if (!plugin.Load()) {
+                        _log?.LogError($"Failed to load plugin: {plugin.Name} v{plugin.Manifest.Version}");
+                        _loadedPlugins.Remove(plugin.Manifest.EntryFile);
+                        return false;
+                    }
+
+                    _log?.LogTrace($"Started plugin: {plugin.Name}");
+                    return true;
+                }
+                else {
+                    _log?.LogError($"Failed to load plugin {manifest.Name}");
+                }
+            }
+            else {
+                _log?.LogError($"Failed to find plugin loader for {manifest.Name}");
+            }
+
+            return true;
         }
 
         /// <inheritdoc />
@@ -143,7 +188,7 @@ namespace Chorizite.Core.Plugins {
                 UnloadPluginAndDependents(plugin, ref unloadedPlugins, isReloading);
             }
 
-            for (var i = 0; i < 20; i++) {
+            for (var i = 0; i < 50; i++) {
                 GC.Collect();
                 GC.WaitForPendingFinalizers();
             }
@@ -287,54 +332,6 @@ namespace Chorizite.Core.Plugins {
 
             plugin = null;
             return false;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private bool StartPlugin(PluginInstance plugin, ref List<string> startedPlugins) {
-            if (plugin.IsLoaded || startedPlugins.Contains(plugin.Name.ToLower())) {
-                return true;
-            }
-            _log?.LogTrace($"Starting plugin: {plugin.Name}");
-
-            foreach (var dep in plugin.Manifest.Dependencies) {
-                var parts = dep.Split('@');
-                var depName = parts[0];
-                var depVersion = parts.Length > 1 ? new Version(parts[1].TrimEnd('?')) : new Version(0, 0, 0);
-                var isOptional = parts.Length > 1 ? parts[1].EndsWith("?") : false;
-
-                var depPlugin = _loadedPlugins.Values.Where(p => p.Name.ToLower() == depName.ToLower()).FirstOrDefault();
-
-                if (depPlugin is null) {
-                    if (isOptional) continue;
-
-                    _log?.LogError($"Failed to start plugin {plugin.Name}: Dependency {depName} not found");
-                    return false;
-                }
-
-                if (new Version(depPlugin.Manifest.Version.Split('-').First()) < depVersion) {
-                    _log?.LogWarning($"Plugin {plugin.Name}: Dependency {depName} version {depVersion} was less than the loaded version of {depPlugin.Manifest.Version}");
-                }
-
-                if (startedPlugins.Contains(depName.ToLower())) {
-                    continue;
-                }
-
-                if (!StartPlugin(depPlugin, ref startedPlugins)) {
-                    if (isOptional) continue;
-
-                    _log?.LogError($"Failed to start plugin {plugin.Name}: Dependency {depName} failed to start");
-                    return false;
-                }
-            }
-            if (!plugin.Load()) {
-                _log?.LogError($"Failed to load plugin: {plugin.Name} v{plugin.Manifest.Version}");
-                _loadedPlugins.Remove(plugin.Manifest.EntryFile);
-            }
-
-            _log?.LogTrace($"Started plugin: {plugin.Name}");
-            startedPlugins.Add(plugin.Name.ToLower());
-
-            return true;
         }
 
         public void Dispose() {

@@ -41,14 +41,5 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             instance = null;
             return false;
         }
-
-        /// <inheritdoc cref="IPluginLoader.GetPluginInterface(PluginInstance)"/>
-        public IPluginCore? GetPluginInterface(PluginInstance plugin) {
-            if (plugin is AssemblyPluginInstance instance) {
-                return instance.PluginInstance;
-            }
-
-            return null;
-        }
     }
 }
