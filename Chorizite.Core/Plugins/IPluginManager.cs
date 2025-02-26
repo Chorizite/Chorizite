@@ -59,10 +59,9 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Get a plugin by name.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="name"></param>
         /// <returns></returns>
-        T? GetPlugin<T>(string name) where T : IPluginCore;
+        PluginInstance? GetPlugin(string name);
 
         /// <summary>
         /// Check if a plugin is loaded.
