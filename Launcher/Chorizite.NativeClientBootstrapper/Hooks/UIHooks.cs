@@ -102,7 +102,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                 var eventArgs = BuildDragDropEventArgs(false, element, itemId, spellId, flags);
 
                 if (eventArgs is not null) {
-                    StandaloneLoader.Backend.ACUIBackend.HandleGameObjectDragStart(eventArgs);
+                    StandaloneLoader.Backend?.ACUIBackend?.HandleGameObjectDragStart(eventArgs);
 
                     if (eventArgs.Eat) {
                         return 0;
@@ -281,7 +281,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                     physicsObj->weenie_obj->InqIconID(&iconId);
                 }
                 var eventArgs = new ShowTooltipEventArgs(strInfo->m_LiteralValue.ToString(), objectId, iconId);
-                StandaloneLoader.Backend.ACUIBackend.HandleShowTooltip(eventArgs);
+                StandaloneLoader.Backend?.ACUIBackend?.HandleShowTooltip(eventArgs);
 
                 _showingTooltip = true;
 
@@ -327,7 +327,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                 var eventArgs = BuildDragDropEventArgs(false, info->element, itemId, spellId, flags);
 
                 if (eventArgs is not null) {
-                    StandaloneLoader.Backend.ACUIBackend.HandleGameObjectDragEnd(eventArgs);
+                    StandaloneLoader.Backend?.ACUIBackend?.HandleGameObjectDragEnd(eventArgs);
 
                     if (eventArgs.Eat) {
                         return 0;
@@ -344,7 +344,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         private static int ACCWeenieObject_SetSelectedObject_Impl(uint objectId, int reselect) {
             try {
                 var eventArgs = new ObjectSelectedEventArgs(objectId);
-                StandaloneLoader.Backend.HandleObjectSelected(eventArgs);
+                StandaloneLoader.Backend?.HandleObjectSelected(eventArgs);
 
                 if (!eventArgs.Eat) {
                     return Hook_ACCWeenieObject_SetSelectedObject!.OriginalFunction(objectId, reselect);
@@ -364,7 +364,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                     ToggleElementVisibleEventArgs args;
                     if (shown == 1) {
                         args = new ToggleElementVisibleEventArgs(elId, true);
-                        StandaloneLoader.Backend.ACUIBackend.HandleShowRootElement(args);
+                        StandaloneLoader.Backend?.ACUIBackend?.HandleShowRootElement(args);
                         if (args.Eat) {
                             Hook_UIElement_SetVisible!.OriginalFunction(thisPtr, 0);
                             return 0;
@@ -372,7 +372,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                     }
                     else {
                         args = new ToggleElementVisibleEventArgs(elId, false);
-                        StandaloneLoader.Backend.ACUIBackend.HandleHideTooltip(args);
+                        StandaloneLoader.Backend?.ACUIBackend?.HandleHideTooltip(args);
                     }
                     if (args.Eat) {
                         return 0;
@@ -384,7 +384,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static void gmFloatyIndicatorsUI_UpdateLockedStatus_Impl(IntPtr thisPtr) {
-            StandaloneLoader.Backend.ACUIBackend.HandleLockUI(new UILockedEventArgs(StandaloneLoader.Backend.ACUIBackend.IsUILocked));
+            StandaloneLoader.Backend?.ACUIBackend?.HandleLockUI(new UILockedEventArgs(StandaloneLoader.Backend.ACUIBackend.IsUILocked));
             Hook_gmFloatyIndicatorsUI_UpdateLockedStatus!.OriginalFunction(thisPtr);
         }
     }

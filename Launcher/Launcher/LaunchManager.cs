@@ -26,13 +26,22 @@ namespace LauncherApp {
                 var clientArgs = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
 
                 var choriziteDll = Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, "Chorizite.Injector.dll");
+                var decalDll = DecalHelpers.GetDecalLocation();
 
-                EntryPointParameters[] dllsToInject = [
-                    new EntryPointParameters(choriziteDll, "Bootstrap"),
-                    //new EntryPointParameters(DecalHelpers.GetDecalLocation(), "Startup")
-                ];
+                List<EntryPointParameters> dllsToInject = [];
 
-                LaunchClientWithInjected(clientPath, clientArgs, dllsToInject);
+                if (File.Exists(choriziteDll)) {
+                    dllsToInject.Add(new EntryPointParameters(choriziteDll, "Bootstrap"));
+                }
+                else {
+                    _log.LogError($"Failed to find Chorizite.Injector.dll at {choriziteDll}");
+                }
+
+                if (File.Exists(decalDll)) {
+                    //dllsToInject.Add(new EntryPointParameters(decalDll, "DecalStartup"));
+                }
+
+                LaunchClientWithInjected(clientPath, clientArgs, dllsToInject.ToArray());
             });
         }
 

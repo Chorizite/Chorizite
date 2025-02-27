@@ -1,4 +1,5 @@
-﻿using Chorizite.NativeClientBootstrapper.Input;
+﻿using AcClient;
+using Chorizite.NativeClientBootstrapper.Input;
 using Chorizite.NativeClientBootstrapper.Lib;
 using Microsoft.Extensions.Logging;
 using Reloaded.Hooks;
@@ -12,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using DeviceType = SharpDX.Direct3D9.DeviceType;
 
 namespace Chorizite.NativeClientBootstrapper.Hooks {
     internal unsafe class DirectXHooks : HookBase {
@@ -19,6 +21,8 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         private static IHook<EndScene> _endSceneHook;
         private static IHook<CreateDevice> _createDeviceHook;
         private static IHook<WndProc> _windowProcHook;
+        private static IHook<RenderDeviceD3D_EndScene> _renderDeviceD3D_EndSceneHook;
+        private static IHook<RenderDeviceD3D_OnDeviceDisplayModeChange> _renderDeviceD3D_OnDeviceDisplayModeChangeHook;
 
         private static IVirtualFunctionTable Direct3D9VTable { get; set; }
         private static IVirtualFunctionTable DeviceVTable { get; set; }
@@ -43,23 +47,65 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         [Function(CallingConventions.Stdcall)]
         private unsafe delegate int Reset(IntPtr a, PresentParameters* b);
 
+        [FunctionHookOptions(PreferRelativeJump = true)]
+        [Function(CallingConventions.MicrosoftThiscall)]
+        private delegate void RenderDeviceD3D_EndScene(IntPtr a);
+
+        [Function(CallingConventions.MicrosoftThiscall)]
+        private delegate void RenderDeviceD3D_OnDeviceDisplayModeChange(IntPtr a);
+
+        private static bool _didInit = false;
+        private static uint _count = 0;
+
         public static int Init(IntPtr a, int b) {
-            using var direct3D = new Direct3D();
-            using var device = new Device(direct3D, 0, DeviceType.Hardware, IntPtr.Zero, CreateFlags.HardwareVertexProcessing, GetParameters(direct3D, 0));
-
-            Direct3D9VTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(direct3D.NativePointer, Enum.GetNames(typeof(IDirect3D9)).Length);
-            DeviceVTable = ReloadedHooks.Instance.VirtualFunctionTableFromObject(device.NativePointer, Enum.GetNames(typeof(IDirect3DDevice9)).Length);
-
-            var createDevicePtr = (int)Direct3D9VTable[(int)IDirect3D9.CreateDevice].FunctionPointer;
-            _createDeviceHook = CreateHook<CreateDevice>(typeof(DirectXHooks), nameof(CreateDeviceImpl), createDevicePtr);
-
-            var endScenePtr = (int)DeviceVTable[(int)IDirect3DDevice9.EndScene].FunctionPointer;
-            _endSceneHook = CreateHook<EndScene>(typeof(DirectXHooks), nameof(EndSceneImpl), endScenePtr);
-
-            var resetPtr = (int)DeviceVTable[(int)IDirect3DDevice9.Reset].FunctionPointer;
-            _resetHook = CreateHook<Reset>(typeof(DirectXHooks), nameof(ResetImpl), resetPtr);
+            //SmartBox::Draw
+            _renderDeviceD3D_EndSceneHook = CreateHook<RenderDeviceD3D_EndScene>(typeof(DirectXHooks), nameof(RenderDeviceD3D_EndSceneImpl), 0x005A0E10);
+            _renderDeviceD3D_OnDeviceDisplayModeChangeHook = CreateHook<RenderDeviceD3D_OnDeviceDisplayModeChange>(typeof(DirectXHooks), nameof(RenderDeviceD3D_OnDeviceDisplayModeChangeImpl), 0x005A2BA0);
 
             return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
+        private unsafe static void RenderDeviceD3D_OnDeviceDisplayModeChangeImpl(IntPtr a) {
+            try {
+                _count = 0;
+                if (_didInit) {
+                    StandaloneLoader.Render.TriggerGraphicsPreReset(StandaloneLoader.Render, EventArgs.Empty);
+                    _renderDeviceD3D_OnDeviceDisplayModeChangeHook.OriginalFunction.Invoke(a);
+                    StandaloneLoader.Render.TriggerGraphicsPostReset(StandaloneLoader.Render, EventArgs.Empty);
+                }
+                else {
+                    _renderDeviceD3D_OnDeviceDisplayModeChangeHook.OriginalFunction.Invoke(a);
+                }
+
+                //10930704
+                StandaloneLoader.Log.LogDebug($"RenderDeviceD3D_OnDeviceDisplayModeChange: {*(int*)(a + 1128 /* :) TODO: fix RenderDeviceD3D */):X8} vs {(int)_unmanagedD3DPtr:X8}");
+
+                if (!_didInit) {
+                    _didInit = true;
+                    var windowProc = (int)Native.GetWindowLong(HWND, Native.GWL.GWL_WNDPROC);
+                    _windowProcHook = CreateHook<WndProc>(typeof(DirectXHooks), nameof(WndProcImpl), windowProc);
+
+                    _unmanagedD3DPtr = *(int*)(a + 1128 /* :) TODO: fix RenderDeviceD3D */);
+                    D3Ddevice = new Device(_unmanagedD3DPtr);
+
+                    StandaloneLoader.Log.LogWarning($"Created device 0x{_unmanagedD3DPtr:X8} for window {HWND}");
+
+                    StandaloneLoader.Startup(_unmanagedD3DPtr);
+                }
+            }
+            catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to reset graphics"); }
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
+        private unsafe static void RenderDeviceD3D_EndSceneImpl(IntPtr a) {
+            if (_count > 60) {
+                StandaloneLoader.Render?.Render2D();
+            }
+            else {
+                _count++;
+            }
+            _renderDeviceD3D_EndSceneHook.OriginalFunction.Invoke(a);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
@@ -75,6 +121,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static IntPtr EndSceneImpl(IntPtr a) {
+            var res = _endSceneHook.OriginalFunction.Invoke(a);
             try {
                 if (a != _unmanagedD3DPtr) {
                     _unmanagedD3DPtr = (int)a;
@@ -86,17 +133,19 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
             catch (Exception ex) {
                 StandaloneLoader.Log.LogError(ex, $"EndScene Error: {ex.Message}");
             }
-            return _endSceneHook.OriginalFunction.Invoke(a);
+            return res;
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private unsafe static IntPtr CreateDeviceImpl(IntPtr a, uint b, DeviceType c, IntPtr hwnd, CreateFlags e, IntPtr f, IntPtr d3dPtr) {
+            var windowProc = (int)Native.GetWindowLong(hwnd, Native.GWL.GWL_WNDPROC);
+            _windowProcHook = CreateHook<WndProc>(typeof(DirectXHooks), nameof(WndProcImpl), windowProc);
+
             var devicePtr = _createDeviceHook.OriginalFunction.Invoke(a, b, c, hwnd, e, f, d3dPtr);
             _unmanagedD3DPtr = *(int*)d3dPtr;
             D3Ddevice = new Device(_unmanagedD3DPtr);
 
-            var windowProc = (int)Native.GetWindowLong(hwnd, Native.GWL.GWL_WNDPROC);
-            _windowProcHook = CreateHook<WndProc>(typeof(DirectXHooks), nameof(WndProcImpl), windowProc);
+            StandaloneLoader.Log.LogWarning($"Created device 0x{_unmanagedD3DPtr:X8} for window {hwnd}");
 
             StandaloneLoader.Startup(_unmanagedD3DPtr);
 

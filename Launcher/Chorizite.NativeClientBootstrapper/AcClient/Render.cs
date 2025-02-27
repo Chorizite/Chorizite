@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chorizite.NativeClientBootstrapper.Lib;
+using System;
 
 namespace AcClient {
     public unsafe struct Render {
@@ -407,6 +408,102 @@ namespace AcClient {
         public UInt32 nRefreshRate;
         public override string ToString() => $"nWidth:{nWidth:X8}, nHeight:{nHeight:X8}, Format(PixelFormatID):{Format}, nRefreshRate:{nRefreshRate:X8}";
     }
+
+    public unsafe struct _D3DVSHADERCAPS2_0 {
+        public int Caps;
+        public int DynamicFlowControlDepth;
+        public int NumTemps;
+        public int StaticFlowControlDepth;
+    };
+
+    public unsafe struct _D3DCAPS9 {
+        public uint DeviceType;
+        public uint AdapterOrdinal;
+        public int Caps;
+        public int Caps2;
+        public int Caps3;
+        public int PresentationIntervals;
+        public int CursorCaps;
+        public int DevCaps;
+        public int PrimitiveMiscCaps;
+        public int RasterCaps;
+        public int ZCmpCaps;
+        public int SrcBlendCaps;
+        public int DestBlendCaps;
+        public int AlphaCmpCaps;
+        public int ShadeCaps;
+        public int TextureCaps;
+        public int TextureFilterCaps;
+        public int CubeTextureFilterCaps;
+        public int VolumeTextureFilterCaps;
+        public int TextureAddressCaps;
+        public int VolumeTextureAddressCaps;
+        public int LineCaps;
+        public int MaxTextureWidth;
+        public int MaxTextureHeight;
+        public int MaxVolumeExtent;
+        public int MaxTextureRepeat;
+        public int MaxTextureAspectRatio;
+        public int MaxAnisotropy;
+        public float MaxVertexW;
+        public float GuardBandLeft;
+        public float GuardBandTop;
+        public float GuardBandRight;
+        public float GuardBandBottom;
+        public float ExtentsAdjust;
+        public int StencilCaps;
+        public int FVFCaps;
+        public int TextureOpCaps;
+        public int MaxTextureBlendStages;
+        public int MaxSimultaneousTextures;
+        public int VertexProcessingCaps;
+        public int MaxActiveLights;
+        public int MaxUserClipPlanes;
+        public int MaxVertexBlendMatrices;
+        public int MaxVertexBlendMatrixIndex;
+        public float MaxPointSize;
+        public int MaxPrimitiveCount;
+        public int MaxVertexIndex;
+        public int MaxStreams;
+        public int MaxStreamStride;
+        public int VertexShaderVersion;
+        public int MaxVertexShaderConst;
+        public int PixelShaderVersion;
+        public float PixelShader1xMaxValue;
+        public int DevCaps2;
+        public float MaxNpatchTessellationLevel;
+        public int Reserved5;
+        public uint MasterAdapterOrdinal;
+        public uint AdapterOrdinalInGroup;
+        public uint NumberOfAdaptersInGroup;
+        public int DeclTypes;
+        public int NumSimultaneousRTs;
+        public int StretchRectFilterCaps;
+        public _D3DVSHADERCAPS2_0 VS20Caps;
+        public _D3DVSHADERCAPS2_0 PS20Caps;
+        public int VertexTextureFilterCaps;
+        public int MaxVShaderInstructionsExecuted;
+        public int MaxPShaderInstructionsExecuted;
+        public int MaxPShaderInstructionsExecuted2;
+    }
+
+    public unsafe struct RenderDeviceD3D {
+        public RenderDevice RenderDevice;
+        public uint m_AdapterID;
+        public uint m_D3DDeviceType;
+        public _D3DCAPS9 m_D3DCaps;
+        public tagRECT m_PresentSourceRect;
+        public tagRECT m_PresentDestRect;
+        public HWND__* m_hPresentWindow;
+        public uint m_nFrontBufferWidth;
+        public uint m_nFrontBufferHeight;
+        public IDirect3DDevice9* m_pDirect3DDevice;
+
+        public override string ToString() {
+            return $"RendeRdevice: {RenderDevice.ToString()} m_AdapterID={m_AdapterID} m_D3DDeviceType={m_D3DDeviceType} m_D3DCaps={m_D3DCaps} m_PresentSourceRect={m_PresentSourceRect.ToString()} m_PresentDestRect={m_PresentDestRect.ToString()} m_hPresentWindow={(int)m_hPresentWindow:X8} m_nFrontBufferWidth={m_nFrontBufferWidth} m_nFrontBufferHeight={m_nFrontBufferHeight} m_pDirect3DDevice={(int)m_pDirect3DDevice:X8}";
+        }
+    }
+
     public unsafe struct RenderDevice {
         // Struct:
         public RenderDevice.Vtbl* vfptr;
@@ -453,7 +550,7 @@ namespace AcClient {
             public SmartArray<RenderLight> FFLightSources;
             public Byte ChangedFFLightSources;
             public RGBAColor FrameBufferBloomRGBAmount;
-            public fixed int PixelFilterTexCoords[15];
+            public fixed int PixelFilterTexCoords[15 * 4];
             public Vector4 BSVLightOriginAndExtrusionOffset;
             public Single FrameBufferViewportOffsetX;
             public Single FrameBufferViewportOffsetY;
