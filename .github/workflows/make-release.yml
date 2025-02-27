@@ -50,7 +50,7 @@ jobs:
           dotnet restore                        # install packages
           dotnet build -c Release --property WarningLevel=0
           dotnet build -c Release --property WarningLevel=0 --runtime win-x86 Chorizite.DocGen/Chorizite.DocGen.LuaDefs/*.csproj
-          dotnet build -c Release --property WarningLevel=0 --runtime win-x86 Launcher/Launcher/*.csproj
+          dotnet build -c Release --property WarningLevel=0 --runtime win-x86 Chorizite.Launcher/*.csproj
           
       - name: Build installer
         run: |
