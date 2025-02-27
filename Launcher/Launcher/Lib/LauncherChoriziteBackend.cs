@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using Launcher.Render;
+using LauncherApp.Render;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Dats;
 using Chorizite.Core.Input;
@@ -12,7 +12,7 @@ using Chorizite.Core;
 using Chorizite.Core.Backend.Launcher;
 using Microsoft.Win32;
 
-namespace Launcher.Lib {
+namespace LauncherApp.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
         private readonly ILogger _log;
         private readonly IContainer _container;

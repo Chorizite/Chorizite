@@ -12,7 +12,7 @@ using Color = SixLabors.ImageSharp.Color;
 using Image = SixLabors.ImageSharp.Image;
 using PixelFormat = WaveEngine.Bindings.OpenGL.PixelFormat;
 
-namespace Launcher.Render {
+namespace LauncherApp.Render {
     internal unsafe class ManagedGLTexture : BitmapTexture {
         private static readonly PixelType GL_UNSIGNED_BYTE = (PixelType)0x1401;
         private uint _texture;

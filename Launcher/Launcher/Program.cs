@@ -1,6 +1,6 @@
 using Autofac;
-using Launcher.Lib;
-using Launcher.Render;
+using LauncherApp.Lib;
+using LauncherApp.Render;
 using Chorizite.Core;
 using Chorizite.Core.Logging;
 using Chorizite.Core.Plugins;
@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Loader;
 
-namespace Launcher {
+namespace LauncherApp {
     internal static class Program {
         public static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
 

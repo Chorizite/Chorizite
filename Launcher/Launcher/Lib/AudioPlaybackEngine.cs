@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Launcher.Lib {
+namespace LauncherApp.Lib {
     class AudioPlaybackEngine : IDisposable {
         private readonly IWavePlayer outputDevice;
         private readonly MixingSampleProvider mixer;

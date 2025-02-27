@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Launcher.Lib {
+namespace LauncherApp.Lib {
     internal enum EntryPointFlags : int {
         None = 0
     };

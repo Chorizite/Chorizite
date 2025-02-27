@@ -1,5 +1,5 @@
 ﻿
-using Launcher.Lib;
+using LauncherApp.Lib;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Launcher {
+namespace LauncherApp {
     internal class LaunchManager {
         private readonly ILogger _log;
 
@@ -42,7 +42,7 @@ namespace Launcher {
             var cbase = Marshal.AllocHGlobal(entryPointParams.Length * sizeof(EntryPointParameters));
             var ccur = cbase;
             for (int i = 0; i < entryPointParams.Length; i++, ccur += sizeof(EntryPointParameters)) {
-                Launcher.Program.Log.LogDebug($"Injecting: {entryPointParams[i].dll_path} {entryPointParams[i].entry_point}");
+                LauncherApp.Program.Log.LogDebug($"Injecting: {entryPointParams[i].dll_path} {entryPointParams[i].entry_point}");
                 Marshal.StructureToPtr(entryPointParams[i], ccur, false);
             }
 

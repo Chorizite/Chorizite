@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using Chorizite.Common;
 using static SDL2.SDL;
 
-namespace Launcher.Lib {
+namespace LauncherApp.Lib {
     /// <summary>
     /// A SDL2 implementation of <see cref="IInputManager"/>
     /// </summary>

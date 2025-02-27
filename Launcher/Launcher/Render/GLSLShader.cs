@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using WaveEngine.Bindings.OpenGL;
 
-namespace Launcher.Render {
+namespace LauncherApp.Render {
 
     public unsafe class GLSLShader : AShader {
         public IntPtr Program { get; protected set; }

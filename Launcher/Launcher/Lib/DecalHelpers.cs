@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Launcher.Lib {
+namespace LauncherApp.Lib {
     class DecalHelpers {
         public static string DecalRegistryKey = "SOFTWARE\\Decal";
 
