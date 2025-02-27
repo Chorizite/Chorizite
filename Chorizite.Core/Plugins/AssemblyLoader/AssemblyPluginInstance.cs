@@ -22,10 +22,12 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         private readonly IPluginManager _manager;
         private static readonly Dictionary<string, Dictionary<string, string>> _serializedStates = [];
         private IPluginCore? _pluginInstance;
+        private WeakReference? _alc;
+        internal string AssemblyName;
 
         public IPluginCore? PluginInstance => _pluginInstance;
 
-        public AssemblyPluginLoadContext LoadContext { get; private set; }
+        public AssemblyPluginLoadContext? LoadContext => _alc?.Target as AssemblyPluginLoadContext;
 
         public override object? Instance => _pluginInstance;
 
@@ -40,7 +42,21 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             if (!base.Load()) return false;
 
             try {
-                LoadPluginAssembly();
+                if (IsLoaded) {
+                    TriggerOnBeforeReload(this, EventArgs.Empty);
+                    Unload(true);
+                }
+
+                TriggerOnBeforeLoad(this, EventArgs.Empty);
+
+                var dllFile = Path.Combine(Manifest.BaseDirectory, Manifest.EntryFile);
+                _alc = new WeakReference(new AssemblyPluginLoadContext(dllFile, _manager, _log), trackResurrection: true);
+
+                InitPlugin();
+
+                IsLoaded = true;
+                WantsReload = false;
+                TriggerOnLoad(this, EventArgs.Empty);
                 return true;
             }
             catch (Exception ex) {
@@ -56,6 +72,23 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
             try {
                 UnloadPluginAssembly(isReloading);
+
+                for (var i = 0; _alc?.IsAlive == true && i < 10; i++) {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                }
+                /*
+                var failedToUnload = new List<string>();
+                var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(Name) == true);
+                if (isAlive) {
+                    failedToUnload.Add(Name);
+                }
+
+                if (failedToUnload.Count > 0) {
+                    _log?.LogWarning($"Failed to unload plugins: {string.Join(", ", failedToUnload)}");
+                    System.Diagnostics.Debugger.Break();
+                }
+                */
                 return true;
             }
             catch (Exception ex) {
@@ -65,42 +98,47 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LoadPluginAssembly() {
-            try {
-                if (IsLoaded) {
-                    TriggerOnBeforeReload(this, EventArgs.Empty);
-                    UnloadPluginAssembly(true);
+        private void UnloadPluginAssembly(bool isReloading) {
+            if (IsLoaded) {
+                _log?.LogInformation($"Unloading plugin assembly: {Name}");
+                TriggerOnBeforeUnload(this, EventArgs.Empty);
+
+                if (PluginInstance is not null) {
+                    try {
+                        TrySerializeSettings();
+                        TrySerializeState();
+                        PluginInstance?.GetType()?.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(PluginInstance, []);
+                        PluginInstance?.GetType()?.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.Public)?.Invoke(PluginInstance, []);
+                    }
+                    catch (Exception ex) {
+                        _log?.LogError(ex, "Error unloading plugin: {0}: {1}", Name, ex.Message);
+                    }
                 }
+                _pluginInstance = null;
+                LoadContext?.Unload();
+                LoadContext?.Dispose();
 
-                TriggerOnBeforeLoad(this, EventArgs.Empty);
+                // this is a hack to clear out System.Text.Json caches...
+                try {
+                    var assembly = typeof(JsonSerializerOptions).Assembly;
+                    var updateHandlerType = assembly.GetType("System.Text.Json.JsonSerializerOptionsUpdateHandler");
+                    var clearCacheMethod = updateHandlerType?.GetMethod("ClearCache", BindingFlags.Static | BindingFlags.Public);
+                    clearCacheMethod?.Invoke(null, new object?[] { null });
+                }
+                catch (Exception ex) { _log.LogError(ex, $"Error clearing System.Text.Json cache"); }
 
-                var dllFile = Path.Combine(Manifest.BaseDirectory, Manifest.EntryFile);
-                LoadContext = new AssemblyPluginLoadContext(dllFile, _manager, _log);
-
-                InitPlugin();
-
-                IsLoaded = true;
-                WantsReload = false;
-                TriggerOnLoad(this, EventArgs.Empty);
-            }
-            catch (Exception ex) {
-                _log?.LogError(ex, "Error loading plugin: {0}: {1}", Name, ex.Message);
+                IsLoaded = false;
+                TriggerOnUnload(this, EventArgs.Empty);
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void InitPlugin() {
             var dllFile = Path.Combine(Manifest.BaseDirectory, Manifest.EntryFile);
-            var pdbFile = Path.ChangeExtension(dllFile, ".pdb");
-            using var dllStream = File.OpenRead(dllFile);
-            Assembly? loaded;
-            if (!string.IsNullOrEmpty(pdbFile) && File.Exists(pdbFile)) {
-                using var pdbStream = File.OpenRead(pdbFile);
-                loaded = LoadContext.LoadFromStream(dllStream, pdbStream);
-            }
-            else {
-                loaded = LoadContext.LoadFromStream(dllStream);
-            }
+            Assembly? loaded = LoadContext.LoadAssemblyFromTempPath(dllFile);
+
+            AssemblyName = loaded.GetName().Name;
+
             var pluginType = loaded.GetTypes().Where(t => {
                 return typeof(IPluginCore).IsAssignableFrom(t) && !t.IsAbstract;
             }).FirstOrDefault();
@@ -115,9 +153,9 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             }
 
             _pluginInstance = InstantiatePlugin(pluginType);
-            if (_pluginInstance is not null) {
+            if (PluginInstance is not null) {
                 try {
-                    _pluginInstance.GetType().GetMethod("Initialize", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(_pluginInstance, []);
+                    PluginInstance.GetType().GetMethod("Initialize", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(PluginInstance, []);
                 }
                 catch (Exception ex) {
                     _log?.LogError(ex, "Error initializing plugin: {0}: {1}", Name, ex.Message);
@@ -215,31 +253,6 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             return resolved;
         }
 
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void UnloadPluginAssembly(bool isReloading) {
-            if (IsLoaded) {
-                _log?.LogTrace($"Unloading plugin assembly: {Name}");
-                TriggerOnBeforeUnload(this, EventArgs.Empty);
-
-                if (PluginInstance is not null) {
-                    try {
-                        TrySerializeSettings();
-                        TrySerializeState();
-                        PluginInstance?.GetType()?.GetMethod("Dispose", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(PluginInstance, []);
-                    }
-                    catch (Exception ex) {
-                        _log?.LogError(ex, "Error unloading plugin: {0}: {1}", Name, ex.Message);
-                    }
-                }
-                _pluginInstance = null;
-                LoadContext.Unload();
-                LoadContext.Dispose();
-                LoadContext = null!;
-
-                IsLoaded = false;
-                TriggerOnUnload(this, EventArgs.Empty);
-            }
-        }
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void TryDeserializeType(IPluginCore instance, Type type, string? fileName = null) {
             if (instance is null) {
@@ -377,6 +390,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
 
         public override void Dispose() {
             UnloadPluginAssembly(true);
+            _pluginInstance = null;
             base.Dispose();
         }
     }

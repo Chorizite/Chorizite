@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WaveEngine.Bindings.OpenGL;
 
-namespace Launcher.Lib {
+namespace LauncherApp.Lib {
     internal struct RECT {
         public int left;
         public int top;

@@ -187,6 +187,8 @@ namespace Chorizite.Core.Plugins {
             foreach (var plugin in pluginsToUnload) {
                 UnloadPluginAndDependents(plugin, ref unloadedPlugins, isReloading);
             }
+            _loadedPlugins.Clear();
+            _loadedManifests.Clear();
 
             for (var i = 0; i < 50; i++) {
                 GC.Collect();
@@ -194,19 +196,18 @@ namespace Chorizite.Core.Plugins {
             }
 
             var failedToUnload = new List<string>();
-            foreach (var plugin in pluginsToUnload) {
-                var isAlive = AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name?.Contains(plugin.Name) == true);
-                if (isAlive) {
+            foreach (var plugin in pluginsToUnload.Where(p => p is AssemblyPluginInstance).Cast<AssemblyPluginInstance>()) {
+                var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name?.Equals(plugin.AssemblyName) == true);
+                if (assembly is not null && assembly.Location?.StartsWith(ChoriziteStatics.AssemblyDirectory) != true) {
+                    _log.LogDebug($"Failed to unload assembly: {assembly.FullName} ({assembly.Location})");
                     failedToUnload.Add(plugin.Name);
                 }
             }
 
             if (failedToUnload.Count > 0) {
                 _log?.LogWarning($"Failed to unload plugins: {string.Join(", ", failedToUnload)}");
+                System.Diagnostics.Debugger.Break();
             }
-
-            _loadedPlugins.Clear();
-            _loadedManifests.Clear();
 
             _hasPluginsLoaded = false;
         }

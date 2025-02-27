@@ -10,11 +10,11 @@ using static SDL2.SDL;
 using System.Reflection;
 using Chorizite.Common;
 using Chorizite.Common;
-using Launcher.Lib;
+using LauncherApp.Lib;
 using System.Runtime.InteropServices;
 using SDL2;
 
-namespace Launcher.Render {
+namespace LauncherApp.Render {
     unsafe public class OpenGLRenderer : IRenderInterface {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private Dictionary<nint, GeometryBufferRef> _geometryBuffers = new();
