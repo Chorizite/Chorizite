@@ -28,23 +28,12 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             _pluginPath = pluginPath;
             _manager = manager;
             Resolver = new AssemblyDependencyResolver(pluginPath);
-            Resolver2 = new AssemblyDependencyResolver(Path.Combine(Path.GetDirectoryName(pluginPath), "..", "..", "Chorizite.Core.dll"));
-
-            // check for all dlls in _tempDirectory and delete them
-            if (Directory.Exists(_tempDirectory)) {
-                foreach (var file in Directory.GetFiles(_tempDirectory)) {
-                    try {
-                        if (file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) File.Delete(file);
-                    }
-                    catch { }
-                }
-            }
         }
 
         protected override Assembly? Load(AssemblyName assemblyName) {
             string? assemblyPath = Resolver.ResolveAssemblyToPath(assemblyName);
             
-            var assembly = assemblyPath != null ? LoadAssemblyFromTempPath(assemblyPath) : null;
+            var assembly = assemblyPath != null ? LoadAssemblyWithoutLocking(assemblyPath) : null;
 
             if (assembly != null) {
                 return assembly;
@@ -69,7 +58,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             return IntPtr.Zero;
         }
 
-        internal Assembly LoadAssemblyFromTempPath(string assemblyPath) {
+        internal Assembly LoadAssemblyWithoutLocking(string assemblyPath) {
             if (_loadedAssemblies.TryGetValue(assemblyPath, out var result)) {
                 return result;
             }
@@ -78,20 +67,21 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 throw new FileNotFoundException($"Assembly not found: {assemblyPath}");
             }
 
-            if (!Directory.Exists(_tempDirectory)) {
-                Directory.CreateDirectory(_tempDirectory);
+            var pdbFile = Path.ChangeExtension(assemblyPath, ".pdb");
+            using var dllStream = new MemoryStream(File.ReadAllBytes(assemblyPath));
+            Assembly? loaded;
+            if (!string.IsNullOrEmpty(pdbFile) && File.Exists(pdbFile)) {
+                using var pdbStream = new MemoryStream(File.ReadAllBytes(pdbFile));
+                loaded = LoadFromStream(dllStream, pdbStream);
+            }
+            else {
+                loaded = LoadFromStream(dllStream);
+            }
+            if (loaded is not null) {
+                _loadedAssemblies.Add(assemblyPath, loaded);
             }
 
-            string uniqueFileName = $"{Path.GetFileNameWithoutExtension(assemblyPath)}_{Guid.NewGuid().ToString("N")}{Path.GetExtension(assemblyPath)}";
-            string destinationPath = Path.Combine(_tempDirectory, uniqueFileName);
-
-            File.Copy(assemblyPath, destinationPath, true);
-
-            var assembly = LoadFromAssemblyPath(destinationPath);
-
-            _loadedAssemblies.Add(assemblyPath, assembly);
-
-            return assembly;
+            return loaded;
         }
 
         internal IntPtr LoadUnmanagedDllFromTempPath(string libraryPath) {
@@ -107,14 +97,16 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
                 Directory.CreateDirectory(_tempDirectory);
             }
 
-            string uniqueFileName = $"{Path.GetFileNameWithoutExtension(libraryPath)}_{Guid.NewGuid().ToString("N")}{Path.GetExtension(libraryPath)}";
-            string destinationPath = Path.Combine(_tempDirectory, uniqueFileName);
+            string destinationPath = Path.Combine(_tempDirectory, libraryPath);
 
-            File.Copy(libraryPath, destinationPath, true);
+            try {
+                File.Copy(libraryPath, destinationPath, true);
+            }
+            catch { }
 
             _loadedLibraries.Add(libraryPath, LoadUnmanagedDllFromPath(destinationPath));
 
-            return LoadUnmanagedDllFromPath(destinationPath);
+            return _loadedLibraries[libraryPath];
         }
 
 

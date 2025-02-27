@@ -135,7 +135,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void InitPlugin() {
             var dllFile = Path.Combine(Manifest.BaseDirectory, Manifest.EntryFile);
-            Assembly? loaded = LoadContext.LoadAssemblyFromTempPath(dllFile);
+            Assembly? loaded = LoadContext.LoadAssemblyWithoutLocking(dllFile);
 
             AssemblyName = loaded.GetName().Name;
 

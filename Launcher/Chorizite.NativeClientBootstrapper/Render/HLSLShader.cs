@@ -20,6 +20,11 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             base.SetActive();
         }
 
+        public override void Reload() {
+            Effect?.OnLostDevice();
+            Effect?.OnResetDevice();
+        }
+
         protected override void LoadShader(string? vertShaderSource, string? fragShaderSource) {
             Effect = Effect.FromString(_device, vertShaderSource, ShaderFlags.None);
         }

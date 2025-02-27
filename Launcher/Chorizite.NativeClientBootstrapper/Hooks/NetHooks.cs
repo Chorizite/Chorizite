@@ -28,7 +28,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
             try {
                 var bytes = new byte[len];
                 Marshal.Copy((nint)buf, bytes, 0, len);
-                StandaloneLoader.Backend.HandleC2SPacketData(bytes);
+                StandaloneLoader.Backend?.HandleC2SPacketData(bytes);
             }
             catch (Exception ex) {
                 StandaloneLoader.Log.LogError(ex, $"SendTo Error: {ex.Message}");
@@ -43,7 +43,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                 try {
                     var bytes = new byte[bytesRead];
                     Marshal.Copy((nint)buf, bytes, 0, bytesRead);
-                    StandaloneLoader.Backend.HandleS2CPacketData(bytes);
+                    StandaloneLoader.Backend?.HandleS2CPacketData(bytes);
                 }
                 catch (Exception ex) {
                     StandaloneLoader.Log.LogError(ex, $"RecvFrom Error: {ex.Message}");
