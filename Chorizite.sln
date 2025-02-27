@@ -5,10 +5,6 @@ VisualStudioVersion = 17.9.34714.143
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Core", "Chorizite.Core\Chorizite.Core.csproj", "{ECFD7B76-6B27-4098-ADA2-34E42A711C24}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Launcher", "Launcher", "{5AA51DC6-0937-41EF-B929-E5C8818B2F67}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Launcher", "Launcher\Launcher\Launcher.csproj", "{A4726E2C-FCC9-414E-9658-59A00236A9E0}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{522C4DD8-4502-4BD9-9010-A5F5AE96FDC9}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\build.yml = .github\workflows\build.yml
@@ -21,47 +17,69 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Installer\vcredist.nsh = Installer\vcredist.nsh
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.NativeClientBootstrapper", "Launcher\Chorizite.NativeClientBootstrapper\Chorizite.NativeClientBootstrapper.csproj", "{A9FB6442-D33F-4D41-AA9F-0916F1750565}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{189167BA-01A1-44D2-91FF-C2618E096B8D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Core.Tests", "Tests\Chorizite.Core.Tests\Chorizite.Core.Tests.csproj", "{94F24AF9-BFD2-41B2-9052-3696EC93357C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.DocGen.LuaDefs", "Chorizite.DocGen\Chorizite.DocGen.LuaDefs\Chorizite.DocGen.LuaDefs.csproj", "{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.NativeClientBootstrapper", "Chorizite.NativeClientBootstrapper\Chorizite.NativeClientBootstrapper.csproj", "{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Chorizite.Launcher", "Chorizite.Launcher\Chorizite.Launcher.csproj", "{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Debug|x86.Build.0 = Debug|Any CPU
 		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A4726E2C-FCC9-414E-9658-59A00236A9E0}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{A4726E2C-FCC9-414E-9658-59A00236A9E0}.Debug|Any CPU.Build.0 = Debug|x86
-		{A4726E2C-FCC9-414E-9658-59A00236A9E0}.Release|Any CPU.ActiveCfg = Release|x86
-		{A4726E2C-FCC9-414E-9658-59A00236A9E0}.Release|Any CPU.Build.0 = Release|x86
-		{A9FB6442-D33F-4D41-AA9F-0916F1750565}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9FB6442-D33F-4D41-AA9F-0916F1750565}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9FB6442-D33F-4D41-AA9F-0916F1750565}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9FB6442-D33F-4D41-AA9F-0916F1750565}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Release|x86.ActiveCfg = Release|Any CPU
+		{ECFD7B76-6B27-4098-ADA2-34E42A711C24}.Release|x86.Build.0 = Release|Any CPU
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Debug|x86.Build.0 = Debug|Any CPU
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|x86.ActiveCfg = Release|Any CPU
+		{94F24AF9-BFD2-41B2-9052-3696EC93357C}.Release|x86.Build.0 = Release|Any CPU
 		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Debug|x86.Build.0 = Debug|Any CPU
 		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E8C6E85-E0E7-42B4-BE11-2017D44D5EFD}.Release|x86.Build.0 = Release|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Debug|x86.Build.0 = Debug|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Release|x86.ActiveCfg = Release|Any CPU
+		{EC726010-B2D4-4EC6-87C9-2AA65A1038BD}.Release|x86.Build.0 = Release|Any CPU
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Debug|Any CPU.Build.0 = Debug|x86
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Debug|x86.ActiveCfg = Debug|x86
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Debug|x86.Build.0 = Debug|x86
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Release|Any CPU.ActiveCfg = Release|x86
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Release|Any CPU.Build.0 = Release|x86
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Release|x86.ActiveCfg = Release|x86
+		{B8718D2B-DE23-40A5-A6DA-D9D3B3D3AC99}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{A4726E2C-FCC9-414E-9658-59A00236A9E0} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
-		{A9FB6442-D33F-4D41-AA9F-0916F1750565} = {5AA51DC6-0937-41EF-B929-E5C8818B2F67}
 		{94F24AF9-BFD2-41B2-9052-3696EC93357C} = {189167BA-01A1-44D2-91FF-C2618E096B8D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

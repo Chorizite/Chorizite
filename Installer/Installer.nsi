@@ -15,7 +15,7 @@ Name "${APPNAME} ${VERSION}"
 InstallDir "C:\Games\Chorizite"
 InstallDirRegKey HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" ""
 ;SetFont "Verdana" 8
-Icon ".\..\Launcher\Launcher\chorizite.ico"
+Icon ".\..\Chorizite.Launcher\chorizite.ico"
 OutFile ".\..\bin\${APPNAME}-Installer-${VERSION}.exe"
 !define HttpWebRequestURL "https://chorizite.github.io/plugin-index/index.json"
 
@@ -24,14 +24,16 @@ OutFile ".\..\bin\${APPNAME}-Installer-${VERSION}.exe"
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_SMALLDESC
 
+!define MUI_FINISHPAGE_RUN_TEXT "Launch ${APPNAME}"
+!define MUI_FINISHPAGE_RUN "$INSTDIR\Chorizite.Launcher.exe"
+
+; Set languages (first is default language)
+
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
-!insertmacro MUI_UNPAGE_CONFIRM
-!insertmacro MUI_UNPAGE_INSTFILES
-
-; Set languages (first is default language)
+!insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_RESERVEFILE_LANGDLL
 

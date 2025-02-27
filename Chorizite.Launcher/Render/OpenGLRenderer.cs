@@ -109,7 +109,7 @@ namespace LauncherApp.Render {
 
         private string GetEmbeddedResource(string filename) {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "Launcher." + filename;
+            var resourceName = "Chorizite.Launcher." + filename;
 
             using var stream = assembly.GetManifestResourceStream(resourceName);
             using var reader = new StreamReader(stream);

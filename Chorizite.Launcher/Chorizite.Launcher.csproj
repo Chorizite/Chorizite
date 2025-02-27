@@ -8,7 +8,7 @@
     <Platforms>x86</Platforms>
     <PlatformTarget>x86</PlatformTarget>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\net8.0\</OutputPath>
+    <OutputPath>..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
     <GenerateAssemblyInformationalVersionAttribute>true</GenerateAssemblyInformationalVersionAttribute>
@@ -42,7 +42,7 @@
 
   <Target Name="Build Installer" Condition="$(Configuration) == 'Release' And $(MSBuildRuntimeType)=='Full'" AfterTargets="Build">
     <Message Text="Build Installer" Importance="High" />
-    <Exec Command="$(NuGetPackageRoot)\nsis-tool\3.10.0\tools\makensis.exe -DVERSION=$(Version) $(MSBuildProjectDirectory)\..\..\Installer\Installer.nsi" />
+    <Exec Command="$(NuGetPackageRoot)\nsis-tool\3.10.0\tools\makensis.exe -DVERSION=$(Version) $(MSBuildProjectDirectory)\..\Installer\Installer.nsi" />
   </Target>
 
   <ItemGroup>
@@ -76,7 +76,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
+    <ProjectReference Include="..\Chorizite.Core\Chorizite.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\..\bin\net8.0\</OutputPath>
+    <OutputPath>..\bin\net8.0\</OutputPath>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Chorizite.Core\Chorizite.Core.csproj" />
+    <ProjectReference Include="..\Chorizite.Core\Chorizite.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
