@@ -30,11 +30,14 @@ using NAudio.Wave.SampleProviders;
 using Chorizite.NativeClientBootstrapper.Lib;
 using Chorizite.Core.Backend.Client;
 using System.Runtime.InteropServices;
+using System.Collections.Concurrent;
 
 namespace Chorizite.NativeClientBootstrapper {
     public unsafe class ACChoriziteBackend : IChoriziteBackend, IClientBackend {
         private readonly AudioPlaybackEngine _engine;
         private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
+
+        private ConcurrentQueue<Action> _invokeQueue = new();
 
         public override IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
@@ -136,6 +139,19 @@ namespace Chorizite.NativeClientBootstrapper {
             Input = input;
             Log = log;
             DatReader = datReader;
+
+            Renderer.OnRender2D += Renderer_OnRender2D;
+        }
+
+        private void Renderer_OnRender2D(object? sender, EventArgs e) {
+            while (_invokeQueue.TryDequeue(out var action)) {
+                try {
+                    action.Invoke();
+                }
+                catch (Exception ex) {
+                    StandaloneLoader.Log.LogError(ex, "Error in OnRender2D event handler");
+                }
+            }
         }
 
         public bool EnterGame(uint characterId) {
@@ -300,6 +316,10 @@ namespace Chorizite.NativeClientBootstrapper {
             }
         }
 
+        public override void Invoke(Action action) {
+            _invokeQueue.Enqueue(action);
+        }
+
         #region internal event callers
         internal void HandleC2SPacketData(byte[] bytes) {
             try {
@@ -348,6 +368,7 @@ namespace Chorizite.NativeClientBootstrapper {
         #endregion // internal event callers
 
         public void Dispose() {
+            Renderer.OnRender2D -= Renderer_OnRender2D;
             Renderer?.Dispose();
             Input?.Dispose();
         }
