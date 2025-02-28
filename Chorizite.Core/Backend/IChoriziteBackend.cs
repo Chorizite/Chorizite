@@ -64,5 +64,11 @@ namespace Chorizite.Core.Backend {
         /// </summary>
         /// <returns></returns>
         public abstract string? GetClipboardText();
+
+        /// <summary>
+        /// Invoke an action on the main game thread
+        /// </summary>
+        /// <param name="action"></param>
+        public abstract void Invoke(Action action);
     }
 }

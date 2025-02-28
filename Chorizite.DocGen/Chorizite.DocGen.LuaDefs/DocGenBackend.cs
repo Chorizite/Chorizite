@@ -28,6 +28,10 @@ namespace Chorizite.DocGen.LuaDefs {
             
         }
 
+        public override void Invoke(Action action) {
+            
+        }
+
         public override void PlaySound(uint soundId) {
             
         }

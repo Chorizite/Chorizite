@@ -11,6 +11,7 @@ using NAudio.Wave;
 using Chorizite.Core;
 using Chorizite.Core.Backend.Launcher;
 using Microsoft.Win32;
+using System.Collections.Concurrent;
 
 namespace LauncherApp.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
@@ -18,6 +19,7 @@ namespace LauncherApp.Lib {
         private readonly IContainer _container;
         private readonly AudioPlaybackEngine _engine;
         private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
+        private ConcurrentQueue<Action> _invokeQueue = new();
 
         /// <inheritdoc/>
         public override IRenderInterface Renderer { get; }
@@ -66,6 +68,23 @@ namespace LauncherApp.Lib {
             Input = input;
             _log = container.Resolve<ILogger<LauncherChoriziteBackend>>();
             _container = container;
+
+            Renderer.OnRender2D += OnRender2D;
+        }
+
+        private void OnRender2D(object? sender, EventArgs e) {
+            while (_invokeQueue.TryDequeue(out var action)) {
+                try {
+                    action.Invoke();
+                }
+                catch (Exception ex) {
+                    Program.Log.LogError(ex, "Error in OnRender2D event handler");
+                }
+            }
+        }
+
+        public override void Invoke(Action action) {
+            _invokeQueue.Enqueue(action);
         }
 
         public void SetWindowSize(int width, int height) {
@@ -195,7 +214,7 @@ namespace LauncherApp.Lib {
         }
 
         public void Dispose() {
-            
+            Renderer.OnRender2D -= OnRender2D;
         }
 
         public string GetDefaultClientPath() {
