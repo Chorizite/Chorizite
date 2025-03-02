@@ -12,7 +12,7 @@ namespace Chorizite.Core.Net {
     /// Network parser
     /// </summary>
     public class NetworkParser : PacketReader, IDisposable {
-        private readonly IClientBackend _backend;
+        private readonly IClientBackend? _backend;
 
         /// <summary>
         /// Server -> Client message events
@@ -24,10 +24,19 @@ namespace Chorizite.Core.Net {
         /// </summary>
         public C2SMessageHandler C2S => Messages.C2S;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="logger"></param>
         public NetworkParser(ILogger<NetworkParser> logger) : base(logger, new MessageReader()) {
             
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="backend"></param>
+        /// <param name="logger"></param>
         public NetworkParser(IClientBackend backend, ILogger<NetworkParser> logger) : base(logger, new MessageReader()) {
             _backend = backend;
 
@@ -43,13 +52,14 @@ namespace Chorizite.Core.Net {
             HandleC2SPacket(e.Data);
         }
 
-        internal void Init() {
-            
-        }
-
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public void Dispose() {
-            _backend.OnC2SData -= Backend_OnC2SData;
-            _backend.OnS2CData -= Backend_OnS2CData;
+            if (_backend is not null) {
+                _backend.OnC2SData -= Backend_OnC2SData;
+                _backend.OnS2CData -= Backend_OnS2CData;
+            }
         }
     }
 }

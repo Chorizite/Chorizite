@@ -5,7 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Input {
+    /// <summary>
+    /// Represents a key on the keyboard
+    /// </summary>
     public enum Key : int {
+        /// <summary>
+        /// No key
+        /// </summary>
         NONE = 0x00,
         ///<summary>
         ///Left mouse button

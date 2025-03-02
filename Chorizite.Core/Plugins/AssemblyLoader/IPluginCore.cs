@@ -1,11 +1,10 @@
-﻿using Chorizite.Core.Plugins.AssemblyLoader;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Autofac;
+using Chorizite.Core.Plugins.AssemblyLoader;
 
 namespace Chorizite.Core.Plugins {
+    /// <summary>
+    /// The core interface for an assembly plugin
+    /// </summary>
     public abstract class IPluginCore {
         internal int Id { get; set; }
 
@@ -15,14 +14,19 @@ namespace Chorizite.Core.Plugins {
         public AssemblyPluginManifest Manifest { get; }
 
         /// <summary>
+        /// The service provider for this plugin
+        /// </summary>
+        public ILifetimeScope Services => ChoriziteStatics.Scope;
+
+        /// <summary>
         /// The path to the entry file assembly directory.
         /// </summary>
-        public string AssemblyDirectory => System.IO.Path.GetDirectoryName(Manifest.ManifestFile);
+        public string AssemblyDirectory => System.IO.Path.GetDirectoryName(Manifest.ManifestFile)!;
 
         /// <summary>
         /// The path to where this plugin should store data
         /// </summary>
-        public string DataDirectory => System.IO.Path.Combine(ChoriziteStatics.Config.StorageDirectory, "plugins", Manifest.Name);
+        public string DataDirectory => System.IO.Path.Combine(Services.Resolve<IPluginManager>().StorageDirectory, Manifest.Id);
 
         /// <summary>
         /// Use <see cref="Initialize"/> to initialize the plugin instead of the constructor. If your plugin is

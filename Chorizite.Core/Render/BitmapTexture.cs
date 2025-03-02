@@ -17,6 +17,9 @@ using DatReaderWriter.DBObjs;
 using Autofac;
 
 namespace Chorizite.Core.Render {
+    /// <summary>
+    /// A texture backed by a bitmap
+    /// </summary>
     public abstract class BitmapTexture : ITexture {
         private static readonly Rgba32 BORDER_COLOR_MASK = Color.FromRgba(255, 255, 255, 255);
         private static readonly Rgba32 BACKGROUND_COLOR_MASK = Color.FromRgba(255, 255, 255, 0);
@@ -38,10 +41,19 @@ namespace Chorizite.Core.Render {
         /// <inheritdoc/>
         public bool PreMultipliedAlpha { get; set; }
 
+        /// <summary>
+        /// Default constructor
+        /// </summary>
         public BitmapTexture() {
 
         }
 
+        /// <summary>
+        /// Create a new managed texture from a byte array (r8g8b8a8)
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         public BitmapTexture(byte[] source, int width, int height) {
             Bitmap = new Image<Rgba32>(width, height);
             for (int x = 0; x < width; x++) {
@@ -191,11 +203,20 @@ namespace Chorizite.Core.Render {
         }
 
         private static Image<Rgba32> GetTextureMissing() {
-            using Stream stream = typeof(BitmapTexture).Assembly.GetManifestResourceStream("Chorizite.Core.Render.nulltexture.jpg");
+            using Stream? stream = typeof(BitmapTexture).Assembly.GetManifestResourceStream("Chorizite.Core.Render.nulltexture.jpg");
+            if (stream is null) {
+                ChoriziteStatics.Log.LogWarning("Could not find nulltexture.jpg");
+                return new Image<Rgba32>(32, 32, new Rgba32(255, 0, 255));
+            }
             using var img = Image.Load(stream);
             return  img.CloneAs<Rgba32>();
         }
 
+        /// <summary>
+        /// Converts a <see cref="DatReaderWriter.DBObjs.RenderSurface"/> to a <see cref="Image"/>
+        /// </summary>
+        /// <param name="texture"></param>
+        /// <returns></returns>
         protected static Image<Rgba32> GetBitmap(DatReaderWriter.DBObjs.RenderSurface texture) {
             if (texture.Format == PixelFormat.PFID_CUSTOM_RAW_JPEG) {
                 using (var ms = new MemoryStream(texture.SourceData)) {
@@ -294,11 +315,19 @@ namespace Chorizite.Core.Render {
             return image;
         }
 
+        /// <summary>
+        /// Create the texture
+        /// </summary>
+        /// <param name="premultiplyAlpha"></param>
         protected abstract void CreateTexture(bool premultiplyAlpha);
+
+        /// <summary>
+        /// Release the texture
+        /// </summary>
         protected abstract void ReleaseTexture();
 
         /// <summary>
-        /// Release this texture
+        /// Release this texture and backing bitmap
         /// </summary>
         public void Dispose() {
             ReleaseTexture();
@@ -398,7 +427,6 @@ namespace Chorizite.Core.Render {
                     break;
                 default:
                     throw new Exception("Unhandled PixelFormat (" + surface.Format.ToString() + ") in RenderSurface " + surface.Id.ToString("X8"));
-                    break;
             }
 
             return colors;

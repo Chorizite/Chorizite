@@ -46,7 +46,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
         private static int ClientSystem_AddTextToScroll_Impl(IntPtr This, PStringBase<ushort>* text, eChatTypes type, byte unknown, StringInfo* info) {
             var eventArgs = new ChatTextAddedEventArgs(text->ToString().TrimEnd('\r', '\n'), (ChatType)type);
-            StandaloneLoader.Backend.HandleChatTextAdded(eventArgs);
+            StandaloneLoader.Backend?.HandleChatTextAdded(eventArgs);
 
             if (eventArgs.Eat) {
                 return 0;
@@ -60,7 +60,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         private static int ClientCommunicationSystem_OnChatCommand_Impl(ClientCommunicationSystem* This, PStringBase<ushort>* text, int chatWindowId) {
             try {
                 var eventArgs = new ChatInputEventArgs(text->ToString(), (ChatWindowId)chatWindowId);
-                StandaloneLoader.Backend.HandleChatTextInput(eventArgs);
+                StandaloneLoader.Backend?.HandleChatTextInput(eventArgs);
 
                 if (eventArgs.Eat) {
                     return 0;

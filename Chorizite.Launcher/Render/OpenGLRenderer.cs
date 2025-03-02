@@ -9,7 +9,6 @@ using WaveEngine.Bindings.OpenGL;
 using static SDL2.SDL;
 using System.Reflection;
 using Chorizite.Common;
-using Chorizite.Common;
 using LauncherApp.Lib;
 using System.Runtime.InteropServices;
 using SDL2;
@@ -112,6 +111,7 @@ namespace LauncherApp.Render {
             var resourceName = "Chorizite.Launcher." + filename;
 
             using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream is null) throw new Exception($"Resource not found: {resourceName}");
             using var reader = new StreamReader(stream);
             string result = reader.ReadToEnd();
             return result;

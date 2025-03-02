@@ -19,11 +19,11 @@ using System.Linq;
 
 namespace Chorizite.NativeClientBootstrapper.Hooks {
     internal unsafe class ACClientDMHooks : HookBase {
-        private static IHook<SendTo> _sendtoHook;
-        private static IHook<RecvFrom> _recvfromHook;
-        private static ILogger _log;
-        private static MessageReader _messageReader;
-        private static PacketReader _packetReader;
+        private static IHook<SendTo>? _sendtoHook;
+        private static IHook<RecvFrom>? _recvfromHook;
+        private static ILogger? _log;
+        private static MessageReader? _messageReader;
+        private static PacketReader? _packetReader;
 
         [Function(CallingConventions.Stdcall)]
         private delegate nint SendTo(nint s, byte* buf, int len, int flags, byte* to, int tolen);
@@ -50,19 +50,19 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
 
         private static void S2CPacketHandler(object? sender, PacketEventArgs e) {
             try {
-                _log.LogDebug($"Got packet: {e.Packet.Header.Flags}");
+                _log?.LogDebug($"Got packet: {e.Packet.Header.Flags}");
             }
             catch (Exception ex) {
-                _log.LogError(ex, $"packetReader.OnS2CPacket Error: {ex.Message}");
+                _log?.LogError(ex, $"packetReader.OnS2CPacket Error: {ex.Message}");
             }
         }
 
         private static void C2SPacketHandler(object? sender, PacketEventArgs e) {
             try {
-                _log.LogDebug($"Sent packet: {e.Packet.Header.Flags}");
+                _log?.LogDebug($"Sent packet: {e.Packet.Header.Flags}");
             }
             catch (Exception ex) {
-                _log.LogError(ex, $"packetReader.C2SPacketHandler Error: {ex.Message}");
+                _log?.LogError(ex, $"packetReader.C2SPacketHandler Error: {ex.Message}");
             }
         }
 
@@ -71,27 +71,27 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
             try {
                 var bytes = new byte[len];
                 Marshal.Copy((nint)buf, bytes, 0, len);
-                _log.LogDebug($"Sending packet: {FormatBytes(bytes)}");
-                _packetReader.HandleC2SPacket(bytes);
+                _log?.LogDebug($"Sending packet: {FormatBytes(bytes)}");
+                _packetReader?.HandleC2SPacket(bytes);
             }
             catch (Exception ex) {
-                _log.LogError(ex, $"SendTo Error: {ex.Message}");
+                _log?.LogError(ex, $"SendTo Error: {ex.Message}");
             }
-            return _sendtoHook.OriginalFunction(s, buf, len, flags, to, tolen);
+            return _sendtoHook!.OriginalFunction(s, buf, len, flags, to, tolen);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
         private static int RecvFromImpl(nint s, byte* buf, int len, int flags, byte* from, int fromlen) {
-            var bytesRead = _recvfromHook.OriginalFunction(s, buf, len, flags, from, fromlen);
+            var bytesRead = _recvfromHook!.OriginalFunction(s, buf, len, flags, from, fromlen);
             if (bytesRead > 0) {
                 try {
                     var bytes = new byte[bytesRead];
                     Marshal.Copy((nint)buf, bytes, 0, bytesRead);
-                    _log.LogDebug($"Recv packet: {FormatBytes(bytes)}");
-                    _packetReader.HandleS2CPacket(bytes);
+                    _log?.LogDebug($"Recv packet: {FormatBytes(bytes)}");
+                    _packetReader?.HandleS2CPacket(bytes);
                 }
                 catch (Exception ex) {
-                    _log.LogError(ex, $"RecvFrom Error: {ex.Message}");
+                    _log?.LogError(ex, $"RecvFrom Error: {ex.Message}");
                 }
             }
             return bytesRead;

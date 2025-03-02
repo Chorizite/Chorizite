@@ -26,7 +26,7 @@ namespace AcClient {
     };
 
     public unsafe struct _STL {
-        public unsafe struct pair<FIRST, SECOND> where FIRST : unmanaged where SECOND : unmanaged {
+        public unsafe struct Pair<FIRST, SECOND> where FIRST : unmanaged where SECOND : unmanaged {
             public FIRST first;
             public SECOND second;
         }

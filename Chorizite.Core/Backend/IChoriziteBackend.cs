@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Chorizite.Common;
+using Chorizite.Common.Enums;
 using Chorizite.Core.Input;
 using Chorizite.Core.Render;
 using Microsoft.Extensions.Logging;
@@ -10,6 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Backend {
+    /// <summary>
+    /// The base interface for a Chorizite backend
+    /// </summary>
     public abstract class IChoriziteBackend {
         /// <summary>
         /// Get the <see cref="IRenderInterface"/> being used for this backend.
@@ -34,8 +38,6 @@ namespace Chorizite.Core.Backend {
         /// <summary>
         /// Handle a log message.
         /// </summary>
-        /// <param name="logLevel"></param>
-        /// <param name="message"></param>
         public abstract void HandleLogMessage(LogMessageEventArgs evt);
 
         /// <summary>

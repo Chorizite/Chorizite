@@ -4,25 +4,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Loader;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace Chorizite.Core.Plugins.AssemblyLoader {
+    /// <summary>
+    /// A plugin load context
+    /// </summary>
     public class AssemblyPluginLoadContext : AssemblyLoadContext, IDisposable {
         private readonly ILogger _log;
         private readonly string _pluginPath;
         private IPluginManager _manager;
         internal AssemblyDependencyResolver Resolver;
 
-        public AssemblyDependencyResolver Resolver2 { get; }
-
         string _tempDirectory => Path.Combine(Path.GetTempPath(), "chorizite");
         Dictionary<string, IntPtr> _loadedLibraries = [];
         Dictionary<string, Assembly> _loadedAssemblies = [];
 
+        /// <summary>
+        /// Creates a new plugin load context
+        /// </summary>
+        /// <param name="pluginPath"></param>
+        /// <param name="manager"></param>
+        /// <param name="log"></param>
         public AssemblyPluginLoadContext(string pluginPath, IPluginManager manager, ILogger log) : base(pluginPath, true) {
             _log = log;
             _pluginPath = pluginPath;
@@ -30,6 +33,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             Resolver = new AssemblyDependencyResolver(pluginPath);
         }
 
+        /// <inheritdoc/>
         protected override Assembly? Load(AssemblyName assemblyName) {
             string? assemblyPath = Resolver.ResolveAssemblyToPath(assemblyName);
             
@@ -44,14 +48,15 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             return AppDomain.CurrentDomain.GetAssemblies().LastOrDefault(a => a.GetName().Name == assemblyName.Name);
         }
 
+        /// <inheritdoc/>
         protected override IntPtr LoadUnmanagedDll(string unmanagedDllName) {
             string? libraryPath = Resolver?.ResolveUnmanagedDllToPath(unmanagedDllName);
             if (libraryPath != null) {
                 return LoadUnmanagedDllFromTempPath(libraryPath);
             }
             var dllName = unmanagedDllName.ToLower().EndsWith(".dll") ? unmanagedDllName : unmanagedDllName + ".dll";
-            var path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(_pluginPath)!, $"runtimes", "win-x86", "native", dllName);
-            if (System.IO.File.Exists(path)) {
+            var path = Path.Combine(Path.GetDirectoryName(_pluginPath)!, $"runtimes", "win-x86", "native", dllName);
+            if (File.Exists(path)) {
                 return LoadUnmanagedDllFromTempPath(path);
             }
 
@@ -77,10 +82,9 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             else {
                 loaded = LoadFromStream(dllStream);
             }
-            if (loaded is not null) {
-                _loadedAssemblies.Add(assemblyPath, loaded);
-            }
 
+            _loadedAssemblies.Add(assemblyPath, loaded);
+            
             return loaded;
         }
 
@@ -109,7 +113,9 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             return _loadedLibraries[libraryPath];
         }
 
-
+        /// <summary>
+        /// Disposes the load context
+        /// </summary>
         public void Dispose() {
             _loadedAssemblies.Clear();
             _loadedLibraries.Clear();

@@ -117,12 +117,12 @@ namespace Chorizite.NativeClientBootstrapper.Lib {
             if (!OpenClipboard(IntPtr.Zero))
                 return null;
 
-            string data = null;
+            string? data = null;
             var hGlobal = GetClipboardData(CF_TEXT);
             if (hGlobal != IntPtr.Zero) {
                 var lpwcstr = GlobalLock(hGlobal);
                 if (lpwcstr != IntPtr.Zero) {
-                    data = Marshal.PtrToStringAnsi(lpwcstr);
+                    data = Marshal.PtrToStringAnsi(lpwcstr) ?? "";
                     GlobalUnlock(lpwcstr);
                 }
             }
@@ -134,12 +134,12 @@ namespace Chorizite.NativeClientBootstrapper.Lib {
             if (!OpenClipboard(IntPtr.Zero))
                 return null;
 
-            string data = null;
+            string? data = null;
             var hGlobal = GetClipboardData(CF_UNICODETEXT);
             if (hGlobal != IntPtr.Zero) {
                 var lpwcstr = GlobalLock(hGlobal);
                 if (lpwcstr != IntPtr.Zero) {
-                    data = Marshal.PtrToStringUni(lpwcstr);
+                    data = Marshal.PtrToStringUni(lpwcstr) ?? "";
                     GlobalUnlock(lpwcstr);
                 }
             }

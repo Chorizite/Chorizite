@@ -9,6 +9,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Lib {
+    /// <summary>
+    /// Helper methods for working with plugin file paths during development
+    /// </summary>
     public static class PathHelpers {
         /// <summary>
         /// This will try and find a "development" version of a file path by looking for a manifest.dev.json.

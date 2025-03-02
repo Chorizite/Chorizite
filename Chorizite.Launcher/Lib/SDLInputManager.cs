@@ -155,7 +155,9 @@ namespace LauncherApp.Lib {
                         break;
                     case SDL_EventType.SDL_TEXTINPUT:
                         var str = Marshal.PtrToStringAnsi((IntPtr)e.text.text);
-                        _OnKeyPress?.Invoke(this, new Chorizite.Core.Input.KeyPressEventArgs(str));
+                        if (!string.IsNullOrEmpty(str)) {
+                            _OnKeyPress?.Invoke(this, new Chorizite.Core.Input.KeyPressEventArgs(str));
+                        }
                         break;
                     case SDL_EventType.SDL_QUIT:
                         Program.Exit();

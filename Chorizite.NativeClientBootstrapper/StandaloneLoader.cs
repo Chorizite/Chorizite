@@ -1,5 +1,6 @@
 ﻿using AcClient;
 using Autofac;
+using Chorizite.Common.Enums;
 using Chorizite.Core;
 using Chorizite.Core.Dats;
 using Chorizite.Core.Input;
@@ -23,12 +24,12 @@ namespace Chorizite.NativeClientBootstrapper {
         private static readonly string _logDirectory = System.IO.Path.Combine(_dataDirectory, "logs");
 
         public static int UnmanagedD3DPtr { get; private set; }
-        public static ChoriziteConfig Config { get; private set; }
-        public static Core.Chorizite<ACChoriziteBackend> ChoriziteInstance { get; private set; }
-        public static ACChoriziteBackend Backend { get; private set; }
-        public static DX9RenderInterface Render { get; private set; }
-        public static Win32InputManager Input { get; private set; }
-        public static NetworkParser Net { get; private set; }
+        public static ChoriziteConfig? Config { get; private set; }
+        public static Core.Chorizite<ACChoriziteBackend>? ChoriziteInstance { get; private set; }
+        public static ACChoriziteBackend? Backend { get; private set; }
+        public static DX9RenderInterface? Render { get; private set; }
+        public static Win32InputManager? Input { get; private set; }
+        public static NetworkParser? Net { get; private set; }
         public static ILogger Log { get; } = new ChoriziteLogger("StandaloneLoader", _logDirectory);
 
         public static unsafe int Init(IntPtr a, int b) {
@@ -61,9 +62,9 @@ namespace Chorizite.NativeClientBootstrapper {
                 };
                 ChoriziteInstance = new Chorizite<ACChoriziteBackend>(Config);
 
-                Backend = (ChoriziteInstance.Backend as ACChoriziteBackend)!;
-                Render = (ChoriziteInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface)!;
-                Input = (ChoriziteInstance.Scope.Resolve<IInputManager>() as Win32InputManager)!;
+                Backend = (ChoriziteInstance.Backend as ACChoriziteBackend);
+                Render = (ChoriziteInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface);
+                Input = (ChoriziteInstance.Scope.Resolve<IInputManager>() as Win32InputManager);
                 Net = ChoriziteInstance.Scope.Resolve<NetworkParser>();
             }
             catch (Exception ex) {

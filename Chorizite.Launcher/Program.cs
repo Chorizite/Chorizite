@@ -7,8 +7,7 @@ using Chorizite.Core.Plugins;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Runtime.Loader;
+using Chorizite.Common.Enums;
 
 namespace LauncherApp {
     internal static class Program {
@@ -20,12 +19,14 @@ namespace LauncherApp {
         private static readonly string _datDirectory = @"C:\Turbine\Asheron's Call\";
         private static bool _shouldExit;
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         public static ILogger Log { get; private set; }
         public static OpenGLRenderer Renderer { get; private set; }
         public static SDLInputManager Input { get; private set; }
         public static LaunchManager LaunchManager { get; private set; }
         public static ChoriziteConfig Config { get; private set; }
         public static Chorizite<LauncherChoriziteBackend> ChoriziteInstance { get; private set; }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         static void Main() {
             Log = new ChoriziteLogger("Launcher", _logDirectory);
