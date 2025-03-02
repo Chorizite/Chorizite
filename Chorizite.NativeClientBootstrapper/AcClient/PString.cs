@@ -180,7 +180,7 @@ namespace AcClient {
         public unsafe struct CaseInsensitiveStringBase<T> {
             // Struct:
             public T str;
-            public override string ToString() => str.ToString();
+            public override string ToString() => str?.ToString() ?? "CaseInsensitiveStringBase";
             // CaseInsensitiveStringBase<PStringBase<Char>>.case_insensitive_hash:
             // public static delegate* unmanaged[Thiscall]<CaseInsensitiveStringBase<PStringBase<Char>>*, UInt32> case_insensitive_hash = (delegate* unmanaged[Thiscall]<CaseInsensitiveStringBase<PStringBase<Char>>*, UInt32>)0xDEADBEEF; // .text:0041A710 ; UInt32 __thiscall CaseInsensitiveStringBase<PStringBase<Char>>::case_insensitive_hash(CaseInsensitiveStringBase<PStringBase<Char> > *this) .text:0041A710 ?case_insensitive_hash@?$CaseInsensitiveStringBase@V?$PStringBase@D@@@@QBEKXZ
 
@@ -433,7 +433,7 @@ namespace AcClient {
     public unsafe struct CaseInsensitiveStringBase<T> {
         // Struct:
         public T str;
-        public override string ToString() => str.ToString();
+        public override string ToString() => str?.ToString() ?? "CaseInsensitiveStringBase";
 
         // Functions:
 
@@ -715,7 +715,7 @@ namespace AcClient {
         public unsafe struct CaseInsensitiveStringBase<T> {
             // Struct:
             public T str;
-            public override string ToString() => str.ToString();
+            public override string ToString() => str?.ToString() ?? "CaseInsensitiveStringBase<null>";
 
             // Functions:
 

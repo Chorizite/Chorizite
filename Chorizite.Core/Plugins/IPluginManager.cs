@@ -1,13 +1,23 @@
-﻿using System;
+﻿using Autofac;
+using Chorizite.Common.Enums;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Chorizite.Core.Plugins {
+    /// <summary>
+    /// The plugin manager
+    /// </summary>
     public interface IPluginManager : IDisposable {
         /// <summary>
         /// The absolute path to the directory where plugins are stored.
         /// </summary>
         string PluginDirectory { get; }
+
+        /// <summary>
+        /// The current environment.
+        /// </summary>
+        ChoriziteEnvironment Environment { get; }
 
         /// <summary>
         /// A list of currently registered plugin loaders.
@@ -23,6 +33,16 @@ namespace Chorizite.Core.Plugins {
         /// A list of currently loaded plugins.
         /// </summary>
         List<PluginInstance> Plugins { get; }
+
+        /// <summary>
+        /// The service provider
+        /// </summary>
+        ILifetimeScope ServiceProvider { get; }
+
+        /// <summary>
+        /// The absolute path to the directory where plugins are stored.
+        /// </summary>
+        string StorageDirectory { get; }
 
         /// <summary>
         /// Fired after all plugins have been loaded.
@@ -59,16 +79,16 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Get a plugin by name.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        PluginInstance? GetPlugin(string name);
+        PluginInstance? GetPlugin(string id);
 
         /// <summary>
         /// Check if a plugin is loaded.
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="id"></param>
         /// <returns></returns>
-        bool PluginIsLoaded(string name);
+        bool PluginIsLoaded(string id);
 
         /// <summary>
         /// Try and get a plugin instance from a file path. This only works if the plugin is loaded.
@@ -84,7 +104,7 @@ namespace Chorizite.Core.Plugins {
         /// <param name="manifest">The manifest to use</param>
         /// <param name="loader">The loader found, if any</param>
         /// <returns>Returns true if a loader was found.</returns>
-        bool TryGetPluginLoader(PluginManifest manifest, [NotNullWhen(true)] out IPluginLoader? loader);
+        bool TryGetPluginLoader(PluginManifest manifest, [NotNullWhen(true)] out IPluginLoader loader);
 
         /// <summary>
         /// Register a plugin loader.

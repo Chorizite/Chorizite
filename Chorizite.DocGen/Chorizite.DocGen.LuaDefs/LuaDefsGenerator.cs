@@ -25,7 +25,6 @@ namespace Chorizite.DocGen.LuaDefs {
         private readonly ChoriziteLogger log;
         private readonly ScriptableTypeFinder typeFinder;
         private readonly string _outPath;
-        private HttpClient _http;
 
         internal readonly static Dictionary<string, Def> UsedDefs = [];
 
@@ -55,7 +54,7 @@ namespace Chorizite.DocGen.LuaDefs {
             _out.AppendLine();
 
             var assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.lua.cs.lua"))
+            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.lua.cs.lua")!)
             using (StreamReader reader = new StreamReader(stream)) {
                 _out.AppendLine(reader.ReadToEnd());
             }
@@ -97,7 +96,7 @@ namespace Chorizite.DocGen.LuaDefs {
             _out.AppendLine();
 
             var assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.lua.globals.lua"))
+            using (Stream stream = assembly.GetManifestResourceStream("Chorizite.DocGen.LuaDefs.lua.globals.lua")!)
             using (StreamReader reader = new StreamReader(stream)) {
                 _out.AppendLine(reader.ReadToEnd());
             }
@@ -112,7 +111,7 @@ namespace Chorizite.DocGen.LuaDefs {
                 WriteClassDef(cls.Value, _out, typeFinder.SystemRegistry);
             }
 
-            var initPath = Path.Combine(Path.GetDirectoryName(assembly.Location), "Plugins", "Lua", "LuaScripts", "init.lua");
+            var initPath = Path.Combine(Path.GetDirectoryName(assembly.Location)!, "Plugins", "Lua", "LuaScripts", "init.lua");
 
             _out.AppendLine();
             _out.AppendLine(File.ReadAllText(initPath));
@@ -124,7 +123,7 @@ namespace Chorizite.DocGen.LuaDefs {
             _namespaces = [];
             var cls = typeFinder.CoreRegistry.Classes.Values.Where(c => c.Type.Name == type.Name).FirstOrDefault();
             var interfaces = type.GetInterfaces()
-                .Where(i => !i.Namespace.StartsWith("System")).ToList();
+                .Where(i => i.Namespace?.StartsWith("System") == false).ToList();
             if (interfaces.Count == 1) {
                 cls = typeFinder.CoreRegistry.Classes.Values.Where(c => c.Type.Name == interfaces[0].Name).FirstOrDefault();
             }
@@ -155,13 +154,13 @@ namespace Chorizite.DocGen.LuaDefs {
 
             foreach (var cls in luaModule.Classes.Values) {
                 if (!IsWantedType(cls)) continue;
-                if (cls.Type.Namespace.StartsWith("Chorizite.Core") && !cls.Type.Namespace.StartsWith(luaModule.EntryClass.Type.Namespace)) continue;
+                if (cls.Type.Namespace?.StartsWith("Chorizite.Core") == true && !cls.Type.Namespace.StartsWith(luaModule.EntryClass.Type.Namespace!)) continue;
                 WriteClassDef(cls, _out, luaModule.TypeRegistry, cls == luaModule.EntryClass);
             }
 
             foreach (var e in luaModule.Enums.Values) {
                 if (!IsWantedType(e)) continue;
-                if (e.Type.Namespace.StartsWith("Chorizite.Core") && !e.Type.Namespace.StartsWith(luaModule.EntryClass.Type.Namespace)) continue;
+                if (e.Type.Namespace?.StartsWith("Chorizite.Core") == true && !e.Type.Namespace.StartsWith(luaModule.EntryClass.Type.Namespace!)) continue;
                 WriteEnumDef(e, _out, luaModule.TypeRegistry);
             }
 
@@ -178,8 +177,8 @@ namespace Chorizite.DocGen.LuaDefs {
 
             foreach (var r in typeFinder.PluginRegistry.Values) {
                 _namespaces = [];
-                if (!Directory.Exists(Path.Combine(_outPath, "Plugins", r.Manifest.Name))) {
-                    Directory.CreateDirectory(Path.Combine(_outPath, "Plugins", r.Manifest.Name));
+                if (!Directory.Exists(Path.Combine(_outPath, "Plugins", r.Manifest.Id))) {
+                    Directory.CreateDirectory(Path.Combine(_outPath, "Plugins", r.Manifest.Id));
                 }
 
                 GeneratePluginDef(r);
@@ -189,7 +188,7 @@ namespace Chorizite.DocGen.LuaDefs {
                 foreach (var f in files) {
                     var contents = File.ReadAllText(f);
                     if (contents.Contains("---@meta")) {
-                        File.Copy(f, Path.Combine(_outPath, "Plugins", r.Manifest.Name, Path.GetFileName(f)), true);
+                        File.Copy(f, Path.Combine(_outPath, "Plugins", r.Manifest.Id, Path.GetFileName(f)), true);
                     }
                 }
             }
@@ -199,7 +198,7 @@ namespace Chorizite.DocGen.LuaDefs {
             var _out = new StringBuilder();
             _out.AppendLine($"-- {r.Manifest.Name} (version {r.Manifest.Version} by {r.Manifest.Author})<br />");
             _out.AppendLine($"-- {r.Manifest.Description}");
-            _out.AppendLine($"---@meta Plugins.{r.Manifest.Name}");
+            _out.AppendLine($"---@meta Plugins.{r.Manifest.Id}");
             _out.AppendLine();
             _out.AppendLine("local _defs = {}");
             _out.AppendLine();
@@ -216,7 +215,7 @@ namespace Chorizite.DocGen.LuaDefs {
 
             _out.AppendLine($"return moduleInstance");
 
-            File.WriteAllText(Path.Combine(_outPath, "Plugins", r.Manifest.Name, $"{r.Manifest.Name}.lua"), _out.ToString());
+            File.WriteAllText(Path.Combine(_outPath, "Plugins", r.Manifest.Id, $"{r.Manifest.Id}.lua"), _out.ToString());
         }
 
         private void WriteClassDef(ClassDef value, StringBuilder _out, TypeRegistry r, bool isEntryClass = false) {
@@ -275,7 +274,7 @@ namespace Chorizite.DocGen.LuaDefs {
             foreach (var evt in value.Events) {
                 WriteSummary(_out, evt);
                 _out.AppendLine($"---@param addremove '+' | '-' Use '+' to subscribe and '-' to unsubscribe");
-                _out.AppendLine($"---@param callback fun(sender: any, evt: {MakeLuaType(r, evt.EventInfo.EventHandlerType.GetGenericArguments().FirstOrDefault() ?? evt.EventInfo.EventHandlerType)})");
+                _out.AppendLine($"---@param callback fun(sender: any, evt: {MakeLuaType(r, evt.EventInfo.EventHandlerType!.GetGenericArguments().FirstOrDefault() ?? evt.EventInfo.EventHandlerType)})");
                 _out.AppendLine($"function {localName}:{evt.EventInfo.Name}(addremove, callback) end");
                 _out.AppendLine();
             }
@@ -321,7 +320,7 @@ namespace Chorizite.DocGen.LuaDefs {
                 tags.Add("static");
             }
             if (!string.IsNullOrEmpty(field.GetSummary())) {
-                summary = $"{field.GetSummary().Replace("\n", "<br />")}";
+                summary = $"{field.GetSummary()!.Replace("\n", "<br />")}";
             }
             if (tags.Count > 0) {
                 summary = $"**[{string.Join(", ", tags)}]** {summary}";
@@ -339,7 +338,7 @@ namespace Chorizite.DocGen.LuaDefs {
         private void WriteClassProperty(ClassPropertyDef prop, StringBuilder _out, TypeRegistry r) {
             var summary = "";
             if (!string.IsNullOrEmpty(prop.GetSummary())) {
-                summary = $"{prop.GetSummary().Replace("\n", "<br />")}";
+                summary = $"{prop.GetSummary()!.Replace("\n", "<br />")}";
             }
 
             var tags = new List<string>();
@@ -416,13 +415,13 @@ namespace Chorizite.DocGen.LuaDefs {
             if (value is ClassDef classDef) {
                 if (classDef.Type.IsGenericType) return false;
                 if (!classDef.Type.IsPublic) return false;
-                if (classDef.Type.Namespace.StartsWith("XLua")) return false;
+                if (classDef.Type.Namespace!.StartsWith("XLua")) return false;
                 if (classDef.Type.CustomAttributes.Any(a => a.AttributeType.Name == "HideScriptingAttribute")) return false;
                 return true;
             }
             if (value is EnumDef enumDef) {
                 if (!enumDef.Type.IsPublic) return false;
-                if (enumDef.Type.Namespace.StartsWith("XLua")) return false;
+                if (enumDef.Type.Namespace!.StartsWith("XLua")) return false;
                 if (enumDef.Type.CustomAttributes.Any(a => a.AttributeType.Name == "HideScriptingAttribute")) return false;
                 return true;
             }

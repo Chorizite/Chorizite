@@ -54,7 +54,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
                     GenerateMemberDocs(path);
                 }
                 catch (Exception ex) {
-                    Console.WriteLine($"Error loading doc types for plugin: {Manifest.Name}: {path}");
+                    Console.WriteLine($"Error loading doc types for plugin: {Manifest.Id}: {path}");
                     Console.WriteLine(ex.ToString());
                 }
             }
@@ -70,12 +70,12 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
 
             foreach (var assemblyPath in AllAssemblyPaths) {
                 if (assemblyPath == EntryAssemblyPath) continue;
-                Console.WriteLine($"Loading doc types for plugin: {Manifest.Name}: {assemblyPath}");
+                Console.WriteLine($"Loading doc types for plugin: {Manifest.Id}: {assemblyPath}");
                 try {
                     LoadAssemblyTypes(LoadContext.LoadFromAssemblyPath(assemblyPath));
                 }
                 catch (Exception ex) {
-                    Console.WriteLine($"Error loading doc types for plugin: {Manifest.Name}: {assemblyPath}");
+                    Console.WriteLine($"Error loading doc types for plugin: {Manifest.Id}: {assemblyPath}");
                     Console.WriteLine(ex.ToString());
                 }
 

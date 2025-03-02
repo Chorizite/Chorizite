@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Render {
+    /// <summary>
+    /// Represents a texture
+    /// </summary>
     public interface ITexture : IDisposable {
         /// <summary>
         /// The width of the texture

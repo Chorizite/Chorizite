@@ -1,15 +1,6 @@
 ﻿using Autofac;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Loader;
-using System.Security;
-using System.Security.Permissions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins.AssemblyLoader {
     /// <summary>
@@ -20,6 +11,12 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         private readonly ILogger _log;
         private readonly IPluginManager _pluginManager;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="AssemblyPluginLoader"/>
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="pluginManager"></param>
+        /// <param name="log"></param>
         public AssemblyPluginLoader(ILifetimeScope serviceProvider, IPluginManager pluginManager, ILogger<AssemblyPluginLoader> log) {
             _log = log;
             _pluginManager = pluginManager;
@@ -34,7 +31,7 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         /// <inheritdoc cref="IPluginLoader.LoadPluginInstance(PluginManifest, out PluginInstance?)"/>
         public bool LoadPluginInstance(PluginManifest manifest, out PluginInstance? instance) {
             if (PluginManifest.TryLoadManifest<AssemblyPluginManifest>(manifest.ManifestFile, out var assemblyManifest, out string? errors)) {
-                instance = new AssemblyPluginInstance(_pluginManager, assemblyManifest, _serviceProvider);
+                instance = new AssemblyPluginInstance(_pluginManager, assemblyManifest!, _serviceProvider);
                 return true;
             }
             _log?.LogError(errors);

@@ -1,30 +1,42 @@
 ﻿using Autofac;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Chorizite.Common;
 using Chorizite.Core.Lib;
 
 namespace Chorizite.Core.Plugins {
-
+    /// <summary>
+    /// Represents an instance of a plugin.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public abstract class PluginInstance<T> : PluginInstance where T : PluginManifest {
+        /// <summary>
+        /// The manifest
+        /// </summary>
         public new T Manifest { get; internal set; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="manifest"></param>
+        /// <param name="serviceProvider"></param>
         public PluginInstance(T manifest, ILifetimeScope serviceProvider) : base(manifest, serviceProvider) {
             Manifest = manifest;
         }
 
+        /// <summary>
+        /// Initialize the plugin
+        /// </summary>
         public override void Initialize() {
-            
+
         }
 
+        /// <summary>
+        /// Update the manifest
+        /// </summary>
         internal override void UpdateManifest() {
-            
+
         }
     }
 
@@ -32,15 +44,30 @@ namespace Chorizite.Core.Plugins {
     /// Represents an instance of a plugin.
     /// </summary>
     public abstract class PluginInstance {
+        /// <summary>
+        /// The service provider
+        /// </summary>
         protected ILifetimeScope _serviceProvider;
+
+        /// <summary>
+        /// The logger
+        /// </summary>
         protected ILogger _log;
 
+        /// <summary>
+        /// The file watcher
+        /// </summary>
         protected FileWatcher FileWatcher;
 
         /// <summary>
-        /// The name of this plugin. Can be overriden with the configure callback during instantiation.
+        /// The id of this plugin
         /// </summary>
-        public string Name => Manifest.Name;
+        public string Id => Manifest.Id;
+
+        /// <summary>
+        /// The display name of this plugin
+        /// </summary>
+        public string DisplayName => Manifest.Name;
 
         /// <summary>
         /// Wether to enable live reloading for this plugin. It will live reload when the files changes on disk.
@@ -75,7 +102,7 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Fired directly before the plugin will be loaded.
         /// </summary>
-        public event EventHandler<EventArgs>? OnBeforeLoad {
+        public event EventHandler<EventArgs> OnBeforeLoad {
             add { _OnBeforeLoad.Subscribe(value); }
             remove { _OnBeforeLoad.Unsubscribe(value); }
         }
@@ -84,7 +111,7 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Fired directly after the plugin has been loaded.
         /// </summary>
-        public event EventHandler<EventArgs>? OnLoad {
+        public event EventHandler<EventArgs> OnLoad {
             add { _OnLoad.Subscribe(value); }
             remove { _OnLoad.Unsubscribe(value); }
         }
@@ -93,7 +120,7 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Fired before the plugin is unloaded, during a live reload.
         /// </summary>
-        public event EventHandler<EventArgs>? OnBeforeReload {
+        public event EventHandler<EventArgs> OnBeforeReload {
             add { _OnBeforeReload.Subscribe(value); }
             remove { _OnBeforeReload.Unsubscribe(value); }
         }
@@ -102,7 +129,7 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Fired before the plugin is unloaded, during a live reload.
         /// </summary>
-        public event EventHandler<EventArgs>? OnAfterReload {
+        public event EventHandler<EventArgs> OnAfterReload {
             add { _OnAfterReload.Subscribe(value); }
             remove { _OnAfterReload.Unsubscribe(value); }
         }
@@ -111,7 +138,7 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Fired after this plugin has been unloaded.
         /// </summary>
-        public event EventHandler<EventArgs>? OnBeforeUnload {
+        public event EventHandler<EventArgs> OnBeforeUnload {
             add { _OnBeforeUnload.Subscribe(value); }
             remove { _OnBeforeUnload.Unsubscribe(value); }
         }
@@ -120,7 +147,7 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Fired after this plugin has been unloaded.
         /// </summary>
-        public event EventHandler<EventArgs>? OnUnload {
+        public event EventHandler<EventArgs> OnUnload {
             add { _OnUnload.Subscribe(value); }
             remove { _OnUnload.Unsubscribe(value); }
         }
@@ -130,7 +157,7 @@ namespace Chorizite.Core.Plugins {
         /// <summary>
         /// Fired when the plugin requests a reload.
         /// </summary>
-        public event EventHandler<EventArgs>? OnRequestReload {
+        public event EventHandler<EventArgs> OnRequestReload {
             add { _OnRequestReload.Subscribe(value); }
             remove { _OnRequestReload.Unsubscribe(value); }
         }
@@ -157,6 +184,8 @@ namespace Chorizite.Core.Plugins {
             _log = _serviceProvider.Resolve<ILogger<PluginInstance>>();
             configure?.Invoke(this);
         }
+
+        internal abstract void UpdateManifest();
 
         /// <summary>
         /// Load the plugin.
@@ -231,13 +260,17 @@ namespace Chorizite.Core.Plugins {
         }
         #endregion // Event Triggers
 
+        /// <summary>
+        /// Initialize the plugin
+        /// </summary>
         public abstract void Initialize();
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public virtual void Dispose() {
             Unload(true);
             FileWatcher?.Dispose();
         }
-
-        internal abstract void UpdateManifest();
     }
 }

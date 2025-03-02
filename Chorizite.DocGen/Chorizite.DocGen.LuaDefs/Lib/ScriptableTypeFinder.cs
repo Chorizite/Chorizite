@@ -38,10 +38,10 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
             pluginManager.LoadPlugins();
             foreach (var plugin in pluginManager.PluginManifests) {
                 try {
-                    PluginRegistry.Add(plugin.Name, new PluginTypeRegistry(this, _chorizite, plugin));
+                    PluginRegistry.Add(plugin.Id, new PluginTypeRegistry(this, _chorizite, plugin));
                 }
                 catch (Exception ex) {
-                    Console.WriteLine($"Error loading types for plugin: {plugin.Name}");
+                    Console.WriteLine($"Error loading types for plugin: {plugin.Id}");
                     Console.WriteLine(ex.ToString());
                 }
             }

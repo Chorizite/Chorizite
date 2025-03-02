@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Chorizite.Common.Enums;
 using Chorizite.Core;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Dats;

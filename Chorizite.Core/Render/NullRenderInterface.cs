@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Chorizite.Common;
 
 namespace Chorizite.Core.Render {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public class NullRenderInterface : IRenderInterface {
         internal class NullTexture : ITexture {
             public IntPtr TexturePtr { get; }
@@ -102,4 +103,5 @@ namespace Chorizite.Core.Render {
         public void Dispose() {
         }
     }
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 }

@@ -29,8 +29,8 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         private static IHook<Del_UIElementManager_SetCursor>? Hook_UIElementManager_SetCursor;
         private static IHook<Del_UIElement_CatchDroppedItem>? Hook_UIElement_CatchDroppedItem;
         private static IHook<Del_ACCWeenieObject_SetSelectedObject>? Hook_ACCWeenieObject_SetSelectedObject;
-        private static IHook<Del_UIElement_SetVisible> Hook_UIElement_SetVisible;
-        private static IHook<Del_gmFloatyIndicatorsUI_UpdateLockedStatus> Hook_gmFloatyIndicatorsUI_UpdateLockedStatus;
+        private static IHook<Del_UIElement_SetVisible>? Hook_UIElement_SetVisible;
+        private static IHook<Del_gmFloatyIndicatorsUI_UpdateLockedStatus>? Hook_gmFloatyIndicatorsUI_UpdateLockedStatus;
 
         [Function(CallingConventions.MicrosoftThiscall)]
         private delegate int Del_UIElementManager_StartDragandDrop(UIElementManager* This, UIElement* element, int x, int y);
@@ -147,7 +147,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
             else if (spellId != 0) {
                 var spellName = $"Spell[0x{spellId:X8}]";
                 try {
-                    if (StandaloneLoader.Backend.DatReader.Portal.SpellTable?.Spells.TryGetValue(spellId, out var spell) == true) {
+                    if (StandaloneLoader.Backend?.DatReader.Portal.SpellTable?.Spells.TryGetValue(spellId, out var spell) == true) {
                         spellName = spell.Name;
                         var spellFlags = ((SpellFlags)spell.Bitfield);
                         var isSelfSpell = (spellFlags.HasFlag(SpellFlags.SelfTargeted) && spell.MetaSpellType.HasFlag(DatReaderWriter.Enums.SpellType.Enchantment)) || spell.MetaSpellType.HasFlag(DatReaderWriter.Enums.SpellType.PortalSending) || spell.MetaSpellType.HasFlag(DatReaderWriter.Enums.SpellType.PortalRecall);
@@ -167,7 +167,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                 eventArgs = new GameObjectDragDropEventArgs(spellName, spellId, (DragDropFlags)flags, isDropping, true, iconData);
             }
 
-            return eventArgs;
+            return eventArgs ?? new GameObjectDragDropEventArgs(string.Empty, 0, (DragDropFlags)flags, isDropping, false, new Core.Backend.Client.IconData());
         }
 
         private static uint GetDefaultUnderlayFromItemType(ITEM_TYPE m_itemType) {
@@ -205,7 +205,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         }
 
         private static uint GetSpellLevel(uint firstComponentId) {
-            var componentTable = StandaloneLoader.Backend.DatReader.Portal.SpellComponentTable;
+            var componentTable = StandaloneLoader.Backend?.DatReader.Portal.SpellComponentTable;
             if (componentTable is null) return 1;
 
             if (!componentTable.Components.TryGetValue(firstComponentId, out var firstComp) || firstComp.Category == 0) {
@@ -310,7 +310,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                 Hook_UIElementManager_CheckTooltip!.OriginalFunction(This);
                 if (_showingTooltip && UIElementManager.s_pInstance->m_pTooltipElement == null) {
                     _showingTooltip = false;
-                    StandaloneLoader.Backend.ACUIBackend.HandleHideTooltip(EventArgs.Empty);
+                    StandaloneLoader.Backend?.ACUIBackend.HandleHideTooltip(EventArgs.Empty);
                 }
             }
             catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to check tooltip"); }

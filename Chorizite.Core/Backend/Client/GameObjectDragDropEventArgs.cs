@@ -11,11 +11,34 @@ namespace Chorizite.Core.Backend.Client {
     /// </summary>
     [Flags]
     public enum DragDropFlags : uint {
+        /// <summary>
+        /// No flags
+        /// </summary>
         None = 0,
+
+        /// <summary>
+        /// The object is in a container
+        /// </summary>
         Container = 1,
+
+        /// <summary>
+        /// The object is a vendor item
+        /// </summary>
         Vendor = 2,
+        
+        /// <summary>
+        /// The object is a shortcut
+        /// </summary>
         Shortcut = 4,
+
+        /// <summary>
+        /// The object is a salvage. Unused?
+        /// </summary>
         Salvage = 8,
+
+        /// <summary>
+        /// The object is an alias. Unused?
+        /// </summary>
         Alias = 14
     }
 
@@ -53,6 +76,15 @@ namespace Chorizite.Core.Backend.Client {
         /// </summary>
         public bool IsSpell { get; init; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="id"></param>
+        /// <param name="flags"></param>
+        /// <param name="isDropping"></param>
+        /// <param name="isSpell"></param>
+        /// <param name="iconData"></param>
         public GameObjectDragDropEventArgs(string name, uint id, DragDropFlags flags, bool isDropping, bool isSpell, IconData iconData) {
             IsDropping = isDropping;
             Flags = flags;

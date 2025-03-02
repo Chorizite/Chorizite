@@ -9,6 +9,7 @@ namespace Chorizite.Core.Backend.Client {
     /// Chat types
     /// </summary>
     public enum ChatType : uint {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         Default = 0x0,
         All = 0x1,
         Speech = 0x2,
@@ -18,7 +19,7 @@ namespace Chorizite.Core.Backend.Client {
         Combat = 0x6,
         Magic = 0x7,
         Channel = 0x8,
-        ChannelCend = 0x9,
+        ChannelSend = 0x9,
         Social = 0xA,
         SocialSend = 0xB,
         Emote = 0xC,
@@ -43,5 +44,6 @@ namespace Chorizite.Core.Backend.Client {
         AdminTell = 0x1F,
         Olthoi = 0x20,
         Society = 0x21
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     };
 }

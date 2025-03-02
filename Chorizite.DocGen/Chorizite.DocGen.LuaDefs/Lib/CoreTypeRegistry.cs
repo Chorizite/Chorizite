@@ -16,10 +16,6 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
         public Assembly ChoriziteCommonAssembly => _choriziteCommonAssembly;
 
         public CoreTypeRegistry(Chorizite<DocGenBackend> chorizite, ScriptableTypeFinder scriptableTypeFinder) : base(chorizite, scriptableTypeFinder) {
-            Init();
-        }
-
-        private void Init() {
             List<string> paths = [];
 
             // Create the list of assembly paths consisting of runtime assemblies and the inspected assembly.

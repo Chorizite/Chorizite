@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace AcClient {
     public class MultiHook {
         internal IntPtr Entrypoint;
-        internal Delegate Del;
+        internal Delegate? Del;
 
         internal List<int> CallLocations = new List<int>();
         internal List<Hook> Hooks = new List<Hook>();
@@ -35,7 +35,7 @@ namespace AcClient {
     /// </summary>
     public class Hook {
         internal IntPtr Entrypoint;
-        internal Delegate Del;
+        internal Delegate? Del;
         internal int call;
 
         public Hook(int entrypoint, int call_location) {
@@ -111,7 +111,7 @@ namespace AcClient {
     /// </summary>
     public class VHook {
         internal int Entrypoint;
-        internal Delegate Del;
+        internal Delegate? Del;
         internal int call;
 
         public VHook(int entrypoint, int vtbl_address) {
@@ -121,7 +121,7 @@ namespace AcClient {
         public bool Setup(Delegate del) {
             if (!hookers.Contains(this)) {
                 Del = del;
-                if (ReadVCall(call) != Entrypoint) return false;
+                if (ReadVCall(call) != Entrypoint || Del == null) return false;
                 if (PatchVCall(call, (int)Marshal.GetFunctionPointerForDelegate(Del))) {
                     hookers.Add(this);
                     return true;

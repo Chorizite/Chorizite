@@ -5,7 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Chorizite.Core.Backend.Client {
+    /// <summary>
+    /// Client chat window ids
+    /// </summary>
     public enum ChatWindowId {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         Undef = 0,
         Main = 1,
         Floaty1 = 2,
@@ -24,5 +28,6 @@ namespace Chorizite.Core.Backend.Client {
         FloatyCombatPanel = 15,
         SmartBox = 16,
         FloatySideVitals = 17,
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 }

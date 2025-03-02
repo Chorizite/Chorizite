@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Chorizite.Core.Plugins.AssemblyLoader {
+﻿namespace Chorizite.Core.Plugins.AssemblyLoader {
+    /// <summary>
+    /// Used to serialize settings for an assembly plugin
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface ISerializeSettings<T> {
         /// <summary>
         /// The json type info for the settings object

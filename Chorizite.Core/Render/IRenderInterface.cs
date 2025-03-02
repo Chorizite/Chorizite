@@ -5,6 +5,9 @@ using System.Numerics;
 using Chorizite.Common;
 
 namespace Chorizite.Core.Render {
+    /// <summary>
+    /// The render interface
+    /// </summary>
     public interface IRenderInterface : IDisposable {
         /// <summary>
         /// The size of the viewport (game window)
@@ -24,17 +27,17 @@ namespace Chorizite.Core.Render {
         /// <summary>
         /// Callback for 2D rendering
         /// </summary>
-        public event EventHandler<EventArgs>? OnRender2D;
+        public event EventHandler<EventArgs> OnRender2D;
 
         /// <summary>
         /// Callback for graphics reset
         /// </summary>
-        public event EventHandler<EventArgs>? OnGraphicsPreReset;
+        public event EventHandler<EventArgs> OnGraphicsPreReset;
 
         /// <summary>
         /// Callback for graphics reset
         /// </summary>
-        public event EventHandler<EventArgs>? OnGraphicsPostReset;
+        public event EventHandler<EventArgs> OnGraphicsPostReset;
 
         /// <summary>
         /// Compile the specified geometry and return a pointer to the compiled geometry

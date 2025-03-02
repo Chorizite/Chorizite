@@ -1,28 +1,41 @@
-﻿using Autofac;
-using Chorizite.Core.Serialization;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins {
+    /// <summary>
+    /// A plugin dev manifest
+    /// </summary>
     public class PluginDevManifest {
-        private static JsonSerializerOptions _serializerOptions = new JsonSerializerOptions {
+        private static readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions {
             WriteIndented = true,
             PropertyNameCaseInsensitive = true
         };
 
+        /// <summary>
+        /// The source directory for this plugin, used for live reloading
+        /// </summary>
         public string Source { get; set; } = "";
+
+        /// <summary>
+        /// The bin directory for this plugin
+        /// </summary>
         public string Bin { get; set; } = "";
-        
+
+        /// <summary>
+        /// The absolute path to this manifest file
+        /// </summary>
         [JsonIgnore]
         public string ManifestFile { get; set; } = "";
 
+        /// <summary>
+        /// Try to load a plugin dev manifest
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="manifest"></param>
+        /// <param name="errorString"></param>
+        /// <returns></returns>
         public static bool TryLoadManifest(string filename, out PluginDevManifest manifest, out string? errorString) {
             try {
                 manifest = JsonSerializer.Deserialize<PluginDevManifest>(File.ReadAllText(filename), _serializerOptions)!;
