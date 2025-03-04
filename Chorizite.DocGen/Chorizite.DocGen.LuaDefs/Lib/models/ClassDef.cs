@@ -21,7 +21,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib.models {
         public List<ClassFieldDef> StaticFields { get; set; } = [];
         public List<MethodDef> StaticMethods { get; set; } = [];
 
-        public ClassDef BaseClass { get; set; }
+        public ClassDef? BaseClass { get; set; }
 
         public bool HasPublicContructor => Type.GetConstructors().Any(c => c.IsPublic);
 

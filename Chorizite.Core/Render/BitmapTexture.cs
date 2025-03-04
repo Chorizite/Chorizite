@@ -191,7 +191,8 @@ namespace Chorizite.Core.Render {
         }
 
         private static Image<Rgba32> GetTextureMissing() {
-            using Stream stream = typeof(BitmapTexture).Assembly.GetManifestResourceStream("Chorizite.Core.Render.nulltexture.jpg");
+            using Stream? stream = typeof(BitmapTexture).Assembly.GetManifestResourceStream("Chorizite.Core.Render.nulltexture.jpg");
+            if (stream is null) return new Image<Rgba32>(1, 1);
             using var img = Image.Load(stream);
             return  img.CloneAs<Rgba32>();
         }

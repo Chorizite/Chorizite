@@ -29,8 +29,8 @@
   </Target>
   
   <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec" Condition="Exists('../release-notes.md')">
-    <ReadLinesFromFile File="../release-notes.md" >
-      <Output TaskParameter="Lines" ItemName="ReleaseNoteLines"/>
+    <ReadLinesFromFile File="../release-notes.md">
+      <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
     </ReadLinesFromFile>
 
     <PropertyGroup>
@@ -77,6 +77,7 @@
     <PackageReference Include="Chorizite.ACProtocol" Version="1.0.0" />
     <PackageReference Include="Chorizite.Common" Version="1.0.0" />
     <PackageReference Include="Autofac" Version="8.2.0" />
+    <PackageReference Include="NJsonSchema" Version="11.1.0" />
     <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" />
     <PackageReference Include="GitVersion.MsBuild" Version="6.1.0">
       <PrivateAssets>all</PrivateAssets>

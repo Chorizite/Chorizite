@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Chorizite.Plugins.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace Chorizite.Core.Plugins {
     public interface IPluginManager : IDisposable {
@@ -23,6 +25,17 @@ namespace Chorizite.Core.Plugins {
         /// A list of currently loaded plugins.
         /// </summary>
         List<PluginInstance> Plugins { get; }
+
+        /// <summary>
+        /// Plugin release info, downloaded from the plugin index. Request info for a specific plugin with
+        /// <see cref="RefreshPluginReleaseDetails(string)"/>
+        /// </summary>
+        Dictionary<string, PluginDetailsModel> PluginReleaseInfo { get; }
+
+        /// <summary>
+        /// The plugin index data. Use <see cref="RefreshPluginIndex"/> to refresh.
+        /// </summary>
+        ReleasesIndexModel? PluginIndex { get; }
 
         /// <summary>
         /// Fired after all plugins have been loaded.
@@ -97,5 +110,18 @@ namespace Chorizite.Core.Plugins {
         /// </summary>
         /// <param name="loader">The loader to unregister.</param>
         void UnregisterPluginLoader(IPluginLoader loader);
+
+        /// <summary>
+        /// Get the latest releases from the plugin index
+        /// </summary>
+        /// <returns></returns>
+        Task<ReleasesIndexModel?> RefreshPluginIndex();
+
+        /// <summary>
+        /// Get release details for a specific plugin
+        /// </summary>
+        /// <param name="id">The id of the plugin</param>
+        /// <returns>Release details</returns>
+        Task<PluginDetailsModel?> RefreshPluginReleaseDetails(string id);
     }
 }

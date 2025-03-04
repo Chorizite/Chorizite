@@ -11,11 +11,12 @@ namespace Chorizite.DocGen.LuaDefs.Lib.models {
     public class XMLDocEntry {
         private static Regex trimRegex = new Regex("(^\\s+|\\s+$)", RegexOptions.Multiline | RegexOptions.Compiled);
         private static Regex seeRe = new Regex(@"<see cref=""[A-Z]:(.*?)"" />", RegexOptions.Multiline | RegexOptions.Compiled);
-        private string _summary;
+        private string? _summary;
 
         public string Id { get; set; }
-        public string Summary {
+        public string? Summary {
             get {
+                if (_summary is null) return null;
                 return seeRe.Replace(trimRegex.Replace(_summary, string.Empty), "`CS.$1`")
                     .Replace("<summary>", "").Replace("</summary>", "");
             }
@@ -27,7 +28,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib.models {
         internal static XMLDocEntry FromMember(XElement e) {
             string summary;
             if (e.Elements("inheritdoc").Count() > 0) {
-                summary = $"inheritdoc|{e.Element("inheritdoc").Attribute("cref")?.Value}";
+                summary = $"inheritdoc|{e.Element("inheritdoc")?.Attribute("cref")?.Value}";
             }
             else {
                 summary = e.Element("summary")?.Value ?? "";

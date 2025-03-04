@@ -86,7 +86,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             _datReader = datReader;
             D3Ddevice = new Device(unmanagedD3dPtr);
 
-            var shaderDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location), $"./../../Launcher/Chorizite.NativeClientBootstrapper/Render/Shaders"));
+            var shaderDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, $"./../../Launcher/Chorizite.NativeClientBootstrapper/Render/Shaders"));
 
             BasicShader = new HLSLShader(D3Ddevice, "Basic", GetEmbeddedResource("Render.Shaders.Basic.fx"), null, _log, shaderDir);
         }
@@ -109,39 +109,6 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             var oldViewport = D3Ddevice.Viewport;
             using (var stateBlock = new StateBlock(D3Ddevice, StateBlockType.All)) {
                 stateBlock.Capture();
-
-                D3Ddevice.SetRenderState(RenderState.CullMode, Cull.Clockwise);
-                D3Ddevice.SetRenderState(RenderState.Lighting, false);
-                D3Ddevice.SetRenderState(RenderState.FogEnable, false);
-                D3Ddevice.SetRenderState(RenderState.AntialiasedLineEnable, true);
-                D3Ddevice.SetRenderState(RenderState.MultisampleAntialias, true);
-
-                D3Ddevice.SetRenderState(RenderState.AlphaBlendEnable, true);
-                D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.BlendFactor);
-                D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.Zero);
-                D3Ddevice.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
-                D3Ddevice.SetRenderState(RenderState.SourceBlendAlpha, Blend.BlendFactor);
-                D3Ddevice.SetRenderState(RenderState.DestinationBlendAlpha, Blend.Zero);
-                D3Ddevice.SetRenderState(RenderState.BlendOperationAlpha, BlendOperation.Add);
-
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaOperation, TextureOperation.Add);
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg1, TextureArgument.Texture);
-                D3Ddevice.SetTextureStageState(0, TextureStage.AlphaArg2, TextureArgument.Diffuse);
-
-                D3Ddevice.SetSamplerState(0, SamplerState.AddressU, TextureAddress.Clamp);
-                D3Ddevice.SetSamplerState(0, SamplerState.AddressV, TextureAddress.Clamp);
-
-                D3Ddevice.SetRenderState(RenderState.ColorVertex, true);
-
-                D3Ddevice.Viewport = new RawViewport() {
-                    X = 0,
-                    Y = 0,
-                    Width = (int)ViewportSize.X,
-                    Height = (int)ViewportSize.Y,
-                    MinDepth = -1000,
-                    MaxDepth = 1000
-                };
-
                 try {
                     _OnRender2D?.Invoke(this, EventArgs.Empty);
                 }
@@ -195,16 +162,6 @@ namespace Chorizite.NativeClientBootstrapper.Render {
                     D3Ddevice.SetTexture(0, dxTexture.Texture);
                     BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColorTexture");
 
-                    if (dxTexture.PreMultipliedAlpha) {
-                        D3Ddevice.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
-                        D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.SourceAlpha);
-                        D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
-                    }
-                    else {
-                        D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.BlendFactor);
-                        D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.Zero);
-                        D3Ddevice.SetRenderState(RenderState.BlendOperation, BlendOperation.Add);
-                    }
                 }
                 else {
                     D3Ddevice.SetTexture(0, null);
@@ -213,19 +170,24 @@ namespace Chorizite.NativeClientBootstrapper.Render {
                 BasicShader.SetUniform("xWorld", transform * _transform);
                 BasicShader.SetUniform("xProjection", projection);
 
-                var numPasses = BasicShader.Effect.Begin();
+                var s = D3Ddevice.VertexDeclaration;
+                D3Ddevice.VertexDeclaration = geom.VertexDecl;
+                D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
+                D3Ddevice.Indices = geom.IndexBuffer;
 
+                var numPasses = BasicShader.Effect.Begin();
                 for (var p = 0; p < numPasses; p++) {
                     BasicShader.Effect.BeginPass(p);
-
-                    D3Ddevice.VertexDeclaration = geom.VertexDecl;
-                    D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
-                    D3Ddevice.Indices = geom.IndexBuffer;
                     D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
-
                     BasicShader.Effect.EndPass();
                 }
                 BasicShader.Effect.End();
+
+                // Force device back to a completely clean state
+                D3Ddevice.VertexShader = null;
+                D3Ddevice.PixelShader = null;
+                D3Ddevice.VertexDeclaration = null;
+                D3Ddevice.SetTexture(0, null);
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error in RenderGeometry: {ex.Message}");

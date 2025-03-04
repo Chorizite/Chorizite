@@ -12,7 +12,7 @@ namespace Chorizite.Core.Render {
 
     public abstract class AShader : IDisposable {
         protected readonly ILogger _log;
-        private readonly FileWatcher _fileWatcher;
+        private readonly FileWatcher? _fileWatcher;
         private string _liveShaderDirectory = "";
 
         protected virtual string VertShaderFileName => $"{Name}.vert";

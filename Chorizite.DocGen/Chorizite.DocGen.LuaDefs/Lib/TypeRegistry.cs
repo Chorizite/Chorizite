@@ -29,11 +29,11 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
             xdoc = XDocument.Parse(File.ReadAllText(assemblyXmlFile));
 
             foreach (var e in xdoc.Descendants("member")) {
-                if (DocEntries.ContainsKey(e.Attribute("name").Value)) {
-                    DocEntries[e.Attribute("name").Value] = XMLDocEntry.FromMember(e);
-                }
-                else {
-                    DocEntries.Add(e.Attribute("name").Value, XMLDocEntry.FromMember(e));
+                var v = e.Attribute("name")?.Value;
+                if (string.IsNullOrEmpty(v)) continue;
+
+                if (!DocEntries.TryAdd(v, XMLDocEntry.FromMember(e))) {
+                    DocEntries[v] = XMLDocEntry.FromMember(e);
                 }
             }
 

@@ -146,7 +146,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
                 if (!Directory.Exists(xmlPath)) {
                     Directory.CreateDirectory(xmlPath);
                 }
-                string xml = null;
+                string ?xml = null;
                 if (!File.Exists(Path.Combine(xmlPath, $"{type.Name}.xml"))) {
                     _http ??= new HttpClient();
                     //https://raw.githubusercontent.com/dotnet/dotnet-api-docs/refs/heads/main/xml/System/Type.xml
@@ -171,9 +171,12 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
 
                 foreach (var e in xdoc.Descendants("MemberSignature")) {
                     if (e.Attribute("Language")?.Value == "DocId") {
-                        DocEntries.Add(e.Attribute("Value").Value, new XMLDocEntry() {
-                            Id = e.Attribute("Value").Value,
-                            Summary = e.Parent.Descendants("summary").FirstOrDefault()?.ToString()
+                        var v = e.Attribute("Value")?.Value;
+                        if (string.IsNullOrEmpty(v)) continue;
+
+                        DocEntries.Add(v, new XMLDocEntry() {
+                            Id = v,
+                            Summary = e.Parent.Descendants("summary")?.FirstOrDefault()?.ToString()
                         });
                     }
                 }

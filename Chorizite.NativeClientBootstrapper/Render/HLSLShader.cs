@@ -8,11 +8,11 @@ using System.Numerics;
 namespace Chorizite.NativeClientBootstrapper.Render {
     internal class HLSLShader : AShader {
         private readonly Device _device;
-        internal Effect Effect;
+        internal Effect? Effect;
 
         protected override string VertShaderFileName => $"{Name}.fx";
 
-        public HLSLShader(Device device, string name, string vertSource, string fragSource, ILogger log, string? shaderDir = null) : base(name, vertSource, fragSource, log, shaderDir) {
+        public HLSLShader(Device device, string name, string vertSource, string? fragSource, ILogger log, string? shaderDir = null) : base(name, vertSource, fragSource, log, shaderDir) {
             _device = device;
         }
 
@@ -30,7 +30,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
 
         public override void SetUniform(string name, Matrix4x4 val) {
-            Effect.SetValue(name, val);
+            Effect?.SetValue(name, val);
         }
 
         public override void SetUniform(string name, int val) {
