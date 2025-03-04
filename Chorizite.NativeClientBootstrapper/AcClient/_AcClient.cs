@@ -558,7 +558,7 @@ namespace AcClient {
     }
 
     //public enum Motion___ { Forward = 0x45000005, Backward = 0x45000006, TurnRight = 0x6500000D, TurnLeft = 0x6500000E, StrafeRight = 0x6500000F, StrafeLeft = 0x65000010, Walk = 0x11112222 }
-    public enum command : uint {
+    public enum Command : uint {
         Invalid = 0x80000000,
         HoldRun = 0x85000001,
         HoldSidestep = 0x85000002,

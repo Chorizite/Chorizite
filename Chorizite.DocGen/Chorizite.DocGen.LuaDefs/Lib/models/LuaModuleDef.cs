@@ -26,18 +26,21 @@ namespace Chorizite.DocGen.LuaDefs.Lib.models {
             foreach (var attribute in luaNamespaceAttributes) {
                 var args = attribute.ConstructorArguments.First().Value as ReadOnlyCollection<CustomAttributeTypedArgument>;
                 Console.WriteLine($"Adding types from namespace {args}");
-                foreach (var arg in args) {
-                    AddTypesFromNamespace(arg.Value as string);
+                if (args is not null) {
+                    foreach (var arg in args) {
+                        AddTypesFromNamespace(arg.Value as string);
+                    }
                 }
             }
         }
 
         private void AddTypesFromNamespace(string? ns) {
+            if (ns is null) return;
             Console.WriteLine($"Adding types from namespace {ns}");
-            foreach (var type in TypeRegistry.Classes.Values.Where(c => c.Type.Namespace.StartsWith(ns))) {
+            foreach (var type in TypeRegistry.Classes.Values.Where(c => c.Type.Namespace?.StartsWith(ns) == true)) {
                 AddType(type.Type);
             }
-            foreach (var type in TypeRegistry.Enums.Values.Where(c => c.Type.Namespace.StartsWith(ns))) {
+            foreach (var type in TypeRegistry.Enums.Values.Where(c => c.Type.Namespace?.StartsWith(ns) == true)) {
                 AddType(type.Type);
             }
         }

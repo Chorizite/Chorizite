@@ -19,7 +19,6 @@ using Chorizite.NativeClientBootstrapper.Hooks;
 namespace Chorizite.NativeClientBootstrapper.Render {
     public unsafe class DX9RenderInterface : IRenderInterface {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
-        private static int iii = 0;
         private Matrix4x4 _transform = Matrix4x4.Identity;
         private struct GeometryBufferRef : IDisposable {
             public VertexBuffer VertexBuffer;
@@ -67,10 +66,11 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
         private readonly WeakEvent<EventArgs> _OnGraphicsPostReset = new();
 
-        public static Device D3Ddevice { get; private set; }
+        public static Device? D3Ddevice { get; private set; }
 
         public Vector2 ViewportSize {
             get {
+                if (D3Ddevice == null) return Vector2.Zero;
                 return new (D3Ddevice.Viewport.Width + D3Ddevice.Viewport.X, D3Ddevice.Viewport.Height + D3Ddevice.Viewport.Y);
             }
         }
@@ -78,7 +78,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         public IntPtr DataPatchUI { get; private set; }
         internal HLSLShader BasicShader { get; }
 
-        public IntPtr NativeDevice => D3Ddevice.NativePointer;
+        public IntPtr NativeDevice => D3Ddevice?.NativePointer ?? IntPtr.Zero;
         public IntPtr NativeHwnd => DirectXHooks.HWND;
 
         public DX9RenderInterface(IntPtr unmanagedD3dPtr, ILogger logger, IDatReaderInterface datReader) {
@@ -88,7 +88,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
 
             var shaderDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, $"./../../Launcher/Chorizite.NativeClientBootstrapper/Render/Shaders"));
 
-            BasicShader = new HLSLShader(D3Ddevice, "Basic", GetEmbeddedResource("Render.Shaders.Basic.fx"), null, _log, shaderDir);
+            BasicShader = new HLSLShader(D3Ddevice, "Basic", GetEmbeddedResource("Render.Shaders.Basic.fx"), null!, _log, shaderDir);
         }
 
         internal void SetDevice(Device device) {
@@ -100,12 +100,15 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             var resourceName = "Chorizite.NativeClientBootstrapper." + filename;
 
             using var stream = assembly.GetManifestResourceStream(resourceName);
+            if (stream is null) throw new Exception($"Resource {resourceName} not found");
             using var reader = new StreamReader(stream);
             string result = reader.ReadToEnd();
             return result;
         }
 
         public void Render2D() {
+            if (D3Ddevice == null) return;
+
             var oldViewport = D3Ddevice.Viewport;
             using (var stateBlock = new StateBlock(D3Ddevice, StateBlockType.All)) {
                 stateBlock.Capture();
@@ -152,6 +155,8 @@ namespace Chorizite.NativeClientBootstrapper.Render {
 
         public void RenderGeometry(IntPtr geometry, Matrix4x4 transform, ITexture? texture) {
             try {
+                if (D3Ddevice is null) return;
+
                 var geom = _geometryBuffers[geometry];
                 var hp = 0.5f;
                 var projection = Matrix4x4.CreateOrthographicOffCenterLeftHanded(hp, ViewportSize.X + hp, ViewportSize.Y + hp, hp, -1000, 1000);
@@ -160,34 +165,35 @@ namespace Chorizite.NativeClientBootstrapper.Render {
 
                 if (texture is ManagedDXTexture dxTexture && dxTexture is not null) {
                     D3Ddevice.SetTexture(0, dxTexture.Texture);
-                    BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColorTexture");
+                    if (BasicShader.Effect is not null) {
+                        BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColorTexture");
+                    }
 
                 }
                 else {
                     D3Ddevice.SetTexture(0, null);
-                    BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColor");
+                    if (BasicShader.Effect is not null) {
+                        BasicShader.Effect.Technique = BasicShader.Effect.GetTechnique("PositionColor");
+                    }
                 }
                 BasicShader.SetUniform("xWorld", transform * _transform);
                 BasicShader.SetUniform("xProjection", projection);
 
-                var s = D3Ddevice.VertexDeclaration;
-                D3Ddevice.VertexDeclaration = geom.VertexDecl;
-                D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
-                D3Ddevice.Indices = geom.IndexBuffer;
+                if (BasicShader.Effect is not null) {
+                    var numPasses = BasicShader.Effect.Begin();
 
-                var numPasses = BasicShader.Effect.Begin();
-                for (var p = 0; p < numPasses; p++) {
-                    BasicShader.Effect.BeginPass(p);
-                    D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
-                    BasicShader.Effect.EndPass();
+                    for (var p = 0; p < numPasses; p++) {
+                        BasicShader.Effect.BeginPass(p);
+
+                        D3Ddevice.VertexDeclaration = geom.VertexDecl;
+                        D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
+                        D3Ddevice.Indices = geom.IndexBuffer;
+                        D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
+
+                        BasicShader.Effect.EndPass();
+                    }
+                    BasicShader.Effect.End();
                 }
-                BasicShader.Effect.End();
-
-                // Force device back to a completely clean state
-                D3Ddevice.VertexShader = null;
-                D3Ddevice.PixelShader = null;
-                D3Ddevice.VertexDeclaration = null;
-                D3Ddevice.SetTexture(0, null);
             }
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error in RenderGeometry: {ex.Message}");
@@ -216,12 +222,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
 
         public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
-                //_log?.LogTrace($"LoadTexture: {source}");
                 ManagedDXTexture texture;
-
-                //StackTrace stackTrace = new StackTrace();
-                //var assembly = stackTrace.GetFrame(0).GetMethod().DeclaringType.Assembly;
-                //_log?.LogDebug($"Called LoadTexture from {assembly.GetName().Name}");
 
                 if (_datFileRegex.IsMatch(source)) {
                     texture = new ManagedDXTexture(source, _datReader);
@@ -255,7 +256,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
 
         public void EnableScissorRegion(bool enable) {
-            D3Ddevice.SetRenderState(RenderState.ScissorTestEnable, enable);
+            D3Ddevice?.SetRenderState(RenderState.ScissorTestEnable, enable);
         }
 
         public void SetTransform(Matrix4x4 transform) {
@@ -263,6 +264,8 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
 
         public void SetScissorRegion(int x, int y, int right, int bottom) {
+            if (D3Ddevice is null) return;
+
             D3Ddevice.ScissorRect = new RawRectangle(x, y, right, bottom);
         }
 

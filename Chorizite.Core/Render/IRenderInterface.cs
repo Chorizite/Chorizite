@@ -5,6 +5,9 @@ using System.Numerics;
 using Chorizite.Common;
 
 namespace Chorizite.Core.Render {
+    /// <summary>
+    /// The render interface
+    /// </summary>
     public interface IRenderInterface : IDisposable {
         /// <summary>
         /// The size of the viewport (game window)

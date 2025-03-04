@@ -10,12 +10,12 @@ namespace Chorizite.Backends.ACBackend.Extensions {
             var it = source.GetEnumerator();
             bool hasRemainingItems = false;
             bool isFirst = true;
-            T item = default(T);
+            T? item = default;
 
             do {
                 hasRemainingItems = it.MoveNext();
                 if (hasRemainingItems) {
-                    if (!isFirst) yield return item;
+                    if (!isFirst) yield return item!;
                     item = it.Current;
                     isFirst = false;
                 }

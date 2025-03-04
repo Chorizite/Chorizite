@@ -79,6 +79,7 @@ namespace Chorizite.Core.Lib {
             }
         }
 
+        /// <inheritdoc/>
         public void Dispose() {
             if (_needsReload) {
                 ChoriziteStatics.Backend.Renderer.OnRender2D -= OnRender2D;

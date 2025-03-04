@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chorizite.Common.Enums;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,8 +26,17 @@ namespace Chorizite.Core {
         /// <inheritdoc/>
         public ChoriziteEnvironment Environment { get; init; }
 
+        /// <summary>
+        /// The base directory where Chorizite assemblies are located
+        /// </summary>
         public string BaseDirectory { get; init; }
 
+        /// <summary>
+        /// Creates a new ChoriziteConfig
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="baseDirectory"></param>
+        /// <param name="datDirectory"></param>
         public ChoriziteConfig(ChoriziteEnvironment env, string baseDirectory, string datDirectory) {
             Environment = env;
             BaseDirectory = baseDirectory;

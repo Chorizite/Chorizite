@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Chorizite.Core.Plugins.AssemblyLoader {
+﻿namespace Chorizite.Core.Plugins.AssemblyLoader {
+    /// <summary>
+    /// Used to serialize the state of a plugin during reloading
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface ISerializeState<T> {
         /// <summary>
         /// The json type info for the state object

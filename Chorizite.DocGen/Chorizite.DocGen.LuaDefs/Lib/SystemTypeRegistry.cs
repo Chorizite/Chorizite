@@ -17,7 +17,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
         private MetadataLoadContext _loadContext;
 
         public override MetadataLoadContext LoadContext => _loadContext;
-        public override Assembly ChoriziteAssembly => null;
+        public override Assembly ChoriziteAssembly => null!;
 
         public SystemTypeRegistry(Chorizite<DocGenBackend> chorizite, ScriptableTypeFinder scriptableTypeFinder) : base(chorizite, scriptableTypeFinder) {
             Init();
@@ -146,7 +146,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
                 if (!Directory.Exists(xmlPath)) {
                     Directory.CreateDirectory(xmlPath);
                 }
-                string ?xml = null;
+                string? xml = null;
                 if (!File.Exists(Path.Combine(xmlPath, $"{type.Name}.xml"))) {
                     _http ??= new HttpClient();
                     //https://raw.githubusercontent.com/dotnet/dotnet-api-docs/refs/heads/main/xml/System/Type.xml
@@ -176,7 +176,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
 
                         DocEntries.Add(v, new XMLDocEntry() {
                             Id = v,
-                            Summary = e.Parent.Descendants("summary")?.FirstOrDefault()?.ToString()
+                            Summary = e.Parent?.Descendants("summary")?.FirstOrDefault()?.ToString()
                         });
                     }
                 }
@@ -185,7 +185,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
                     var enumDef = new EnumDef(type, this);
                     DocEntries.Add(XMLDocEntry.MakeId(enumDef), new XMLDocEntry() {
                         Id = XMLDocEntry.MakeId(enumDef),
-                        Summary = xdoc.Descendants("summary").FirstOrDefault()?.Value
+                        Summary = xdoc.Descendants("summary")?.FirstOrDefault()?.Value ?? ""
                     });
 
                     Enums.Add(type.Name, enumDef);
@@ -194,7 +194,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
                     var classDef = new ClassDef(type, this);
                     DocEntries.Add(XMLDocEntry.MakeId(classDef), new XMLDocEntry() {
                         Id = XMLDocEntry.MakeId(classDef),
-                        Summary = xdoc.Descendants("summary").FirstOrDefault()?.Value
+                        Summary = xdoc.Descendants("summary")?.FirstOrDefault()?.Value ?? ""
                     });
 
                     Classes.Add(type.Name, classDef);

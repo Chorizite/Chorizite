@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Chorizite.Common;
+using Chorizite.Common.Enums;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Backend.Client;
 using Chorizite.Core.Backend.Launcher;
@@ -11,22 +12,20 @@ using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core.Render;
-using DatReaderWriter.Options;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace Chorizite.Core {
     internal static class ChoriziteStatics {
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         internal static ILogger Log { get; set; }
         internal static IChoriziteConfig Config { get; set; }
         internal static ILifetimeScope Scope { get; set; }
         internal static IChoriziteBackend Backend { get; set; }
         internal static string AssemblyDirectory => Path.GetDirectoryName(Assembly.GetAssembly(typeof(Chorizite<>))!.Location)!;
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
         internal static void HandleLogMessage(LogMessageEventArgs logMessageEvent) {
             Backend?.HandleLogMessage(logMessageEvent);
@@ -56,7 +55,15 @@ namespace Chorizite.Core {
         /// The configuration being used
         /// </summary>
         public IChoriziteConfig Config => ChoriziteStatics.Config;
+
+        /// <summary>
+        /// The current lifetime scope
+        /// </summary>
         public ILifetimeScope Scope => ChoriziteStatics.Scope;
+
+        /// <summary>
+        /// The current backend
+        /// </summary>
         public IChoriziteBackend Backend => ChoriziteStatics.Backend;
 
         /// <summary>
@@ -65,6 +72,7 @@ namespace Chorizite.Core {
         /// <param name="config">Configuration</param>
         public Chorizite(IChoriziteConfig config) {
             ChoriziteStatics.Config = config;
+            _log = new ChoriziteLogger("Chorizite", Config.LogDirectory);
 
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
@@ -74,14 +82,11 @@ namespace Chorizite.Core {
                 .As(typeof(ILogger<>))
                 .IfNotRegistered(typeof(ILogger<>));
 
+            ChoriziteStatics.Log = _log;
             WeakEvent.Log = ChoriziteStatics.MakeLogger("WeakEvent");
 
             if (Directory.Exists(Config.DatDirectory)) {
-                builder.Register(c => {
-                    var datReader = new FSDatReader(c.Resolve<ILogger<FSDatReader>>());
-                    datReader.Init(Config.DatDirectory);
-                    return datReader;
-                })
+                builder.Register(c => new FSDatReader(Config.DatDirectory, c.Resolve<ILogger<FSDatReader>>()))
                     .As<IDatReaderInterface>()
                     .SingleInstance()
                     .IfNotRegistered(typeof(IDatReaderInterface));
@@ -102,8 +107,6 @@ namespace Chorizite.Core {
             if (backend is not null) {
                 ChoriziteStatics.Backend = backend;
             }
-            _log = new ChoriziteLogger("Chorizite", Config.LogDirectory);
-            ChoriziteStatics.Log = _log;
 
             ChoriziteStatics.Scope = _container.BeginLifetimeScope(builder => {
                 builder.RegisterInstance(Backend);
@@ -155,18 +158,13 @@ namespace Chorizite.Core {
                 }
 
 
-                builder.RegisterType<PluginManager>()
+                builder.RegisterInstance(new PluginManager(Config.Environment, Config.PluginDirectory, config.StorageDirectory, Scope, ChoriziteStatics.MakeLogger("PluginManager")))
                     .As<IPluginManager>()
-                    .SingleInstance()
-                    .IfNotRegistered(typeof(IPluginManager));
+                    .SingleInstance();
+
                 builder.RegisterType<AssemblyPluginLoader>()
                     .SingleInstance();
             });
-
-            if (Config.Environment.HasFlag(ChoriziteEnvironment.Client)) {
-                var networkParser = Scope.Resolve<NetworkParser>();
-                networkParser.Init();
-            }
 
             _renderInterface = Scope.Resolve<IRenderInterface>();
             if (_renderInterface is null) {
@@ -180,7 +178,7 @@ namespace Chorizite.Core {
             _inputManager.OnShutdown += InputManager_OnShutdown;
 
             var xluaPath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "xlua.dll");
-            _log?.LogTrace($"Manually pre-loading {xluaPath}");
+            _log.LogTrace($"Manually pre-loading {xluaPath}");
             Native.LoadLibrary(xluaPath);
 
             _pluginManager = Scope.Resolve<IPluginManager>();
@@ -244,7 +242,9 @@ namespace Chorizite.Core {
             Dispose();
         }
 
-
+        /// <summary>
+        /// Disposes the Chorizite instance
+        /// </summary>
         public void Dispose() {
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             _pluginManager?.Dispose();

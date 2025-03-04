@@ -1,24 +1,17 @@
 ﻿using Autofac;
 using Chorizite.Common;
-using Chorizite.Core.Dats;
 using Chorizite.Core.Plugins.AssemblyLoader;
-using Chorizite.Core.Render;
 using Chorizite.Plugins.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Net.WebRequestMethods;
 
 namespace Chorizite.Core.Plugins {
     /// <summary>
@@ -30,12 +23,19 @@ namespace Chorizite.Core.Plugins {
         private readonly Dictionary<string, PluginManifest> _loadedManifests = [];
         private readonly Dictionary<string, PluginInstance> _loadedPlugins = [];
         private readonly List<IPluginLoader> _pluginLoaders = [];
-        private readonly IChoriziteConfig _config;
         private readonly ILogger _log;
-        private readonly IRenderInterface? _render;
+        private bool _wantsReload = false;
 
         /// <inheritdoc />
-        public string PluginDirectory => _config.PluginDirectory;
+        public string PluginDirectory { get; }
+
+        /// <inheritdoc />
+        public string StorageDirectory { get; }
+
+        /// <inheritdoc />
+        public ChoriziteEnvironment Environment { get; }
+        /// <inheritdoc />
+        public ILifetimeScope ServiceProvider { get; }
 
         /// <inheritdoc />
         public List<PluginInstance> Plugins => [.. _loadedPlugins.Values];
@@ -46,9 +46,6 @@ namespace Chorizite.Core.Plugins {
         /// <inheritdoc />
         public List<PluginManifest> PluginManifests => [.. _loadedManifests.Values];
 
-        /// <inheritdoc />
-        public bool WantsReload { get; private set; }
-
         /// <inheritdoc/>
         public ReleasesIndexModel? PluginIndex { get; private set; }
 
@@ -56,14 +53,14 @@ namespace Chorizite.Core.Plugins {
         public Dictionary<string, PluginDetailsModel> PluginReleaseInfo { get; private set; } = [];
 
         /// <inheritdoc />
-        public event EventHandler<EventArgs>? OnPluginsLoaded {
+        public event EventHandler<EventArgs> OnPluginsLoaded {
             add { _OnPluginsLoaded.Subscribe(value); }
             remove { _OnPluginsLoaded.Unsubscribe(value); }
         }
         private readonly WeakEvent<EventArgs> _OnPluginsLoaded = new();
 
         /// <inheritdoc />
-        public event EventHandler<PluginsUnloadedEventArgs>? OnBeforePluginsUnloaded {
+        public event EventHandler<PluginsUnloadedEventArgs> OnBeforePluginsUnloaded {
             add { _OnBeforePluginsUnloaded.Subscribe(value); }
             remove { _OnBeforePluginsUnloaded.Unsubscribe(value); }
         }
@@ -83,17 +80,20 @@ namespace Chorizite.Core.Plugins {
         }
         private readonly WeakEvent<PluginDetailsUpdatedEventArgs> _OnPluginDetailsUpdated = new();
 
-        public PluginManager(IChoriziteConfig config, ILogger log) {
-            _config = config;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="environment"></param>
+        /// <param name="pluginDirectory"></param>
+        /// <param name="pluginStorageDirectory"></param>
+        /// <param name="serviceProvider"></param>
+        /// <param name="log"></param>
+        public PluginManager(ChoriziteEnvironment environment, string pluginDirectory, string pluginStorageDirectory, ILifetimeScope serviceProvider, ILogger log) {
             _log = log;
-        }
-
-        public PluginManager(IChoriziteConfig config, IRenderInterface render, ILogger<PluginManager> log) {
-            _config = config;
-            _log = log;
-            _render = render;
-
-            _render.OnRender2D += Render_OnRender2D;
+            PluginDirectory = pluginDirectory;
+            StorageDirectory = pluginStorageDirectory;
+            Environment = environment;
+            ServiceProvider = serviceProvider;
         }
 
         /// <inheritdoc/>
@@ -133,16 +133,14 @@ namespace Chorizite.Core.Plugins {
         }
 
         /// <inheritdoc />
-        public bool PluginIsLoaded(string name) {
-            return _loadedPlugins.Values.Where(p => p.Name.ToLower() == name.ToLower()).FirstOrDefault() is not null;
+        public bool PluginIsLoaded(string id) {
+            return _loadedPlugins.Values.Where(p => p.Id.ToLower() == id.ToLower()).FirstOrDefault() is not null;
         }
 
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public PluginInstance? GetPlugin(string name) {
-            var plugin = _loadedPlugins.Values.Where(p => p.Name.ToLower() == name.ToLower()).FirstOrDefault();
-
-            return plugin;
+        public PluginInstance? GetPlugin(string id) {
+            return _loadedPlugins.Values.Where(p => p.Id.ToLower() == id.ToLower()).FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -171,12 +169,12 @@ namespace Chorizite.Core.Plugins {
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private bool StartPlugin(PluginManifest manifest, ref List<string> startedPlugins) {
-            if (_loadedPlugins.ContainsKey(manifest.EntryFile) || startedPlugins.Contains(manifest.Name.ToLower())) {
+            if (_loadedPlugins.ContainsKey(manifest.EntryFile) || startedPlugins.Contains(manifest.Id.ToLower())) {
                 return true;
             }
 
 
-            if (!(manifest.Environments.HasFlag(_config.Environment) || _config.Environment == ChoriziteEnvironment.DocGen)) {
+            if (!(manifest.Environments.HasFlag(Environment) || Environment == ChoriziteEnvironment.DocGen)) {
                 return false;
             }
 
@@ -184,47 +182,47 @@ namespace Chorizite.Core.Plugins {
 
             foreach (var dep in manifest.Dependencies) {
                 var parts = dep.Split('@');
-                var depName = parts[0];
+                var depId = parts[0];
                 var depVersion = parts.Length > 1 ? new Version(parts[1].TrimEnd('?')) : new Version(0, 0, 0);
                 var isOptional = parts.Length > 1 ? parts[1].EndsWith("?") : false;
 
-                var depPlugin = _loadedManifests.Values.Where(p => p.Name.ToLower() == depName.ToLower()).FirstOrDefault();
+                var depPlugin = _loadedManifests.Values.Where(p => p.Id.ToLower() == depId.ToLower()).FirstOrDefault();
 
                 if (depPlugin is null) {
                     if (isOptional) continue;
 
-                    _log?.LogError($"Failed to start plugin {manifest.Name}: Dependency {depName} not found");
+                    _log?.LogError($"Failed to start plugin {manifest.Name}: Dependency {depId} not found");
                     return false;
                 }
 
                 if (new Version(manifest.Version.Split('-').First()) < depVersion) {
-                    _log?.LogWarning($"Plugin {manifest.Name}: Dependency {depName} version {depVersion} was less than the loaded version of {depPlugin.Version}");
+                    _log?.LogWarning($"Plugin {manifest.Name}: Dependency {depId} version {depVersion} was less than the loaded version of {depPlugin.Version}");
                 }
 
-                if (startedPlugins.Contains(depName.ToLower())) {
+                if (startedPlugins.Contains(depId.ToLower())) {
                     continue;
                 }
 
                 if (!StartPlugin(depPlugin, ref startedPlugins)) {
                     if (isOptional) continue;
 
-                    _log?.LogError($"Failed to start plugin {manifest.Name}: Dependency {depName} failed to start");
+                    _log?.LogError($"Failed to start plugin {manifest.Name}: Dependency {depId} failed to start");
                     return false;
                 }
             }
 
-            if (TryGetPluginLoader(manifest, out IPluginLoader? loader)) {
+            if (TryGetPluginLoader(manifest, out IPluginLoader loader)) {
                 if (loader?.LoadPluginInstance(manifest, out var plugin) == true && plugin is not null) {
                     _loadedPlugins.Add(manifest.EntryFile, plugin);
-                    startedPlugins.Add(plugin.Name.ToLower());
+                    startedPlugins.Add(plugin.Id.ToLower());
 
                     if (!plugin.Load()) {
-                        _log?.LogError($"Failed to load plugin: {plugin.Name} v{plugin.Manifest.Version}");
+                        _log?.LogError($"Failed to load plugin: {plugin.DisplayName} v{plugin.Manifest.Version}");
                         _loadedPlugins.Remove(plugin.Manifest.EntryFile);
                         return false;
                     }
 
-                    _log?.LogTrace($"Started plugin: {plugin.Name}");
+                    _log?.LogTrace($"Started plugin: {plugin.DisplayName}");
                     return true;
                 }
                 else {
@@ -261,9 +259,9 @@ namespace Chorizite.Core.Plugins {
             var failedToUnload = new List<string>();
             foreach (var plugin in pluginsToUnload.Where(p => p is AssemblyPluginInstance).Cast<AssemblyPluginInstance>()) {
                 var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name?.Equals(plugin.AssemblyName) == true);
-                if (assembly is not null && assembly.Location?.StartsWith(ChoriziteStatics.AssemblyDirectory) != true) {
+                if (assembly is not null) {
                     _log.LogDebug($"Failed to unload assembly: {assembly.FullName} ({assembly.Location})");
-                    failedToUnload.Add(plugin.Name);
+                    failedToUnload.Add(plugin.DisplayName);
                 }
             }
 
@@ -277,7 +275,7 @@ namespace Chorizite.Core.Plugins {
 
         /// <inheritdoc />
         public void ReloadPlugins() {
-            WantsReload = true;
+            _wantsReload = true;
         }
 
         /// <inheritdoc />
@@ -315,16 +313,17 @@ namespace Chorizite.Core.Plugins {
             }
         }
 
-        private void Render_OnRender2D(object? sender, EventArgs e) {
-            if (WantsReload || Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
-                WantsReload = false;
+        /// <inerhitdoc />
+        public void Update() {
+            if (_wantsReload || Plugins.Any(p => p.IsLoaded && p.WantsReload)) {
+                _wantsReload = false;
                 ReloadPluginsInternal();
             }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void UnloadPluginAndDependents(PluginInstance plugin, ref List<PluginInstance> unloadedPlugins, bool isReloading) {
-            foreach (var depPlugin in _loadedPlugins.Values.Where(p => p.Manifest.Dependencies.Select(d => d.Split('@').First()).Contains(plugin.Name))) {
+            foreach (var depPlugin in _loadedPlugins.Values.Where(p => p.Manifest.Dependencies.Select(d => d.Split('@').First()).Contains(plugin.DisplayName))) {
                 if (!unloadedPlugins.Contains(depPlugin)) {
                     UnloadPluginAndDependents(depPlugin, ref unloadedPlugins, isReloading);
                 }
@@ -338,7 +337,7 @@ namespace Chorizite.Core.Plugins {
             try {
                 _log?.LogTrace($"Loading plugin manifest: {manifestFile}");
                 if (PluginManifest.TryLoadManifest(manifestFile, out manifest, out string? errorStr)) {
-                    _log?.LogTrace($"Loaded plugin manifest {manifest.Name} v{manifest.Version} which depends on: {string.Join(", ", manifest.Dependencies)}");
+                    _log?.LogTrace($"Loaded plugin manifest {manifest!.Name} v{manifest.Version} which depends on: {string.Join(", ", manifest.Dependencies)}");
                     return true;
                 }
                 else {
@@ -372,6 +371,7 @@ namespace Chorizite.Core.Plugins {
                     return true;
                 }
             }
+
             loader = default!;
             return false;
         }
@@ -398,11 +398,10 @@ namespace Chorizite.Core.Plugins {
             return false;
         }
 
+        /// <summary>
+        /// Dispose of the plugin manager
+        /// </summary>
         public void Dispose() {
-            if (_render is not null) {
-                _render.OnRender2D -= Render_OnRender2D;
-            }
-
             foreach (var plugin in Plugins) {
                 plugin.Dispose();
             }

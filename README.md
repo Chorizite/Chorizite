@@ -8,7 +8,6 @@
 - [Dependencies](#dependencies)
 - [Installation](#installation)
 - [Building](#building)
-- [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -27,13 +26,13 @@ Chorizite serves as a plugin framework for *Asheron's Call*, allowing developers
 ## Installation
 
 1. Install [Dependencies](#dependencies)
-2. Grab latest installer from releases
+2. Grab latest installer from [releases](https://github.com/Chorizite/Chorizite/releases)
 
 ## Building
 
 1. Install [Dependencies](#dependencies)
 2. Clone repository: `git clone git@github.com:Chorizite/Chorizite.git`
-3. Build `Release` in visual studio
+3. Build `Release` in visual studio (only release builds will build the installer needed for the next step, subsequent builds can use `Debug`)
 4. Run installer at bin/Chorizite-Installer*. Make sure you change the installation directory to the bin/net8.0/ directory you just built to (only needs to be done once)
 
 ## Contributing

@@ -25,6 +25,12 @@ namespace Chorizite.Core.Backend.Client {
         /// </summary>
         public uint IconId { get; init; }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="objectId"></param>
+        /// <param name="iconId"></param>
         public ShowTooltipEventArgs(string text, uint objectId, uint iconId) {
             Text = text;
             ObjectId = objectId;

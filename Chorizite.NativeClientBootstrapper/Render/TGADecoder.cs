@@ -138,16 +138,11 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
 
         public static Image<Argb32> FromFile(string path) {
-            try {
-                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read)) {
-                    int length = (int)fs.Length;
-                    byte[] buffer = new byte[length];
-                    fs.Read(buffer, 0, length);
-                    return decode(buffer);
-                }
-            }
-            catch (Exception) {
-                return null;
+            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read)) {
+                int length = (int)fs.Length;
+                byte[] buffer = new byte[length];
+                fs.Read(buffer, 0, length);
+                return decode(buffer);
             }
         }
 

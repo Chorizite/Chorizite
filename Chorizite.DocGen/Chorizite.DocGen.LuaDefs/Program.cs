@@ -1,4 +1,5 @@
-﻿using Chorizite.Core;
+﻿using Chorizite.Common.Enums;
+using Chorizite.Core;
 using Chorizite.Core.Logging;
 using Chorizite.DocGen.LuaDefs.Lib;
 using Microsoft.Extensions.Logging;

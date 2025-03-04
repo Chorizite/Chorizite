@@ -12,11 +12,10 @@ using System.Threading.Tasks;
 namespace Chorizite.Core.Dats {
     internal class FSDatReader : IDatReaderInterface {
         private string _datPath;
-        private SpellTable _spellTable;
-        private SkillTable _skillTable;
-        private VitalTable _vitalTable;
+        private SpellTable? _spellTable;
+        private SkillTable? _skillTable;
+        private VitalTable? _vitalTable;
         private readonly ILogger _log;
-        private readonly IChoriziteConfig _config;
 
         public PortalDatabase Portal { get; private set; }
         public CellDatabase Cell { get; private set; }
@@ -24,6 +23,9 @@ namespace Chorizite.Core.Dats {
         public SpellTable SpellTable {
             get {
                 if (_spellTable is null) {
+                    if (Portal.SpellTable is null) {
+                        throw new Exception("Unable to load SpellTable from dat!");
+                    }
                     _spellTable = Portal.SpellTable;
                 }
                 return _spellTable;
@@ -33,6 +35,9 @@ namespace Chorizite.Core.Dats {
         public SkillTable SkillTable {
             get {
                 if (_skillTable is null) {
+                    if (Portal.SkillTable is null) {
+                        throw new Exception("Unable to load SkillTable from dat!");
+                    }
                     _skillTable = Portal.SkillTable;
                 }
                 return _skillTable;
@@ -42,17 +47,17 @@ namespace Chorizite.Core.Dats {
         public VitalTable VitalTable {
             get {
                 if (_vitalTable is null) {
+                    if (Portal.VitalTable is null) {
+                        throw new Exception("Unable to load VitalTable from dat!");
+                    }
                     _vitalTable = Portal.VitalTable;
                 }
                 return _vitalTable;
             }
         }
 
-        public FSDatReader(ILogger<FSDatReader> log) {
+        public FSDatReader(string datPath, ILogger<FSDatReader> log) {
             _log = log;
-        }
-
-        public bool Init(string datPath) {
             _datPath = datPath;
 
             Portal = new PortalDatabase(options => {
@@ -64,8 +69,6 @@ namespace Chorizite.Core.Dats {
             }, new StreamBlockAllocator(new DatReaderWriter.Options.DatDatabaseOptions() {
                 FilePath = System.IO.Path.Combine(datPath, $"client_cell_1.dat")
             }));
-
-            return true;
         }
 
         public T? Get<T>(uint fileId) where T : IDBObj {

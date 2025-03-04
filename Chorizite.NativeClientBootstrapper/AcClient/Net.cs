@@ -443,7 +443,7 @@ namespace AcClient {
 
     }
 
-    public unsafe struct sockaddr {
+    public unsafe struct Sockaddr {
         // Struct:
         public UInt16 sa_family;
         public fixed Char sa_data[14];
@@ -453,7 +453,7 @@ namespace AcClient {
     public unsafe struct PacketInfo {
         // Struct:
         public UInt32 cbPacketInfo;
-        public sockaddr* saRemote;
+        public Sockaddr* saRemote;
         public UInt32 cbData;
         public void* pvData;
         public _WSABUF* aIOVecs;
@@ -1144,10 +1144,10 @@ namespace AcClient {
     public unsafe struct QTIsaac {
         // Struct:
         public _Vtbl* vfptr;
-        public randctx m_rc;
+        public Randctx m_rc;
         public override string ToString() => $"vfptr:->(_Vtbl*)0x{(Int32)vfptr:X8}, m_rc(randctx):{m_rc}";
 
-        public unsafe struct randctx {
+        public unsafe struct Randctx {
             // Struct:
             public UInt32 randcnt;
             public UInt32* randrsl;
@@ -1161,14 +1161,14 @@ namespace AcClient {
             // Functions:
 
             // QTIsaac<8,UInt32>::randctx.~randctx:
-            public static delegate* unmanaged[Thiscall]<randctx*> __Dtor = (delegate* unmanaged[Thiscall]<randctx*>)0x00660770; // .text:0065F7D0 ; void __thiscall QTIsaac<8,UInt32>::randctx::~randctx(QTIsaac<8,UInt32>::randctx *this) .text:0065F7D0 ??1randctx@?$QTIsaac@$07K@@QAE@XZ
+            public static delegate* unmanaged[Thiscall]<Randctx*> __Dtor = (delegate* unmanaged[Thiscall]<Randctx*>)0x00660770; // .text:0065F7D0 ; void __thiscall QTIsaac<8,UInt32>::randctx::~randctx(QTIsaac<8,UInt32>::randctx *this) .text:0065F7D0 ??1randctx@?$QTIsaac@$07K@@QAE@XZ
         }
 
 
         // Functions:
 
         // QTIsaac<8,UInt32>.isaac:
-        public static delegate* unmanaged[Thiscall]<QTIsaac*, QTIsaac.randctx*> isaac = (delegate* unmanaged[Thiscall]<QTIsaac*, randctx*>)0x00660C00; // .text:0065FC60 ; void __thiscall QTIsaac<8,UInt32>::isaac(QTIsaac<8,UInt32> *this, QTIsaac<8,UInt32>::randctx *ctx) .text:0065FC60 ?isaac@?$QTIsaac@$07K@@MAEXPAUrandctx@1@@Z
+        public static delegate* unmanaged[Thiscall]<QTIsaac*, QTIsaac.Randctx*> isaac = (delegate* unmanaged[Thiscall]<QTIsaac*, Randctx*>)0x00660C00; // .text:0065FC60 ; void __thiscall QTIsaac<8,UInt32>::isaac(QTIsaac<8,UInt32> *this, QTIsaac<8,UInt32>::randctx *ctx) .text:0065FC60 ?isaac@?$QTIsaac@$07K@@MAEXPAUrandctx@1@@Z
 
         // QTIsaac<8,UInt32>.srand:
         public static delegate* unmanaged[Thiscall]<QTIsaac*, UInt32, UInt32, UInt32, UInt32*> srand = (delegate* unmanaged[Thiscall]<QTIsaac*, UInt32, UInt32, UInt32, UInt32*>)0x006606C0; // .text:0065F720 ; void __thiscall QTIsaac<8,UInt32>::srand(QTIsaac<8,UInt32> *this, UInt32 a, UInt32 b, UInt32 c, UInt32 *s) .text:0065F720 ?srand@?$QTIsaac@$07K@@UAEXKKKPAK@Z
@@ -1177,7 +1177,7 @@ namespace AcClient {
         public static delegate* unmanaged[Thiscall]<QTIsaac*, UInt32, UInt32, UInt32> __Ctor = (delegate* unmanaged[Thiscall]<QTIsaac*, UInt32, UInt32, UInt32>)0x00660790; // .text:0065F7F0 ; void __thiscall QTIsaac<8,UInt32>::QTIsaac<8,UInt32>(QTIsaac<8,UInt32> *this, UInt32 a, UInt32 b, UInt32 c) .text:0065F7F0 ??0?$QTIsaac@$07K@@QAE@KKK@Z
 
         // QTIsaac<8,UInt32>.randinit:
-        public static delegate* unmanaged[Thiscall]<QTIsaac*, QTIsaac.randctx*, Byte> randinit = (delegate* unmanaged[Thiscall]<QTIsaac*, randctx*, Byte>)0x00660810; // .text:0065F870 ; void __thiscall QTIsaac<8,UInt32>::randinit(QTIsaac<8,UInt32> *this, QTIsaac<8,UInt32>::randctx *ctx, bool bUseSeed) .text:0065F870 ?randinit@?$QTIsaac@$07K@@UAEXPAUrandctx@1@_N@Z
+        public static delegate* unmanaged[Thiscall]<QTIsaac*, QTIsaac.Randctx*, Byte> randinit = (delegate* unmanaged[Thiscall]<QTIsaac*, Randctx*, Byte>)0x00660810; // .text:0065F870 ; void __thiscall QTIsaac<8,UInt32>::randinit(QTIsaac<8,UInt32> *this, QTIsaac<8,UInt32>::randctx *ctx, bool bUseSeed) .text:0065F870 ?randinit@?$QTIsaac@$07K@@UAEXPAUrandctx@1@_N@Z
 
         // QTIsaac<8,UInt32>.shuffle:
         public static delegate* unmanaged[Thiscall]<QTIsaac*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*> shuffle = (delegate* unmanaged[Thiscall]<QTIsaac*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*, UInt32*>)0x00660AC0; // .text:0065FB20 ; void __thiscall QTIsaac<8,UInt32>::shuffle(QTIsaac<8,UInt32> *this, UInt32 *a, UInt32 *b, UInt32 *c, UInt32 *d, UInt32 *e, UInt32 *f, UInt32 *g, UInt32 *h) .text:0065FB20 ?shuffle@?$QTIsaac@$07K@@MAEXAAK0000000@Z
@@ -1213,7 +1213,7 @@ namespace AcClient {
         // Struct:
         public PackObj PackObj;
         public PortalDH* dh_;
-        public AC1Legacy.vlong rnum_;
+        public AC1Legacy.Vlong rnum_;
         public Int32 fInitialized_;
         public override string ToString() => $"PackObj(PackObj):{PackObj}, dh_:->(PortalDH*)0x{(Int32)dh_:X8}, rnum_(AC1Legacy.vlong):{rnum_}, fInitialized_:{fInitialized_}";
 
@@ -1227,7 +1227,7 @@ namespace AcClient {
         // public static delegate* unmanaged[Thiscall]<NetKeyExch*,UInt32, void*> __scaDelDtor = (delegate* unmanaged[Thiscall]<NetKeyExch*,UInt32, void*>)0xDEADBEEF; // .text:005499E0 ; void *__thiscall NetKeyExch::`scalar deleting destructor'(NetKeyExch *this, UInt32) .text:005499E0 ??_GNetKeyExch@@UAEPAXI@Z
 
         // NetKeyExch.SetPrivateRandom:
-        public static delegate* unmanaged[Thiscall]<NetKeyExch*, AC1Legacy.vlong*> SetPrivateRandom = (delegate* unmanaged[Thiscall]<NetKeyExch*, AC1Legacy.vlong*>)0x0054A440; // .text:005498E0 ; void __thiscall NetKeyExch::SetPrivateRandom(NetKeyExch *this, AC1Legacy::vlong *rnum) .text:005498E0 ?SetPrivateRandom@NetKeyExch@@QAEXABVvlong@AC1Legacy@@@Z
+        public static delegate* unmanaged[Thiscall]<NetKeyExch*, AC1Legacy.Vlong*> SetPrivateRandom = (delegate* unmanaged[Thiscall]<NetKeyExch*, AC1Legacy.Vlong*>)0x0054A440; // .text:005498E0 ; void __thiscall NetKeyExch::SetPrivateRandom(NetKeyExch *this, AC1Legacy::vlong *rnum) .text:005498E0 ?SetPrivateRandom@NetKeyExch@@QAEXABVvlong@AC1Legacy@@@Z
 
         // NetKeyExch.Pack:
         // public static delegate* unmanaged[Thiscall]<NetKeyExch*,void**,UInt32, UInt32> Pack = (delegate* unmanaged[Thiscall]<NetKeyExch*,void**,UInt32, UInt32>)0xDEADBEEF; // .text:00549900 ; UInt32 __thiscall NetKeyExch::Pack(NetKeyExch *this, void **addr, UInt32 size) .text:00549900 ?Pack@NetKeyExch@@UAEIAAPAXI@Z
@@ -1241,7 +1241,7 @@ namespace AcClient {
 
     public unsafe partial struct AC1Legacy {
 
-        public unsafe struct vlong {
+        public unsafe struct Vlong {
             // Struct:
             public PackObj PackObj;
             public AC1Legacy.vlong_value* value;
@@ -1252,52 +1252,52 @@ namespace AcClient {
             // Functions:
 
             // AC1Legacy::vlong.setbit:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32> setbit = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32>)0x005B17F0; // .text:005B0740 ; void __thiscall AC1Legacy::vlong::setbit(AC1Legacy::vlong *this, UInt32 i) .text:005B0740 ?setbit@vlong@AC1Legacy@@QAEXI@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32> setbit = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32>)0x005B17F0; // .text:005B0740 ; void __thiscall AC1Legacy::vlong::setbit(AC1Legacy::vlong *this, UInt32 i) .text:005B0740 ?setbit@vlong@AC1Legacy@@QAEXI@Z
 
             // AC1Legacy::vlong.vlong:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32> __Ctor = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32>)0x005B1900; // .text:005B0850 ; void __thiscall AC1Legacy::vlong::vlong(AC1Legacy::vlong *this, UInt32 x) .text:005B0850 ??0vlong@AC1Legacy@@QAE@I@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32> __Ctor = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32>)0x005B1900; // .text:005B0850 ; void __thiscall AC1Legacy::vlong::vlong(AC1Legacy::vlong *this, UInt32 x) .text:005B0850 ??0vlong@AC1Legacy@@QAE@I@Z
 
             // AC1Legacy::vlong.vlong:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*> __Ctor_ = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*>)0x005B1950; // .text:005B08A0 ; void __thiscall AC1Legacy::vlong::vlong(AC1Legacy::vlong *this, AC1Legacy::vlong *x) .text:005B08A0 ??0vlong@AC1Legacy@@QAE@ABV01@@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*> __Ctor_ = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*>)0x005B1950; // .text:005B08A0 ; void __thiscall AC1Legacy::vlong::vlong(AC1Legacy::vlong *this, AC1Legacy::vlong *x) .text:005B08A0 ??0vlong@AC1Legacy@@QAE@ABV01@@Z
 
             // AC1Legacy::vlong.~vlong:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*> __Dtor = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*>)0x005B19D0; // .text:005B0920 ; void __thiscall AC1Legacy::vlong::~vlong(AC1Legacy::vlong *this) .text:005B0920 ??1vlong@AC1Legacy@@UAE@XZ
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*> __Dtor = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*>)0x005B19D0; // .text:005B0920 ; void __thiscall AC1Legacy::vlong::~vlong(AC1Legacy::vlong *this) .text:005B0920 ??1vlong@AC1Legacy@@UAE@XZ
 
             // AC1Legacy::vlong.operator+=:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*> operator_plus_equals = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*>)0x005B1A30; // .text:005B0980 ; AC1Legacy::vlong *__thiscall AC1Legacy::vlong::operator+=(AC1Legacy::vlong *this, AC1Legacy::vlong *x) .text:005B0980 ??Yvlong@AC1Legacy@@QAEAAV01@ABV01@@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*> operator_plus_equals = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*>)0x005B1A30; // .text:005B0980 ; AC1Legacy::vlong *__thiscall AC1Legacy::vlong::operator+=(AC1Legacy::vlong *this, AC1Legacy::vlong *x) .text:005B0980 ??Yvlong@AC1Legacy@@QAEAAV01@ABV01@@Z
 
             // AC1Legacy::vlong.read_from_hex_string:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, Char*, Int32> read_from_hex_string = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, Char*, Int32>)0x005B1BC0; // .text:005B0B10 ; Int32 __thiscall AC1Legacy::vlong::read_from_hex_string(AC1Legacy::vlong *this, const Char *str) .text:005B0B10 ?read_from_hex_string@vlong@AC1Legacy@@QAEHPBD@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, Char*, Int32> read_from_hex_string = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, Char*, Int32>)0x005B1BC0; // .text:005B0B10 ; Int32 __thiscall AC1Legacy::vlong::read_from_hex_string(AC1Legacy::vlong *this, const Char *str) .text:005B0B10 ?read_from_hex_string@vlong@AC1Legacy@@QAEHPBD@Z
 
             // AC1Legacy::vlong.store:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32*, UInt32> store = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32*, UInt32>)0x005B1740; // .text:005B0690 ; void __thiscall AC1Legacy::vlong::store(AC1Legacy::vlong *this, UInt32 *a, UInt32 n) .text:005B0690 ?store@vlong@AC1Legacy@@QBEXPAII@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32*, UInt32> store = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32*, UInt32>)0x005B1740; // .text:005B0690 ; void __thiscall AC1Legacy::vlong::store(AC1Legacy::vlong *this, UInt32 *a, UInt32 n) .text:005B0690 ?store@vlong@AC1Legacy@@QBEXPAII@Z
 
             // AC1Legacy::vlong.docopy:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*> docopy = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*>)0x005B1770; // .text:005B06C0 ; void __thiscall AC1Legacy::vlong::docopy(AC1Legacy::vlong *this) .text:005B06C0 ?docopy@vlong@AC1Legacy@@AAEXXZ
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*> docopy = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*>)0x005B1770; // .text:005B06C0 ; void __thiscall AC1Legacy::vlong::docopy(AC1Legacy::vlong *this) .text:005B06C0 ?docopy@vlong@AC1Legacy@@AAEXXZ
 
             // AC1Legacy::vlong.operator=:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*> operator_equals = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*>)0x005B1970; // .text:005B08C0 ; AC1Legacy::vlong *__thiscall AC1Legacy::vlong::operator=(AC1Legacy::vlong *this, AC1Legacy::vlong *x) .text:005B08C0 ??4vlong@AC1Legacy@@QAEAAV01@ABV01@@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*> operator_equals = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*>)0x005B1970; // .text:005B08C0 ; AC1Legacy::vlong *__thiscall AC1Legacy::vlong::operator=(AC1Legacy::vlong *this, AC1Legacy::vlong *x) .text:005B08C0 ??4vlong@AC1Legacy@@QAEAAV01@ABV01@@Z
 
             // AC1Legacy::vlong.Pack:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, void**, UInt32, UInt32> Pack = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, void**, UInt32, UInt32>)0x005B1F20; // .text:005B0E70 ; UInt32 __thiscall AC1Legacy::vlong::Pack(AC1Legacy::vlong *this, void **addr, UInt32 size) .text:005B0E70 ?Pack@vlong@AC1Legacy@@UAEIAAPAXI@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, void**, UInt32, UInt32> Pack = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, void**, UInt32, UInt32>)0x005B1F20; // .text:005B0E70 ; UInt32 __thiscall AC1Legacy::vlong::Pack(AC1Legacy::vlong *this, void **addr, UInt32 size) .text:005B0E70 ?Pack@vlong@AC1Legacy@@UAEIAAPAXI@Z
 
             // AC1Legacy::vlong.GetPackSize:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32> GetPackSize = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32>)0x005B1880; // .text:005B07D0 ; UInt32 __thiscall AC1Legacy::vlong::GetPackSize(AC1Legacy::vlong *this) .text:005B07D0 ?GetPackSize@vlong@AC1Legacy@@UAEIXZ
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32> GetPackSize = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32>)0x005B1880; // .text:005B07D0 ; UInt32 __thiscall AC1Legacy::vlong::GetPackSize(AC1Legacy::vlong *this) .text:005B07D0 ?GetPackSize@vlong@AC1Legacy@@UAEIXZ
 
             // AC1Legacy::vlong.load:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32*, UInt32> load = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32*, UInt32>)0x005B1890; // .text:005B07E0 ; void __thiscall AC1Legacy::vlong::load(AC1Legacy::vlong *this, UInt32 *a, UInt32 n) .text:005B07E0 ?load@vlong@AC1Legacy@@QAEXPAII@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32*, UInt32> load = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32*, UInt32>)0x005B1890; // .text:005B07E0 ; void __thiscall AC1Legacy::vlong::load(AC1Legacy::vlong *this, UInt32 *a, UInt32 n) .text:005B07E0 ?load@vlong@AC1Legacy@@QAEXPAII@Z
 
             // AC1Legacy::vlong.bit:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32, UInt32> bit = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32, UInt32>)0x005B17B0; // .text:005B0700 ; UInt32 __thiscall AC1Legacy::vlong::bit(AC1Legacy::vlong *this, UInt32 i) .text:005B0700 ?bit@vlong@AC1Legacy@@QBEII@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32, UInt32> bit = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32, UInt32>)0x005B17B0; // .text:005B0700 ; UInt32 __thiscall AC1Legacy::vlong::bit(AC1Legacy::vlong *this, UInt32 i) .text:005B0700 ?bit@vlong@AC1Legacy@@QBEII@Z
 
             // AC1Legacy::vlong.operator*:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*> operator_multiply = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*, AC1Legacy.vlong*>)0x005B1B10; // .text:005B0A60 ; AC1Legacy::vlong *__thiscall AC1Legacy::vlong::operator*(AC1Legacy::vlong *this, AC1Legacy::vlong *result, AC1Legacy::vlong *x) .text:005B0A60 ??Dvlong@AC1Legacy@@QAE?AV01@ABV01@@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*> operator_multiply = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*, AC1Legacy.Vlong*>)0x005B1B10; // .text:005B0A60 ; AC1Legacy::vlong *__thiscall AC1Legacy::vlong::operator*(AC1Legacy::vlong *this, AC1Legacy::vlong *result, AC1Legacy::vlong *x) .text:005B0A60 ??Dvlong@AC1Legacy@@QAE?AV01@ABV01@@Z
 
             // AC1Legacy::vlong.UnPack:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, void**, UInt32, Int32> UnPack = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, void**, UInt32, Int32>)0x005B1F70; // .text:005B0EC0 ; Int32 __thiscall AC1Legacy::vlong::UnPack(AC1Legacy::vlong *this, void **addr, UInt32 size) .text:005B0EC0 ?UnPack@vlong@AC1Legacy@@UAEHAAPAXI@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, void**, UInt32, Int32> UnPack = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, void**, UInt32, Int32>)0x005B1F70; // .text:005B0EC0 ; Int32 __thiscall AC1Legacy::vlong::UnPack(AC1Legacy::vlong *this, void **addr, UInt32 size) .text:005B0EC0 ?UnPack@vlong@AC1Legacy@@UAEHAAPAXI@Z
 
             // AC1Legacy::vlong.__vecDelDtor:
-            public static delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32, void*> __vecDelDtor = (delegate* unmanaged[Thiscall]<AC1Legacy.vlong*, UInt32, void*>)0x005B1FC0; // .text:005B0F10 ; void *__thiscall AC1Legacy::vlong::`vector deleting destructor'(AC1Legacy::vlong *this, UInt32) .text:005B0F10 ??_Evlong@AC1Legacy@@UAEPAXI@Z
+            public static delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32, void*> __vecDelDtor = (delegate* unmanaged[Thiscall]<AC1Legacy.Vlong*, UInt32, void*>)0x005B1FC0; // .text:005B0F10 ; void *__thiscall AC1Legacy::vlong::`vector deleting destructor'(AC1Legacy::vlong *this, UInt32) .text:005B0F10 ??_Evlong@AC1Legacy@@UAEPAXI@Z
         }
         public unsafe struct vlong_value {
             // Struct:
@@ -1347,15 +1347,15 @@ namespace AcClient {
 
     public unsafe struct PortalDH {
         // Struct:
-        public AC1Legacy.vlong shared_base_;
-        public AC1Legacy.vlong shared_prime_;
+        public AC1Legacy.Vlong shared_base_;
+        public AC1Legacy.Vlong shared_prime_;
         public override string ToString() => $"shared_base_(AC1Legacy.vlong):{shared_base_}, shared_prime_(AC1Legacy.vlong):{shared_prime_}";
 
 
         // Functions:
 
         // PortalDH.Init:
-        public static delegate* unmanaged[Thiscall]<PortalDH*, AC1Legacy.vlong*, AC1Legacy.vlong*, Int32> Init = (delegate* unmanaged[Thiscall]<PortalDH*, AC1Legacy.vlong*, AC1Legacy.vlong*, Int32>)0x005B1300; // .text:005B0250 ; Int32 __thiscall PortalDH::Init(PortalDH *this, AC1Legacy::vlong *shared_base, AC1Legacy::vlong *shared_prime) .text:005B0250 ?Init@PortalDH@@QAEHAAVvlong@AC1Legacy@@0@Z
+        public static delegate* unmanaged[Thiscall]<PortalDH*, AC1Legacy.Vlong*, AC1Legacy.Vlong*, Int32> Init = (delegate* unmanaged[Thiscall]<PortalDH*, AC1Legacy.Vlong*, AC1Legacy.Vlong*, Int32>)0x005B1300; // .text:005B0250 ; Int32 __thiscall PortalDH::Init(PortalDH *this, AC1Legacy::vlong *shared_base, AC1Legacy::vlong *shared_prime) .text:005B0250 ?Init@PortalDH@@QAEHAAVvlong@AC1Legacy@@0@Z
     }
 
     public unsafe struct ReceiverData {

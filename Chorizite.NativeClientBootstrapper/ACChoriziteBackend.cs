@@ -31,10 +31,10 @@ using Chorizite.NativeClientBootstrapper.Lib;
 using Chorizite.Core.Backend.Client;
 using System.Runtime.InteropServices;
 using System.Collections.Concurrent;
+using Chorizite.Common.Enums;
 
 namespace Chorizite.NativeClientBootstrapper {
     public unsafe class ACChoriziteBackend : IChoriziteBackend, IClientBackend {
-        private readonly AudioPlaybackEngine _engine;
         private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
 
         private ConcurrentQueue<Action> _invokeQueue = new();
@@ -189,7 +189,7 @@ namespace Chorizite.NativeClientBootstrapper {
 
                     binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
 
-                    uint filesize = (uint)(sound.Data.Length + 36); // 36 is added for all the extra we're adding for the WAV header format
+                    uint filesize = (uint)(sound!.Data.Length + 36); // 36 is added for all the extra we're adding for the WAV header format
                     binaryWriter.Write(filesize);
 
                     binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));

@@ -8,17 +8,18 @@ using Microsoft.Extensions.Logging;
 using Chorizite.Common;
 using DatReaderWriter.DBObjs;
 using NAudio.Wave;
-using Chorizite.Core;
 using Chorizite.Core.Backend.Launcher;
 using Microsoft.Win32;
 using System.Collections.Concurrent;
+using Chorizite.Common.Enums;
+using System.Runtime.InteropServices;
+using Chorizite.Core;
 
 namespace LauncherApp.Lib {
     internal class LauncherChoriziteBackend : IChoriziteBackend, ILauncherBackend {
         private readonly ILogger _log;
         private readonly IContainer _container;
-        private readonly AudioPlaybackEngine _engine;
-        private Dictionary<int, AudioPlaybackEngine> _audioEngines = new();
+        private Dictionary<int, AudioPlaybackEngine> _audioEngines = [];
         private ConcurrentQueue<Action> _invokeQueue = new();
 
         /// <inheritdoc/>
@@ -118,7 +119,7 @@ namespace LauncherApp.Lib {
 
                     binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));
 
-                    uint filesize = (uint)(sound.Data.Length + 36); // 36 is added for all the extra we're adding for the WAV header format
+                    uint filesize = (uint)(sound!.Data.Length + 36); // 36 is added for all the extra we're adding for the WAV header format
                     binaryWriter.Write(filesize);
 
                     binaryWriter.Write(System.Text.Encoding.ASCII.GetBytes("WAVE"));
@@ -206,7 +207,7 @@ namespace LauncherApp.Lib {
         }
 
         public void Minimize() {
-            Native.ShowWindow(GLRenderer.HWND, 2);
+            //Native.ShowWindow(GLRenderer.HWND, 2);
         }
 
         public override void SetCursorDid(uint did, int hotX = 0, int hotY = 0, bool makeDefault = false) {
@@ -219,16 +220,19 @@ namespace LauncherApp.Lib {
 
         public string GetDefaultClientPath() {
             var defaultPath = "C:\\Turbine\\Asheron's Call\\acclient.exe";
+            
             try {
-                RegistryKey sk1 = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{F0EE55BA-193D-4670-90C0-76E0E25F3A08}");
-                if (sk1 == null) {
-                    return defaultPath;
-                }
-                string acInstallPath = (string)sk1.GetValue("InstallLocation", "");
-                if (!string.IsNullOrWhiteSpace(acInstallPath)) {
-                    var path = Path.Combine(acInstallPath, "acclient.exe");
-                    if (File.Exists(path)) {
-                        return path;
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) {
+                    var sk1 = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{F0EE55BA-193D-4670-90C0-76E0E25F3A08}");
+                    if (sk1 == null) {
+                        return defaultPath;
+                    }
+                    string acInstallPath = (string)sk1.GetValue("InstallLocation", "");
+                    if (!string.IsNullOrWhiteSpace(acInstallPath)) {
+                        var path = Path.Combine(acInstallPath, "acclient.exe");
+                        if (File.Exists(path)) {
+                            return path;
+                        }
                     }
                 }
             }
