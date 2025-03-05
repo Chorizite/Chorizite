@@ -18,8 +18,6 @@
   </PropertyGroup>
 
   <Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
-    <Message Text="Delete $(NuGetPackageRoot)$(PackageId)" Importance="high" />
-    <RemoveDir Directories="$(NuGetPackageRoot)$(PackageId)" />
     <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Version" />
       <Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />
@@ -27,6 +25,8 @@
     <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="AssemblyVersion" />
     </Exec>
+    <Message Text="Delete $(NuGetPackageRoot)$(PackageId)\$(PackageVersion)" Importance="high" />
+    <RemoveDir Directories="$(NuGetPackageRoot)$(PackageId)\$(PackageVersion)" />
   </Target>
   
   <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec" Condition="Exists('../release-notes.md')">

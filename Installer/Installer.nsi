@@ -14,26 +14,19 @@ SetCompressor LZMA
 Name "${APPNAME} ${VERSION}"
 InstallDir "C:\Games\Chorizite"
 InstallDirRegKey HKLM "Software\${SOFTWARECOMPANY}\${APPNAME}" ""
-;SetFont "Verdana" 8
 Icon ".\..\Chorizite.Launcher\chorizite.ico"
 OutFile ".\..\bin\${APPNAME}-Installer-${VERSION}.exe"
 !define HttpWebRequestURL "https://chorizite.github.io/plugin-index/index.json"
 
-; Use compression
-
 !define MUI_ABORTWARNING
 !define MUI_COMPONENTSPAGE_SMALLDESC
-
 !define MUI_FINISHPAGE_RUN_TEXT "Launch ${APPNAME}"
 !define MUI_FINISHPAGE_RUN "$INSTDIR\Chorizite.Launcher.exe"
-
-; Set languages (first is default language)
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
-!insertmacro MUI_PAGE_FINISH
 !insertmacro MUI_LANGUAGE "English"
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
@@ -66,23 +59,28 @@ SectionEnd
 Section InstallPlugins
   CreateDirectory $TEMP\chorizite-setup
   
-	;download installer
+  ;download installer
   DetailPrint `Downloading plugin index: ${HttpWebRequestURL}`
-	inetc::get `${HttpWebRequestURL}` "$TEMP\chorizite-setup\plugins.json" /end
-
-  nsJSON::Set /file $TEMP\chorizite-setup\plugins.json
-  nsJSON::Get /count `Plugins` /end
+  inetc::get `${HttpWebRequestURL}` "$TEMP\chorizite-setup\plugins.json" /end
+  
+  nsJSON::Set /file "$TEMP\chorizite-setup\plugins.json"
+  
+  nsJSON::Get /count `plugins` /end
   Pop $R0
-  IntOp $R0 $R0 - 1
-  ${For} $R1 0 $R0
-    nsJSON::Get `Plugins` /index $R1 `Name` /end
+  DetailPrint `Plugin count: $R0`
+  
+  ${While} $R0 > 0
+    IntOp $R0 $R0 - 1
+    
+	nsJSON::Get `plugins` /index $R0 `id` /end
     Pop $R2
-    nsJSON::Get `Plugins` /index $R1 `Latest` `DownloadUrl` /end
+    nsJSON::Get `plugins` /index $R0 `latest` `downloadUrl` /end
     Pop $R3
-    nsJSON::Get `Plugins` /index $R1 `Latest` `Version` /end
+    nsJSON::Get `plugins` /index $R0 `latest` `version` /end
     Pop $R4
-    nsJSON::Get `Plugins` /index $R1 `IsCorePlugin` /end
+    nsJSON::Get `plugins` /index $R0 `isDefault` /end
     Pop $R5
+      
     ${If} $R5 == true
       DetailPrint `Downloading $R2-$R4 from $R3`
       inetc::get `$R3` "$TEMP\chorizite-setup\$R2-$R4.zip" /end
@@ -90,9 +88,9 @@ Section InstallPlugins
       nsisunz::UnzipToLog "$TEMP\chorizite-setup\$R2-$R4.zip" "$INSTDIR\plugins\$R2"
       Delete "$TEMP\chorizite-setup\$R2-$R4.zip"
     ${EndIf}
+  ${EndWhile}
 
-    Delete "$TEMP\chorizite-setup\plugins.json"
-  ${Next}
+  ;Delete "$TEMP\chorizite-setup\plugins.json"
 SectionEnd
 
 ;Uninstall section

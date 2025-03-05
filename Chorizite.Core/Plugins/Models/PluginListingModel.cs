@@ -53,7 +53,7 @@ namespace Chorizite.Plugins.Models {
         /// The dependencies for this release
         /// </summary>
         [JsonSchemaExtensionData("description", "The dependencies for this release.")]
-        public required List<string> Dependencies { get; set; }
+        public required List<string>? Dependencies { get; set; }
 
         /// <summary>
         /// The environments this release supports

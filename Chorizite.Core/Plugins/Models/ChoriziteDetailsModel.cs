@@ -29,6 +29,6 @@ namespace Chorizite.Plugins.Models {
         /// The list of available releases for chorizite
         /// </summary>
         [JsonSchemaExtensionData("description", "The list of available releases for chorizite.")]
-        public required List<ReleaseDetailsModel> Releases { get; set; }
+        public required List<ReleaseDetailsModel>? Releases { get; set; }
     }
 }
