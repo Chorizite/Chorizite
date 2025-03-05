@@ -14,7 +14,7 @@ namespace Chorizite.Plugins.Models {
         /// json schema
         /// </summary>
         [JsonPropertyName("$schema")]
-        public string Schema => "https://chorizite.github.io/plugin-index/schemas/release-index-schema.json";
+        public string Schema => "https://chorizite.github.io/plugin-index/schemas/release-index.json";
 
         /// <summary>
         /// Chorizite release info

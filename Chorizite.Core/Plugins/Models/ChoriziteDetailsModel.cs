@@ -17,7 +17,7 @@ namespace Chorizite.Plugins.Models {
         /// Json schema
         /// </summary>
         [JsonPropertyName("$schema")]
-        public string Schema => "https://chorizite.github.io/plugin-index/schemas/chorizite-details-schema.json";
+        public string Schema => "https://chorizite.github.io/plugin-index/schemas/chorizite-details.json";
 
         /// <summary>
         /// The total number of downloads for chorizite
