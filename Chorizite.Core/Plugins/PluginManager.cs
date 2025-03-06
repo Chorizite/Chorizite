@@ -25,6 +25,12 @@ namespace Chorizite.Core.Plugins {
         private readonly List<IPluginLoader> _pluginLoaders = [];
         private readonly ILogger _log;
         private bool _wantsReload = false;
+        private JsonSerializerOptions jsonOpts = new JsonSerializerOptions {
+            WriteIndented = true,
+            IncludeFields = false,
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
 
         /// <inheritdoc />
         public string PluginDirectory { get; }
@@ -100,7 +106,7 @@ namespace Chorizite.Core.Plugins {
         public async Task<ReleasesIndexModel?> RefreshPluginIndex() {
             try {
                 var json = await _http.GetStringAsync("https://chorizite.github.io/plugin-index/index.json");
-                var releases = JsonSerializer.Deserialize<ReleasesIndexModel>(json);
+                var releases = JsonSerializer.Deserialize<ReleasesIndexModel>(json, jsonOpts);
                 if (releases is null) return null;
 
                 PluginIndex = releases;
@@ -108,7 +114,8 @@ namespace Chorizite.Core.Plugins {
 
                 return releases;
             }
-            catch {
+            catch (Exception ex) {
+                _log?.LogError(ex, "Error loading plugin index: {0}: {1}", "https://chorizite.github.io/plugin-index/index.json", ex.Message);
                 return null;
             }
         }
@@ -117,7 +124,7 @@ namespace Chorizite.Core.Plugins {
         public async Task<PluginDetailsModel?> RefreshPluginReleaseDetails(string id) {
             try {
                 var json = await _http.GetStringAsync($"https://chorizite.github.io/plugin-index/plugins/{id}.json");
-                var details = JsonSerializer.Deserialize<PluginDetailsModel>(json);
+                var details = JsonSerializer.Deserialize<PluginDetailsModel>(json, jsonOpts);
                 if (details is null) return null;
 
                 if (!PluginReleaseInfo.TryAdd(id, details)) {
@@ -127,7 +134,8 @@ namespace Chorizite.Core.Plugins {
 
                 return details;
             }
-            catch {
+            catch(Exception ex) {
+                _log?.LogError(ex, "Error loading plugin details: {0}: {1}", $"https://chorizite.github.io/plugin-index/plugins/{id}.json", ex.Message);
                 return null;
             }
         }

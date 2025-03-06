@@ -187,6 +187,16 @@ namespace Chorizite.Core {
 
             if (Config.Environment == ChoriziteEnvironment.Launcher || Config.Environment == ChoriziteEnvironment.Client) {
                 _pluginManager.LoadPlugins();
+                _renderInterface.OnRender2D += RenderInterface_OnRender2D;
+            }
+        }
+
+        private void RenderInterface_OnRender2D(object? sender, EventArgs e) {
+            try {
+                _pluginManager.Update();
+            }
+            catch (Exception ex) {
+                ChoriziteStatics.Log.LogError(ex, "Error in RenderInterface_OnRender2D");
             }
         }
 
@@ -246,6 +256,9 @@ namespace Chorizite.Core {
         /// Disposes the Chorizite instance
         /// </summary>
         public void Dispose() {
+            if (_renderInterface is not null) {
+                _renderInterface.OnRender2D -= RenderInterface_OnRender2D;
+            }
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             _pluginManager?.Dispose();
             _renderInterface?.Dispose();

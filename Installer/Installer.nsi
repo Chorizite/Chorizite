@@ -90,7 +90,7 @@ Section InstallPlugins
     ${EndIf}
   ${EndWhile}
 
-  ;Delete "$TEMP\chorizite-setup\plugins.json"
+  Delete "$TEMP\chorizite-setup\plugins.json"
 SectionEnd
 
 ;Uninstall section
