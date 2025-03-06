@@ -37,6 +37,7 @@ namespace Chorizite.DocGen.LuaDefs.Lib {
             var pluginManager = _chorizite.Scope.Resolve<IPluginManager>();
             pluginManager.LoadPlugins();
             foreach (var plugin in pluginManager.PluginManifests) {
+                Console.WriteLine($"Loading types for plugin: {plugin.Id}");
                 try {
                     PluginRegistry.Add(plugin.Id, new PluginTypeRegistry(this, _chorizite, plugin));
                 }
