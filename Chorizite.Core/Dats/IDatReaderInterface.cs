@@ -29,6 +29,11 @@ namespace Chorizite.Core.Dats {
         SpellTable SpellTable { get; }
 
         /// <summary>
+        /// The spell component table
+        /// </summary>
+        SpellComponentTable SpellComponentTable { get; }
+
+        /// <summary>
         /// The skill table
         /// </summary>
         SkillTable SkillTable { get; }

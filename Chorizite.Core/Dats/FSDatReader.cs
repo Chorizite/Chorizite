@@ -13,6 +13,7 @@ namespace Chorizite.Core.Dats {
     internal class FSDatReader : IDatReaderInterface {
         private string _datPath;
         private SpellTable? _spellTable;
+        private SpellComponentTable? _spellComponentTable;
         private SkillTable? _skillTable;
         private VitalTable? _vitalTable;
         private readonly ILogger _log;
@@ -29,6 +30,18 @@ namespace Chorizite.Core.Dats {
                     _spellTable = Portal.SpellTable;
                 }
                 return _spellTable;
+            }
+        }
+
+        public SpellComponentTable SpellComponentTable {
+            get {
+                if (_spellComponentTable is null) {
+                    if (Portal.SpellComponentTable is null) {
+                        throw new Exception("Unable to load SpellComponentTable from dat!");
+                    }
+                    _spellComponentTable = Portal.SpellComponentTable;
+                }
+                return _spellComponentTable;
             }
         }
 
