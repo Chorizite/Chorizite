@@ -82,12 +82,6 @@
     <PackageReference Include="Chorizite.Common" Version="1.0.3" />
     <PackageReference Include="Autofac" Version="8.2.0" />
     <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
-    <PackageReference Include="Microsoft.DiaSymReader" Version="2.0.0" />
-    <PackageReference Include="Microsoft.DiaSymReader.Native" Version="1.7.0" />
-    <PackageReference Include="Microsoft.DiaSymReader.PortablePdb" Version="1.6.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="NJsonSchema" Version="11.1.0" />
     <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" />
     <PackageReference Include="GitVersion.MsBuild" Version="6.1.0">
