@@ -12,6 +12,7 @@ using Chorizite.Core.Net;
 using Chorizite.Core.Plugins;
 using Chorizite.Core.Plugins.AssemblyLoader;
 using Chorizite.Core.Render;
+using Chorizite.NativeClientBootstrapper.Lib;
 using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
@@ -71,6 +72,8 @@ namespace Chorizite.Core {
         /// </summary>
         /// <param name="config">Configuration</param>
         public Chorizite(IChoriziteConfig config) {
+            SymbolResolver.RegisterWithNativeCrashHandler();
+            ManagedCrashHandler.Instance.Initialize();
             ChoriziteStatics.Config = config;
             _log = new ChoriziteLogger("Chorizite", Config.LogDirectory);
 
@@ -256,6 +259,7 @@ namespace Chorizite.Core {
         /// Disposes the Chorizite instance
         /// </summary>
         public void Dispose() {
+            try { SymbolResolver.UnregisterWithNativeCrashHandler(); } catch { }
             if (_renderInterface is not null) {
                 _renderInterface.OnRender2D -= RenderInterface_OnRender2D;
             }

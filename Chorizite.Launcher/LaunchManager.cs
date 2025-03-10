@@ -20,7 +20,7 @@ namespace LauncherApp {
         }
 
         internal unsafe void Launch(string clientPath, string server, string username, string password) {
-            Task.Run(() => {
+            //Task.Run(() => {
                 var host = server.Split(":").First();
                 var port = server.Split(":").Last();
                 var clientArgs = $"-h {host} -p {port} -a {username} -v {password} -rodat off";
@@ -42,7 +42,7 @@ namespace LauncherApp {
                 }
 
                 LaunchClientWithInjected(clientPath, clientArgs, dllsToInject.ToArray());
-            });
+            //});
         }
 
         private unsafe static void LaunchClientWithInjected(string clientPath, string clientArgs, EntryPointParameters[] entryPointParams) {

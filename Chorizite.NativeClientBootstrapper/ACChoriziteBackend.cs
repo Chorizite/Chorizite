@@ -294,10 +294,11 @@ namespace Chorizite.NativeClientBootstrapper {
         public void SendProtoUIMessage(byte[] message) {
             if (message is null || message.Length == 0) return;
             try {
-                var bytePtr = (byte*)NativeMemory.AlignedAlloc((uint)message.Length, 4);
-                Marshal.Copy(message, 0, (IntPtr)bytePtr, message.Length);
-                // a NetBlob is created from bytePtr and will free it
-                Proto_UI.SendToControl(bytePtr, message.Length);
+                //var ptr = ((delegate* unmanaged[Cdecl]<int, IntPtr>)*(int*)0x00793394)(message.Length); // malloc
+               var ptr = Marshal.AllocHGlobal(message.Length);
+                Marshal.Copy(message, 0, ptr, message.Length);
+                // a NetBlob is created from ptr and will free it
+                Proto_UI.SendToControl((byte*)ptr, message.Length);
             }
             catch (Exception ex) {
                 Log.LogError(ex, "Failed to send ProtoUI message");

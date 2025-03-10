@@ -40,11 +40,15 @@ namespace Chorizite.NativeClientBootstrapper {
                 }
                 //*/
 
+                var sw = new System.Diagnostics.Stopwatch();
+                sw.Start();
                 DirectXHooks.Init(a, b);
                 NetHooks.Init();
                 ACClientHooks.Init();
                 ChatHooks.Init();
                 UIHooks.Init();
+                sw.Stop();
+                Log.LogInformation("Hooks initialized in {0}ms", sw.ElapsedMilliseconds);
             }
             catch (Exception ex) {
                 Log.LogError(ex, "Failed to initialize hooks");
