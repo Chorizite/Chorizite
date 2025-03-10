@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.Reflection;
 using Chorizite.Common.Enums;
+using System.Runtime.InteropServices;
 
 namespace LauncherApp {
     internal static class Program {
@@ -28,7 +29,11 @@ namespace LauncherApp {
         public static Chorizite<LauncherChoriziteBackend> ChoriziteInstance { get; private set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
+        [DllImport("Chorizite.Injector.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void InitNativeCrashHandler();
+
         static void Main() {
+            InitNativeCrashHandler();
             Log = new ChoriziteLogger("Launcher", _logDirectory);
 
             Log.LogDebug($"Launcher version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");
