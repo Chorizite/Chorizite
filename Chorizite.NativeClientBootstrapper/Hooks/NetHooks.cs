@@ -19,6 +19,7 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         private delegate int RecvFrom(nint s, byte* buf, int len, int flags, byte* from, int fromlen);
 
         internal static void Init() {
+            //83 EC 10 53 56 57 8B F1 E8 ?? ?? ?? ?? 8B CE
             _sendtoHook = CreateHook<SendTo>(typeof(NetHooks), nameof(SendToImpl), *(int*)0x007935A4);
             _recvfromHook = CreateHook<RecvFrom>(typeof(NetHooks), nameof(RecvFromImpl), *(int*)0x007935AC);
         }

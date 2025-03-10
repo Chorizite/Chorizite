@@ -48,4 +48,14 @@
   <ItemGroup>
     <EmbeddedResource Include="Render\Shaders\Basic.fx" />
   </ItemGroup>
+
+  <ItemGroup>
+    <NativeLibs Remove="SigScan.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="SigScan.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>
