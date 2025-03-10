@@ -9,9 +9,11 @@ using Chorizite.Core.Net;
 using Chorizite.Core.Render;
 using Chorizite.NativeClientBootstrapper.Hooks;
 using Chorizite.NativeClientBootstrapper.Input;
+using Chorizite.NativeClientBootstrapper.Lib;
 using Chorizite.NativeClientBootstrapper.Render;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Loader;
 

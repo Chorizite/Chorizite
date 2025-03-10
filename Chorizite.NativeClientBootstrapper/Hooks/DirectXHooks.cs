@@ -51,10 +51,21 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
         private static uint _count = 0;
 
         public static int Init(IntPtr a, int b) {
-            _renderDeviceD3D_EndSceneHook = CreateHook<RenderDeviceD3D_EndScene>(typeof(DirectXHooks), nameof(RenderDeviceD3D_EndSceneImpl), 0x005A0E10);
-            _renderDeviceD3D_OnDeviceDisplayModeChangeHook = CreateHook<RenderDeviceD3D_OnDeviceDisplayModeChange>(typeof(DirectXHooks), nameof(RenderDeviceD3D_OnDeviceDisplayModeChangeImpl), 0x005A2BA0);
+            _renderDeviceD3D_EndSceneHook = CreateHook<RenderDeviceD3D_EndScene>(typeof(DirectXHooks), nameof(RenderDeviceD3D_EndSceneImpl), "## 56 8B F1 8A 86 AC 00 00 00 84 C0 74 16");
+            _renderDeviceD3D_OnDeviceDisplayModeChangeHook = CreateHook<RenderDeviceD3D_OnDeviceDisplayModeChange>(typeof(DirectXHooks), nameof(RenderDeviceD3D_OnDeviceDisplayModeChangeImpl), "## 83 EC 10 53 56 57 8B F1 E8 ?? ?? ?? ?? 8B CE");
 
             return 0;
+        }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
+        private unsafe static void RenderDeviceD3D_EndSceneImpl(IntPtr a) {
+            if (_count > 60) {
+                StandaloneLoader.Render?.Render2D();
+            }
+            else {
+                _count++;
+            }
+            _renderDeviceD3D_EndSceneHook!.OriginalFunction.Invoke(a);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
@@ -84,17 +95,6 @@ namespace Chorizite.NativeClientBootstrapper.Hooks {
                 }
             }
             catch (Exception ex) { StandaloneLoader.Log.LogError(ex, "Failed to reset graphics"); }
-        }
-
-        [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvMemberFunction) })]
-        private unsafe static void RenderDeviceD3D_EndSceneImpl(IntPtr a) {
-            if (_count > 60) {
-                StandaloneLoader.Render?.Render2D();
-            }
-            else {
-                _count++;
-            }
-            _renderDeviceD3D_EndSceneHook!.OriginalFunction.Invoke(a);
         }
 
         [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvStdcall) })]
