@@ -275,7 +275,7 @@ namespace Chorizite.Core.Plugins {
 
             if (failedToUnload.Count > 0) {
                 _log?.LogWarning($"Failed to unload plugins: {string.Join(", ", failedToUnload)}");
-                System.Diagnostics.Debugger.Break();
+                //System.Diagnostics.Debugger.Break();
             }
 
             _hasPluginsLoaded = false;

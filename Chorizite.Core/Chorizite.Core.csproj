@@ -1,97 +1,98 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <OutputType>Library</OutputType>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <NoWarn>1591</NoWarn>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>pdbonly</DebugType>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
-    <LangVersion>12</LangVersion>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>..\bin\net8.0\</OutputPath>
-    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
-    <Nullable>enable</Nullable>
-    <IsPackable>True</IsPackable>
-    <NoWarn>0067</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<OutputType>Library</OutputType>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<NoWarn>1591</NoWarn>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>pdbonly</DebugType>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+		<LangVersion>12</LangVersion>
+		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+		<OutputPath>..\bin\net8.0\</OutputPath>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Nullable>enable</Nullable>
+		<IsPackable>True</IsPackable>
+		<NoWarn>0067</NoWarn>
+	</PropertyGroup>
 
-  <Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
-    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="Version" />
-      <Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />
-    </Exec>
-    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
-      <Output TaskParameter="ConsoleOutput" PropertyName="AssemblyVersion" />
-    </Exec>
-    <Message Text="Delete $(NuGetPackageRoot)$(PackageId)\$(PackageVersion)" Importance="high" />
-    <RemoveDir Directories="$(NuGetPackageRoot)$(PackageId)\$(PackageVersion)" />
-  </Target>
-  
-  <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec" Condition="Exists('../release-notes.md')">
-    <ReadLinesFromFile File="../release-notes.md">
-      <Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
-    </ReadLinesFromFile>
+	<Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
+		<Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
+			<Output TaskParameter="ConsoleOutput" PropertyName="Version" />
+			<Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />
+		</Exec>
+		<Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
+			<Output TaskParameter="ConsoleOutput" PropertyName="AssemblyVersion" />
+		</Exec>
+		<Message Text="Delete $(NuGetPackageRoot)$(PackageId)\$(PackageVersion)" Importance="high" />
+		<RemoveDir Directories="$(NuGetPackageRoot)$(PackageId)\$(PackageVersion)" />
+	</Target>
 
-    <PropertyGroup>
-      <PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
-    </PropertyGroup>
-  </Target>
+	<Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec" Condition="Exists('../release-notes.md')">
+		<ReadLinesFromFile File="../release-notes.md">
+			<Output TaskParameter="Lines" ItemName="ReleaseNoteLines" />
+		</ReadLinesFromFile>
 
-  <PropertyGroup>
-    <Title>Chorizite.Core</Title>
-    <Product>Chorizite.Core</Product>
-    <PackageId>Chorizite.Core</PackageId>
-    <Authors>Chorizite</Authors>
-    <Company>Chorizite</Company>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Description>Chorizite core library</Description>
-    <RepositoryUrl>https://github.com/Chorizite/Chorizite</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>true</GenerateAssemblyInformationalVersionAttribute>
-    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
-    <UpdateAssemblyInfo>false</UpdateAssemblyInfo>
-    <UseProjectNamespaceForGitVersionInformation>true</UseProjectNamespaceForGitVersionInformation>
-    <PackageOutputPath>..\bin\</PackageOutputPath>
-  </PropertyGroup>
+		<PropertyGroup>
+			<PackageReleaseNotes>@(ReleaseNoteLines, '%0a')</PackageReleaseNotes>
+		</PropertyGroup>
+	</Target>
 
-  <ItemGroup>
-    <None Update="acclient.map">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Remove="Render\nulltexture.jpg" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <EmbeddedResource Include="Render\nulltexture.jpg" />
-  </ItemGroup>
+	<PropertyGroup>
+		<Title>Chorizite.Core</Title>
+		<Product>Chorizite.Core</Product>
+		<PackageId>Chorizite.Core</PackageId>
+		<Authors>Chorizite</Authors>
+		<Company>Chorizite</Company>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<Description>Chorizite core library</Description>
+		<RepositoryUrl>https://github.com/Chorizite/Chorizite</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
+		<GenerateAssemblyInformationalVersionAttribute>true</GenerateAssemblyInformationalVersionAttribute>
+		<GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+		<UpdateAssemblyInfo>false</UpdateAssemblyInfo>
+		<UseProjectNamespaceForGitVersionInformation>true</UseProjectNamespaceForGitVersionInformation>
+		<PackageOutputPath>..\bin\</PackageOutputPath>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Chorizite.ACProtocol" Version="1.0.0" />
-    <PackageReference Include="Chorizite.Common" Version="1.0.3" />
-    <PackageReference Include="Autofac" Version="8.2.0" />
-    <PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
-    <PackageReference Include="NJsonSchema" Version="11.1.0" />
-    <PackageReference Include="DatReaderWriter" Version="0.1.0-beta.44" />
-    <PackageReference Include="GitVersion.MsBuild" Version="6.1.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
-    <PackageReference Include="System.Reflection.Metadata" Version="9.0.2" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Update="acclient.map">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Render\nulltexture.jpg" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Render\nulltexture.jpg" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Chorizite.ACProtocol" Version="1.0.1" />
+		<PackageReference Include="Chorizite.Common" Version="1.0.3" />
+		<PackageReference Include="Autofac" Version="8.4.0" />
+		<PackageReference Include="Chorizite.DatReaderWriter" Version="1.0.1-beta.1" />
+		<PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
+		<PackageReference Include="NJsonSchema" Version="11.5.1" />
+		<PackageReference Include="GitVersion.MsBuild" Version="6.4.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
+		<PackageReference Include="System.Reflection.Metadata" Version="9.0.9" />
+		<PackageReference Include="System.Text.Json" Version="9.0.9" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
+		<PackageReference Include="FontStashSharp" Version="1.3.10" />
+	</ItemGroup>
 </Project>

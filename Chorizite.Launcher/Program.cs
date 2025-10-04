@@ -33,7 +33,9 @@ namespace LauncherApp {
         private static extern void InitNativeCrashHandler();
 
         static void Main() {
-            InitNativeCrashHandler();
+            if (!Debugger.IsAttached) {
+                InitNativeCrashHandler();
+            }
             Log = new ChoriziteLogger("Launcher", _logDirectory);
 
             Log.LogDebug($"Launcher version: {FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).FileVersion}");

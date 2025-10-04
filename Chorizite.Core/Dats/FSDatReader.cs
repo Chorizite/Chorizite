@@ -12,14 +12,17 @@ using System.Threading.Tasks;
 namespace Chorizite.Core.Dats {
     internal class FSDatReader : IDatReaderInterface {
         private string _datPath;
+        private readonly DatCollection _datCollection;
         private SpellTable? _spellTable;
         private SpellComponentTable? _spellComponentTable;
         private SkillTable? _skillTable;
         private VitalTable? _vitalTable;
         private readonly ILogger _log;
 
-        public PortalDatabase Portal { get; private set; }
-        public CellDatabase Cell { get; private set; }
+        public PortalDatabase Portal => _datCollection.Portal;
+        public PortalDatabase HighRes => _datCollection.HighRes;
+        public CellDatabase Cell => _datCollection.Cell;
+        public LocalDatabase Local => _datCollection.Local;
 
         public SpellTable SpellTable {
             get {
@@ -73,19 +76,11 @@ namespace Chorizite.Core.Dats {
             _log = log;
             _datPath = datPath;
 
-            Portal = new PortalDatabase(options => {
-            }, new StreamBlockAllocator(new DatReaderWriter.Options.DatDatabaseOptions() {
-                FilePath = System.IO.Path.Combine(datPath, $"client_Portal.dat")
-            }));
-
-            Cell = new CellDatabase(options => {
-            }, new StreamBlockAllocator(new DatReaderWriter.Options.DatDatabaseOptions() {
-                FilePath = System.IO.Path.Combine(datPath, $"client_cell_1.dat")
-            }));
+            _datCollection = new DatCollection(datPath);
         }
 
         public T? Get<T>(uint fileId) where T : IDBObj {
-            return Portal.TryReadFile<T>(fileId, out T? result) ? result : default;
+            return _datCollection.Get<T>(fileId);
         }
 
         public bool TryGet<T>(uint fileId, out T? result) where T : IDBObj {

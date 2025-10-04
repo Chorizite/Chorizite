@@ -23,7 +23,7 @@ namespace LauncherApp.Lib {
         private ConcurrentQueue<Action> _invokeQueue = new();
 
         /// <inheritdoc/>
-        public override IRenderInterface Renderer { get; }
+        public override IRenderer Renderer { get; }
 
         /// <summary>
         /// The <see cref="OpenGLRenderer"/> used by this backend
@@ -70,7 +70,7 @@ namespace LauncherApp.Lib {
             _log = container.Resolve<ILogger<LauncherChoriziteBackend>>();
             _container = container;
 
-            Renderer.OnRender2D += OnRender2D;
+            Renderer.OnRenderUI += OnRender2D;
         }
 
         private void OnRender2D(object? sender, EventArgs e) {
@@ -215,7 +215,7 @@ namespace LauncherApp.Lib {
         }
 
         public void Dispose() {
-            Renderer.OnRender2D -= OnRender2D;
+            Renderer.OnRenderUI -= OnRender2D;
         }
 
         public string GetDefaultClientPath() {

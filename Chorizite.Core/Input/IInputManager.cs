@@ -65,6 +65,11 @@ namespace Chorizite.Core.Input {
         public event EventHandler<MouseWheelEventArgs> OnMouseWheel;
 
         /// <summary>
+        /// Fired when the window is resized
+        /// </summary>
+        public event EventHandler<WindowResizedEventArgs>? OnWindowResized;
+
+        /// <summary>
         /// Handles the client shutdown
         /// </summary>
         void HandleShutdown();
@@ -75,5 +80,12 @@ namespace Chorizite.Core.Input {
         /// <param name="key"></param>
         /// <returns></returns>
         bool IsKeyPressed(Key key);
+
+        /// <summary>
+        /// Checks if a mouse button is pressed
+        /// </summary>
+        /// <param name="button"></param>
+        /// <returns></returns>
+        bool IsMousePressed(MouseButton button);
     }
 }

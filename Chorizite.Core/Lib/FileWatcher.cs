@@ -21,7 +21,7 @@ namespace Chorizite.Core.Lib {
         /// <summary>
         /// The amount of time to wait after a file has changed before triggering the event
         /// </summary>
-        public TimeSpan Delay { get; set; } = TimeSpan.FromMilliseconds(500);
+        public TimeSpan Delay { get; set; } = TimeSpan.FromMilliseconds(300);
 
         /// <summary>
         /// Create a new file watcher
@@ -31,7 +31,10 @@ namespace Chorizite.Core.Lib {
         /// <param name="onFileChanged">An action to run when a file is changed, after <see cref="Delay"/></param>
         public FileWatcher(string directory, string pattern, Action<string>? onFileChanged = null) {
             if (!Directory.Exists(directory)) {
-                ChoriziteStatics.Log.LogWarning("FileWatcher directory does not exist: {0} ({1})", directory, pattern);
+                try {
+                    ChoriziteStatics.Log.LogWarning("FileWatcher directory does not exist: {0} ({1})", directory, pattern);
+                }
+                catch { }
                 return;
             }
 
@@ -44,9 +47,12 @@ namespace Chorizite.Core.Lib {
 
             _docWatcher = new FileSystemWatcher();
             _docWatcher.Path = directory;
-            _docWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size;
+            _docWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size | NotifyFilters.CreationTime | NotifyFilters.FileName | NotifyFilters.LastAccess;
             _docWatcher.Filter = pattern;
             _docWatcher.Changed += DocWatcher_Changed;
+            _docWatcher.Deleted += DocWatcher_Changed;
+            _docWatcher.Created += DocWatcher_Changed;
+            _docWatcher.Renamed += DocWatcher_Changed;
             _docWatcher.EnableRaisingEvents = true;
         }
 
@@ -57,16 +63,17 @@ namespace Chorizite.Core.Lib {
                 ChoriziteStatics.Log.LogTrace("FileWatcher changed: {0}", e.FullPath);
             }
             catch { }
-            if (!_needsReload) {
+            if (!_needsReload && ChoriziteStatics.Backend?.Renderer is not null) {
                 _needsReload = true;
                 _changedFile = e.FullPath;
-                ChoriziteStatics.Backend.Renderer.OnRender2D += OnRender2D;
+                ChoriziteStatics.Backend.Renderer.OnAfterRender3D += OnBeforeRender3D;
             }
         }
 
-        private void OnRender2D(object? sender, EventArgs e) {
-            if (_needsReload && _changedAt + Delay > DateTime.Now) {
+        private void OnBeforeRender3D(object? sender, EventArgs e) {
+            if (_needsReload && _changedAt + Delay < DateTime.Now) {
                 try {
+                    ChoriziteStatics.Log.LogTrace($"Filewatcher reloading {Path.GetFileName(_changedFile)} after {DateTime.Now - _changedAt}");
                     _onFileChanged?.Invoke(_changedFile);
                 }
                 catch(Exception ex) {
@@ -75,14 +82,14 @@ namespace Chorizite.Core.Lib {
                 _needsReload = false;
             }
             if (!_needsReload) {
-                ChoriziteStatics.Backend.Renderer.OnRender2D -= OnRender2D;
+                ChoriziteStatics.Backend.Renderer.OnBeforeRender3D -= OnBeforeRender3D;
             }
         }
 
         /// <inheritdoc/>
         public void Dispose() {
             if (_needsReload) {
-                ChoriziteStatics.Backend.Renderer.OnRender2D -= OnRender2D;
+                ChoriziteStatics.Backend.Renderer.OnBeforeRender3D -= OnBeforeRender3D;
                 _needsReload = false;
             }
             _docWatcher?.Dispose();

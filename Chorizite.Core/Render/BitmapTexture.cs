@@ -15,6 +15,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using DatReaderWriter.DBObjs;
 using Autofac;
+using Chorizite.Core.Render.Enums;
 
 namespace Chorizite.Core.Render {
     /// <summary>
@@ -23,6 +24,7 @@ namespace Chorizite.Core.Render {
     public abstract class BitmapTexture : ITexture {
         private static readonly Rgba32 BORDER_COLOR_MASK = Color.FromRgba(255, 255, 255, 255);
         private static readonly Rgba32 BACKGROUND_COLOR_MASK = Color.FromRgba(255, 255, 255, 0);
+        protected readonly IGraphicsDevice _device;
 
         /// <summary>
         /// The bitmap this texture is using.
@@ -30,7 +32,7 @@ namespace Chorizite.Core.Render {
         protected Image<Rgba32>? Bitmap { get; set; } = null;
 
         /// <inheritdoc/>
-        public abstract IntPtr TexturePtr { get; }
+        public abstract IntPtr NativePtr { get; }
 
         /// <inheritdoc/>
         public abstract int Width { get; }
@@ -41,24 +43,33 @@ namespace Chorizite.Core.Render {
         /// <inheritdoc/>
         public bool PreMultipliedAlpha { get; set; }
 
+        /// <inheritdoc/>
+        public abstract TextureFormat Format { get; }
+
         /// <summary>
         /// Default constructor
         /// </summary>
-        public BitmapTexture() {
-
+        public BitmapTexture(IGraphicsDevice device) {
+            _device = device;
         }
 
         /// <summary>
         /// Create a new managed texture from a byte array (r8g8b8a8)
         /// </summary>
+        /// <param name="device"></param>
         /// <param name="source"></param>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public BitmapTexture(byte[] source, int width, int height) {
+        public BitmapTexture(IGraphicsDevice device, byte[]? source, int width, int height) {
+            _device = device;
             Bitmap = new Image<Rgba32>(width, height);
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    Bitmap[x, y] = Color.FromRgba(source[(y * width + x) * 4], source[(y * width + x) * 4 + 1], source[(y * width + x) * 4 + 2], source[(y * width + x) * 4 + 3]);
+            Bitmap.Mutate(x => x.Fill(Color.Transparent));
+
+            if (source is not null) {
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        Bitmap[x, y] = Color.FromRgba(source[(y * width + x) * 4], source[(y * width + x) * 4 + 1], source[(y * width + x) * 4 + 2], source[(y * width + x) * 4 + 3]);
+                    }
                 }
             }
             CreateTexture(false);
@@ -69,7 +80,8 @@ namespace Chorizite.Core.Render {
         /// Create a new managed texture from a bitmap file path.
         /// </summary>
         /// <param name="file">The bitmap file path for the texture.</param>
-        public BitmapTexture(string file) : base() {
+        public BitmapTexture(IGraphicsDevice device, string file) : base() {
+            _device = device;
             if (file.StartsWith("dat://")) {
                 MakeSourceTexture(file);
             }
@@ -92,7 +104,8 @@ namespace Chorizite.Core.Render {
         /// so you can dispose the passed bitmap immediately after constructing.
         /// </summary>
         /// <param name="bitmap">The bitmap source for the texture.</param>
-        protected BitmapTexture(Image bitmap) : base() {
+        protected BitmapTexture(IGraphicsDevice device, Image bitmap) : base() {
+            _device = device;
             Bitmap = bitmap.CloneAs<Rgba32>();
             CreateTexture(true);
             PreMultipliedAlpha = true;
@@ -103,7 +116,8 @@ namespace Chorizite.Core.Render {
         /// </summary>
         /// <param name="source"></param>
         /// <param name="_portalDat"></param>
-        public BitmapTexture(string source, IDatReaderInterface _portalDat) {
+        public BitmapTexture(IGraphicsDevice device, string source, IDatReaderInterface _portalDat) {
+            _device = device;
             MakeSourceTexture(source);
         }
 
@@ -335,6 +349,7 @@ namespace Chorizite.Core.Render {
             ReleaseTexture();
             Bitmap?.Dispose();
             Bitmap = null;
+            this._device.ReleaseTexture(this);
         }
 
         /// <summary>
@@ -503,5 +518,12 @@ namespace Chorizite.Core.Render {
 
             return id;
         }
+
+        /// <inheritdoc/>
+        public abstract void Bind(int slot = 0);
+
+        /// <inheritdoc/>
+        public abstract void Unbind();
+        public abstract void SetData(Rectangle rectangle, byte[] data);
     }
 }

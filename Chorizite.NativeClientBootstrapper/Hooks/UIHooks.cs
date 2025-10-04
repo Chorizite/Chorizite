@@ -17,6 +17,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using StringInfo = AcClient.StringInfo;
 
 namespace Chorizite.NativeClientBootstrapper.Hooks {
     internal unsafe class UIHooks : HookBase {

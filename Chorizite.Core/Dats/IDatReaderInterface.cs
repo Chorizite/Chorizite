@@ -24,6 +24,16 @@ namespace Chorizite.Core.Dats {
         public CellDatabase Cell { get; }
 
         /// <summary>
+        /// The local language database
+        /// </summary>
+        LocalDatabase Local { get; }
+
+        /// <summary>
+        /// The high res portal database
+        /// </summary>
+        PortalDatabase HighRes { get; }
+
+        /// <summary>
         /// The spell table
         /// </summary>
         SpellTable SpellTable { get; }

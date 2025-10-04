@@ -24,6 +24,11 @@ namespace Chorizite.Core {
         Client = 0x00000002,
 
         /// <summary>
+        /// The inspector
+        /// </summary>
+        Inspector = 0x00000004,
+
+        /// <summary>
         /// The documentation generator
         /// </summary>
         DocGen = Launcher | Client

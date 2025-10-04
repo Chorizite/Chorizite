@@ -6,7 +6,6 @@ using Chorizite.ACProtocol.Enums;
 using Chorizite.Core;
 using Chorizite.Core.Backend;
 using Chorizite.Core.Dats;
-using Chorizite.Core.Extensions;
 using Chorizite.Core.Input;
 using Chorizite.Core.Net;
 using Chorizite.Core.Render;
@@ -39,7 +38,7 @@ namespace Chorizite.NativeClientBootstrapper {
 
         private ConcurrentQueue<Action> _invokeQueue = new();
 
-        public override IRenderInterface Renderer { get; }
+        public override IRenderer Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
 
         public override IInputManager Input { get; }
@@ -140,7 +139,7 @@ namespace Chorizite.NativeClientBootstrapper {
             Log = log;
             DatReader = datReader;
 
-            Renderer.OnRender2D += Renderer_OnRender2D;
+            Renderer.OnRenderUI += Renderer_OnRender2D;
         }
 
         private void Renderer_OnRender2D(object? sender, EventArgs e) {
@@ -369,7 +368,7 @@ namespace Chorizite.NativeClientBootstrapper {
         #endregion // internal event callers
 
         public void Dispose() {
-            Renderer.OnRender2D -= Renderer_OnRender2D;
+            Renderer.OnRenderUI -= Renderer_OnRender2D;
             Renderer?.Dispose();
             Input?.Dispose();
         }

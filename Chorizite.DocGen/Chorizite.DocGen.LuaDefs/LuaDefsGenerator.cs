@@ -79,7 +79,7 @@ namespace Chorizite.DocGen.LuaDefs {
 
             GenerateModuledefs("DatReader", typeof(IDatReaderInterface));
             GenerateModuledefs("InputManager", typeof(IInputManager));
-            GenerateModuledefs("Renderer", typeof(IRenderInterface));
+            GenerateModuledefs("Renderer", typeof(IRenderer));
             GenerateModuledefs("NetworkParser", typeof(NetworkParser));
             GenerateModuledefs("ClientBackend", typeof(IClientBackend));
             GenerateModuledefs("LauncherBackend", typeof(ILauncherBackend));
