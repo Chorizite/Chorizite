@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -12,13 +13,18 @@ namespace Chorizite.Core.Render {
     /// <summary>
     /// Represents a shader.
     /// </summary>
-    public abstract class AShader : IDisposable {
+    public abstract class BaseShader : IShader, IDisposable {
         /// <summary>
         /// The logger
         /// </summary>
         protected readonly ILogger _log;
-        private readonly FileWatcher? _fileWatcher;
-        private string _liveShaderDirectory = "";
+        protected readonly FileWatcher? _fileWatcher;
+        protected readonly string? _liveShaderDirectory;
+
+        /// <summary>
+        /// The program id
+        /// </summary>
+        public uint ProgramId { get; protected set; }
 
         /// <summary>
         /// The name of the vertex shader file
@@ -56,29 +62,50 @@ namespace Chorizite.Core.Render {
         /// <param name="vertSource"></param>
         /// <param name="fragSource"></param>
         /// <param name="log"></param>
-        /// <param name="shaderDirectory"></param>
-        public AShader(string name, string vertSource, string? fragSource, ILogger log, string? shaderDirectory = null) {
+        public BaseShader(string name, string vertSource, string? fragSource, ILogger log) {
             Name = name;
             _log = log;
             _vertSource = vertSource;
             _fragSource = fragSource;
+        }
 
-            if (!string.IsNullOrEmpty(shaderDirectory)) {
-                _liveShaderDirectory = Path.GetFullPath(shaderDirectory);
-                _log.LogTrace($"Live shader directory: {Path.GetFullPath(_liveShaderDirectory)}");
-                if (Directory.Exists(_liveShaderDirectory)) {
-                    _fileWatcher = new FileWatcher(_liveShaderDirectory, $"{Name}.*", (file) => {
-                        Reload();
-                    });
-                }
+        /// <summary>
+        /// Initializes a new instance of the BaseShader class, loading the specified vertex and fragment shader files
+        /// from the given directory and setting up file watching for live shader changes.
+        /// </summary>
+        /// <remarks>This constructor sets up a file watcher to automatically reload the shader when any
+        /// associated shader file changes. The shader directory path is resolved to its absolute form. Ensure that the
+        /// provided directory contains the required shader files before calling this constructor.</remarks>
+        /// <param name="name">The name of the shader. This is used to locate the corresponding vertex and fragment shader files within the
+        /// specified directory.</param>
+        /// <param name="shaderDirectory">The path to the directory containing the shader files. The directory must contain files named 'name.vert'
+        /// and 'name.frag'.</param>
+        /// <param name="log">The logger instance used for diagnostic and debug output during shader initialization and file watching.</param>
+        /// <exception cref="Exception">Thrown if either the vertex shader file ('name.vert') or the fragment shader file ('name.frag') does not
+        /// exist in the specified directory.</exception>
+        public BaseShader(string name, string shaderDirectory, ILogger log) {
+            Name = name;
+            _log = log;
+            _liveShaderDirectory = Path.GetFullPath(shaderDirectory);
+
+            if (!File.Exists(Path.Combine(_liveShaderDirectory, $"{Name}.vert"))) {
+                throw new Exception($"Vertex shader file not found: {Path.Combine(_liveShaderDirectory, $"{Name}.vert")}");
             }
+            if (!File.Exists(Path.Combine(_liveShaderDirectory, $"{Name}.frag"))) {
+                throw new Exception($"Fragment shader file not found: {Path.Combine(_liveShaderDirectory, $"{Name}.frag")}");
+            }
+
+            _log.LogDebug($"Watching {Name} shader directory: {_liveShaderDirectory}");
+            _fileWatcher = new FileWatcher(_liveShaderDirectory, $"{Name}.*", (file) => {
+                _log.LogDebug("Shader file changed: {file}", file);
+                Reload();
+            });
         }
 
         /// <summary>
         /// Mark this shader is needing to be reloaded. It will attempt to reload next time <see cref="SetActive"/> is called.
         /// </summary>
         public virtual void Reload() {
-            _log.LogDebug($"Reloading shader: {Name}");
             NeedsLoad = true;
         }
 
@@ -88,6 +115,7 @@ namespace Chorizite.Core.Render {
         public virtual void SetActive() {
             if (NeedsLoad) {
                 try {
+                    _log?.LogDebug($"Setting active shader {Name}");
                     string? vertShaderSource = _vertSource;
                     string? fragShaderSource = _fragSource;
                     if (File.Exists(Path.Combine(_liveShaderDirectory, VertShaderFileName))) {
@@ -97,7 +125,14 @@ namespace Chorizite.Core.Render {
                         fragShaderSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, FragShaderFileName));
                     }
 
-                    LoadShader(vertShaderSource, fragShaderSource);
+                    if (string.IsNullOrEmpty(vertShaderSource)) {
+                        throw new Exception($"Vertex shader source for shader {Name} is null or empty.");
+                    }
+                    if (string.IsNullOrEmpty(fragShaderSource)) {
+                        throw new Exception($"Fragment shader source for shader {Name} is null or empty.");
+                    }
+
+                    Load(vertShaderSource, fragShaderSource);
                     NeedsLoad = false;
                 }
                 catch (Exception ex) {
@@ -107,11 +142,26 @@ namespace Chorizite.Core.Render {
         }
 
         /// <summary>
+        /// Loads the shader from disk or from the currently set vert / shader source depending on what constructor
+        /// was used to create this shader.
+        /// </summary>
+        public virtual void Load() {
+            if (!String.IsNullOrEmpty(_liveShaderDirectory)) {
+                if (File.Exists(Path.Combine(_liveShaderDirectory, $"{Name}.vert"))) {
+                    _vertSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, $"{Name}.vert"));
+                }
+                if (File.Exists(Path.Combine(_liveShaderDirectory, $"{Name}.frag"))) {
+                    _fragSource = File.ReadAllText(Path.Combine(_liveShaderDirectory, $"{Name}.Frag"));
+                }
+            }
+        }
+
+        /// <summary>
         /// Loads the shader
         /// </summary>
         /// <param name="vertShaderSource"></param>
         /// <param name="fragShaderSource"></param>
-        protected abstract void LoadShader(string? vertShaderSource, string? fragShaderSource);
+        public abstract void Load(string vertShaderSource, string fragShaderSource);
 
         /// <summary>
         /// Sets a uniform
@@ -179,5 +229,15 @@ namespace Chorizite.Core.Render {
             _fileWatcher?.Dispose();
             Unload();
         }
+
+        /// <summary>
+        /// Binds the shader
+        /// </summary>
+        public abstract void Bind();
+
+        /// <summary>
+        /// Unbinds the shader
+        /// </summary>
+        public abstract void Unbind();
     }
 }

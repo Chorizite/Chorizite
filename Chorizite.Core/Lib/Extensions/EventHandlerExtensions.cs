@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Chorizite.Core.Extensions {
+namespace Chorizite.Core.Lib.Extensions {
     /// <summary>
     /// Extension methods for <see cref="EventHandler{T}"/>
     /// </summary>

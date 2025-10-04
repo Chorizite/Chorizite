@@ -69,7 +69,7 @@ namespace Chorizite.NativeClientBootstrapper {
                 ChoriziteInstance = new Chorizite<ACChoriziteBackend>(Config);
 
                 Backend = (ChoriziteInstance.Backend as ACChoriziteBackend);
-                Render = (ChoriziteInstance.Scope.Resolve<IRenderInterface>() as DX9RenderInterface);
+                Render = (ChoriziteInstance.Scope.Resolve<IRenderer>() as DX9RenderInterface);
                 Input = (ChoriziteInstance.Scope.Resolve<IInputManager>() as Win32InputManager);
                 Net = ChoriziteInstance.Scope.Resolve<NetworkParser>();
             }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Chorizite.Core.Render.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,23 +11,41 @@ namespace Chorizite.Core.Render {
     /// </summary>
     public interface ITexture : IDisposable {
         /// <summary>
-        /// The width of the texture
+        /// The width
         /// </summary>
-        public int Width { get; }
+        int Width { get; }
 
         /// <summary>
-        /// The height of the texture
+        /// The height
         /// </summary>
-        public int Height { get; }
+        int Height { get; }
 
         /// <summary>
-        /// The pointer to the texture
+        /// The format
         /// </summary>
-        IntPtr TexturePtr { get; }
+        TextureFormat Format { get; }
 
         /// <summary>
-        /// Whether the texture uses premultiplied alpha
+        /// A pointer to the native device texture
         /// </summary>
-        public bool PreMultipliedAlpha { get; }
+        IntPtr NativePtr { get; }
+
+        /// <summary>
+        /// Binds the texture
+        /// </summary>
+        /// <param name="slot">The texture slot</param>
+        public void Bind(int slot = 0);
+
+        /// <summary>
+        ///     Sets the data for the specified rectangular region.
+        /// </summary>
+        /// <param name="rectangle">The rectangular area to which the data will be applied.</param>
+        /// <param name="data">The data to set within the specified rectangle.</param>
+        void SetData(Rectangle rectangle, byte[] data);
+
+        /// <summary>
+        /// Unbinds the texture
+        /// </summary>
+        public void Unbind();
     }
 }

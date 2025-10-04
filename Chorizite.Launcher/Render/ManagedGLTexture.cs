@@ -1,5 +1,6 @@
 ﻿using Chorizite.Core.Dats;
 using Chorizite.Core.Render;
+using Chorizite.Core.Render.Enums;
 using Microsoft.Extensions.Logging;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -16,8 +17,11 @@ namespace LauncherApp.Render {
     internal unsafe class ManagedGLTexture : BitmapTexture {
         private uint _texture;
 
+        public ManagedGLTexture(IGraphicsDevice device) : base(device) {
+        }
+
         /// <inheritdoc/>
-        public override IntPtr TexturePtr => (IntPtr)_texture;
+        public  IntPtr TexturePtr => (IntPtr)_texture;
 
         /// <inheritdoc/>
         public override int Width => Bitmap?.Width ?? 0;
@@ -25,20 +29,9 @@ namespace LauncherApp.Render {
         /// <inheritdoc/>
         public override int Height => Bitmap?.Height ?? 0;
 
-        /// <inheritdoc/>
-        public ManagedGLTexture(byte[] source, int width, int height) : base(source, width, height) {
+        public override nint NativePtr => throw new NotImplementedException();
 
-        }
-
-        /// <inheritdoc/>
-        public ManagedGLTexture(string file) : base(file) {
-
-        }
-
-        /// <inheritdoc/>
-        protected ManagedGLTexture(Image bitmap) : base(bitmap) {
-
-        }
+        public override TextureFormat Format => throw new NotImplementedException();
 
         protected override unsafe void CreateTexture(bool premultiplyAlpha) {
             if (Bitmap != null) {
@@ -77,6 +70,18 @@ namespace LauncherApp.Render {
         protected override void ReleaseTexture() {
             uint texture = _texture;
             GL.glDeleteTextures(1, &texture);
+        }
+
+        public override void Bind(int slot = 0) {
+            throw new NotImplementedException();
+        }
+
+        public override void Unbind() {
+            throw new NotImplementedException();
+        }
+
+        public override void SetData(Chorizite.Core.Render.Rectangle rectangle, byte[] data) {
+            throw new NotImplementedException();
         }
     }
 }

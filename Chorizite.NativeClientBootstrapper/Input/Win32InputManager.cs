@@ -1,5 +1,4 @@
-﻿using Chorizite.Core.Extensions;
-using Chorizite.Core.Input;
+﻿using Chorizite.Core.Input;
 using Microsoft.Extensions.Logging;
 using SharpDX;
 using System;
@@ -83,6 +82,8 @@ namespace Chorizite.NativeClientBootstrapper.Input {
             remove { _OnKeyUp.Unsubscribe(value); }
         }
         private readonly WeakEvent<KeyUpEventArgs> _OnKeyUp = new();
+
+        public event EventHandler<WindowResizedEventArgs>? OnWindowResized;
 
         public Win32InputManager(ILogger logger) {
             _log = logger;
@@ -188,6 +189,10 @@ namespace Chorizite.NativeClientBootstrapper.Input {
 
         public void Dispose() {
 
+        }
+
+        public bool IsMousePressed(MouseButton button) {
+            throw new NotImplementedException();
         }
     }
 }

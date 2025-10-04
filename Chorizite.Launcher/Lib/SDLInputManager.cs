@@ -87,6 +87,8 @@ namespace LauncherApp.Lib {
         }
         private readonly WeakEvent<KeyUpEventArgs> _OnKeyUp = new();
 
+        public event EventHandler<WindowResizedEventArgs>? OnWindowResized;
+
         public bool IsKeyPressed(Key key) {
             return _pressedKeys.TryGetValue(key, out bool value) && value;
         }
@@ -276,6 +278,10 @@ namespace LauncherApp.Lib {
 
         public void Dispose() {
 
+        }
+
+        public bool IsMousePressed(MouseButton button) {
+            throw new NotImplementedException();
         }
     }
 }

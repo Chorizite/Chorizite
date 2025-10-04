@@ -60,19 +60,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitVersion.MsBuild" Version="6.1.0">
+    <PackageReference Include="GitVersion.MsBuild" Version="6.4.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NSIS-Tool" Version="3.10.0">
+    <PackageReference Include="NSIS-Tool" Version="3.11.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" IncludeAssets="all" />
     <PackageReference Include="WaveEngine.Bindings.OpenGL" Version="1.0.4998" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.7" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup>

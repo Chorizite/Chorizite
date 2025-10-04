@@ -6,63 +6,49 @@ using SharpDX.Direct3D9;
 using System.Numerics;
 
 namespace Chorizite.NativeClientBootstrapper.Render {
-    internal class HLSLShader : AShader {
-        private readonly Device _device;
-        internal Effect? Effect;
+    internal class HLSLShader : IShader {
+        public string Name => throw new System.NotImplementedException();
 
-        protected override string VertShaderFileName => $"{Name}.fx";
+        public uint ProgramId => throw new System.NotImplementedException();
 
-        public HLSLShader(Device device, string name, string vertSource, string? fragSource, ILogger log, string? shaderDir = null) : base(name, vertSource, fragSource, log, shaderDir) {
-            _device = device;
+        public void Bind() {
+            throw new System.NotImplementedException();
         }
 
-        public override void SetActive() {
-            base.SetActive();
+        public void Load(string vertexShader, string fragmentShader) {
+            throw new System.NotImplementedException();
         }
 
-        public override void Reload() {
-            Effect?.OnLostDevice();
-            Effect?.OnResetDevice();
+        public void SetUniform(string name, float value) {
+            throw new System.NotImplementedException();
         }
 
-        protected override void LoadShader(string? vertShaderSource, string? fragShaderSource) {
-            Effect = Effect.FromString(_device, vertShaderSource, ShaderFlags.None);
+        public void SetUniform(string name, int value) {
+            throw new System.NotImplementedException();
         }
 
-        public override void SetUniform(string name, Matrix4x4 val) {
-            Effect?.SetValue(name, val);
+        public void SetUniform(string name, Vector2 value) {
+            throw new System.NotImplementedException();
         }
 
-        public override void SetUniform(string name, int val) {
-            Effect?.SetValue(name, val);
+        public void SetUniform(string name, Vector3 value) {
+            throw new System.NotImplementedException();
         }
 
-        public override void SetUniform(string name, float val) {
-            Effect?.SetValue(name, val);
+        public void SetUniform(string name, Vector4 value) {
+            throw new System.NotImplementedException();
         }
 
-        public override void SetUniform(string name, float[] val) {
-            Effect?.SetValue(name, val);
+        public void SetUniform(string name, Matrix4x4 value) {
+            throw new System.NotImplementedException();
         }
 
-        public override void SetUniform(string name, Vector4 val) {
-            Effect?.SetValue(name, val);
+        public void SetUniform(string name, float[] values) {
+            throw new System.NotImplementedException();
         }
 
-        public override void SetUniform(string name, Vector3 val) {
-            Effect?.SetValue(name, val);
-        }
-
-        public override void SetUniform(string name, Vector2 val) {
-            Effect?.SetValue(name, val);
-        }
-
-        public override void SetUniform(string name, Vector3[] val) {
-            Effect?.SetValue(name, val);
-        }
-
-        protected override void Unload() {
-            Effect?.Dispose();
+        public void Unbind() {
+            throw new System.NotImplementedException();
         }
     }
 }

@@ -15,9 +15,13 @@ using System.Reflection;
 using Chorizite.Common;
 using Chorizite.NativeClientBootstrapper.Lib;
 using Chorizite.NativeClientBootstrapper.Hooks;
+using Chorizite.Core.Render.Enums;
+using Chorizite.Core.Render.Vertex;
+using RenderState = SharpDX.Direct3D9.RenderState;
+using VertexFormat = SharpDX.Direct3D9.VertexFormat;
 
 namespace Chorizite.NativeClientBootstrapper.Render {
-    public unsafe class DX9RenderInterface : IRenderInterface {
+    public unsafe class DX9RenderInterface : IRenderer {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private Matrix4x4 _transform = Matrix4x4.Identity;
         private struct GeometryBufferRef : IDisposable {
@@ -66,6 +70,13 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
         private readonly WeakEvent<EventArgs> _OnGraphicsPostReset = new();
 
+        public event EventHandler<EventArgs> OnBeforeRender3D;
+        public event EventHandler<EventArgs> OnRender3D;
+        public event EventHandler<EventArgs> OnAfterRender3D;
+        public event EventHandler<EventArgs> OnBeforeRenderUI;
+        public event EventHandler<EventArgs> OnRenderUI;
+        public event EventHandler<EventArgs> OnAfterRenderUI;
+
         public static Device? D3Ddevice { get; private set; }
 
         public Vector2 ViewportSize {
@@ -81,6 +92,16 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         public IntPtr NativeDevice => D3Ddevice?.NativePointer ?? IntPtr.Zero;
         public IntPtr NativeHwnd => DirectXHooks.HWND;
 
+        public IGraphicsDevice GraphicsDevice => throw new NotImplementedException();
+
+        public IDrawList DrawList => throw new NotImplementedException();
+
+        public IShader UIShader => throw new NotImplementedException();
+
+        public IShader TextShader => throw new NotImplementedException();
+
+        public IFontManager FontManager => throw new NotImplementedException();
+
         public DX9RenderInterface(IntPtr unmanagedD3dPtr, ILogger logger, IDatReaderInterface datReader) {
             _log = logger;
             _datReader = datReader;
@@ -88,7 +109,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
 
             var shaderDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(GetType().Assembly.Location)!, $"./../../Launcher/Chorizite.NativeClientBootstrapper/Render/Shaders"));
 
-            BasicShader = new HLSLShader(D3Ddevice, "Basic", GetEmbeddedResource("Render.Shaders.Basic.fx"), null!, _log, shaderDir);
+            //BasicShader = new HLSLShader(D3Ddevice, "Basic", GetEmbeddedResource("Render.Shaders.Basic.fx"), null!, _log, shaderDir);
         }
 
         internal void SetDevice(Device device) {
@@ -112,6 +133,25 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             var oldViewport = D3Ddevice.Viewport;
             using (var stateBlock = new StateBlock(D3Ddevice, StateBlockType.All)) {
                 stateBlock.Capture();
+
+                D3Ddevice.SetRenderState(RenderState.AlphaBlendEnable, true);
+                D3Ddevice.SetRenderState(RenderState.SourceBlend, Blend.SourceAlpha);
+                D3Ddevice.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
+
+                D3Ddevice.SetRenderState(RenderState.ZEnable, false);         // Disable depth testing
+                D3Ddevice.SetRenderState(RenderState.ZWriteEnable, false);    // Disable depth writing
+
+                D3Ddevice.SetRenderState(RenderState.CullMode, Cull.None);    // Disable backface culling
+
+                D3Ddevice.SetRenderState(RenderState.ScissorTestEnable, true); // ImGui uses scissor for clipping
+
+                D3Ddevice.SetRenderState(RenderState.Lighting, false);        // No lighting needed for UI
+                D3Ddevice.SetRenderState(RenderState.FogEnable, false);       // Disable fog if enabled
+
+                D3Ddevice.SetSamplerState(0, SamplerState.MinFilter, TextureFilter.Linear);
+                D3Ddevice.SetSamplerState(0, SamplerState.MagFilter, TextureFilter.Linear);
+                D3Ddevice.SetSamplerState(0, SamplerState.MipFilter, TextureFilter.Linear);
+
                 try {
                     _OnRender2D?.Invoke(this, EventArgs.Empty);
                 }
@@ -154,6 +194,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
 
         public void RenderGeometry(IntPtr geometry, Matrix4x4 transform, ITexture? texture) {
+            /*
             try {
                 if (D3Ddevice is null) return;
 
@@ -188,7 +229,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
                         D3Ddevice.VertexDeclaration = geom.VertexDecl;
                         D3Ddevice.SetStreamSource(0, geom.VertexBuffer, 0, sizeof(VertexPositionColorTexture));
                         D3Ddevice.Indices = geom.IndexBuffer;
-                        D3Ddevice.DrawIndexedPrimitive(PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
+                        D3Ddevice.DrawIndexedPrimitive(SharpDX.Direct3D9.PrimitiveType.TriangleList, 0, 0, geom.IndexBuffer.Description.Size / sizeof(int), 0, geom.IndexBuffer.Description.Size / sizeof(int) / 3);
 
                         BasicShader.Effect.EndPass();
                     }
@@ -198,6 +239,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             catch (Exception ex) {
                 _log?.LogError(ex, $"Error in RenderGeometry: {ex.Message}");
             }
+            */
         }
 
         public void ReleaseGeometry(IntPtr geometry) {
@@ -213,22 +255,23 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
 
-            var mTexture = new ManagedDXTexture(source, dx, dy);
-            _textures.Add(mTexture);
-            return mTexture;
+            //var mTexture = new ManagedDXTexture(source, dx, dy);
+            //_textures.Add(mTexture);
+            //return mTexture;
+            return default!;
         }
 
 
 
         public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
-                ManagedDXTexture texture;
+                ManagedDXTexture texture = null;
 
                 if (_datFileRegex.IsMatch(source)) {
-                    texture = new ManagedDXTexture(source, _datReader);
+                    //texture = new ManagedDXTexture(source, _datReader);
                 }
                 else {
-                    texture = new ManagedDXTexture(source);
+                    //texture = new ManagedDXTexture(source);
                 }
 
                 if (texture is null) {
@@ -270,7 +313,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         }
 
         public void TriggerGraphicsPreReset(object sender, EventArgs e) {
-            BasicShader.Reload();
+            //BasicShader.Reload();
             _OnGraphicsPreReset?.Invoke(sender, e);
         }
 
@@ -291,7 +334,31 @@ namespace Chorizite.NativeClientBootstrapper.Render {
             }
             _geometryBuffers.Clear();
 
-            BasicShader?.Dispose();
+            //BasicShader?.Dispose();
+        }
+
+        public void Render() {
+            throw new NotImplementedException();
+        }
+
+        public ScopedDeviceState CreateScopedState() {
+            throw new NotImplementedException();
+        }
+
+        public RenderTarget CreateRenderTarget(int width, int height) {
+            throw new NotImplementedException();
+        }
+
+        public void BindRenderTarget(RenderTarget? renderTarget) {
+            throw new NotImplementedException();
+        }
+
+        public void SetCursor(uint cursorDataId, Vector2 hotspot) {
+            throw new NotImplementedException();
+        }
+
+        public void Resize(int width, int height) {
+            throw new NotImplementedException();
         }
     }
 }

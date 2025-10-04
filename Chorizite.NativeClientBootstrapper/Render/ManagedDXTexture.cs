@@ -19,16 +19,20 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Drawing.Processing;
+using Chorizite.Core.Render.Enums;
 
 namespace Chorizite.NativeClientBootstrapper.Render {
     public class ManagedDXTexture : BitmapTexture {
+        public ManagedDXTexture(IGraphicsDevice device) : base(device) {
+        }
+
         /// <summary>
         /// The DirectX texture
         /// </summary>
         public Texture? Texture { get; private set; } = null;
 
         /// <inheritdoc/>
-        public override IntPtr TexturePtr => Texture?.NativePointer ?? IntPtr.Zero;
+        public  IntPtr TexturePtr => Texture?.NativePointer ?? IntPtr.Zero;
 
         /// <inheritdoc/>
         public override int Width => Bitmap?.Width ?? 0;
@@ -36,25 +40,10 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         /// <inheritdoc/>
         public override int Height => Bitmap?.Height ?? 0;
 
-        /// <inheritdoc/>
-        public ManagedDXTexture(byte[] source, int width, int height) : base(source, width, height) {
+        public override nint NativePtr => throw new NotImplementedException();
 
-        }
+        public override TextureFormat Format => throw new NotImplementedException();
 
-        /// <inheritdoc/>
-        public ManagedDXTexture(string file) : base(file) {
-
-        }
-
-        /// <inheritdoc/>
-        public ManagedDXTexture(string source, IDatReaderInterface _portalDat) : base(source, _portalDat) {
-
-        }
-
-        /// <inheritdoc/>
-        protected ManagedDXTexture(Image bitmap) : base(bitmap) {
-
-        }
 
         protected override unsafe void CreateTexture(bool premultiplyAlpha) {
             // Avoid creating a new texture and losing reference to the old one.
@@ -63,7 +52,7 @@ namespace Chorizite.NativeClientBootstrapper.Render {
 
             if (Bitmap != null) {
                 // Create the texture
-                Texture = new Texture(DX9RenderInterface.D3Ddevice, Width, Height, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
+                //Texture = new Texture(DX9RenderInterface.D3Ddevice, Width, Height, 1, Usage.None, Format.A8R8G8B8, Pool.Managed);
                 // Lock the texture to get access to the data
                 DataRectangle dataRectangle = Texture.LockRectangle(0, LockFlags.None);
 
@@ -102,6 +91,18 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         protected override void ReleaseTexture() {
             Texture?.Dispose();
             Texture = null;
+        }
+
+        public override void Bind(int slot = 0) {
+            throw new NotImplementedException();
+        }
+
+        public override void Unbind() {
+            throw new NotImplementedException();
+        }
+
+        public override void SetData(Core.Render.Rectangle rectangle, byte[] data) {
+            throw new NotImplementedException();
         }
     }
 }

@@ -16,9 +16,9 @@ namespace Chorizite.Core.Backend {
     /// </summary>
     public abstract class IChoriziteBackend {
         /// <summary>
-        /// Get the <see cref="IRenderInterface"/> being used for this backend.
+        /// Get the <see cref="IRenderer"/> being used for this backend.
         /// </summary>
-        public abstract IRenderInterface Renderer { get; }
+        public abstract IRenderer Renderer { get; }
 
         /// <summary>
         /// Get the <see cref="IInputManager"/> being used for this backend.

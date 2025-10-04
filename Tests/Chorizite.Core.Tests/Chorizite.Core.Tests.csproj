@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest" Version="3.2.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="17.13.1" />
+    <PackageReference Include="MSTest" Version="3.11.0" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.0.4" />
   </ItemGroup>
 
   <ItemGroup>

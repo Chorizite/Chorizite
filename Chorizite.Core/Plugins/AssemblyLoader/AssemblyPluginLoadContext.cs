@@ -16,8 +16,8 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         private IPluginManager _manager;
         internal AssemblyDependencyResolver Resolver;
 
-        string _tempDirectory => Path.Combine(Path.GetTempPath(), "chorizite");
-        Dictionary<string, IntPtr> _loadedLibraries = [];
+        string _tempDirectory;
+        public static Dictionary<string, IntPtr> LoadedNativeLibraries = [];
         Dictionary<string, Assembly> _loadedAssemblies = [];
 
         /// <summary>
@@ -31,6 +31,14 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             _pluginPath = pluginPath;
             _manager = manager;
             Resolver = new AssemblyDependencyResolver(pluginPath);
+            _tempDirectory = Path.Combine(Path.GetTempPath(), "chorizite");
+
+            foreach (var dir in Directory.GetDirectories(_tempDirectory)) {
+                try {
+                    Directory.Delete(dir, true);
+                }
+                catch {}
+            }
         }
 
         /// <inheritdoc/>
@@ -49,13 +57,16 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         }
 
         /// <inheritdoc/>
-        protected override IntPtr LoadUnmanagedDll(string unmanagedDllName) {
+        protected unsafe override IntPtr LoadUnmanagedDll(string unmanagedDllName) {
             string? libraryPath = Resolver?.ResolveUnmanagedDllToPath(unmanagedDllName);
             if (libraryPath != null) {
                 return LoadUnmanagedDllFromTempPath(libraryPath);
             }
+
             var dllName = unmanagedDllName.ToLower().EndsWith(".dll") ? unmanagedDllName : unmanagedDllName + ".dll";
-            var path = Path.Combine(Path.GetDirectoryName(_pluginPath)!, $"runtimes", "win-x86", "native", dllName);
+            var target = sizeof(IntPtr) == 8 ? "x64" : "x86";
+            var path = Path.Combine(Path.GetDirectoryName(_pluginPath)!, $"runtimes", $"win-{target}", "native", dllName);
+
             if (File.Exists(path)) {
                 return LoadUnmanagedDllFromTempPath(path);
             }
@@ -73,10 +84,19 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             }
 
             var pdbFile = Path.ChangeExtension(assemblyPath, ".pdb");
-            using var dllStream = new MemoryStream(File.ReadAllBytes(assemblyPath));
+            using var dllStream = new MemoryStream();
+            using (var fileStream = new FileStream(assemblyPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                fileStream.CopyTo(dllStream);
+            }
+
             Assembly? loaded;
+            dllStream.Position = 0; // Reset stream position
             if (!string.IsNullOrEmpty(pdbFile) && File.Exists(pdbFile)) {
-                using var pdbStream = new MemoryStream(File.ReadAllBytes(pdbFile));
+                using var pdbStream = new MemoryStream();
+                using (var pdbFileStream = new FileStream(pdbFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)) {
+                    pdbFileStream.CopyTo(pdbStream);
+                }
+                pdbStream.Position = 0;
                 loaded = LoadFromStream(dllStream, pdbStream);
             }
             else {
@@ -84,33 +104,52 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
             }
 
             _loadedAssemblies.Add(assemblyPath, loaded);
-            
             return loaded;
         }
 
         internal IntPtr LoadUnmanagedDllFromTempPath(string libraryPath) {
-            if (_loadedLibraries.TryGetValue(libraryPath, out var result)) {
+            if (LoadedNativeLibraries.TryGetValue(libraryPath, out var result)) {
                 return result;
             }
 
             if (!File.Exists(libraryPath)) {
+                _log.LogError("Library not found: {LibraryPath}", libraryPath);
                 throw new FileNotFoundException($"Library not found: {libraryPath}");
             }
+            _tempDirectory = Path.Combine(Path.GetTempPath(), "chorizite", Guid.NewGuid().ToString());
 
             if (!Directory.Exists(_tempDirectory)) {
                 Directory.CreateDirectory(_tempDirectory);
             }
 
-            string destinationPath = Path.Combine(_tempDirectory, libraryPath);
+            // Use only the file name for the temporary path to avoid invalid paths
+            string fileName = Path.GetFileName(libraryPath);
+            string destinationPath = Path.Combine(_tempDirectory, fileName);
 
             try {
+                // Copy the DLL to the temporary directory
                 File.Copy(libraryPath, destinationPath, true);
+                _log.LogDebug("Copied {LibraryPath} to {DestinationPath}", libraryPath, destinationPath);
             }
-            catch { }
+            catch (Exception ex) {
+                _log.LogError(ex, "Failed to copy {LibraryPath} to {DestinationPath}", libraryPath, destinationPath);
+                throw new IOException($"Failed to copy library to temporary path: {destinationPath}", ex);
+            }
 
-            _loadedLibraries.Add(libraryPath, LoadUnmanagedDllFromPath(destinationPath));
+            if (!File.Exists(destinationPath)) {
+                _log.LogError("Temporary library file does not exist: {DestinationPath}", destinationPath);
+                throw new FileNotFoundException($"Temporary library file does not exist: {destinationPath}");
+            }
 
-            return _loadedLibraries[libraryPath];
+            // Load the DLL from the temporary path
+            IntPtr handle = LoadUnmanagedDllFromPath(destinationPath);
+            if (handle == IntPtr.Zero) {
+                _log.LogError("Failed to load library from {DestinationPath}", destinationPath);
+                throw new InvalidOperationException($"Failed to load library from {destinationPath}");
+            }
+
+            LoadedNativeLibraries.Add(libraryPath, handle);
+            return handle;
         }
 
         /// <summary>
@@ -118,7 +157,6 @@ namespace Chorizite.Core.Plugins.AssemblyLoader {
         /// </summary>
         public void Dispose() {
             _loadedAssemblies.Clear();
-            _loadedLibraries.Clear();
             Unload();
             Resolver = null!;
         }

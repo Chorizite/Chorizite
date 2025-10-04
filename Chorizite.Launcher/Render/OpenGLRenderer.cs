@@ -12,9 +12,11 @@ using Chorizite.Common;
 using LauncherApp.Lib;
 using System.Runtime.InteropServices;
 using SDL2;
+using Chorizite.Core.Render.Enums;
+using Chorizite.Core.Render.Vertex;
 
 namespace LauncherApp.Render {
-    unsafe public class OpenGLRenderer : IRenderInterface {
+    unsafe public class OpenGLRenderer : IRenderer {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private Dictionary<nint, GeometryBufferRef> _geometryBuffers = new();
         private List<ManagedGLTexture> _textures = new();
@@ -65,6 +67,16 @@ namespace LauncherApp.Render {
 
         public IntPtr NativeDevice => IntPtr.Zero;
         public IntPtr NativeHwnd => IntPtr.Zero;
+
+        public IGraphicsDevice GraphicsDevice => throw new NotImplementedException();
+
+        public IDrawList DrawList => throw new NotImplementedException();
+
+        public IShader UIShader => throw new NotImplementedException();
+
+        public IShader TextShader => throw new NotImplementedException();
+
+        public IFontManager FontManager => throw new NotImplementedException();
 
         /// <inheritdoc/>
         public event EventHandler<EventArgs>? OnRender2D {
@@ -266,6 +278,13 @@ namespace LauncherApp.Render {
         private Matrix4x4 _transform = Matrix4x4.Identity;
         private SDL_Surface* _icon;
 
+        public event EventHandler<EventArgs> OnBeforeRender3D;
+        public event EventHandler<EventArgs> OnRender3D;
+        public event EventHandler<EventArgs> OnAfterRender3D;
+        public event EventHandler<EventArgs> OnBeforeRenderUI;
+        public event EventHandler<EventArgs> OnRenderUI;
+        public event EventHandler<EventArgs> OnAfterRenderUI;
+
         public void RenderGeometry(IntPtr geometry, Matrix4x4 translation, ITexture? texture) {
             var geom = _geometryBuffers[geometry];
 
@@ -284,7 +303,7 @@ namespace LauncherApp.Render {
             }
 
             GL.glBindVertexArray(geom.VAO);
-            GL.glDrawElements(PrimitiveType.Triangles, geom.Indices.Length, DrawElementsType.UnsignedInt, (void*)0);
+            //GL.glDrawElements(PrimitiveType.Triangles, geom.Indices.Length, DrawElementsType.UnsignedInt, (void*)0);
 
             GL.glBindTexture(TextureTarget.Texture2d, 0);
             GL.glBindVertexArray(0);
@@ -303,15 +322,16 @@ namespace LauncherApp.Render {
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
 
-            var texture = new ManagedGLTexture(source, dx, dy);
-            _textures.Add(texture);
-            return texture;
+            //var texture = new ManagedGLTexture(source, dx, dy);
+            //_textures.Add(texture);
+            //return texture;
+            return null;
         }
 
         public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
                 //_log?.LogTrace($"LoadTexture: {source}");
-                var texture = new ManagedGLTexture(source);
+                ManagedGLTexture texture = null;// new ManagedGLTexture(source);
 
                 if (texture.TexturePtr == IntPtr.Zero) {
                     _log?.LogError($"Failed to load texture: {source}");
@@ -419,6 +439,22 @@ namespace LauncherApp.Render {
                 texture.Dispose();
             }
             _textures.Clear();
+        }
+
+        public ScopedDeviceState CreateScopedState() {
+            throw new NotImplementedException();
+        }
+
+        public RenderTarget CreateRenderTarget(int width, int height) {
+            throw new NotImplementedException();
+        }
+
+        public void BindRenderTarget(RenderTarget? renderTarget) {
+            throw new NotImplementedException();
+        }
+
+        public void SetCursor(uint cursorDataId, Vector2 hotspot) {
+            throw new NotImplementedException();
         }
     }
 }

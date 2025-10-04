@@ -44,7 +44,7 @@ namespace Chorizite.Core {
         private IPluginManager _pluginManager;
         private readonly IContainer _container;
         private ILogger _log;
-        private IRenderInterface _renderInterface;
+        private IRenderer _renderInterface;
         private readonly IInputManager _inputManager;
 
         /// <summary>
@@ -71,9 +71,14 @@ namespace Chorizite.Core {
         /// Create a new Chorizite instance and configure it.
         /// </summary>
         /// <param name="config">Configuration</param>
-        public Chorizite(IChoriziteConfig config) {
-            SymbolResolver.RegisterWithNativeCrashHandler();
-            ManagedCrashHandler.Instance.Initialize();
+        public unsafe Chorizite(IChoriziteConfig config) {
+            NativeLibraryLoader.Initialize();
+
+            // TODO: x64 support
+            if (sizeof(IntPtr) == 4 && (config.Environment.HasFlag(ChoriziteEnvironment.Client) || config.Environment.HasFlag(ChoriziteEnvironment.Launcher))) {
+                //SymbolResolver.RegisterWithNativeCrashHandler();
+                //ManagedCrashHandler.Instance.Initialize();
+            }
             ChoriziteStatics.Config = config;
             _log = new ChoriziteLogger("Chorizite", Config.LogDirectory);
 
@@ -87,6 +92,7 @@ namespace Chorizite.Core {
 
             ChoriziteStatics.Log = _log;
             WeakEvent.Log = ChoriziteStatics.MakeLogger("WeakEvent");
+
 
             if (Directory.Exists(Config.DatDirectory)) {
                 builder.Register(c => new FSDatReader(Config.DatDirectory, c.Resolve<ILogger<FSDatReader>>()))
@@ -114,7 +120,7 @@ namespace Chorizite.Core {
             ChoriziteStatics.Scope = _container.BeginLifetimeScope(builder => {
                 builder.RegisterInstance(Backend);
                 builder.RegisterInstance(Backend.Renderer)
-                    .As<IRenderInterface>()
+                    .As<IRenderer>()
                     .SingleInstance();
                 builder.RegisterInstance(Backend.Input)
                     .As<IInputManager>()
@@ -169,7 +175,7 @@ namespace Chorizite.Core {
                     .SingleInstance();
             });
 
-            _renderInterface = Scope.Resolve<IRenderInterface>();
+            _renderInterface = Scope.Resolve<IRenderer>();
             if (_renderInterface is null) {
                 throw new Exception("Failed to resolve IRenderInterface");
             }
@@ -180,26 +186,22 @@ namespace Chorizite.Core {
             }
             _inputManager.OnShutdown += InputManager_OnShutdown;
 
-            var xluaPath = Path.Combine(AssemblyDirectory, "runtimes", (IntPtr.Size == 8) ? "win-x64" : "win-x86", "native", "xlua.dll");
-            _log.LogTrace($"Manually pre-loading {xluaPath}");
-            Native.LoadLibrary(xluaPath);
-
             _pluginManager = Scope.Resolve<IPluginManager>();
 
             _pluginManager.RegisterPluginLoader(Scope.Resolve<AssemblyPluginLoader>());
 
-            if (Config.Environment == ChoriziteEnvironment.Launcher || Config.Environment == ChoriziteEnvironment.Client) {
+            if (Config.Environment == ChoriziteEnvironment.Launcher || Config.Environment == ChoriziteEnvironment.Client || Config.Environment == ChoriziteEnvironment.Inspector) {
                 _pluginManager.LoadPlugins();
-                _renderInterface.OnRender2D += RenderInterface_OnRender2D;
+                _renderInterface.OnBeforeRender3D += RenderInterface_OnBeforeRender3D;
             }
         }
 
-        private void RenderInterface_OnRender2D(object? sender, EventArgs e) {
+        private void RenderInterface_OnBeforeRender3D(object? sender, EventArgs e) {
             try {
                 _pluginManager.Update();
             }
             catch (Exception ex) {
-                ChoriziteStatics.Log.LogError(ex, "Error in RenderInterface_OnRender2D");
+                ChoriziteStatics.Log.LogError(ex, "Error in RenderInterface_OnBeforeRender3D");
             }
         }
 
@@ -261,7 +263,7 @@ namespace Chorizite.Core {
         public void Dispose() {
             try { SymbolResolver.UnregisterWithNativeCrashHandler(); } catch { }
             if (_renderInterface is not null) {
-                _renderInterface.OnRender2D -= RenderInterface_OnRender2D;
+                _renderInterface.OnBeforeRender3D -= RenderInterface_OnBeforeRender3D;
             }
             AppDomain.CurrentDomain.AssemblyResolve -= CurrentDomain_AssemblyResolve;
             _pluginManager?.Dispose();

@@ -13,18 +13,21 @@ using WaveEngine.Bindings.OpenGL;
 
 namespace LauncherApp.Render {
 
-    public unsafe class GLSLShader : AShader {
+    public unsafe class GLSLShader : IShader {
         public IntPtr Program { get; protected set; }
 
-        public GLSLShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) : base(name, vertSource, fragSource, log, shaderDirectory) {
+        public string Name => throw new NotImplementedException();
+
+        public uint ProgramId => throw new NotImplementedException();
+
+        public GLSLShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) {
         }
 
-        public override void SetActive() {
-            base.SetActive();
+        public  void SetActive() {
             GL.glUseProgram((uint)Program);
         }
 
-        public override void SetUniform(string location, Matrix4x4 m) {
+        public  void SetUniform(string location, Matrix4x4 m) {
             IntPtr cName = IntPtr.Zero;
             try {
                 var m2 = new float[] {
@@ -45,7 +48,7 @@ namespace LauncherApp.Render {
             }
         }
 
-        public override void SetUniform(string location, int v) {
+        public  void SetUniform(string location, int v) {
             IntPtr cName = IntPtr.Zero;
             try {
                 cName = Marshal.StringToHGlobalAnsi(location);
@@ -58,7 +61,7 @@ namespace LauncherApp.Render {
             }
         }
 
-        public override void SetUniform(string location, Vector2 vec) {
+        public  void SetUniform(string location, Vector2 vec) {
             IntPtr cName = IntPtr.Zero;
             try {
                 cName = Marshal.StringToHGlobalAnsi(location);
@@ -71,7 +74,7 @@ namespace LauncherApp.Render {
             }
         }
 
-        public override void SetUniform(string location, Vector3 vec) {
+        public  void SetUniform(string location, Vector3 vec) {
             IntPtr cName = IntPtr.Zero;
             try {
                 cName = Marshal.StringToHGlobalAnsi(location);
@@ -85,7 +88,7 @@ namespace LauncherApp.Render {
         }
 
 
-        public override void SetUniform(string location, Vector3[] vecs) {
+        public  void SetUniform(string location, Vector3[] vecs) {
             for (var i = 0; i < vecs.Length; i++) {
                 var vec = vecs[i];
                 IntPtr cName = IntPtr.Zero;
@@ -101,7 +104,7 @@ namespace LauncherApp.Render {
             }
         }
 
-        public override void SetUniform(string location, Vector4 vec) {
+        public  void SetUniform(string location, Vector4 vec) {
             IntPtr cName = IntPtr.Zero;
             try {
                 cName = Marshal.StringToHGlobalAnsi(location);
@@ -114,7 +117,7 @@ namespace LauncherApp.Render {
             }
         }
 
-        public override void SetUniform(string location, float v) {
+        public  void SetUniform(string location, float v) {
             IntPtr cName = IntPtr.Zero;
             try {
                 cName = Marshal.StringToHGlobalAnsi(location);
@@ -127,7 +130,7 @@ namespace LauncherApp.Render {
             }
         }
 
-        public override void SetUniform(string location, float[] vs) {
+        public  void SetUniform(string location, float[] vs) {
             for (var i = 0; i < vs.Length; i++) {
                 var v = vs[i];
                 IntPtr cName = IntPtr.Zero;
@@ -141,44 +144,6 @@ namespace LauncherApp.Render {
                     }
                 }
             }
-        }
-
-        protected override void LoadShader(string? vertShaderSource, string? fragShaderSource) {
-            NeedsLoad = false;
-
-            if (string.IsNullOrWhiteSpace(vertShaderSource) || string.IsNullOrWhiteSpace(fragShaderSource)) {
-                _log.LogError($"Shader {Name} has no source code!");
-                return;
-            }
-
-            uint vertexShader = CompileShader(ShaderType.VertexShader, Name, vertShaderSource);
-            uint fragmentShader = CompileShader(ShaderType.FragmentShader, Name, fragShaderSource);
-
-            var prog = GL.glCreateProgram();
-            GL.glAttachShader(prog, vertexShader);
-            GL.glAttachShader(prog, fragmentShader);
-            GL.glLinkProgram(prog);
-
-            int success = 0;
-            GL.glGetProgramiv(prog, ProgramPropertyARB.LinkStatus, &success);
-            if (success != 1) {
-                var infoLog = stackalloc char[1024];
-                GL.glGetProgramInfoLog(prog, 1024, (int*)0, infoLog);
-                _log.LogError($"Error: shader program compilation failed: {Marshal.PtrToStringUTF8((IntPtr)infoLog)}");
-                return;
-            }
-            else {
-                _log.LogTrace($"{(Program != 0 ? "Reloaded" : "Loaded")} shader: {Name}");
-            }
-
-            GL.glDeleteShader(vertexShader);
-            GL.glDeleteShader(fragmentShader);
-
-            if (Program != 0) {
-                Unload();
-            }
-
-            Program = (IntPtr)prog;
         }
 
         private uint CompileShader(ShaderType shaderType, string name, string shaderSource) {
@@ -197,17 +162,23 @@ namespace LauncherApp.Render {
             if (success != 1) {
                 GL.glGetShaderInfoLog(shader, 1024, (int*)0, infoLog);
                 System.Diagnostics.Debug.WriteLine($"Error: {name}:{shaderType} compilation failed: {Marshal.PtrToStringUTF8((IntPtr)infoLog)}");
-                _log.LogError($"Error: {name}:{shaderType} compilation failed: {Marshal.PtrToStringUTF8((IntPtr)infoLog)}");
+                //_log.LogError($"Error: {name}:{shaderType} compilation failed: {Marshal.PtrToStringUTF8((IntPtr)infoLog)}");
             }
 
             return shader;
         }
 
-        protected override void Unload() {
-            if (Program != 0) {
-                GL.glDeleteProgram((uint)Program);
-                Program = 0;
-            }
+
+        public void Load(string vertexShader, string fragmentShader) {
+            throw new NotImplementedException();
+        }
+
+        public void Bind() {
+            throw new NotImplementedException();
+        }
+
+        public void Unbind() {
+            throw new NotImplementedException();
         }
     }
 }

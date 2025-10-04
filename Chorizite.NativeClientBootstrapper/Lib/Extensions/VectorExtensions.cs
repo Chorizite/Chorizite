@@ -1,4 +1,4 @@
-﻿using Chorizite.Core.Render;
+﻿using Chorizite.Core.Render.Vertex;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Chorizite.Backends.ACBackend.Extensions {
     internal static class VectorExtensions {
         public static int ToArgb(this ColorVec color) {
-            return Color.FromArgb((int)(color.Alpha * 255), (int)(color.Red * 255), (int)(color.Green * 255), (int)(color.Blue * 255)).ToArgb();
+            return Color.FromArgb((int)(color.A * 255), (int)(color.R * 255), (int)(color.G  * 255), (int)(color.B  * 255)).ToArgb();
         }
     }
 }
