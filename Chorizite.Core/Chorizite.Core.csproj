@@ -81,7 +81,7 @@
 		<PackageReference Include="Chorizite.ACProtocol" Version="1.0.1" />
 		<PackageReference Include="Chorizite.Common" Version="1.0.3" />
 		<PackageReference Include="Autofac" Version="8.4.0" />
-		<PackageReference Include="Chorizite.DatReaderWriter" Version="1.0.1-beta.1" />
+		<PackageReference Include="Chorizite.DatReaderWriter" Version="1.0.0" />
 		<PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
 		<PackageReference Include="NJsonSchema" Version="11.5.1" />
 		<PackageReference Include="GitVersion.MsBuild" Version="6.4.0">
