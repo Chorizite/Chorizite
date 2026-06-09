@@ -16,12 +16,12 @@ using Chorizite.Common;
 using Chorizite.NativeClientBootstrapper.Lib;
 using Chorizite.NativeClientBootstrapper.Hooks;
 using Chorizite.Core.Render.Enums;
-using Chorizite.Core.Render.Vertex;
+using VertexPositionColorTexture = Chorizite.Core.Render.VertexPositionColorTexture;
 using RenderState = SharpDX.Direct3D9.RenderState;
 using VertexFormat = SharpDX.Direct3D9.VertexFormat;
 
 namespace Chorizite.NativeClientBootstrapper.Render {
-    public unsafe class DX9RenderInterface : IRenderer {
+    public unsafe class DX9RenderInterface : IRenderInterface {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private Matrix4x4 _transform = Matrix4x4.Identity;
         private struct GeometryBufferRef : IDisposable {

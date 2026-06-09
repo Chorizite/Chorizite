@@ -38,7 +38,7 @@ namespace Chorizite.NativeClientBootstrapper {
 
         private ConcurrentQueue<Action> _invokeQueue = new();
 
-        public override IRenderer Renderer { get; }
+        public override IRenderInterface Renderer { get; }
         public DX9RenderInterface DX9Renderer { get; }
 
         public override IInputManager Input { get; }

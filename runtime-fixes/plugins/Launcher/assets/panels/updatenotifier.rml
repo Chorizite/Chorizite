@@ -1,0 +1,61 @@
+<rml>
+  <head>
+    <title>Update Available</title>
+    <meta name="icon" content="dat://0x060011F7" />
+    <style>
+      body {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background-color: #00000088;
+        font-family: LatoLatin;
+        z-index: 9000;
+      }
+
+      .visible .modal {
+        animation: fade-in-animation 0.25s 1;
+      }
+
+      .hidden .modal {
+        animation: fade-out-animation 2s 1;
+      }
+
+      div {
+        display: block;
+      }
+
+      body p {
+        display: inline-block;
+        margin-bottom: 0;
+      }
+
+      .modal {
+        display: block;
+        margin: auto;
+        width: 300dp;
+        margin-top: 150dp;
+        color: white;
+        background-color: #000000;
+        text-align: center;
+        font-size: 22dp;
+        padding: 10dp 10dp 30dp 10dp;
+      }
+
+      .progress {
+        padding: 10dp 0;
+      }
+
+      .progress progress.horizontal {
+        height: 40dp;
+      }
+
+      .hidden {
+        visibility: hidden;
+      }
+    </style>
+    <script src="updatenotifier.lua"></script>
+  </head>
+  <body>
+    <div id="modal"></div>
+  </body>
+</rml>

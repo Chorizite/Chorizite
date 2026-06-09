@@ -13,10 +13,10 @@ using LauncherApp.Lib;
 using System.Runtime.InteropServices;
 using SDL2;
 using Chorizite.Core.Render.Enums;
-using Chorizite.Core.Render.Vertex;
+using VertexPositionColorTexture = Chorizite.Core.Render.VertexPositionColorTexture;
 
 namespace LauncherApp.Render {
-    unsafe public class OpenGLRenderer : IRenderer {
+    unsafe public class OpenGLRenderer : IRenderInterface {
         private static Regex _datFileRegex = new Regex(@"^dat:\/\/");
         private Dictionary<nint, GeometryBufferRef> _geometryBuffers = new();
         private List<ManagedGLTexture> _textures = new();
@@ -294,6 +294,7 @@ namespace LauncherApp.Render {
                 }
                 GL.glBindTexture(TextureTarget.Texture2d, (uint)dxTexture.TexturePtr);
                 TextureShader.SetActive();
+                TextureShader.SetUniform("_tex", 0);
                 TextureShader.SetUniform("xWorld", translation * _transform);
             }
             else {
@@ -303,7 +304,7 @@ namespace LauncherApp.Render {
             }
 
             GL.glBindVertexArray(geom.VAO);
-            //GL.glDrawElements(PrimitiveType.Triangles, geom.Indices.Length, DrawElementsType.UnsignedInt, (void*)0);
+            GL.glDrawElements(WaveEngine.Bindings.OpenGL.PrimitiveType.Triangles, geom.Indices.Length, DrawElementsType.UnsignedInt, (void*)0);
 
             GL.glBindTexture(TextureTarget.Texture2d, 0);
             GL.glBindVertexArray(0);
@@ -322,16 +323,15 @@ namespace LauncherApp.Render {
             var dx = (int)dimensions.X;
             var dy = (int)dimensions.Y;
 
-            //var texture = new ManagedGLTexture(source, dx, dy);
-            //_textures.Add(texture);
-            //return texture;
-            return null;
+            var texture = new ManagedGLTexture(source, dx, dy);
+            _textures.Add(texture);
+            return texture;
         }
 
         public ITexture? LoadTexture(string source, out Vector2 textureDimensions) {
             try {
                 //_log?.LogTrace($"LoadTexture: {source}");
-                ManagedGLTexture texture = null;// new ManagedGLTexture(source);
+                var texture = new ManagedGLTexture(source);
 
                 if (texture.TexturePtr == IntPtr.Zero) {
                     _log?.LogError($"Failed to load texture: {source}");

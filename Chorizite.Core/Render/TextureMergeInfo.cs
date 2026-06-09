@@ -54,9 +54,9 @@ namespace Chorizite.Core.Render {
         /// Outputs debug information about the texture merge
         /// </summary>
         public void PrintDebugInfo() {
-            Console.WriteLine($"TerrainBase: {TerrainBase?.TexGID:X8}");
-            Console.WriteLine($"TerrainOverlays: {string.Join(",", TerrainOverlays.Where(t => t != null).Select(t => t.TexGID.ToString("X8")))}");
-            Console.WriteLine($"TerrainAlphaOverlays: {string.Join(",", TerrainAlphaOverlays.Where(t => t != null).Select(t => t.TexGID.ToString("X8")))}");
+            Console.WriteLine($"TerrainBase: {TerrainBase?.TextureId}");
+            Console.WriteLine($"TerrainOverlays: {string.Join(",", TerrainOverlays.Where(t => t != null).Select(t => t.TextureId.ToString()))}");
+            Console.WriteLine($"TerrainAlphaOverlays: {string.Join(",", TerrainAlphaOverlays.Where(t => t != null).Select(t => t.TextureId.ToString()))}");
             Console.WriteLine($"TerrainAlphaIndices: {string.Join(",", TerrainAlphaIndices)}");
             Console.WriteLine($"TerrainRotations: {string.Join(",", TerrainRotations.Select(r => (int)r))}");
             Console.WriteLine($"TerrainCodes: {string.Join(",", TerrainCodes?.Select(c => (SideCorner)c) ?? new SideCorner[0])}");

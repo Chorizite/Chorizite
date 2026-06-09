@@ -20,8 +20,14 @@ namespace LauncherApp.Render {
         public ManagedGLTexture(IGraphicsDevice device) : base(device) {
         }
 
+        public ManagedGLTexture(byte[]? source, int width, int height) : base(null!, source, width, height) {
+        }
+
+        public ManagedGLTexture(string file) : base(null!, file) {
+        }
+
         /// <inheritdoc/>
-        public  IntPtr TexturePtr => (IntPtr)_texture;
+        public override IntPtr TexturePtr => (IntPtr)_texture;
 
         /// <inheritdoc/>
         public override int Width => Bitmap?.Width ?? 0;
@@ -29,9 +35,9 @@ namespace LauncherApp.Render {
         /// <inheritdoc/>
         public override int Height => Bitmap?.Height ?? 0;
 
-        public override nint NativePtr => throw new NotImplementedException();
+        public override nint NativePtr => TexturePtr;
 
-        public override TextureFormat Format => throw new NotImplementedException();
+        public override TextureFormat Format => TextureFormat.RGBA8;
 
         protected override unsafe void CreateTexture(bool premultiplyAlpha) {
             if (Bitmap != null) {

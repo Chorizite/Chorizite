@@ -93,6 +93,27 @@ Section InstallPlugins
   Delete "$TEMP\chorizite-setup\plugins.json"
 SectionEnd
 
+Section -InstallRuntimeFixes
+  ; Apply local runtime overrides after the default plugin payloads are unpacked.
+  CreateDirectory "$INSTDIR\plugins\Launcher\assets\screens"
+  SetOutPath "$INSTDIR\plugins\Launcher\assets\screens"
+  File ".\..\runtime-fixes\plugins\Launcher\assets\screens\Simple.rml"
+
+  CreateDirectory "$INSTDIR\plugins\Launcher\assets\panels"
+  SetOutPath "$INSTDIR\plugins\Launcher\assets\panels"
+  File ".\..\runtime-fixes\plugins\Launcher\assets\panels\pluginsbar.rml"
+  File ".\..\runtime-fixes\plugins\Launcher\assets\panels\updatenotifier.rml"
+
+  CreateDirectory "$INSTDIR\plugins\PluginManagerUI\assets"
+  SetOutPath "$INSTDIR\plugins\PluginManagerUI\assets"
+  File ".\..\runtime-fixes\plugins\PluginManagerUI\assets\manager.rml"
+
+  CreateDirectory "$INSTDIR\plugins\RmlUi\assets\templates"
+  SetOutPath "$INSTDIR\plugins\RmlUi\assets\templates"
+  File ".\..\runtime-fixes\plugins\RmlUi\assets\templates\tabpanel.rml"
+  File ".\..\runtime-fixes\plugins\RmlUi\assets\templates\modal.rml"
+SectionEnd
+
 ;Uninstall section
 Section Uninstall
 

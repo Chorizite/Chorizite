@@ -36,14 +36,14 @@ namespace Chorizite.Core.Render.Vertex {
         /// <summary>
         /// The color
         /// </summary>
-        public ColorVec Color;
+        public global::Chorizite.Core.Render.ColorVec Color;
 
         /// <summary>
         /// Constructs a vertex
         /// </summary>
         /// <param name="position"></param>
         /// <param name="color"></param>
-        public VertexPositionColor(Vector3 position, ColorVec color) {
+        public VertexPositionColor(Vector3 position, global::Chorizite.Core.Render.ColorVec color) {
             Position = position;
             Color = color;
         }

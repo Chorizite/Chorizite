@@ -32,6 +32,9 @@ namespace Chorizite.Core.Render {
         protected Image<Rgba32>? Bitmap { get; set; } = null;
 
         /// <inheritdoc/>
+        public virtual IntPtr TexturePtr => NativePtr;
+
+        /// <inheritdoc/>
         public abstract IntPtr NativePtr { get; }
 
         /// <inheritdoc/>
@@ -349,7 +352,7 @@ namespace Chorizite.Core.Render {
             ReleaseTexture();
             Bitmap?.Dispose();
             Bitmap = null;
-            this._device.ReleaseTexture(this);
+            this._device?.ReleaseTexture(this);
         }
 
         /// <summary>

@@ -23,7 +23,7 @@ namespace LauncherApp.Lib {
         private ConcurrentQueue<Action> _invokeQueue = new();
 
         /// <inheritdoc/>
-        public override IRenderer Renderer { get; }
+        public override IRenderInterface Renderer { get; }
 
         /// <summary>
         /// The <see cref="OpenGLRenderer"/> used by this backend
