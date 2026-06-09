@@ -14,13 +14,18 @@ using WaveEngine.Bindings.OpenGL;
 namespace LauncherApp.Render {
 
     public unsafe class GLSLShader : IShader {
+        private readonly ILogger _log;
+        private readonly string _name;
         public IntPtr Program { get; protected set; }
 
-        public string Name => throw new NotImplementedException();
+        public string Name => _name;
 
-        public uint ProgramId => throw new NotImplementedException();
+        public uint ProgramId => (uint)Program;
 
         public GLSLShader(string name, string vertSource, string fragSource, ILogger log, string? shaderDirectory = null) {
+            _name = name;
+            _log = log;
+            Load(vertSource, fragSource);
         }
 
         public  void SetActive() {
@@ -153,16 +158,21 @@ namespace LauncherApp.Render {
             textPtr[0] = Marshal.StringToHGlobalAnsi(shaderSource);
             int shaderSourceLength = shaderSource.Length;
 
-            GL.glShaderSource(shader, 1, (IntPtr)textPtr, &shaderSourceLength);
-            GL.glCompileShader(shader);
+            try {
+                GL.glShaderSource(shader, 1, (IntPtr)textPtr, &shaderSourceLength);
+                GL.glCompileShader(shader);
 
-            int success = 0;
-            var infoLog = stackalloc char[1024];
-            GL.glGetShaderiv(shader, ShaderParameterName.CompileStatus, &success);
-            if (success != 1) {
-                GL.glGetShaderInfoLog(shader, 1024, (int*)0, infoLog);
-                System.Diagnostics.Debug.WriteLine($"Error: {name}:{shaderType} compilation failed: {Marshal.PtrToStringUTF8((IntPtr)infoLog)}");
-                //_log.LogError($"Error: {name}:{shaderType} compilation failed: {Marshal.PtrToStringUTF8((IntPtr)infoLog)}");
+                int success = 0;
+                byte* infoLog = stackalloc byte[4096];
+                GL.glGetShaderiv(shader, ShaderParameterName.CompileStatus, &success);
+                if (success != 1) {
+                    GL.glGetShaderInfoLog(shader, 4096, (int*)0, (char*)infoLog);
+                    var message = Marshal.PtrToStringAnsi((IntPtr)infoLog) ?? "unknown shader compile error";
+                    _log.LogError("Shader compile failed for {ShaderName} ({ShaderType}): {Message}", name, shaderType, message);
+                }
+            }
+            finally {
+                Marshal.FreeHGlobal(textPtr[0]);
             }
 
             return shader;
@@ -170,15 +180,37 @@ namespace LauncherApp.Render {
 
 
         public void Load(string vertexShader, string fragmentShader) {
-            throw new NotImplementedException();
+            var vertexShaderId = CompileShader(ShaderType.VertexShader, _name, vertexShader);
+            var fragmentShaderId = CompileShader(ShaderType.FragmentShader, _name, fragmentShader);
+
+            uint program = GL.glCreateProgram();
+            GL.glAttachShader(program, vertexShaderId);
+            GL.glAttachShader(program, fragmentShaderId);
+            GL.glLinkProgram(program);
+
+            int success = 0;
+            byte* infoLog = stackalloc byte[4096];
+            GL.glGetProgramiv(program, ProgramPropertyARB.LinkStatus, &success);
+            if (success != 1) {
+                GL.glGetProgramInfoLog(program, 4096, (int*)0, (char*)infoLog);
+                var message = Marshal.PtrToStringAnsi((IntPtr)infoLog) ?? "unknown shader link error";
+                _log.LogError("Shader link failed for {ShaderName}: {Message}", _name, message);
+            }
+
+            GL.glDetachShader(program, vertexShaderId);
+            GL.glDetachShader(program, fragmentShaderId);
+            GL.glDeleteShader(vertexShaderId);
+            GL.glDeleteShader(fragmentShaderId);
+
+            Program = (IntPtr)program;
         }
 
         public void Bind() {
-            throw new NotImplementedException();
+            SetActive();
         }
 
         public void Unbind() {
-            throw new NotImplementedException();
+            GL.glUseProgram(0);
         }
     }
 }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Chorizite.DocGen.LuaDefs {
     public class DocGenBackend : IChoriziteBackend {
-        public override IRenderer Renderer { get; } = new NullRenderInterface();
+        public override IRenderInterface Renderer { get; } = new NullRenderInterface();
 
         public override IInputManager Input { get; } = new NullInputManager();
 

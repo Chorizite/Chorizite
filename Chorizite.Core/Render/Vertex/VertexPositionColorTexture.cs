@@ -37,7 +37,7 @@ namespace Chorizite.Core.Render.Vertex {
         /// <summary>
         /// The color
         /// </summary>
-        public ColorVec Color;
+        public global::Chorizite.Core.Render.ColorVec Color;
 
         /// <summary>
         /// The texture coordinates
@@ -50,7 +50,7 @@ namespace Chorizite.Core.Render.Vertex {
         /// <param name="position"></param>
         /// <param name="color"></param>
         /// <param name="texCoords"></param>
-        public VertexPositionColorTexture(Vector3 position, ColorVec color, Vector2 texCoords) {
+        public VertexPositionColorTexture(Vector3 position, global::Chorizite.Core.Render.ColorVec color, Vector2 texCoords) {
             Position = position;
             Color = color;
             TexCoords = texCoords;

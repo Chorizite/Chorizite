@@ -26,6 +26,11 @@ namespace Chorizite.Core.Render {
         TextureFormat Format { get; }
 
         /// <summary>
+        /// Legacy pointer to the native device texture.
+        /// </summary>
+        IntPtr TexturePtr { get; }
+
+        /// <summary>
         /// A pointer to the native device texture
         /// </summary>
         IntPtr NativePtr { get; }

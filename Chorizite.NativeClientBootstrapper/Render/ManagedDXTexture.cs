@@ -26,13 +26,22 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         public ManagedDXTexture(IGraphicsDevice device) : base(device) {
         }
 
+        public ManagedDXTexture(byte[]? source, int width, int height) : base(null!, source, width, height) {
+        }
+
+        public ManagedDXTexture(string file) : base(null!, file) {
+        }
+
+        public ManagedDXTexture(string source, IDatReaderInterface datReader) : base(null!, source, datReader) {
+        }
+
         /// <summary>
         /// The DirectX texture
         /// </summary>
         public Texture? Texture { get; private set; } = null;
 
         /// <inheritdoc/>
-        public  IntPtr TexturePtr => Texture?.NativePointer ?? IntPtr.Zero;
+        public override IntPtr TexturePtr => Texture?.NativePointer ?? IntPtr.Zero;
 
         /// <inheritdoc/>
         public override int Width => Bitmap?.Width ?? 0;
@@ -40,9 +49,9 @@ namespace Chorizite.NativeClientBootstrapper.Render {
         /// <inheritdoc/>
         public override int Height => Bitmap?.Height ?? 0;
 
-        public override nint NativePtr => throw new NotImplementedException();
+        public override nint NativePtr => TexturePtr;
 
-        public override TextureFormat Format => throw new NotImplementedException();
+        public override TextureFormat Format => TextureFormat.RGBA8;
 
 
         protected override unsafe void CreateTexture(bool premultiplyAlpha) {

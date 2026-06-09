@@ -120,6 +120,7 @@ namespace Chorizite.Core {
             ChoriziteStatics.Scope = _container.BeginLifetimeScope(builder => {
                 builder.RegisterInstance(Backend);
                 builder.RegisterInstance(Backend.Renderer)
+                    .As<IRenderInterface>()
                     .As<IRenderer>()
                     .SingleInstance();
                 builder.RegisterInstance(Backend.Input)

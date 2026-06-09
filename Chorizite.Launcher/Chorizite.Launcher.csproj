@@ -20,11 +20,11 @@
   </PropertyGroup>
 
   <Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
-    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
+    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.7.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Version" />
       <Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />
     </Exec>
-    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
+    <Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.7.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="AssemblyVersion" />
     </Exec>
   </Target>
@@ -42,7 +42,7 @@
 
   <Target Name="Build Installer" Condition="$(Configuration) == 'Release' And $(MSBuildRuntimeType)=='Full'" AfterTargets="Build">
     <Message Text="Build Installer" Importance="High" />
-    <Exec Command="$(NuGetPackageRoot)\nsis-tool\3.10.0\tools\makensis.exe -DVERSION=$(Version) $(MSBuildProjectDirectory)\..\Installer\Installer.nsi" />
+    <Exec Command="$(NuGetPackageRoot)\nsis-tool\3.12.0\tools\makensis.exe -DVERSION=$(Version) $(MSBuildProjectDirectory)\..\Installer\Installer.nsi" />
   </Target>
 
   <ItemGroup>
@@ -60,19 +60,19 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GitVersion.MsBuild" Version="6.4.0">
+    <PackageReference Include="GitVersion.MsBuild" Version="6.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NSIS-Tool" Version="3.11.0">
+    <PackageReference Include="NSIS-Tool" Version="3.12.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="NAudio" Version="2.3.0" />
     <PackageReference Include="ppy.SDL2-CS" Version="1.0.82" IncludeAssets="all" />
-    <PackageReference Include="WaveEngine.Bindings.OpenGL" Version="1.0.4998" />
+    <PackageReference Include="WaveEngine.Bindings.OpenGL" Version="2659.0.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>

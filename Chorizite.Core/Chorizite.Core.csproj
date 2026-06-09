@@ -18,11 +18,11 @@
 	</PropertyGroup>
 
 	<Target Name="VSGitVersion" BeforeTargets="PreBuildEvent" Condition="$(MSBuildRuntimeType)=='Full'">
-		<Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
+		<Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.7.0\tools\net8.0\gitversion.exe -showvariable SemVer" ConsoleToMSBuild="true">
 			<Output TaskParameter="ConsoleOutput" PropertyName="Version" />
 			<Output TaskParameter="ConsoleOutput" PropertyName="PackageVersion" />
 		</Exec>
-		<Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.1.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
+		<Exec Command="$(NuGetPackageRoot)\gitversion.msbuild\6.7.0\tools\net8.0\gitversion.exe -showvariable Major" ConsoleToMSBuild="true">
 			<Output TaskParameter="ConsoleOutput" PropertyName="AssemblyVersion" />
 		</Exec>
 		<Message Text="Delete $(NuGetPackageRoot)$(PackageId)\$(PackageVersion)" Importance="high" />
@@ -80,17 +80,17 @@
 	<ItemGroup>
 		<PackageReference Include="Chorizite.ACProtocol" Version="1.0.1" />
 		<PackageReference Include="Chorizite.Common" Version="1.0.3" />
-		<PackageReference Include="Autofac" Version="8.4.0" />
-		<PackageReference Include="Chorizite.DatReaderWriter" Version="1.0.0" />
-		<PackageReference Include="Microsoft.Diagnostics.Runtime" Version="3.1.512801" />
-		<PackageReference Include="NJsonSchema" Version="11.5.1" />
-		<PackageReference Include="GitVersion.MsBuild" Version="6.4.0">
+		<PackageReference Include="Autofac" Version="9.1.0" />
+		<PackageReference Include="Chorizite.DatReaderWriter" Version="2.1.7" />
+		<PackageReference Include="Microsoft.Diagnostics.Runtime" Version="4.0.726401" />
+		<PackageReference Include="NJsonSchema" Version="11.6.1" />
+		<PackageReference Include="GitVersion.MsBuild" Version="6.7.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.9" />
-		<PackageReference Include="System.Reflection.Metadata" Version="9.0.9" />
-		<PackageReference Include="System.Text.Json" Version="9.0.9" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.8" />
+		<PackageReference Include="System.Reflection.Metadata" Version="10.0.8" />
+		<PackageReference Include="System.Text.Json" Version="10.0.8" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.7" />
 		<PackageReference Include="FontStashSharp" Version="1.3.10" />

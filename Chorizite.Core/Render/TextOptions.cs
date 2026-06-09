@@ -24,6 +24,6 @@ namespace Chorizite.Core.Render {
         /// <summary>
         /// The color of the shadow, only applicable if <see cref="Shadow"/> is true
         /// </summary>
-        public ColorVec ShadowColor { get; set; } = ColorVec.Black;
+        public ColorVec ShadowColor { get; set; } = new ColorVec(0f, 0f, 0f);
     }
 }

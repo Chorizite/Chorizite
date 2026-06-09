@@ -1,9 +1,4 @@
-#version 300 es
- 
-precision highp float;
-precision highp int;
-precision lowp sampler2D;
-precision lowp samplerCube;
+#version 330 core
 
 out vec4 finalColor;
 in vec4 fragColor;

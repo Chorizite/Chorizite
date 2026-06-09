@@ -1,0 +1,66 @@
+<html>
+  <head>
+    <style>
+      body {
+        font-family: LatoLatin;
+        font-size: 15px;
+        color: #fff;
+        display: block;
+        background: #111;
+        width: 800dp;
+        height: 600dp;
+        z-index: 0;
+      }
+
+      div.wrap {
+        padding: 12dp;
+        display: block;
+        max-width: 420dp;
+        margin: 24dp auto 0 auto;
+        background-color: #000000aa;
+        border: 1px solid #b99043;
+      }
+
+      .formline {
+        margin-top: 10dp;
+        min-height: 34dp;
+      }
+
+      label {
+        padding-top: 6dp;
+        float: left;
+      }
+
+      input[type="text"], input[type="password"] {
+        color: #f3be5d;
+        width: 280dp;
+        padding: 6dp;
+        float: right;
+        background-color: #1f1f1f;
+        border: 1px solid #6e5220;
+      }
+
+      .actions {
+        margin-top: 20dp;
+        text-align: center;
+      }
+
+      .actions button {
+        padding: 10dp 18dp;
+        font-size: 22dp;
+        font-weight: bold;
+        display: inline-block;
+        color: #fff;
+        background-color: #6e5220;
+        border: 1px solid #b99043;
+      }
+    </style>
+    <script src="simple.lua"></script>
+  </head>
+  <body class="window">
+    <div style="display:block; padding:12dp; color:#ffde7a; font-size:20dp; background-color:#2a1f0d;">
+      Chorizite launcher UI loaded
+    </div>
+    <div id="content"></div>
+  </body>
+</html>

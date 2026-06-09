@@ -12,8 +12,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest" Version="3.11.0" />
-    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.0.4" />
+    <PackageReference Include="MSTest" Version="4.2.3" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.8.0" />
+    <PackageReference Include="Microsoft.Testing.Platform.MSBuild" Version="2.2.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,5 +24,7 @@
   <ItemGroup>
     <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
   </ItemGroup>
+
+  <Target Name="MsCoverageExtensionGetPathMap" />
 
 </Project>
